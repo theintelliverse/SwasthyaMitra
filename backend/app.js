@@ -50,19 +50,25 @@ const allowedOrigins = new Set([
     normalizeOrigin('http://localhost:5173')
 ]);
 
-const frontendHost = normalizeOrigin(process.env.FRONTEND_URL || '');
-let vercelProjectPrefix = '';
+const vercelProjectPrefixes = new Set();
+for (const configuredOrigin of allowedOrigins) {
+    if (!configuredOrigin.includes('.vercel.app')) {
+        continue;
+    }
 
-if (frontendHost.includes('.vercel.app')) {
     try {
-        vercelProjectPrefix = new URL(frontendHost).hostname.split('.vercel.app')[0];
+        const hostname = new URL(configuredOrigin).hostname.toLowerCase();
+        const prefix = hostname.split('.vercel.app')[0];
+        if (prefix) {
+            vercelProjectPrefixes.add(prefix);
+        }
     } catch {
-        vercelProjectPrefix = '';
+        continue;
     }
 }
 
 const isAllowedVercelPreviewOrigin = (origin) => {
-    if (!origin || !vercelProjectPrefix) {
+    if (!origin || vercelProjectPrefixes.size === 0) {
         return false;
     }
 
@@ -72,8 +78,13 @@ const isAllowedVercelPreviewOrigin = (origin) => {
             return false;
         }
 
-        return hostname === `${vercelProjectPrefix}.vercel.app`
-            || hostname.startsWith(`${vercelProjectPrefix}-`);
+        for (const prefix of vercelProjectPrefixes) {
+            if (hostname === `${prefix}.vercel.app` || hostname.startsWith(`${prefix}-`)) {
+                return true;
+            }
+        }
+
+        return false;
     } catch {
         return false;
     }
@@ -99,7 +110,7 @@ const corsOptions = {
             console.warn(`Allowed origins: ${Array.from(allowedOrigins).join(', ')}`);
         }
 
-        return callback(new Error('CORS origin not allowed'));
+        return callback(null, false);
     },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
     credentials: true
