@@ -14,6 +14,7 @@ const PatientLogin = () => {
   const [step, setStep] = useState(1); // 1: Phone, 2: OTP
   const [loading, setLoading] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
+  const [otpProvider, setOtpProvider] = useState('firebase');
   const [formData, setFormData] = useState({
     phone: '',
     otp: ''
@@ -35,8 +36,49 @@ const PatientLogin = () => {
     if (code.includes('auth/captcha-check-failed')) return 'Captcha verification failed. Please retry.';
     if (code.includes('auth/invalid-verification-code')) return 'Invalid OTP. Please check and try again.';
     if (code.includes('auth/code-expired')) return 'OTP expired. Please request a new OTP.';
+    if (code.includes('auth/billing-not-enabled')) return 'Firebase Phone Auth billing is not enabled. Switching to backup OTP service.';
+    if (code.includes('auth/configuration-not-found')) return 'Firebase Phone Auth is not fully configured. Switching to backup OTP service.';
 
     return error?.message || 'Authentication failed. Please try again.';
+  };
+
+  const shouldFallbackToBackendOtp = (error) => {
+    const code = error?.code || '';
+    return (
+      code.includes('auth/billing-not-enabled') ||
+      code.includes('auth/configuration-not-found') ||
+      code.includes('auth/operation-not-allowed') ||
+      code.includes('auth/unauthorized-domain')
+    );
+  };
+
+  const backendSendOtp = async (cleanPhone) => {
+    const apiUrl = `${API_BASE_URL}/api/auth/patient/send-otp`;
+    const res = await axios.post(apiUrl, { phone: cleanPhone });
+    if (!res.data?.success) {
+      throw new Error('Failed to send OTP from backup service.');
+    }
+  };
+
+  const completePatientSession = (responseData, fallbackPhone) => {
+    localStorage.setItem('token', responseData.token);
+    localStorage.setItem('role', 'patient');
+    localStorage.setItem('userPhone', responseData.patient?.phone || fallbackPhone);
+
+    const nameToStore = responseData.patient?.name || 'Valued Patient';
+    localStorage.setItem('patientName', nameToStore);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Vault Unlocked',
+      text: `Namaste, ${nameToStore}`,
+      timer: 1500,
+      showConfirmButton: false,
+      background: '#EEF6FA',
+      color: '#0F766E'
+    });
+
+    navigate('/patient/dashboard');
   };
 
   const ensureRecaptcha = () => {
@@ -77,21 +119,44 @@ const PatientLogin = () => {
     setLoading(true);
 
     try {
-      if (!isFirebaseConfigured) {
-        Swal.fire('Error', 'Firebase OTP is not configured. Please contact support.', 'error');
-        return;
-      }
-
       const cleanPhone = normalizePhone(formData.phone);
       if (!cleanPhone) {
         Swal.fire('Error', 'Please enter a valid 10-digit mobile number.', 'error');
         return;
       }
 
-      const verifier = ensureRecaptcha();
-      const confirmation = await signInWithPhoneNumber(firebaseAuth, `+91${cleanPhone}`, verifier);
+      if (isFirebaseConfigured) {
+        try {
+          const verifier = ensureRecaptcha();
+          const confirmation = await signInWithPhoneNumber(firebaseAuth, `+91${cleanPhone}`, verifier);
 
-      setConfirmationResult(confirmation);
+          setConfirmationResult(confirmation);
+          setOtpProvider('firebase');
+          setFormData((prev) => ({ ...prev, phone: cleanPhone }));
+          setStep(2);
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'OTP sent successfully',
+            showConfirmButton: false,
+            timer: 3000,
+            background: '#EEF6FA',
+            color: '#0F766E'
+          });
+
+          return;
+        } catch (firebaseError) {
+          if (!shouldFallbackToBackendOtp(firebaseError)) {
+            throw firebaseError;
+          }
+        }
+      }
+
+      await backendSendOtp(cleanPhone);
+      setConfirmationResult(null);
+      setOtpProvider('backend');
       setFormData((prev) => ({ ...prev, phone: cleanPhone }));
       setStep(2);
 
@@ -99,14 +164,14 @@ const PatientLogin = () => {
         toast: true,
         position: 'top-end',
         icon: 'success',
-        title: 'OTP sent successfully',
+        title: 'OTP sent via backup service',
         showConfirmButton: false,
         timer: 3000,
         background: '#EEF6FA',
         color: '#0F766E'
       });
     } catch (err) {
-      Swal.fire('Error', getReadableFirebaseError(err), 'error');
+      Swal.fire('Error', err.response?.data?.message || getReadableFirebaseError(err), 'error');
     } finally {
       setLoading(false);
     }
@@ -118,39 +183,29 @@ const PatientLogin = () => {
     setLoading(true);
 
     try {
-      if (!confirmationResult) {
-        Swal.fire('Error', 'Session expired. Please request OTP again.', 'error');
-        setStep(1);
-        return;
+      let res;
+
+      if (otpProvider === 'firebase') {
+        if (!confirmationResult) {
+          Swal.fire('Error', 'Session expired. Please request OTP again.', 'error');
+          setStep(1);
+          return;
+        }
+
+        const credential = await confirmationResult.confirm(formData.otp);
+        const idToken = await credential.user.getIdToken(true);
+        const apiUrl = `${API_BASE_URL}/api/patient/firebase-login`;
+        res = await axios.post(apiUrl, { idToken });
+      } else {
+        const apiUrl = `${API_BASE_URL}/api/auth/patient/verify-locker`;
+        res = await axios.post(apiUrl, {
+          phone: formData.phone,
+          otp: formData.otp
+        });
       }
 
-      const credential = await confirmationResult.confirm(formData.otp);
-      const idToken = await credential.user.getIdToken(true);
-      const apiUrl = `${API_BASE_URL}/api/patient/firebase-login`;
-      const res = await axios.post(apiUrl, { idToken });
-
       if (res.data.success) {
-        // --- 🔐 SESSION MANAGEMENT ---
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('role', 'patient');
-        localStorage.setItem('userPhone', res.data.patient?.phone || formData.phone);
-
-        // Ensure we save the name correctly for the Dashboard Welcome Banner
-        const nameToStore = res.data.patient?.name || 'Valued Patient';
-        localStorage.setItem('patientName', nameToStore);
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Vault Unlocked',
-          text: `Namaste, ${nameToStore}`,
-          timer: 1500,
-          showConfirmButton: false,
-          background: '#EEF6FA',
-          color: '#0F766E'
-        });
-
-        // 🚀 Redirect to the Patient Dashboard
-        navigate('/patient/dashboard');
+        completePatientSession(res.data, formData.phone);
       }
     } catch (err) {
       // 🚨 FAILED VERIFICATION: Reset to Step 1
