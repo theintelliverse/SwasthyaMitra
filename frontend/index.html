@@ -14,11 +14,12 @@
   <meta name="author" content="Swasthya Mitra Team" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="googlebot" content="index, follow" />
-  <meta name="theme-color" content="#f59e0b" />
+  <meta name="theme-color" content="#2C6FB3" />
   <meta name="format-detection" content="telephone=no" />
+  <meta name="referrer" content="origin-when-cross-origin" />
   <meta name="application-name" content="Swasthya Mitra" />
 
-  <link rel="canonical" href="/" id="canonical-link" />
+  <link rel="canonical" href="/" />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Swasthya Mitra" />
@@ -26,8 +27,10 @@
   <meta property="og:description"
     content="A comprehensive MERN healthcare platform with live queue monitoring, instant lab referrals, patient OTP login, and secure medical record access." />
   <meta property="og:image" content="/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Swasthya Mitra healthcare platform" />
-  <meta property="og:url" content="/" id="og-url" />
+  <meta property="og:url" content="/" />
   <meta property="og:locale" content="en_US" />
 
   <meta name="twitter:card" content="summary_large_image" />
@@ -38,84 +41,72 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
-  <script>
-    (function () {
-      const canonical = document.getElementById('canonical-link');
-      const ogUrl = document.getElementById('og-url');
-      const pageUrl = window.location.origin + '/';
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Swasthya Mitra",
+      "url": "/",
+      "inLanguage": "en",
+      "description": "A real-time clinical management and digital health locker platform for clinics and patients."
+    }
+  </script>
 
-      if (canonical) canonical.setAttribute('href', pageUrl);
-      if (ogUrl) ogUrl.setAttribute('content', pageUrl);
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Swasthya Mitra",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web Browser",
+      "url": "/",
+      "image": "/og-image.svg",
+      "description": "A MERN-stack clinical management system with real-time queueing, lab referrals, and secure patient health records.",
+      "featureList": [
+        "Real-time queue management with Socket.io",
+        "Role-based dashboards for clinic staff",
+        "OTP-secured patient digital health locker",
+        "Instant lab referral and result synchronization",
+        "Unified timeline for visits and reports"
+      ]
+    }
+  </script>
 
-      const websiteSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'Swasthya Mitra',
-        url: pageUrl,
-        inLanguage: 'en',
-        description:
-          'A real-time clinical management and digital health locker platform for clinics and patients.',
-      };
-
-      const appSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'SoftwareApplication',
-        name: 'Swasthya Mitra',
-        applicationCategory: 'HealthApplication',
-        operatingSystem: 'Web Browser',
-        url: pageUrl,
-        image: window.location.origin + '/og-image.svg',
-        description:
-          'A MERN-stack clinical management system with real-time queueing, lab referrals, and secure patient health records.',
-        featureList: [
-          'Real-time queue management with Socket.io',
-          'Role-based dashboards for clinic staff',
-          'OTP-secured patient digital health locker',
-          'Instant lab referral and result synchronization',
-          'Unified timeline for visits and reports',
-        ],
-      };
-
-      const faqSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: [
-          {
-            '@type': 'Question',
-            name: 'What is Swasthya Mitra?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Swasthya Mitra is a clinical management and digital health locker platform that connects clinics and patients using real-time queues and secure records.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'Who can use Swasthya Mitra?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Admins, doctors, receptionists, lab technicians, and patients can use role-based interfaces designed for their workflows.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'How are patient records secured?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Patients access their digital health locker via OTP authentication and can securely view consultation notes, reports, and medical files.',
-            },
-          },
-        ],
-      };
-
-      [websiteSchema, appSchema, faqSchema].forEach((item) => {
-        const tag = document.createElement('script');
-        tag.type = 'application/ld+json';
-        tag.text = JSON.stringify(item);
-        document.head.appendChild(tag);
-      });
-    })();
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Swasthya Mitra?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Swasthya Mitra is a clinical management and digital health locker platform that connects clinics and patients using real-time queues and secure records."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who can use Swasthya Mitra?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Admins, doctors, receptionists, lab technicians, and patients can use role-based interfaces designed for their workflows."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are patient records secured?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Patients access their digital health locker via OTP authentication and can securely view consultation notes, reports, and medical files."
+          }
+        }
+      ]
+    }
   </script>
 </head>
 
