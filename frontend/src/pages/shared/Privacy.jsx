@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 
 const Privacy = () => {
+    const lastUpdated = 'March 2026';
+
     const privacyImages = useMemo(
         () => [
             {
@@ -62,18 +64,27 @@ const Privacy = () => {
         setActiveImageIndex((prev) => (prev - 1 + privacyImages.length) % privacyImages.length);
     };
 
+    const highlights = [
+        'Role-based access for staff and patients',
+        'Data used only for required care workflows',
+        'Privacy support available via contact form'
+    ];
+
     const sections = [
         {
+            id: 'collect',
             title: 'Information We Collect',
             content:
                 'Swasthya-Mitra collects information required to provide clinic operations, queue updates, and health-record access. This may include your name, contact details, appointment details, and medical records uploaded by authorized clinic staff.'
         },
         {
+            id: 'usage',
             title: 'How We Use Information',
             content:
                 'Data is used to manage patient flow, authenticate users, display health history securely, and communicate status updates via approved channels. We only process information that is necessary for care delivery and platform functionality.'
         },
         {
+            id: 'security',
             title: 'Data Security',
             content:
                 'We use role-based access controls and secured storage partners to protect sensitive information. Access is limited to authorized users such as patients and verified clinic staff based on account permissions.'
@@ -105,6 +116,32 @@ const Privacy = () => {
                         <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
                             Your data is handled with care to support secure, fast, and reliable healthcare workflows.
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-2 mt-5">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-teak bg-white border border-sandstone/70 rounded-full px-3 py-1">
+                                Last Updated: {lastUpdated}
+                            </span>
+                            {sections.map((section) => (
+                                <a
+                                    key={section.id}
+                                    href={`#privacy-${section.id}`}
+                                    className="text-[10px] font-black uppercase tracking-widest text-khaki hover:text-teak bg-white/80 border border-sandstone/70 rounded-full px-3 py-1 transition-colors"
+                                >
+                                    {section.title}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-3">
+                        {highlights.map((item) => (
+                            <div
+                                key={item}
+                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-4"
+                            >
+                                <p className="text-xs font-black uppercase tracking-widest text-teak">{item}</p>
+                            </div>
+                        ))}
                     </div>
 
                     <div
@@ -190,11 +227,15 @@ const Privacy = () => {
                     </div>
 
                     <div className="grid gap-4">
-                        {sections.map((section) => (
+                        {sections.map((section, index) => (
                             <section
                                 key={section.title}
-                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6"
+                                id={`privacy-${section.id}`}
+                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6 hover:border-marigold/60 transition-colors"
                             >
+                                <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">
+                                    Section {index + 1}
+                                </p>
                                 <h3 className="font-heading text-2xl text-teak mb-2">{section.title}</h3>
                                 <p className="text-sm md:text-base leading-relaxed text-khaki font-medium">{section.content}</p>
                             </section>

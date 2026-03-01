@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 
 const Terms = () => {
+    const lastUpdated = 'March 2026';
+
     const termsImages = useMemo(
         () => [
             {
@@ -62,18 +64,27 @@ const Terms = () => {
         setActiveImageIndex((prev) => (prev - 1 + termsImages.length) % termsImages.length);
     };
 
+    const highlights = [
+        'Platform use must remain lawful and responsible',
+        'Users are responsible for account safety',
+        'Service updates may occur for stability and security'
+    ];
+
     const sections = [
         {
+            id: 'platform',
             title: 'Platform Usage',
             content:
                 'Swasthya-Mitra is provided to support clinic operations and patient access to records. Users must provide accurate details and use the platform only for lawful healthcare-related purposes.'
         },
         {
+            id: 'account',
             title: 'Account Responsibility',
             content:
                 'Staff and patient users are responsible for maintaining account security, including OTP privacy and password confidentiality. Unauthorized usage, misuse, or impersonation is strictly prohibited.'
         },
         {
+            id: 'availability',
             title: 'Service Availability',
             content:
                 'We aim for reliable uptime but may occasionally perform maintenance, updates, or emergency changes. Temporary interruptions may occur without prior notice when needed to protect platform integrity.'
@@ -105,6 +116,32 @@ const Terms = () => {
                         <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
                             These terms define expected usage, responsibilities, and service behavior for all platform users.
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-2 mt-5">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-teak bg-white border border-sandstone/70 rounded-full px-3 py-1">
+                                Last Updated: {lastUpdated}
+                            </span>
+                            {sections.map((section) => (
+                                <a
+                                    key={section.id}
+                                    href={`#terms-${section.id}`}
+                                    className="text-[10px] font-black uppercase tracking-widest text-khaki hover:text-teak bg-white/80 border border-sandstone/70 rounded-full px-3 py-1 transition-colors"
+                                >
+                                    {section.title}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-3">
+                        {highlights.map((item) => (
+                            <div
+                                key={item}
+                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-4"
+                            >
+                                <p className="text-xs font-black uppercase tracking-widest text-teak">{item}</p>
+                            </div>
+                        ))}
                     </div>
 
                     <div
@@ -190,11 +227,15 @@ const Terms = () => {
                     </div>
 
                     <div className="grid gap-4">
-                        {sections.map((section) => (
+                        {sections.map((section, index) => (
                             <section
                                 key={section.title}
-                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6"
+                                id={`terms-${section.id}`}
+                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6 hover:border-marigold/60 transition-colors"
                             >
+                                <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">
+                                    Section {index + 1}
+                                </p>
                                 <h3 className="font-heading text-2xl text-teak mb-2">{section.title}</h3>
                                 <p className="text-sm md:text-base leading-relaxed text-khaki font-medium">{section.content}</p>
                             </section>
