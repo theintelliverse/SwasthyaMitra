@@ -2,60 +2,109 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { ShieldCheck, Lock, Smartphone, ArrowRight, RefreshCw } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+import { firebaseAuth } from '../../config/firebase';
+import { API_BASE_URL } from '../../config/runtime';
+
 const PatientLogin = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Phone, 2: OTP
   const [loading, setLoading] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [formData, setFormData] = useState({
     phone: '',
     otp: ''
   });
 
+  const normalizePhone = (value) => {
+    const digits = (value || '').replace(/\D/g, '');
+    if (digits.length < 10) return null;
+    return digits.slice(-10);
+  };
+
+  const getReadableFirebaseError = (error) => {
+    const code = error?.code || '';
+
+    if (code.includes('auth/invalid-phone-number')) return 'Invalid phone number format.';
+    if (code.includes('auth/too-many-requests')) return 'Too many attempts. Please try again later.';
+    if (code.includes('auth/operation-not-allowed')) return 'Phone authentication is not enabled in Firebase.';
+    if (code.includes('auth/unauthorized-domain')) return 'Current domain is not authorized in Firebase Authentication.';
+    if (code.includes('auth/captcha-check-failed')) return 'Captcha verification failed. Please retry.';
+    if (code.includes('auth/invalid-verification-code')) return 'Invalid OTP. Please check and try again.';
+    if (code.includes('auth/code-expired')) return 'OTP expired. Please request a new OTP.';
+
+    return error?.message || 'Authentication failed. Please try again.';
+  };
+
+  const ensureRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
+        size: 'invisible'
+      });
+    }
+
+    return window.recaptchaVerifier;
+  };
+
   // Step 1: Request OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/patient/send-otp', {
-        phone: formData.phone
-      });
-      if (res.data.success) {
-        setStep(2);
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: 'OTP sent to your server console',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#EEF6FA',
-          color: '#0F766E'
-        });
+      const cleanPhone = normalizePhone(formData.phone);
+      if (!cleanPhone) {
+        Swal.fire('Error', 'Please enter a valid 10-digit mobile number.', 'error');
+        return;
       }
+
+      const verifier = ensureRecaptcha();
+      const confirmation = await signInWithPhoneNumber(firebaseAuth, `+91${cleanPhone}`, verifier);
+
+      setConfirmationResult(confirmation);
+      setFormData((prev) => ({ ...prev, phone: cleanPhone }));
+      setStep(2);
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'OTP sent successfully',
+        showConfirmButton: false,
+        timer: 3000,
+        background: '#EEF6FA',
+        color: '#0F766E'
+      });
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || 'Failed to send OTP', 'error');
+      Swal.fire('Error', getReadableFirebaseError(err), 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify OTP for Locker Access
+  // Step 2: Verify OTP via Firebase and exchange ID token with backend
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      // Hits the dedicated locker verification route
-      const res = await axios.post('http://localhost:5000/api/auth/patient/verify-locker', {
-        phone: formData.phone,
-        otp: formData.otp
-      });
+      if (!confirmationResult) {
+        Swal.fire('Error', 'Session expired. Please request OTP again.', 'error');
+        setStep(1);
+        return;
+      }
+
+      const credential = await confirmationResult.confirm(formData.otp);
+      const idToken = await credential.user.getIdToken(true);
+      const apiUrl = `${API_BASE_URL}/api/patient/firebase-login`;
+      const res = await axios.post(apiUrl, { idToken });
 
       if (res.data.success) {
         // --- 🔐 SESSION MANAGEMENT ---
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('role', 'patient');
+        localStorage.setItem('userPhone', res.data.patient?.phone || formData.phone);
 
         // Ensure we save the name correctly for the Dashboard Welcome Banner
         const nameToStore = res.data.patient?.name || 'Valued Patient';
@@ -79,7 +128,7 @@ const PatientLogin = () => {
       Swal.fire({
         icon: 'error',
         title: 'Access Denied',
-        text: err.response?.data?.message || 'Invalid OTP. Please try again.',
+        text: err.response?.data?.message || getReadableFirebaseError(err),
         confirmButtonColor: '#1F6FB2',
         background: '#EEF6FA',
         color: '#0F766E'
@@ -172,6 +221,8 @@ const PatientLogin = () => {
             Back to Tracker
           </button>
         </div>
+
+        <div id="recaptcha-container"></div>
       </div>
     </div>
   );
