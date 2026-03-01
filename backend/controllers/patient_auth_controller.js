@@ -7,24 +7,42 @@ const MedicalRecord = require('../models/MedicalRecord');
 // 🔑 TWILIO INITIALIZATION
 const twilio = require('twilio');
 const client = new twilio(
-    process.env.TWILIO_ACCOUNT_SID, 
+    process.env.TWILIO_ACCOUNT_SID,
     process.env.TWILIO_AUTH_TOKEN
 );
 
+const isMongoUnavailableError = (error) => {
+    const message = (error && error.message) ? error.message : '';
+    return /whitelist|IP that isn't whitelisted|not authorized|server selection|timed out|ECONNREFUSED|ENOTFOUND/i.test(message);
+};
+
+const isTwilioTrialRestriction = (error) => {
+    const message = (error && error.message) ? error.message : '';
+    const code = error && error.code;
+    return code === 21608 || /trial accounts cannot send messages to unverified numbers|is unverified/i.test(message);
+};
+
 // Temporary store for OTPs (In production, use Redis)
-let otpStore = {}; 
+let otpStore = {};
 
 /**
  * 1️⃣ SEND OTP (Real SMS via Twilio)
  */
 exports.sendOTP = async (req, res) => {
     try {
-        let { phone } = req.body; 
+        let { phone } = req.body;
         if (!phone) return res.status(400).json({ message: "Phone number is required" });
 
-        const cleanPhone = phone.replace(/\D/g, '').slice(-10); 
+        if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+            return res.status(500).json({
+                success: false,
+                message: "OTP service is not configured. Please contact support."
+            });
+        }
+
+        const cleanPhone = phone.replace(/\D/g, '').slice(-10);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        
+
         // Store with 5-minute expiry
         otpStore[cleanPhone] = { otp, expires: Date.now() + 300000 };
 
@@ -45,19 +63,23 @@ exports.sendOTP = async (req, res) => {
             console.log("-----------------------------------------");
             */
 
-            res.status(200).json({ 
-                success: true, 
-                message: "OTP sent successfully to your mobile." 
+            res.status(200).json({
+                success: true,
+                message: "OTP sent successfully to your mobile."
             });
 
         } catch (smsError) {
             console.error("❌ Twilio Error:", smsError.message);
-            // Fallback for developers if SMS fails (optional: remove in final prod)
-            console.log(`Fallback OTP for ${cleanPhone}: ${otp}`);
-            
-            res.status(500).json({ 
-                success: false, 
-                message: "Failed to send SMS. Please check the phone number." 
+            if (isTwilioTrialRestriction(smsError)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "This number is not verified in your Twilio trial account. Verify it in Twilio, or upgrade your Twilio account."
+                });
+            }
+
+            return res.status(502).json({
+                success: false,
+                message: "Failed to send OTP. Please try again in a moment."
             });
         }
 
@@ -72,7 +94,7 @@ exports.sendOTP = async (req, res) => {
 exports.verifyOTPForCheckin = async (req, res) => {
     try {
         let { phone, otp } = req.body;
-        const cleanPhone = phone.replace(/\D/g, '').slice(-10); 
+        const cleanPhone = phone.replace(/\D/g, '').slice(-10);
         const record = otpStore[cleanPhone];
 
         if (!record || record.otp !== otp || record.expires < Date.now()) {
@@ -109,7 +131,7 @@ exports.requestCheckIn = async (req, res) => {
             patientPhone: cleanPhone,
             visitType: visitType || 'Walk-in',
             status: 'Pending-Approval',
-            isApproved: false 
+            isApproved: false
         });
 
         if (req.io) {
@@ -140,7 +162,7 @@ exports.verifyLockerOTP = async (req, res) => {
             return res.status(400).json({ message: "Phone and OTP are required" });
         }
 
-        const cleanPhone = phone.replace(/\D/g, '').slice(-10); 
+        const cleanPhone = phone.replace(/\D/g, '').slice(-10);
         const record = otpStore[cleanPhone];
 
         if (!record || record.otp !== otp || record.expires < Date.now()) {
@@ -148,28 +170,28 @@ exports.verifyLockerOTP = async (req, res) => {
         }
 
         delete otpStore[cleanPhone];
-        
+
         const phoneRegex = new RegExp(cleanPhone + '$');
-        
+
         const [lockerPatient, medicalHistory] = await Promise.all([
             Patient.findOne({ phone: phoneRegex }),
             MedicalRecord.findOne({ patientPhone: phoneRegex })
         ]);
 
         if (!lockerPatient && !medicalHistory) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: "No health records found for this number." 
+                message: "No health records found for this number."
             });
         }
 
         const userId = lockerPatient?._id || medicalHistory?._id;
         const userName = lockerPatient?.name || medicalHistory?.patientName || "Valued Patient";
 
-        const token = generateToken({ 
-            id: userId.toString(), 
+        const token = generateToken({
+            id: userId.toString(),
             phone: cleanPhone,
-            role: 'patient' 
+            role: 'patient'
         });
 
         /* --- CONSOLE LOG COMMENTED OUT ---
@@ -179,13 +201,20 @@ exports.verifyLockerOTP = async (req, res) => {
         res.status(200).json({
             success: true,
             token,
-            patient: { 
-                name: userName, 
-                phone: cleanPhone 
+            patient: {
+                name: userName,
+                phone: cleanPhone
             }
         });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" });
+        if (isMongoUnavailableError(error)) {
+            return res.status(503).json({
+                success: false,
+                message: "Database is temporarily unavailable. Please try again shortly."
+            });
+        }
+
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -218,16 +247,16 @@ exports.getPublicQueueStatus = async (req, res) => {
         });
 
         res.status(200).json({
-          success: true,
-          data: {
-            patientName: entry.patientName,
-            tokenNumber: entry.tokenNumber,
-            status: entry.status,
-            clinicName: entry.clinicId.name,
-            peopleAhead,
-            estimatedWait: (peopleAhead * 12), 
-            isDoctorOnBreak: !entry.doctorId.isAvailable
-          }
+            success: true,
+            data: {
+                patientName: entry.patientName,
+                tokenNumber: entry.tokenNumber,
+                status: entry.status,
+                clinicName: entry.clinicId.name,
+                peopleAhead,
+                estimatedWait: (peopleAhead * 12),
+                isDoctorOnBreak: !entry.doctorId.isAvailable
+            }
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
