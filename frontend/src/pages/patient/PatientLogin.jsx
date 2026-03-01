@@ -8,6 +8,7 @@ import { firebaseAuth, isFirebaseConfigured } from '../../config/firebase';
 import { API_BASE_URL } from '../../config/runtime';
 
 const RECAPTCHA_CONTAINER_ID = 'recaptcha-container-login';
+const useFirebaseOtp = String(import.meta.env.VITE_USE_FIREBASE_OTP || '').toLowerCase() === 'true';
 
 const PatientLogin = () => {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ const PatientLogin = () => {
         return;
       }
 
-      if (isFirebaseConfigured) {
+      if (useFirebaseOtp && isFirebaseConfigured) {
         try {
           const verifier = ensureRecaptcha();
           const confirmation = await signInWithPhoneNumber(firebaseAuth, `+91${cleanPhone}`, verifier);
