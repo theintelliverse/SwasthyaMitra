@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -6,6 +6,8 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { ShieldCheck, Lock, Smartphone, ArrowRight, RefreshCw } from 'lucide-react';
 import { firebaseAuth, isFirebaseConfigured } from '../../config/firebase';
 import { API_BASE_URL } from '../../config/runtime';
+
+const RECAPTCHA_CONTAINER_ID = 'recaptcha-container-login';
 
 const PatientLogin = () => {
   const navigate = useNavigate();
@@ -42,14 +44,32 @@ const PatientLogin = () => {
       throw new Error('Firebase authentication is not configured for this deployment.');
     }
 
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
-        size: 'invisible'
-      });
+    if (window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier.clear();
+      } catch {
+      }
+      window.recaptchaVerifier = null;
     }
+
+    window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, RECAPTCHA_CONTAINER_ID, {
+      size: 'invisible'
+    });
 
     return window.recaptchaVerifier;
   };
+
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch {
+        }
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, []);
 
   // Step 1: Request OTP
   const handleSendOTP = async (e) => {
@@ -231,7 +251,7 @@ const PatientLogin = () => {
           </button>
         </div>
 
-        <div id="recaptcha-container"></div>
+        <div id={RECAPTCHA_CONTAINER_ID}></div>
       </div>
     </div>
   );
