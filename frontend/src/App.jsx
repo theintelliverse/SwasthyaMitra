@@ -25,6 +25,9 @@ import PatientDashboard from './pages/patient/PatientDashboard';
 import LockerSearch from './pages/doctor/LockerSearch';
 // Shared Pages
 import MedicalHistory from './pages/shared/MedicalHistory';
+import Privacy from './pages/shared/Privacy';
+import Terms from './pages/shared/Terms';
+import Contact from './pages/shared/Contact';
 
 // Import Security Guard
 import ProtectedRoute from './components/ProtectedRoute';
@@ -38,6 +41,9 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register-clinic" element={<RegisterClinic />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
 
           {/* --- 📱 Patient Routes (QR & OTP) --- */}
           <Route path="/patient/checkin" element={<PatientCheckIn />} />

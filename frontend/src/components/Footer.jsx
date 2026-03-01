@@ -1,10 +1,11 @@
 import React from 'react';
-const API_URL = import.meta.env.VITE_API_URL;
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="w-full bg-white border-t border-sandstone py-8 mt-auto">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        
+
         {/* Logo & Creator */}
         <div className="flex flex-col items-center md:items-start gap-2">
           <div className="flex items-center gap-2">
@@ -30,9 +31,9 @@ const Footer = () => {
 
         {/* Links */}
         <div className="flex gap-6 text-[10px] font-black uppercase tracking-widest text-teak">
-          <a href="#" className="hover:text-marigold transition-colors">Privacy</a>
-          <a href="#" className="hover:text-marigold transition-colors">Terms</a>
-          <a href="#" className="hover:text-marigold transition-colors">Support</a>
+          <Link to="/privacy" className="hover:text-marigold transition-colors">Privacy</Link>
+          <Link to="/terms" className="hover:text-marigold transition-colors">Terms</Link>
+          <Link to="/contact" className="hover:text-marigold transition-colors">Contact</Link>
         </div>
 
       </div>

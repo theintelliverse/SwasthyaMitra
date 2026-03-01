@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const LandingPage = () => {
           >
             How it works
           </a>
-          <button 
+          <button
             onClick={() => navigate('/login')}
             className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-marigold transition-all shadow-md active:scale-95"
           >
@@ -54,24 +54,24 @@ const LandingPage = () => {
           </h2>
 
           <p className="text-lg text-khaki max-w-lg leading-relaxed font-medium">
-            Automated queues, WhatsApp status alerts, and your own 
-            <span className="text-teak font-bold"> Secure Health Locker</span>. 
+            Automated queues, WhatsApp status alerts, and your own
+            <span className="text-teak font-bold"> Secure Health Locker</span>.
             Digital healthcare that respects your time.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             {/* REMOVED: Join Queue Button */}
-            
+
             {/* PRIMARY CTA: STAFF LOGIN */}
-            <button 
+            <button
               onClick={() => navigate('/login')}
               className="px-8 py-4 bg-marigold text-white rounded-2xl font-bold text-lg shadow-xl shadow-marigold/30 hover:-translate-y-1 transition-all active:scale-95"
             >
               Staff Dashboard
             </button>
-            
+
             {/* SECONDARY CTA: PATIENT HISTORY LOCKER */}
-            <button 
+            <button
               onClick={() => navigate('/patient/login')}
               className="px-8 py-4 bg-white border-2 border-sandstone rounded-2xl font-bold text-lg hover:border-marigold transition-all"
             >
@@ -81,7 +81,7 @@ const LandingPage = () => {
 
           <p className="text-sm font-medium text-khaki">
             Are you a clinic owner?{' '}
-            <button 
+            <button
               onClick={() => navigate('/register-clinic')}
               className="text-marigold font-bold hover:underline underline-offset-4"
             >
@@ -128,17 +128,15 @@ const LandingPage = () => {
               ].map((p, i) => (
                 <div
                   key={i}
-                  className={`p-5 rounded-3xl border transition-all ${
-                    p.active
+                  className={`p-5 rounded-3xl border transition-all ${p.active
                       ? 'bg-parchment border-marigold'
                       : 'bg-white border-sandstone opacity-60'
-                  } flex justify-between items-center`}
+                    } flex justify-between items-center`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        p.active ? 'bg-marigold animate-pulse' : 'bg-sandstone'
-                      }`}
+                      className={`w-2 h-2 rounded-full ${p.active ? 'bg-marigold animate-pulse' : 'bg-sandstone'
+                        }`}
                     ></div>
                     <p className={`font-bold ${p.active ? 'text-teak' : 'text-khaki'}`}>
                       {p.name}
@@ -178,7 +176,7 @@ const LandingPage = () => {
             </div>
             <h4 className="font-heading text-xl">QR-Based Check-in</h4>
             <p className="text-sm text-khaki leading-relaxed font-medium">
-              Patients scan a unique QR code at the clinic to instantly join the queue. 
+              Patients scan a unique QR code at the clinic to instantly join the queue.
               Secure, contactless, and incredibly fast.
             </p>
           </div>
@@ -189,7 +187,7 @@ const LandingPage = () => {
             </div>
             <h4 className="font-heading text-xl">Digital Health Locker</h4>
             <p className="text-sm text-khaki leading-relaxed font-medium">
-              Access prescriptions, lab reports, and your history anytime with 
+              Access prescriptions, lab reports, and your history anytime with
               secure OTP-based login directly from this portal.
             </p>
           </div>
@@ -200,7 +198,7 @@ const LandingPage = () => {
             </div>
             <h4 className="font-heading text-xl">Unified Dashboard</h4>
             <p className="text-sm text-khaki leading-relaxed font-medium">
-              A single platform for Doctors, Receptionists, and Lab staff to 
+              A single platform for Doctors, Receptionists, and Lab staff to
               collaborate and provide seamless patient care.
             </p>
           </div>
@@ -210,15 +208,15 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-marigold rounded flex items-center justify-center text-white font-heading text-xs">S</div>
-            <p className="text-[10px] font-black text-khaki uppercase tracking-widest">
+          <div className="w-6 h-6 bg-marigold rounded flex items-center justify-center text-white font-heading text-xs">S</div>
+          <p className="text-[10px] font-black text-khaki uppercase tracking-widest">
             © 2026 Swasthya-Mitra — Built for Bharat
-            </p>
+          </p>
         </div>
         <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-teak">
-          <a href="#" className="hover:text-marigold transition-colors">Privacy</a>
-          <a href="#" className="hover:text-marigold transition-colors">Terms</a>
-          <a href="#" className="hover:text-marigold transition-colors">Contact</a>
+          <Link to="/privacy" className="hover:text-marigold transition-colors">Privacy</Link>
+          <Link to="/terms" className="hover:text-marigold transition-colors">Terms</Link>
+          <Link to="/contact" className="hover:text-marigold transition-colors">Contact</Link>
         </div>
       </footer>
     </div>
