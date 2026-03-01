@@ -59,86 +59,93 @@ const Contact = () => {
                 </Link>
             </nav>
 
-            <main className="max-w-4xl mx-auto w-full px-6 py-12 flex-1">
-                <div className="bg-white border border-sandstone rounded-3xl p-8 md:p-10 shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">Support</p>
-                    <h2 className="font-heading text-4xl mb-2">Contact Us</h2>
-                    <p className="text-khaki font-medium mb-8">
-                        Send your query and our team will get back to you on email.
-                    </p>
+            <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1">
+                <div
+                    className="relative overflow-hidden rounded-3xl border border-sandstone/50 shadow-sm p-8 md:p-10"
+                    style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=80')", backgroundSize: 'cover', backgroundPosition: 'center 30%' }}
+                >
+                    <div className="absolute inset-0 bg-teak/40"></div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid md:grid-cols-2 gap-5">
+                    <div className="relative bg-transparent border border-sandstone/80 rounded-3xl p-6 md:p-8 backdrop-blur-md">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-parchment mb-2">Support</p>
+                        <h2 className="font-heading text-4xl mb-2 text-parchment">Contact Us</h2>
+                        <p className="text-parchment font-medium mb-8">
+                            Send your query and our team will get back to you on email.
+                        </p>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="grid md:grid-cols-2 gap-5">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-parchment">Full Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full border border-sandstone/80 rounded-xl px-4 py-3 outline-none focus:border-marigold bg-transparent text-parchment placeholder:text-sandstone/80"
+                                        placeholder="Enter your full name"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-parchment">Email Address</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full border border-sandstone/80 rounded-xl px-4 py-3 outline-none focus:border-marigold bg-transparent text-parchment placeholder:text-sandstone/80"
+                                        placeholder="Enter your email"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-khaki">Full Name</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-parchment">Subject</label>
                                 <input
                                     type="text"
-                                    name="name"
-                                    value={formData.name}
+                                    name="subject"
+                                    value={formData.subject}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-sandstone rounded-xl px-4 py-3 outline-none focus:border-marigold bg-parchment/40"
-                                    placeholder="Enter your full name"
+                                    className="w-full border border-sandstone/80 rounded-xl px-4 py-3 outline-none focus:border-marigold bg-transparent text-parchment placeholder:text-sandstone/80"
+                                    placeholder="Enter the subject"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-khaki">Email Address</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
+                                <label className="text-[10px] font-black uppercase tracking-widest text-parchment">Message</label>
+                                <textarea
+                                    name="message"
+                                    rows="6"
+                                    value={formData.message}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-sandstone rounded-xl px-4 py-3 outline-none focus:border-marigold bg-parchment/40"
-                                    placeholder="Enter your email"
+                                    className="w-full border border-sandstone/80 rounded-xl px-4 py-3 outline-none focus:border-marigold bg-transparent text-parchment placeholder:text-sandstone/80 resize-none"
+                                    placeholder="Write your message"
                                 />
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-khaki">Subject</label>
-                            <input
-                                type="text"
-                                name="subject"
-                                value={formData.subject}
-                                onChange={handleChange}
-                                required
-                                className="w-full border border-sandstone rounded-xl px-4 py-3 outline-none focus:border-marigold bg-parchment/40"
-                                placeholder="Enter the subject"
-                            />
-                        </div>
+                            {feedback.text && (
+                                <div
+                                    className={`rounded-xl px-4 py-3 text-sm font-semibold ${feedback.type === 'success' ? 'bg-transparent text-parchment border border-marigold/80' : 'bg-transparent text-red-100 border border-red-300/90'
+                                        }`}
+                                >
+                                    {feedback.text}
+                                </div>
+                            )}
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-khaki">Message</label>
-                            <textarea
-                                name="message"
-                                rows="6"
-                                value={formData.message}
-                                onChange={handleChange}
-                                required
-                                className="w-full border border-sandstone rounded-xl px-4 py-3 outline-none focus:border-marigold bg-parchment/40 resize-none"
-                                placeholder="Write your message"
-                            />
-                        </div>
-
-                        {feedback.text && (
-                            <div
-                                className={`rounded-xl px-4 py-3 text-sm font-semibold ${feedback.type === 'success' ? 'bg-teak/10 text-teak' : 'bg-red-50 text-red-700'
-                                    }`}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="px-8 py-3 bg-transparent border border-marigold text-parchment rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-marigold/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {feedback.text}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-8 py-3 bg-marigold text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teak transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Sending...' : 'Send Message'}
-                        </button>
-                    </form>
+                                {loading ? 'Sending...' : 'Send Message'}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </main>
 
