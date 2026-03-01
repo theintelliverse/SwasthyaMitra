@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/</loc>
+    <loc>https://swasthya-mitra.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>/login</loc>
+    <loc>https://swasthya-mitra.vercel.app/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/register-clinic</loc>
+    <loc>https://swasthya-mitra.vercel.app/register-clinic</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/patient/login</loc>
+    <loc>https://swasthya-mitra.vercel.app/patient/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/patient/checkin</loc>
+    <loc>https://swasthya-mitra.vercel.app/patient/checkin</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/patient/status</loc>
+    <loc>https://swasthya-mitra.vercel.app/patient/status</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
