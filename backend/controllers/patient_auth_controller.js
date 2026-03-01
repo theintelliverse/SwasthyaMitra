@@ -3,6 +3,7 @@ const Queue = require("../models/Queue");
 const User = require("../models/User");
 const { generateToken } = require('../utils/auth_helper');
 const MedicalRecord = require('../models/MedicalRecord');
+const { getFirebaseAuth } = require('../utils/firebase_admin');
 
 // 🔑 TWILIO INITIALIZATION
 const twilio = require('twilio');
@@ -22,8 +23,100 @@ const isTwilioTrialRestriction = (error) => {
     return code === 21608 || /trial accounts cannot send messages to unverified numbers|is unverified/i.test(message);
 };
 
+const normalizeIndianPhone = (value) => {
+    if (!value || typeof value !== 'string') {
+        return null;
+    }
+
+    const digits = value.replace(/\D/g, '');
+    if (digits.length < 10) {
+        return null;
+    }
+
+    return digits.slice(-10);
+};
+
 // Temporary store for OTPs (In production, use Redis)
 let otpStore = {};
+
+/**
+ * ✅ FIREBASE LOGIN
+ * @route POST /api/patient/firebase-login
+ */
+exports.firebaseLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body;
+
+        if (!idToken || typeof idToken !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: 'Firebase ID token is required.'
+            });
+        }
+
+        const auth = getFirebaseAuth();
+        const decoded = await auth.verifyIdToken(idToken, true);
+
+        const normalizedPhone = normalizeIndianPhone(decoded.phone_number);
+        if (!normalizedPhone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Phone number is missing or invalid in Firebase token.'
+            });
+        }
+
+        let patient = await Patient.findOne({ phone: normalizedPhone });
+
+        if (!patient) {
+            patient = await Patient.create({
+                name: decoded.name || 'Valued Patient',
+                phone: normalizedPhone
+            });
+        }
+
+        const token = generateToken({
+            id: patient._id,
+            role: 'patient',
+            phone: normalizedPhone
+        });
+
+        return res.status(200).json({
+            success: true,
+            token,
+            patient: {
+                id: patient._id,
+                name: patient.name,
+                phone: patient.phone
+            }
+        });
+    } catch (error) {
+        if (/Firebase Admin is not configured/i.test(error.message || '')) {
+            return res.status(500).json({
+                success: false,
+                message: 'Firebase server configuration is missing.'
+            });
+        }
+
+        if (/auth\/|Firebase ID token/i.test(error.message || '')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired Firebase token.'
+            });
+        }
+
+        if (isMongoUnavailableError(error)) {
+            return res.status(503).json({
+                success: false,
+                message: 'Database is temporarily unavailable. Please try again shortly.'
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
 
 /**
  * 1️⃣ SEND OTP (Real SMS via Twilio)

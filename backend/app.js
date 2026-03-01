@@ -5,6 +5,7 @@ const { Server } = require('socket.io'); // 🔑 Required for WebSockets
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth_routes');
+const patientAuthRoutes = require('./routes/patient_auth_routes');
 const staffRoutes = require('./routes/staff_routes');
 const queueRoutes = require('./routes/queue_routes');
 const clinicroutes = require('./routes/clinic_routes');
@@ -166,6 +167,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/patient', patientAuthRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/queue', queueRoutes);
 app.use('/api/clinic', clinicroutes);
