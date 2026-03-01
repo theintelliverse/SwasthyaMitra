@@ -112,7 +112,9 @@ const Privacy = () => {
                 <div className="bg-white border border-sandstone rounded-3xl p-8 md:p-10 shadow-sm space-y-8">
                     <div className="rounded-2xl bg-parchment border border-sandstone/70 p-6 md:p-8">
                         <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">Legal</p>
-                        <h2 className="font-heading text-4xl md:text-5xl mb-3">Privacy Policy</h2>
+                        <h2 className="font-heading text-4xl md:text-5xl leading-tight italic mb-3">
+                            Privacy <span className="text-marigold not-italic">Policy</span>
+                        </h2>
                         <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
                             Your data is handled with care to support secure, fast, and reliable healthcare workflows.
                         </p>

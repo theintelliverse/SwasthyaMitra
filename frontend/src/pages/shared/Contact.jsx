@@ -68,7 +68,9 @@ const Contact = () => {
 
                     <div className="relative bg-transparent border border-parchment/90 rounded-3xl p-6 md:p-8 backdrop-blur-lg shadow-2xl shadow-teak/40">
                         <p className="text-[10px] font-black uppercase tracking-widest text-parchment mb-2">Support</p>
-                        <h2 className="font-heading text-4xl mb-2 text-parchment drop-shadow-sm">Contact Us</h2>
+                        <h2 className="font-heading text-4xl leading-tight italic mb-2 text-parchment drop-shadow-sm">
+                            Contact <span className="text-marigold not-italic">Us</span>
+                        </h2>
                         <p className="text-parchment font-medium mb-8">
                             Send your query and our team will get back to you on email.
                         </p>

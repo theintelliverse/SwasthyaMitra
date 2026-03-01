@@ -112,7 +112,9 @@ const Terms = () => {
                 <div className="bg-white border border-sandstone rounded-3xl p-8 md:p-10 shadow-sm space-y-8">
                     <div className="rounded-2xl bg-parchment border border-sandstone/70 p-6 md:p-8">
                         <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">Legal</p>
-                        <h2 className="font-heading text-4xl md:text-5xl mb-3">Terms of Service</h2>
+                        <h2 className="font-heading text-4xl md:text-5xl leading-tight italic mb-3">
+                            Terms of <span className="text-marigold not-italic">Service</span>
+                        </h2>
                         <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
                             These terms define expected usage, responsibilities, and service behavior for all platform users.
                         </p>
