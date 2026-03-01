@@ -2,12 +2,12 @@
 
 /* Theme tokens */
 @theme {
-  --color-parchment: #F1F7FA;
-  --color-teak: #167C70;
-  --color-khaki: #4FA88E;
-  --color-marigold: #256FAE;
-  --color-saffron: #1D4E89;
-  --color-sandstone: #B8CADC;
+  --color-parchment: #EEF6FA;
+  --color-teak: #0F766E;
+  --color-khaki: #3FA28C;
+  --color-marigold: #1F6FB2;
+  --color-saffron: #1A4F8A;
+  --color-sandstone: #AFC4D8;
 
   --font-heading: "Asimovian", sans-serif;
   --font-body: "Montserrat", sans-serif;
