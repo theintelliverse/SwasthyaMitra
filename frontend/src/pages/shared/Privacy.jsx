@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 
@@ -39,7 +39,28 @@ const Privacy = () => {
         []
     );
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
     const activeImage = privacyImages[activeImageIndex];
+
+    useEffect(() => {
+        if (isHovered) {
+            return undefined;
+        }
+
+        const timer = setInterval(() => {
+            setActiveImageIndex((prev) => (prev + 1) % privacyImages.length);
+        }, 4500);
+
+        return () => clearInterval(timer);
+    }, [isHovered, privacyImages.length]);
+
+    const handleNextImage = () => {
+        setActiveImageIndex((prev) => (prev + 1) % privacyImages.length);
+    };
+
+    const handlePreviousImage = () => {
+        setActiveImageIndex((prev) => (prev - 1 + privacyImages.length) % privacyImages.length);
+    };
 
     const sections = [
         {
@@ -86,7 +107,11 @@ const Privacy = () => {
                         </p>
                     </div>
 
-                    <div className="relative overflow-hidden rounded-2xl border border-sandstone/70 h-56 md:h-72">
+                    <div
+                        className="relative overflow-hidden rounded-2xl border border-sandstone/70 h-56 md:h-72"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
                         <img
                             src={activeImage.src}
                             alt={activeImage.alt}
@@ -109,6 +134,36 @@ const Privacy = () => {
                         <p className="absolute bottom-4 left-4 right-4 text-white text-xs md:text-sm font-black uppercase tracking-widest">
                             {activeImage.caption}
                         </p>
+
+                        <button
+                            type="button"
+                            onClick={handlePreviousImage}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-lg font-black"
+                            aria-label="Show previous image"
+                        >
+                            ‹
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleNextImage}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-lg font-black"
+                            aria-label="Show next image"
+                        >
+                            ›
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2">
+                        {privacyImages.map((image, index) => (
+                            <button
+                                key={`${image.title}-dot`}
+                                type="button"
+                                onClick={() => setActiveImageIndex(index)}
+                                className={`h-2.5 rounded-full transition-all ${activeImageIndex === index ? 'w-8 bg-marigold' : 'w-2.5 bg-sandstone hover:bg-khaki'
+                                    }`}
+                                aria-label={`Go to ${image.title}`}
+                            ></button>
+                        ))}
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
