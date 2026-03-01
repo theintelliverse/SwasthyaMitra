@@ -48,7 +48,8 @@ const PatientLogin = () => {
       code.includes('auth/billing-not-enabled') ||
       code.includes('auth/configuration-not-found') ||
       code.includes('auth/operation-not-allowed') ||
-      code.includes('auth/unauthorized-domain')
+      code.includes('auth/unauthorized-domain') ||
+      code.includes('auth/too-many-requests')
     );
   };
 
