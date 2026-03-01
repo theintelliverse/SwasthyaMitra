@@ -2,7 +2,8 @@ const twilio = require('twilio');
 
 const sendWhatsApp = async (phone, message) => {
     try {
-        const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+        const accountSid = process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_SID;
+        const client = twilio(accountSid, process.env.TWILIO_AUTH_TOKEN);
 
         // Twilio requires numbers in E.164 format (e.g., +91...)
         // We ensure it starts with '+'
