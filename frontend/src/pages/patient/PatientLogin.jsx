@@ -4,7 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { ShieldCheck, Lock, Smartphone, ArrowRight, RefreshCw } from 'lucide-react';
-import { firebaseAuth } from '../../config/firebase';
+import { firebaseAuth, isFirebaseConfigured } from '../../config/firebase';
 import { API_BASE_URL } from '../../config/runtime';
 
 const PatientLogin = () => {
@@ -38,6 +38,10 @@ const PatientLogin = () => {
   };
 
   const ensureRecaptcha = () => {
+    if (!firebaseAuth) {
+      throw new Error('Firebase authentication is not configured for this deployment.');
+    }
+
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
         size: 'invisible'
@@ -53,6 +57,11 @@ const PatientLogin = () => {
     setLoading(true);
 
     try {
+      if (!isFirebaseConfigured) {
+        Swal.fire('Error', 'Firebase OTP is not configured. Please contact support.', 'error');
+        return;
+      }
+
       const cleanPhone = normalizePhone(formData.phone);
       if (!cleanPhone) {
         Swal.fire('Error', 'Please enter a valid 10-digit mobile number.', 'error');

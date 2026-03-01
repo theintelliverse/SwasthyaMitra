@@ -9,5 +9,23 @@ const firebaseConfig = {
     messagingSenderId: import.meta.env.VITE_FB_MESSAGING_SENDER_ID
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth = getAuth(firebaseApp);
+const hasRequiredFirebaseConfig = Boolean(
+    firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId
+);
+
+let firebaseAuth = null;
+
+if (hasRequiredFirebaseConfig) {
+    try {
+        const firebaseApp = initializeApp(firebaseConfig);
+        firebaseAuth = getAuth(firebaseApp);
+    } catch {
+        firebaseAuth = null;
+    }
+}
+
+export const isFirebaseConfigured = hasRequiredFirebaseConfig && Boolean(firebaseAuth);
+export { firebaseAuth };
