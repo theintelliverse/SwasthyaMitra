@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { ShieldCheck, Lock, Smartphone, ArrowRight, RefreshCw } from 'lucide-react';
-import { firebaseAuth, isFirebaseConfigured } from '../../config/firebase';
 import { API_BASE_URL } from '../../config/runtime';
-
-const RECAPTCHA_CONTAINER_ID = 'recaptcha-container-login';
-const useFirebaseOtp = String(import.meta.env.VITE_USE_FIREBASE_OTP || '').toLowerCase() === 'true';
 
 const PatientLogin = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Phone, 2: OTP
   const [loading, setLoading] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const [otpProvider, setOtpProvider] = useState('firebase');
   const [formData, setFormData] = useState({
     phone: '',
     otp: ''
@@ -25,33 +18,6 @@ const PatientLogin = () => {
     const digits = (value || '').replace(/\D/g, '');
     if (digits.length < 10) return null;
     return digits.slice(-10);
-  };
-
-  const getReadableFirebaseError = (error) => {
-    const code = error?.code || '';
-
-    if (code.includes('auth/invalid-phone-number')) return 'Invalid phone number format.';
-    if (code.includes('auth/too-many-requests')) return 'Too many attempts. Please try again later.';
-    if (code.includes('auth/operation-not-allowed')) return 'Phone authentication is not enabled in Firebase.';
-    if (code.includes('auth/unauthorized-domain')) return 'Current domain is not authorized in Firebase Authentication.';
-    if (code.includes('auth/captcha-check-failed')) return 'Captcha verification failed. Please retry.';
-    if (code.includes('auth/invalid-verification-code')) return 'Invalid OTP. Please check and try again.';
-    if (code.includes('auth/code-expired')) return 'OTP expired. Please request a new OTP.';
-    if (code.includes('auth/billing-not-enabled')) return 'Firebase Phone Auth billing is not enabled. Switching to backup OTP service.';
-    if (code.includes('auth/configuration-not-found')) return 'Firebase Phone Auth is not fully configured. Switching to backup OTP service.';
-
-    return error?.message || 'Authentication failed. Please try again.';
-  };
-
-  const shouldFallbackToBackendOtp = (error) => {
-    const code = error?.code || '';
-    return (
-      code.includes('auth/billing-not-enabled') ||
-      code.includes('auth/configuration-not-found') ||
-      code.includes('auth/operation-not-allowed') ||
-      code.includes('auth/unauthorized-domain') ||
-      code.includes('auth/too-many-requests')
-    );
   };
 
   const backendSendOtp = async (cleanPhone) => {
@@ -83,38 +49,6 @@ const PatientLogin = () => {
     navigate('/patient/dashboard');
   };
 
-  const ensureRecaptcha = () => {
-    if (!firebaseAuth) {
-      throw new Error('Firebase authentication is not configured for this deployment.');
-    }
-
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch {
-      }
-      window.recaptchaVerifier = null;
-    }
-
-    window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, RECAPTCHA_CONTAINER_ID, {
-      size: 'invisible'
-    });
-
-    return window.recaptchaVerifier;
-  };
-
-  useEffect(() => {
-    return () => {
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch {
-        }
-        window.recaptchaVerifier = null;
-      }
-    };
-  }, []);
-
   // Step 1: Request OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
@@ -127,38 +61,7 @@ const PatientLogin = () => {
         return;
       }
 
-      if (useFirebaseOtp && isFirebaseConfigured) {
-        try {
-          const verifier = ensureRecaptcha();
-          const confirmation = await signInWithPhoneNumber(firebaseAuth, `+91${cleanPhone}`, verifier);
-
-          setConfirmationResult(confirmation);
-          setOtpProvider('firebase');
-          setFormData((prev) => ({ ...prev, phone: cleanPhone }));
-          setStep(2);
-
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: 'OTP sent successfully',
-            showConfirmButton: false,
-            timer: 3000,
-            background: '#EEF6FA',
-            color: '#0F766E'
-          });
-
-          return;
-        } catch (firebaseError) {
-          if (!shouldFallbackToBackendOtp(firebaseError)) {
-            throw firebaseError;
-          }
-        }
-      }
-
       await backendSendOtp(cleanPhone);
-      setConfirmationResult(null);
-      setOtpProvider('backend');
       setFormData((prev) => ({ ...prev, phone: cleanPhone }));
       setStep(2);
 
@@ -173,38 +76,23 @@ const PatientLogin = () => {
         color: '#0F766E'
       });
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || getReadableFirebaseError(err), 'error');
+      Swal.fire('Error', err.response?.data?.message || err.message || 'Failed to send OTP. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify OTP via Firebase and exchange ID token with backend
+  // Step 2: Verify OTP via backend
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let res;
-
-      if (otpProvider === 'firebase') {
-        if (!confirmationResult) {
-          Swal.fire('Error', 'Session expired. Please request OTP again.', 'error');
-          setStep(1);
-          return;
-        }
-
-        const credential = await confirmationResult.confirm(formData.otp);
-        const idToken = await credential.user.getIdToken(true);
-        const apiUrl = `${API_BASE_URL}/api/patient/firebase-login`;
-        res = await axios.post(apiUrl, { idToken });
-      } else {
-        const apiUrl = `${API_BASE_URL}/api/auth/patient/verify-locker`;
-        res = await axios.post(apiUrl, {
-          phone: formData.phone,
-          otp: formData.otp
-        });
-      }
+      const apiUrl = `${API_BASE_URL}/api/auth/patient/verify-locker`;
+      const res = await axios.post(apiUrl, {
+        phone: formData.phone,
+        otp: formData.otp
+      });
 
       if (res.data.success) {
         completePatientSession(res.data, formData.phone);
@@ -214,7 +102,7 @@ const PatientLogin = () => {
       Swal.fire({
         icon: 'error',
         title: 'Access Denied',
-        text: err.response?.data?.message || getReadableFirebaseError(err),
+        text: err.response?.data?.message || err.message || 'OTP verification failed.',
         confirmButtonColor: '#1F6FB2',
         background: '#EEF6FA',
         color: '#0F766E'
@@ -308,7 +196,6 @@ const PatientLogin = () => {
           </button>
         </div>
 
-        <div id={RECAPTCHA_CONTAINER_ID}></div>
       </div>
     </div>
   );
