@@ -1,8 +1,46 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 
 const Terms = () => {
+    const termsImages = useMemo(
+        () => [
+            {
+                title: 'Transparency First',
+                caption: 'Clear terms help everyone use the platform responsibly',
+                alt: 'Reading terms and agreement documents',
+                src: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80'
+            },
+            {
+                title: 'Responsible Access',
+                caption: 'Account responsibilities protect clinics and patients equally',
+                alt: 'Healthcare admin reviewing policy checklist',
+                src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80'
+            },
+            {
+                title: 'Reliable Service',
+                caption: 'Planned updates and uptime care support safe daily operations',
+                alt: 'Team discussing operational service standards',
+                src: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80'
+            },
+            {
+                title: 'Clear Agreements',
+                caption: 'Well-defined policies make usage expectations easy to follow',
+                alt: 'Close-up of agreement pages and signatures',
+                src: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600&q=80'
+            },
+            {
+                title: 'Ethical Operations',
+                caption: 'Responsible conduct keeps healthcare collaboration trustworthy',
+                alt: 'Healthcare professionals discussing operations',
+                src: 'https://images.unsplash.com/photo-1571772996211-2f02c9727629?auto=format&fit=crop&w=1600&q=80'
+            }
+        ],
+        []
+    );
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const activeImage = termsImages[activeImageIndex];
+
     const sections = [
         {
             title: 'Platform Usage',
@@ -46,6 +84,54 @@ const Terms = () => {
                         <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
                             These terms define expected usage, responsibilities, and service behavior for all platform users.
                         </p>
+                    </div>
+
+                    <div className="relative overflow-hidden rounded-2xl border border-sandstone/70 h-56 md:h-72">
+                        <img
+                            src={activeImage.src}
+                            alt={activeImage.alt}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-teak/80 via-teak/35 to-transparent"></div>
+                        <div className="absolute top-4 left-4">
+                            <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                Terms Overview
+                            </span>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                            <div>
+                                <p className="text-white font-heading text-2xl md:text-3xl drop-shadow-lg">{activeImage.title}</p>
+                                <p className="text-white/90 text-xs md:text-sm font-semibold mt-1">Guidelines for safe and fair platform use</p>
+                            </div>
+                        </div>
+                        <p className="absolute bottom-4 left-4 right-4 text-white text-xs md:text-sm font-black uppercase tracking-widest">
+                            {activeImage.caption}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {termsImages.map((image, index) => (
+                            <button
+                                key={image.title}
+                                type="button"
+                                onClick={() => setActiveImageIndex(index)}
+                                className={`text-left rounded-2xl border p-3 transition-all ${activeImageIndex === index
+                                    ? 'border-marigold bg-marigold/10'
+                                    : 'border-sandstone/70 bg-parchment/50 hover:border-marigold/60'
+                                    }`}
+                            >
+                                <img
+                                    src={image.src}
+                                    alt={image.alt}
+                                    className="w-full h-16 object-cover rounded-xl mb-2"
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer"
+                                />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-teak">{image.title}</p>
+                            </button>
+                        ))}
                     </div>
 
                     <div className="grid gap-4">
