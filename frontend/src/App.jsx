@@ -19,9 +19,9 @@ import AdminReports from './pages/admin/AdminReports';
 // Patient Pages
 import PatientCheckIn from './pages/patient/PatientCheckIn';
 import PatientStatus from './pages/patient/PatientStatus';
-import PatientLogin from './pages/patient/PatientLogin'; 
+import PatientLogin from './pages/patient/PatientLogin';
 import HealthLocker from './pages/patient/HealthLocker';
-import PatientDashboard from './pages/patient/PatientDashboard'; 
+import PatientDashboard from './pages/patient/PatientDashboard';
 import LockerSearch from './pages/doctor/LockerSearch';
 // Shared Pages
 import MedicalHistory from './pages/shared/MedicalHistory';
@@ -32,7 +32,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 const App = () => {
   return (
     <Router>
-      <div className="min-h-screen bg-[#FFFBF5] font-body text-[#422D0B] selection:bg-[#FFA800] selection:text-white">
+      <div className="min-h-screen bg-parchment font-body text-teak selection:bg-marigold selection:text-white">
         <Routes>
           {/* --- 🌍 Public Routes --- */}
           <Route path="/" element={<LandingPage />} />
@@ -43,136 +43,136 @@ const App = () => {
           <Route path="/patient/checkin" element={<PatientCheckIn />} />
           <Route path="/patient/status" element={<PatientStatus />} />
           <Route path="/patient/login" element={<PatientLogin />} />
-          <Route 
-            path="/patient/dashboard" 
+          <Route
+            path="/patient/dashboard"
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <PatientDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          
+
           {/* --- 🔐 Protected Staff Routes --- */}
-          
+
           {/* Doctor Lane */}
-          <Route 
-            path="/doctor/dashboard" 
+          <Route
+            path="/doctor/dashboard"
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <DoctorDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/Patient/HealthLocker" 
+          <Route
+            path="/Patient/HealthLocker"
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <HealthLocker />
               </ProtectedRoute>
-            } 
+            }
           />
           {/* New: Sidebar search for health lockers */}
-          
 
-          <Route 
-            path="/doctor/locker-search" 
+
+          <Route
+            path="/doctor/locker-search"
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <LockerSearch />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="/display/:clinicCode" element={<ClinicTVDisplay />} />
-          <Route 
-            path="/doctor/records" 
+          <Route
+            path="/doctor/records"
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <MedicalHistory />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/Admin/reports" 
+          <Route
+            path="/Admin/reports"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminReports />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Lab Lane (Staff B) */}
-          <Route 
-            path="/lab/dashboard" 
+          <Route
+            path="/lab/dashboard"
             element={
               <ProtectedRoute allowedRoles={['lab']}>
                 <LabDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Receptionist Lane */}
-          <Route 
-            path="/receptionist/dashboard" 
+          <Route
+            path="/receptionist/dashboard"
             element={
               <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
                 <ReceptionDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Shared Profile Page */}
-          <Route 
-            path="/profile" 
+          <Route
+            path="/profile"
             element={
               <ProtectedRoute allowedRoles={['admin', 'doctor', 'receptionist', 'lab']}>
                 <ProfilePage />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* --- 🔐 Protected Admin Routes --- */}
           {/* Auto-redirect for /admin to /admin/dashboard */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          
-          <Route 
-            path="/admin/dashboard" 
+
+          <Route
+            path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard /> 
+                <AdminDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/analytics" 
+          <Route
+            path="/admin/analytics"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <ClinicAnalytics />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/staff-management" 
+          <Route
+            path="/admin/staff-management"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminStaffManagement />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/history" 
+          <Route
+            path="/admin/history"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <MedicalHistory />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/settings" 
+          <Route
+            path="/admin/settings"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <ClinicSettings />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* --- 🚫 Error & Catch-all Routes --- */}
