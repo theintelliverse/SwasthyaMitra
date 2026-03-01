@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client'; // 🔑 Added Socket Client
-import { 
-  Archive, RefreshCw, UserPlus, Search, Users, 
+import { SOCKET_URL } from '../../config/runtime'; // Importing runtime socket URL
+import {
+  Archive, RefreshCw, UserPlus, Search, Users,
   ShieldCheck, Activity, UserCheck, History, AlertCircle
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 const API_URL = import.meta.env.VITE_API_URL;
 // Initialize socket
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const AdminStaffManagement = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const AdminStaffManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeView, setActiveView] = useState('active'); // 'active' or 'archived'
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -127,8 +128,8 @@ const AdminStaffManagement = () => {
   };
 
   const filteredStaff = staffList.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         s.role.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.role.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = activeView === 'active' ? s.isActive !== false : s.isActive === false;
     return matchesSearch && matchesStatus;
   });
@@ -139,16 +140,16 @@ const AdminStaffManagement = () => {
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         <main className="p-8 lg:p-12 max-w-7xl mx-auto w-full flex-grow">
-          
+
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div>
               <h1 className="text-5xl font-heading mb-2">Staff Roster</h1>
               <div className="flex gap-4 mt-4">
-                 <button onClick={() => setActiveView('active')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-[#422D0B] text-white shadow-lg' : 'bg-white border border-[#E8DDCB] text-[#967A53]'}`}>Current Team</button>
-                 <button onClick={() => setActiveView('archived')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-[#422D0B] text-white shadow-lg' : 'bg-white border border-[#E8DDCB] text-[#967A53]'}`}>Past Staff</button>
+                <button onClick={() => setActiveView('active')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-[#422D0B] text-white shadow-lg' : 'bg-white border border-[#E8DDCB] text-[#967A53]'}`}>Current Team</button>
+                <button onClick={() => setActiveView('archived')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-[#422D0B] text-white shadow-lg' : 'bg-white border border-[#E8DDCB] text-[#967A53]'}`}>Past Staff</button>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="flex items-center gap-2 px-8 py-4 bg-[#FFA800] text-white rounded-2xl font-bold shadow-xl hover:bg-[#422D0B] transition-all"
             >
@@ -157,36 +158,36 @@ const AdminStaffManagement = () => {
           </header>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-              <StatBox icon={<Users size={16}/>} label="Total Registered" val={staffList.length} />
-              <StatBox icon={<UserCheck size={16}/>} label="Currently Live" val={staffList.filter(s => s.isActive !== false).length} />
-              <StatBox icon={<Activity size={16}/>} label="Doctors" val={staffList.filter(s => s.role === 'doctor' && s.isActive !== false).length} />
-              <StatBox icon={<ShieldCheck size={16}/>} label="Auth Status" val="Secure" />
+            <StatBox icon={<Users size={16} />} label="Total Registered" val={staffList.length} />
+            <StatBox icon={<UserCheck size={16} />} label="Currently Live" val={staffList.filter(s => s.isActive !== false).length} />
+            <StatBox icon={<Activity size={16} />} label="Doctors" val={staffList.filter(s => s.role === 'doctor' && s.isActive !== false).length} />
+            <StatBox icon={<ShieldCheck size={16} />} label="Auth Status" val="Secure" />
           </div>
 
           {showAddForm && (
             <div className="bg-white border border-[#E8DDCB] p-10 rounded-[3rem] shadow-2xl mb-12 animate-in fade-in slide-in-from-top-4">
               <h2 className="font-heading text-2xl mb-8">Clinical Credentialing</h2>
               <form onSubmit={handleAddStaff} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <InputGroup label="Full Name" type="text" placeholder="Dr. Sameer Khan" onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                <InputGroup label="Work Email" type="email" placeholder="name@clinic.com" onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                <InputGroup label="Access Token" type="password" placeholder="Temporary Password" onChange={(e) => setFormData({...formData, password: e.target.value})} />
-                
+                <InputGroup label="Full Name" type="text" placeholder="Dr. Sameer Khan" onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                <InputGroup label="Work Email" type="email" placeholder="name@clinic.com" onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                <InputGroup label="Access Token" type="password" placeholder="Temporary Password" onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Assigned Role</label>
-                  <select 
+                  <select
                     className="px-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B]"
-                    onChange={(e) => setFormData({...formData, role: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
                     <option value="doctor">Medical Practitioner</option>
                     <option value="receptionist">Front Desk Staff</option>
                     <option value="lab">Lab Technician</option>
                   </select>
                 </div>
-                
+
                 {formData.role === 'doctor' && (
-                  <InputGroup label="Clinical Specialization" type="text" placeholder="e.g. Pediatrics" onChange={(e) => setFormData({...formData, specialization: e.target.value})} />
+                  <InputGroup label="Clinical Specialization" type="text" placeholder="e.g. Pediatrics" onChange={(e) => setFormData({ ...formData, specialization: e.target.value })} />
                 )}
-                
+
                 <div className="flex items-end">
                   <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-[#422D0B] text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-[#FFA800] transition-all disabled:opacity-50">
                     {isSubmitting ? 'Syncing...' : 'Authorize Access'}
@@ -198,8 +199,8 @@ const AdminStaffManagement = () => {
 
           <div className="relative mb-8 max-w-md">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#967A53]" size={18} />
-            <input 
-              type="text" placeholder="Filter by name or specialty..." 
+            <input
+              type="text" placeholder="Filter by name or specialty..."
               className="w-full pl-14 pr-6 py-4 bg-white border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -209,8 +210,8 @@ const AdminStaffManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
             {loading ? (
               <div className="col-span-full py-20 text-center animate-pulse opacity-40">
-                 <RefreshCw className="mx-auto mb-4 animate-spin" size={40} />
-                 <p className="font-heading text-xl">Refreshing Roster...</p>
+                <RefreshCw className="mx-auto mb-4 animate-spin" size={40} />
+                <p className="font-heading text-xl">Refreshing Roster...</p>
               </div>
             ) : filteredStaff.length > 0 ? (
               filteredStaff.map((member) => (
@@ -228,12 +229,12 @@ const AdminStaffManagement = () => {
                       <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[8px] font-black uppercase">Archived</span>
                     )}
                   </div>
-                  
+
                   <h3 className="text-2xl font-heading text-[#422D0B] mb-1">{member.name}</h3>
                   <p className="text-[10px] font-black text-[#FFA800] uppercase tracking-widest mb-6">
                     {member.role === 'doctor' ? member.specialization : member.role === 'lab' ? 'Diagnostics' : 'Reception'}
                   </p>
-                  
+
                   <div className="pt-6 border-t border-[#E8DDCB]/50 flex items-center justify-between">
                     <span className="text-[9px] font-bold text-[#967A53] truncate max-w-[120px]">{member.email}</span>
                     <div className="flex gap-1">
@@ -251,8 +252,8 @@ const AdminStaffManagement = () => {
               ))
             ) : (
               <div className="col-span-full py-24 text-center bg-white rounded-[3.5rem] border border-dashed border-[#E8DDCB] flex flex-col items-center">
-                 <AlertCircle size={32} className="text-[#E8DDCB] mb-4" />
-                 <p className="text-[#967A53] font-medium italic">No personnel records found in this section.</p>
+                <AlertCircle size={32} className="text-[#E8DDCB] mb-4" />
+                <p className="text-[#967A53] font-medium italic">No personnel records found in this section.</p>
               </div>
             )}
           </div>
@@ -265,26 +266,26 @@ const AdminStaffManagement = () => {
 
 // StatBox and InputGroup components remain unchanged...
 const StatBox = ({ icon, label, val }) => (
-    <div className="bg-white border border-[#E8DDCB] p-5 rounded-2xl flex items-center gap-4">
-      <div className="w-10 h-10 bg-[#FFFBF5] rounded-xl flex items-center justify-center text-[#FFA800] shadow-sm">
-        {icon}
-      </div>
-      <div>
-        <p className="text-[8px] font-black uppercase tracking-widest text-[#967A53]">{label}</p>
-        <p className="text-xl font-heading text-[#422D0B]">{val}</p>
-      </div>
+  <div className="bg-white border border-[#E8DDCB] p-5 rounded-2xl flex items-center gap-4">
+    <div className="w-10 h-10 bg-[#FFFBF5] rounded-xl flex items-center justify-center text-[#FFA800] shadow-sm">
+      {icon}
     </div>
-  );
-  
-  const InputGroup = ({ label, type, placeholder, onChange }) => (
-    <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">{label}</label>
-      <input 
-        type={type} placeholder={placeholder} required
-        className="px-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B] transition-all placeholder:text-[#E8DDCB] placeholder:font-normal text-sm"
-        onChange={onChange}
-      />
+    <div>
+      <p className="text-[8px] font-black uppercase tracking-widest text-[#967A53]">{label}</p>
+      <p className="text-xl font-heading text-[#422D0B]">{val}</p>
     </div>
-  );
+  </div>
+);
+
+const InputGroup = ({ label, type, placeholder, onChange }) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">{label}</label>
+    <input
+      type={type} placeholder={placeholder} required
+      className="px-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B] transition-all placeholder:text-[#E8DDCB] placeholder:font-normal text-sm"
+      onChange={onChange}
+    />
+  </div>
+);
 
 export default AdminStaffManagement;

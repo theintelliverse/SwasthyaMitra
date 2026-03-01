@@ -10,15 +10,40 @@ const queueRoutes = require('./routes/queue_routes');
 const clinicroutes = require('./routes/clinic_routes');
 
 const app = express();
-const server = http.createServer(app); // 🔑 Create HTTP server
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
+let server = null;
+let io = null;
 
 // 🛠️ Initialize Socket.io
-const io = new Server(server, {
-    cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:5173",
-        methods: ["GET", "POST", "PATCH", "DELETE"]
-    }
-});
+if (!isVercel) {
+    server = http.createServer(app); // 🔑 Create HTTP server
+    io = new Server(server, {
+        cors: {
+            origin: process.env.FRONTEND_URL || "http://localhost:5173",
+            methods: ["GET", "POST", "PATCH", "DELETE"]
+        }
+    });
+
+    io.on('connection', (socket) => {
+        console.log('⚡ Client Connected:', socket.id);
+
+        socket.on('joinClinic', (clinicId) => {
+            if (!clinicId) {
+                console.error(`❌ Socket ${socket.id} tried to join an undefined room!`);
+                return;
+            }
+            socket.join(clinicId.toString());
+            console.log(`🏥 Socket ${socket.id} successfully joined Room: ${clinicId}`);
+
+            // Let the client know they joined successfully
+            socket.emit('joined', { room: clinicId });
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Client Disconnected:', socket.id);
+        });
+    });
+}
 
 // Middlewares
 app.use(cors());
@@ -29,26 +54,6 @@ app.use(express.json());
 app.use((req, res, next) => {
     req.io = io;
     next();
-});
-
-io.on('connection', (socket) => {
-    console.log('⚡ Client Connected:', socket.id);
-
-    socket.on('joinClinic', (clinicId) => {
-        if (!clinicId) {
-            console.error(`❌ Socket ${socket.id} tried to join an undefined room!`);
-            return;
-        }
-        socket.join(clinicId.toString());
-        console.log(`🏥 Socket ${socket.id} successfully joined Room: ${clinicId}`);
-        
-        // Let the client know they joined successfully
-        socket.emit('joined', { room: clinicId });
-    });
-
-    socket.on('disconnect', () => {
-        console.log('❌ Client Disconnected:', socket.id);
-    });
 });
 
 // Routes
@@ -64,9 +69,11 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// 🔑 IMPORTANT: Listen using 'server', not 'app'
-server.listen(PORT, () => {
-    console.log(`🚀 Server & WebSockets running on port ${PORT}`);
-});
+if (!isVercel) {
+    // 🔑 IMPORTANT: Listen using 'server', not 'app'
+    server.listen(PORT, () => {
+        console.log(`🚀 Server & WebSockets running on port ${PORT}`);
+    });
+}
 
 module.exports = app;

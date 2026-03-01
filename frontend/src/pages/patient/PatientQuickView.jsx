@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client'; // 🔑 Added Socket Client
 import { X, FileText, Activity, Download, Calendar, User, History, RefreshCw } from 'lucide-react';
+import { SOCKET_URL } from '../../config/runtime';
 const API_URL = import.meta.env.VITE_API_URL;
 // Initialize socket
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const PatientQuickView = ({ phone, onClose }) => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('vitals'); 
+  const [activeTab, setActiveTab] = useState('vitals');
   const token = localStorage.getItem('token');
 
   const fetchFullProfile = async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
-    
+
     try {
       const res = await axios.get(`http://localhost:5000/api/staff/patient-full-profile/${phone}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -38,16 +39,16 @@ const PatientQuickView = ({ phone, onClose }) => {
     // Doctors join a room based on the patient's ID to receive instant updates 
     // if vitals are updated by the receptionist in real-time.
     if (patient?._id) {
-        socket.emit('joinClinic', patient._id);
-        
-        socket.on('patientProfileUpdated', (updatedData) => {
-            console.log("♻️ Patient Vitals/Profile updated by another node");
-            setPatient(updatedData);
-        });
+      socket.emit('joinClinic', patient._id);
+
+      socket.on('patientProfileUpdated', (updatedData) => {
+        console.log("♻️ Patient Vitals/Profile updated by another node");
+        setPatient(updatedData);
+      });
     }
 
     return () => {
-        socket.off('patientProfileUpdated');
+      socket.off('patientProfileUpdated');
     };
   }, [phone, token, patient?._id]);
 
@@ -56,7 +57,7 @@ const PatientQuickView = ({ phone, onClose }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#422D0B]/40 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-4xl h-[85vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden border border-[#E8DDCB]">
-        
+
         {/* Header */}
         <div className="px-8 py-6 bg-[#FFFBF5] border-b border-[#E8DDCB] flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -79,29 +80,29 @@ const PatientQuickView = ({ phone, onClose }) => {
 
         {/* Tabs */}
         <div className="flex border-b border-[#E8DDCB] bg-white">
-          <TabButton 
-            active={activeTab === 'vitals'} 
-            onClick={() => setActiveTab('vitals')} 
-            icon={<Activity size={14} />} 
-            label="Vitals History" 
+          <TabButton
+            active={activeTab === 'vitals'}
+            onClick={() => setActiveTab('vitals')}
+            icon={<Activity size={14} />}
+            label="Vitals History"
           />
-          <TabButton 
-            active={activeTab === 'notes'} 
-            onClick={() => setActiveTab('notes')} 
-            icon={<History size={14} />} 
-            label="Visit Notes" 
+          <TabButton
+            active={activeTab === 'notes'}
+            onClick={() => setActiveTab('notes')}
+            icon={<History size={14} />}
+            label="Visit Notes"
           />
-          <TabButton 
-            active={activeTab === 'documents'} 
-            onClick={() => setActiveTab('documents')} 
-            icon={<FileText size={14} />} 
-            label="Medical Locker" 
+          <TabButton
+            active={activeTab === 'documents'}
+            onClick={() => setActiveTab('documents')}
+            icon={<FileText size={14} />}
+            label="Medical Locker"
           />
         </div>
 
         {/* Content Area */}
         <div className="flex-grow overflow-y-auto p-8 bg-[#FFFBF5]/30">
-          
+
           {activeTab === 'vitals' && (
             <div className="space-y-4">
               {patient?.vitals?.length > 0 ? (
@@ -117,7 +118,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                   </div>
                 ))
               ) : (
-                <EmptyState icon={<Activity size={40}/>} text="No health trends recorded yet." />
+                <EmptyState icon={<Activity size={40} />} text="No health trends recorded yet." />
               )}
             </div>
           )}
@@ -142,7 +143,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                   </div>
                 ))
               ) : (
-                <EmptyState icon={<History size={40}/>} text="No previous consultation notes." />
+                <EmptyState icon={<History size={40} />} text="No previous consultation notes." />
               )}
             </div>
           )}
@@ -168,7 +169,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                 ))
               ) : (
                 <div className="col-span-2">
-                  <EmptyState icon={<FileText size={40}/>} text="Medical locker is empty." />
+                  <EmptyState icon={<FileText size={40} />} text="Medical locker is empty." />
                 </div>
               )}
             </div>
@@ -176,9 +177,9 @@ const PatientQuickView = ({ phone, onClose }) => {
         </div>
 
         <div className="px-8 py-4 bg-white border-t border-[#E8DDCB] text-center">
-            <p className="text-[9px] font-black text-[#967A53] uppercase tracking-widest">
-                🔒 Data secured via Swasthya-Mitra Clinical Vault
-            </p>
+          <p className="text-[9px] font-black text-[#967A53] uppercase tracking-widest">
+            🔒 Data secured via Swasthya-Mitra Clinical Vault
+          </p>
         </div>
       </div>
     </div>
@@ -188,7 +189,7 @@ const PatientQuickView = ({ phone, onClose }) => {
 // --- Helper Components ---
 
 const TabButton = ({ active, onClick, icon, label }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${active ? 'text-[#FFA800] border-b-2 border-[#FFA800] bg-[#FFA800]/5' : 'text-[#967A53] hover:text-[#422D0B]'}`}
   >

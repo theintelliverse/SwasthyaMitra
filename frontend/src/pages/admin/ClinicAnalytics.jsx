@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client'; // 🔑 Added Socket Client
-import { 
-  RefreshCw, Activity, TrendingUp, AlertTriangle, 
+import { SOCKET_URL } from '../../config/runtime';
+import {
+  RefreshCw, Activity, TrendingUp, AlertTriangle,
   Beaker, UserCheck, Settings, ArrowRight
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-import ClinicQR from '../../components/ClinicQR'; 
+import ClinicQR from '../../components/ClinicQR';
 const API_URL = import.meta.env.VITE_API_URL;
 // Initialize socket
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ClinicAnalytics = () => {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ const ClinicAnalytics = () => {
               <h2 className="text-sm font-bold text-[#422D0B]">{isSyncing ? 'Nodes Synchronizing...' : 'Satellite Link Active'}</h2>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => fetchAnalytics(false)}
             className="flex items-center gap-2 px-4 py-2 bg-[#FFFBF5] border border-[#E8DDCB] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#967A53] hover:text-[#FFA800] transition-all"
           >
@@ -119,16 +120,16 @@ const ClinicAnalytics = () => {
           <header className="mb-12">
             <h2 className="text-5xl font-heading mb-3 text-[#422D0B]">{clinicInfo.name} Overview</h2>
             <div className="flex items-center gap-3">
-               <span className="bg-[#422D0B] text-[#FFFBF5] px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">ID: {clinicInfo.code}</span>
-               <p className="text-[#967A53] font-medium italic">Live patient density and resource distribution.</p>
+              <span className="bg-[#422D0B] text-[#FFFBF5] px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">ID: {clinicInfo.code}</span>
+              <p className="text-[#967A53] font-medium italic">Live patient density and resource distribution.</p>
             </div>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <InsightCard label="Live Queue" value={stats.activeQueue} icon={<TrendingUp size={24}/>} color="bg-blue-50 text-blue-600" />
-            <InsightCard label="Emergency" value={stats.emergenciesToday} icon={<AlertTriangle size={24}/>} color="bg-red-50 text-red-600" pulse={stats.emergenciesToday > 0} />
-            <InsightCard label="Lab Pending" value={stats.pendingLab} icon={<Beaker size={24}/>} color="bg-[#FFA800]/10 text-[#FFA800]" />
-            <InsightCard label="On Duty" value={stats.onDutyStaff} icon={<UserCheck size={24}/>} color="bg-green-50 text-green-600" />
+            <InsightCard label="Live Queue" value={stats.activeQueue} icon={<TrendingUp size={24} />} color="bg-blue-50 text-blue-600" />
+            <InsightCard label="Emergency" value={stats.emergenciesToday} icon={<AlertTriangle size={24} />} color="bg-red-50 text-red-600" pulse={stats.emergenciesToday > 0} />
+            <InsightCard label="Lab Pending" value={stats.pendingLab} icon={<Beaker size={24} />} color="bg-[#FFA800]/10 text-[#FFA800]" />
+            <InsightCard label="On Duty" value={stats.onDutyStaff} icon={<UserCheck size={24} />} color="bg-green-50 text-green-600" />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-10">
@@ -139,7 +140,7 @@ const ClinicAnalytics = () => {
                   <p className="text-[10px] text-[#967A53] font-black uppercase tracking-widest">Live Consultation Patterns</p>
                 </div>
               </div>
-              
+
               <div className="h-72 flex items-end justify-between gap-4 px-2 mb-4">
                 {[30, 45, 25, 60, stats.activeQueue * 8 + 10, 35, 20].map((h, i) => (
                   <div key={i} className="flex-grow bg-[#FFFBF5] rounded-t-3xl relative group/bar overflow-hidden" style={{ height: `${Math.min(h + 15, 100)}%` }}>
@@ -160,19 +161,19 @@ const ClinicAnalytics = () => {
                 </div>
                 <div className="space-y-6">
                   <div className="flex justify-between items-end">
-                     <div>
-                        <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest mb-1">Staff on Break</p>
-                        <p className={`font-heading text-3xl ${stats.staffOnBreak > 0 ? 'text-red-500' : 'text-[#422D0B]'}`}>{stats.staffOnBreak}</p>
-                     </div>
-                     <div className="text-right">
-                        <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest mb-1">Active Rate</p>
-                        <p className="text-xl font-heading text-[#FFA800]">
-                          {Math.round((stats.onDutyStaff / (stats.onDutyStaff + stats.staffOnBreak || 1)) * 100)}%
-                        </p>
-                     </div>
+                    <div>
+                      <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest mb-1">Staff on Break</p>
+                      <p className={`font-heading text-3xl ${stats.staffOnBreak > 0 ? 'text-red-500' : 'text-[#422D0B]'}`}>{stats.staffOnBreak}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest mb-1">Active Rate</p>
+                      <p className="text-xl font-heading text-[#FFA800]">
+                        {Math.round((stats.onDutyStaff / (stats.onDutyStaff + stats.staffOnBreak || 1)) * 100)}%
+                      </p>
+                    </div>
                   </div>
                   <div className="w-full h-2.5 bg-[#FFFBF5] border border-[#E8DDCB] rounded-full overflow-hidden">
-                     <div className="h-full bg-[#FFA800] transition-all duration-1000" style={{ width: `${(stats.onDutyStaff / (stats.onDutyStaff + stats.staffOnBreak || 1)) * 100}%` }}></div>
+                    <div className="h-full bg-[#FFA800] transition-all duration-1000" style={{ width: `${(stats.onDutyStaff / (stats.onDutyStaff + stats.staffOnBreak || 1)) * 100}%` }}></div>
                   </div>
                 </div>
               </div>
@@ -182,8 +183,8 @@ const ClinicAnalytics = () => {
               <div className="bg-[#422D0B] p-8 rounded-[3rem] text-[#FFFBF5] shadow-2xl relative overflow-hidden group">
                 <h3 className="font-heading text-xl mb-6 text-[#FFA800]">System Shortcuts</h3>
                 <div className="space-y-3 relative z-10">
-                  <button onClick={() => navigate('/admin/staff-management')} className="w-full py-4 bg-white/5 hover:bg-[#FFA800] hover:text-[#422D0B] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Staff Roster <ArrowRight size={12} className="inline ml-1"/></button>
-                  <button onClick={() => navigate('/admin/settings')} className="w-full py-4 bg-white/5 hover:bg-[#FFA800] hover:text-[#422D0B] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">General Settings <ArrowRight size={12} className="inline ml-1"/></button>
+                  <button onClick={() => navigate('/admin/staff-management')} className="w-full py-4 bg-white/5 hover:bg-[#FFA800] hover:text-[#422D0B] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Staff Roster <ArrowRight size={12} className="inline ml-1" /></button>
+                  <button onClick={() => navigate('/admin/settings')} className="w-full py-4 bg-white/5 hover:bg-[#FFA800] hover:text-[#422D0B] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">General Settings <ArrowRight size={12} className="inline ml-1" /></button>
                 </div>
                 <Settings className="absolute -bottom-6 -right-6 text-[#FFA800]/10" size={120} />
               </div>

@@ -2,24 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { io } from 'socket.io-client'; 
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../config/runtime';
 import { Activity, Beaker, FileText, Clock, Coffee, Play, CheckCircle, History, ShieldCheck, Circle, Siren, RefreshCw, FlaskConical } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import PatientQuickView from '../../components/PatientQuickView';
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const DoctorDashboard = () => {
   const [myQueue, setMyQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState("");
-  const [isOnBreak, setIsOnBreak] = useState(false); 
+  const [isOnBreak, setIsOnBreak] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const token = localStorage.getItem('token');
-  const clinicId = localStorage.getItem('clinicId'); 
+  const clinicId = localStorage.getItem('clinicId');
   const navigate = useNavigate();
 
   const fetchMyStatus = async () => {
@@ -36,12 +37,12 @@ const DoctorDashboard = () => {
       const res = await axios.get('http://localhost:5000/api/queue/my-queue', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       const sortedQueue = res.data.data.sort((a, b) => {
         if (a.isEmergency !== b.isEmergency) return a.isEmergency ? -1 : 1;
         return new Date(a.createdAt) - new Date(b.createdAt);
       });
-      
+
       setMyQueue(sortedQueue);
       setLoading(false);
     } catch (err) {
@@ -95,28 +96,28 @@ const DoctorDashboard = () => {
     try {
       const endpoint = action === 'start' ? 'start' : 'complete';
       const payload = action === 'complete' ? { notes } : {};
-      
+
       const res = await axios.patch(`http://localhost:5000/api/queue/${endpoint}/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.data.success) {
         if (action === 'complete') { setNotes(""); setPatientData(null); }
-        await fetchMyQueue(); 
+        await fetchMyQueue();
       }
-    } catch (err) { 
-        Swal.fire('Error', 'Action failed', 'error'); 
+    } catch (err) {
+      Swal.fire('Error', 'Action failed', 'error');
     } finally { setIsProcessing(false); }
   };
 
   const handleReferToLab = async (id) => {
-    const { value: testName } = await Swal.fire({ 
-        title: 'Order Lab Diagnostics', 
-        input: 'text', 
-        inputPlaceholder: 'e.g., CBC, X-Ray', 
-        confirmButtonColor: '#FFA800', 
-        showCancelButton: true, 
-        background: '#FFFBF5' 
+    const { value: testName } = await Swal.fire({
+      title: 'Order Lab Diagnostics',
+      input: 'text',
+      inputPlaceholder: 'e.g., CBC, X-Ray',
+      confirmButtonColor: '#FFA800',
+      showCancelButton: true,
+      background: '#FFFBF5'
     });
     if (testName) {
       try {
@@ -143,7 +144,7 @@ const DoctorDashboard = () => {
           <div className="flex items-center gap-4">
             <h1 className="font-heading text-xl text-[#422D0B]">Consultation Hub</h1>
             <button onClick={handleToggleBreak} className={`flex items-center gap-2 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${isOnBreak ? 'bg-red-500 text-white shadow-lg' : 'bg-[#FFFBF5] text-[#967A53] border border-[#E8DDCB] hover:border-[#FFA800]'}`}>
-                {isOnBreak ? <Play size={12} fill="currentColor"/> : <Coffee size={12}/>} {isOnBreak ? 'Resume Duty' : 'Take Break'}
+              {isOnBreak ? <Play size={12} fill="currentColor" /> : <Coffee size={12} />} {isOnBreak ? 'Resume Duty' : 'Take Break'}
             </button>
           </div>
           <p className="text-[10px] font-black uppercase text-[#FFA800] tracking-widest underline decoration-2">Dr. {localStorage.getItem('userName') || 'Physician'}</p>
@@ -159,7 +160,7 @@ const DoctorDashboard = () => {
                 </div>
                 {activePatient?.currentStage === 'Lab-Completed' && <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-[9px] font-black flex items-center gap-2 border border-green-200 animate-bounce"><CheckCircle size={12} /> LAB RESULTS READY</span>}
               </div>
-              
+
               {activePatient ? (
                 <div className={`bg-white border p-8 md:p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden transition-all ${activePatient.isEmergency ? 'border-red-500 ring-4 ring-red-50' : 'border-[#E8DDCB]'}`}>
                   <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -181,29 +182,29 @@ const DoctorDashboard = () => {
 
             {/* --- NEW SECTION: LAB MONITORING --- */}
             <section className="mt-12">
-               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#967A53] mb-6">Lab Monitoring Area</h2>
-               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {labMonitoringList.map(p => (
-                    <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-[#E8DDCB] opacity-60'}`}>
-                       <div className="flex justify-between items-start mb-3">
-                          <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.currentStage === 'Lab-Completed' ? 'bg-green-500 text-white animate-pulse' : 'bg-[#FFFBF5] text-[#967A53]'}`}>
-                            {p.currentStage === 'Lab-Completed' ? 'REPORT READY' : 'IN LAB'}
-                          </span>
-                          <span className="text-[10px] font-heading">#{p.tokenNumber}</span>
-                       </div>
-                       <p className="font-bold text-sm truncate">{p.patientName}</p>
-                       <p className="text-[9px] text-[#967A53] mt-1 italic">{p.requiredTest || 'Diagnostics'}</p>
-                       {p.currentStage === 'Lab-Completed' && !activePatient && (
-                          <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full mt-4 py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#422D0B] transition-all">Recall Patient</button>
-                       )}
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#967A53] mb-6">Lab Monitoring Area</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {labMonitoringList.map(p => (
+                  <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-[#E8DDCB] opacity-60'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.currentStage === 'Lab-Completed' ? 'bg-green-500 text-white animate-pulse' : 'bg-[#FFFBF5] text-[#967A53]'}`}>
+                        {p.currentStage === 'Lab-Completed' ? 'REPORT READY' : 'IN LAB'}
+                      </span>
+                      <span className="text-[10px] font-heading">#{p.tokenNumber}</span>
                     </div>
-                  ))}
-                  {labMonitoringList.length === 0 && (
-                    <div className="col-span-full py-8 text-center bg-[#FFFBF5] rounded-3xl border border-dashed border-[#E8DDCB]">
-                        <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest">No patients currently in Lab</p>
-                    </div>
-                  )}
-               </div>
+                    <p className="font-bold text-sm truncate">{p.patientName}</p>
+                    <p className="text-[9px] text-[#967A53] mt-1 italic">{p.requiredTest || 'Diagnostics'}</p>
+                    {p.currentStage === 'Lab-Completed' && !activePatient && (
+                      <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full mt-4 py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#422D0B] transition-all">Recall Patient</button>
+                    )}
+                  </div>
+                ))}
+                {labMonitoringList.length === 0 && (
+                  <div className="col-span-full py-8 text-center bg-[#FFFBF5] rounded-3xl border border-dashed border-[#E8DDCB]">
+                    <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest">No patients currently in Lab</p>
+                  </div>
+                )}
+              </div>
             </section>
           </div>
 

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client'; 
-import { 
-  FileText, Clock, ExternalLink, LogOut, 
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../config/runtime';
+import {
+  FileText, Clock, ExternalLink, LogOut,
   ShieldCheck, Activity, Search, Building2, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCw, RefreshCcw, FolderHeart
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const PatientDashboard = () => {
   const navigate = useNavigate();
@@ -16,8 +17,8 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVisit, setSelectedVisit] = useState(null); 
-  const [previewFile, setPreviewFile] = useState(null); 
+  const [selectedVisit, setSelectedVisit] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
   const [shareFile, setShareFile] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -35,7 +36,7 @@ const PatientDashboard = () => {
       const res = await axios.get('http://localhost:5000/api/auth/patient/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       setPatientData(res.data.data);
     } catch (err) {
       console.error("❌ Vault Access Error:", err.response?.data || err.message);
@@ -50,7 +51,7 @@ const PatientDashboard = () => {
     fetchProfile();
     const patientPhone = localStorage.getItem('userPhone')?.replace(/\D/g, '').slice(-10);
     if (patientPhone) {
-      socket.emit('joinClinic', patientPhone); 
+      socket.emit('joinClinic', patientPhone);
       socket.on('queueUpdate', () => fetchProfile(true));
     }
     return () => socket.off('queueUpdate');
@@ -65,12 +66,12 @@ const PatientDashboard = () => {
   // 🔑 FIX 1: Accessing correct DB fields for Name and Counters
   const displayName = patientData?.name || "User";
   const uniqueClinicsCount = patientData?.visitHistory ? new Set(patientData.visitHistory.map(h => h.clinicId?._id || h.clinicId)).size : 0;
-  
+
   // 🔑 FIX 2: Ensuring the Reports count looks at 'documents'
   const reportsCount = patientData?.documents?.length || 0;
 
-  const filteredHistory = patientData?.visitHistory?.filter(visit => 
-    visit.clinicId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredHistory = patientData?.visitHistory?.filter(visit =>
+    visit.clinicId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     visit.notes?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
@@ -89,13 +90,13 @@ const PatientDashboard = () => {
           <div>
             <h1 className="font-heading text-lg leading-none">Swasthya Locker</h1>
             <div className="flex items-center gap-1.5 mt-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#FFA800] animate-ping' : 'bg-green-500'}`}></div>
-                <p className="text-[8px] font-black text-[#967A53] uppercase tracking-widest">Live Security Active</p>
+              <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#FFA800] animate-ping' : 'bg-green-500'}`}></div>
+              <p className="text-[8px] font-black text-[#967A53] uppercase tracking-widest">Live Security Active</p>
             </div>
           </div>
         </div>
         <button onClick={() => { localStorage.clear(); navigate('/patient/login'); }} className="text-[10px] font-black uppercase text-[#967A53] hover:text-red-500 transition-colors flex items-center gap-2">
-          <LogOut size={14}/> Logout
+          <LogOut size={14} /> Logout
         </button>
       </nav>
 
@@ -105,13 +106,13 @@ const PatientDashboard = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFC24A] mb-3">Verified Patient Profile</p>
             <h2 className="text-5xl font-heading mb-4 capitalize">{displayName}</h2>
             <div className="flex gap-4 justify-center md:justify-start">
-               <span className="bg-white/10 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-white/5">
+              <span className="bg-white/10 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-white/5">
                 {uniqueClinicsCount} Facilities Visited
-               </span>
+              </span>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/Patient/HealthLocker')}
             className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-[#FFA800] hover:bg-[#FFC24A] text-[#422D0B] px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
           >
@@ -134,7 +135,7 @@ const PatientDashboard = () => {
               <h3 className="font-heading text-lg mb-4">Quick Find</h3>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967A53]" size={16} />
-                <input 
+                <input
                   type="text" placeholder="Search diagnosis..."
                   className="w-full pl-11 pr-4 py-3 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] text-sm font-bold"
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -145,17 +146,17 @@ const PatientDashboard = () => {
 
           <div className="lg:col-span-3 space-y-8">
             <div className="flex items-center justify-between">
-                <h3 className="font-heading text-3xl">Recent Visits</h3>
-                <button onClick={() => fetchProfile(true)} className="p-3 bg-white border border-[#E8DDCB] rounded-2xl text-[#967A53] hover:text-[#FFA800] transition-all">
-                    <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : ''} />
-                </button>
+              <h3 className="font-heading text-3xl">Recent Visits</h3>
+              <button onClick={() => fetchProfile(true)} className="p-3 bg-white border border-[#E8DDCB] rounded-2xl text-[#967A53] hover:text-[#FFA800] transition-all">
+                <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : ''} />
+              </button>
             </div>
-            
+
             {filteredHistory.length > 0 ? (
               filteredHistory.map((visit) => {
                 // 🔑 FIX 3: Prioritize 'documents' over 'digitalLocker' to match your DB Example
                 const allDocs = patientData?.documents || patientData?.digitalLocker || [];
-                const visitReports = allDocs.filter(doc => 
+                const visitReports = allDocs.filter(doc =>
                   doc.visitId === (visit.visitId || visit._id)
                 );
 
@@ -164,11 +165,11 @@ const PatientDashboard = () => {
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                           <Building2 size={16} className="text-[#967A53]" />
-                           <h4 className="font-heading text-2xl text-[#422D0B]">{visit.clinicName || visit.clinicId?.name}</h4>
+                          <Building2 size={16} className="text-[#967A53]" />
+                          <h4 className="font-heading text-2xl text-[#422D0B]">{visit.clinicName || visit.clinicId?.name}</h4>
                         </div>
                         <p className="text-[10px] font-black uppercase text-[#FFA800] tracking-widest">
-                            {new Date(visit.date || visit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })} • Dr. {visit.doctorName || visit.doctorId?.name}
+                          {new Date(visit.date || visit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })} • Dr. {visit.doctorName || visit.doctorId?.name}
                         </p>
                       </div>
                     </div>
@@ -178,40 +179,40 @@ const PatientDashboard = () => {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                       <button onClick={() => setSelectedVisit(visit)} className="flex items-center justify-between p-5 bg-[#422D0B] text-white rounded-2xl hover:bg-[#FFA800] transition-all shadow-lg group">
-                          <div className="flex items-center gap-4">
-                             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20"><Pill size={18}/></div>
-                             <span className="text-xs font-bold uppercase tracking-widest">View Summary</span>
-                          </div>
-                          <ChevronRight size={18} />
-                       </button>
+                      <button onClick={() => setSelectedVisit(visit)} className="flex items-center justify-between p-5 bg-[#422D0B] text-white rounded-2xl hover:bg-[#FFA800] transition-all shadow-lg group">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20"><Pill size={18} /></div>
+                          <span className="text-xs font-bold uppercase tracking-widest">View Summary</span>
+                        </div>
+                        <ChevronRight size={18} />
+                      </button>
 
-                       <div className="space-y-3">
-                          {visitReports?.length > 0 ? (
-                             <div className="space-y-2">
-                                {visitReports.map((report, rIdx) => (
-                                  <div key={rIdx} className="flex gap-2">
-                                    <button onClick={() => setPreviewFile(report)} className="flex-grow flex items-center justify-between p-4 bg-white border border-[#E8DDCB] rounded-2xl hover:border-[#422D0B] transition-all group/report">
-                                       <div className="flex items-center gap-3 overflow-hidden text-left">
-                                          <FileText size={16} className="text-[#FFA800] shrink-0" />
-                                          <span className="text-[11px] font-bold truncate group-hover/report:text-[#FFA800]">{report.title}</span>
-                                       </div>
-                                       <Eye size={14} className="text-[#E8DDCB]" />
-                                    </button>
-                                    <button onClick={() => setShareFile(report)} className="p-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl text-[#FFA800] hover:bg-[#FFA800] hover:text-white transition-all shadow-sm"><Share2 size={16} /></button>
+                      <div className="space-y-3">
+                        {visitReports?.length > 0 ? (
+                          <div className="space-y-2">
+                            {visitReports.map((report, rIdx) => (
+                              <div key={rIdx} className="flex gap-2">
+                                <button onClick={() => setPreviewFile(report)} className="flex-grow flex items-center justify-between p-4 bg-white border border-[#E8DDCB] rounded-2xl hover:border-[#422D0B] transition-all group/report">
+                                  <div className="flex items-center gap-3 overflow-hidden text-left">
+                                    <FileText size={16} className="text-[#FFA800] shrink-0" />
+                                    <span className="text-[11px] font-bold truncate group-hover/report:text-[#FFA800]">{report.title}</span>
                                   </div>
-                                ))}
-                             </div>
-                          ) : <div className="p-4 border-2 border-dashed border-[#E8DDCB] rounded-2xl text-center opacity-30 text-[10px] font-bold">No linked reports</div>}
-                       </div>
+                                  <Eye size={14} className="text-[#E8DDCB]" />
+                                </button>
+                                <button onClick={() => setShareFile(report)} className="p-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl text-[#FFA800] hover:bg-[#FFA800] hover:text-white transition-all shadow-sm"><Share2 size={16} /></button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <div className="p-4 border-2 border-dashed border-[#E8DDCB] rounded-2xl text-center opacity-30 text-[10px] font-bold">No linked reports</div>}
+                      </div>
                     </div>
                   </div>
                 );
               })
             ) : (
-                <div className="text-center py-20 bg-white rounded-[3rem] border border-dashed border-[#E8DDCB] animate-in fade-in">
-                    <p className="font-heading text-2xl text-[#967A53] italic">No visit history found.</p>
-                </div>
+              <div className="text-center py-20 bg-white rounded-[3rem] border border-dashed border-[#E8DDCB] animate-in fade-in">
+                <p className="font-heading text-2xl text-[#967A53] italic">No visit history found.</p>
+              </div>
             )}
           </div>
         </div>
@@ -222,8 +223,8 @@ const PatientDashboard = () => {
         <div className="fixed inset-0 bg-[#422D0B]/90 backdrop-blur-lg z-[100] flex items-center justify-center p-4">
           <div className="bg-[#FFFBF5] w-full max-w-5xl h-[90vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-[#E8DDCB]">
             <div className="p-6 bg-white border-b border-[#E8DDCB] flex justify-between items-center">
-               <h3 className="font-heading text-lg">{previewFile.title}</h3>
-               <button onClick={() => setPreviewFile(null)} className="p-2 hover:bg-red-50 rounded-xl transition-all text-red-500"><X size={24} /></button>
+              <h3 className="font-heading text-lg">{previewFile.title}</h3>
+              <button onClick={() => setPreviewFile(null)} className="p-2 hover:bg-red-50 rounded-xl transition-all text-red-500"><X size={24} /></button>
             </div>
             <iframe src={previewFile.fileUrl} className="flex-grow w-full border-none" title="Report" />
           </div>
@@ -234,16 +235,16 @@ const PatientDashboard = () => {
         <div className="fixed inset-0 bg-[#422D0B]/80 backdrop-blur-md z-[110] flex items-center justify-center p-6">
           <div className="bg-white w-full max-w-md rounded-[3rem] p-10 border border-[#E8DDCB] animate-in zoom-in-95 shadow-2xl">
             <div className="flex justify-between items-start mb-6">
-               <div className="w-12 h-12 bg-[#FFA800]/10 rounded-2xl flex items-center justify-center text-[#FFA800]"><Share2 size={24} /></div>
-               <button onClick={() => setShareFile(null)} className="text-[#967A53] hover:text-red-500 transition-colors"><X size={24}/></button>
+              <div className="w-12 h-12 bg-[#FFA800]/10 rounded-2xl flex items-center justify-center text-[#FFA800]"><Share2 size={24} /></div>
+              <button onClick={() => setShareFile(null)} className="text-[#967A53] hover:text-red-500 transition-colors"><X size={24} /></button>
             </div>
             <h3 className="font-heading text-2xl text-[#422D0B] mb-2">Secure Link</h3>
             <p className="text-xs text-[#967A53] mb-6">Share this medical file with your doctor.</p>
             <div className="bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl p-4 flex items-center justify-between overflow-hidden">
-               <code className="text-[10px] text-[#967A53] truncate pr-4">{shareFile.fileUrl}</code>
-               <button onClick={() => handleCopyLink(shareFile.fileUrl)} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-[#422D0B] text-white'}`}>
-                 {copied ? <Check size={12}/> : <Copy size={12}/>}
-               </button>
+              <code className="text-[10px] text-[#967A53] truncate pr-4">{shareFile.fileUrl}</code>
+              <button onClick={() => handleCopyLink(shareFile.fileUrl)} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-[#422D0B] text-white'}`}>
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+              </button>
             </div>
           </div>
         </div>
@@ -252,16 +253,16 @@ const PatientDashboard = () => {
       {selectedVisit && (
         <div className="fixed inset-0 bg-[#422D0B]/60 backdrop-blur-md z-[90] flex items-center justify-center p-6">
           <div className="bg-[#FFFBF5] w-full max-w-2xl rounded-[3rem] p-10 border border-[#E8DDCB] shadow-2xl relative">
-             <div className="flex justify-between mb-8 items-center border-b border-[#E8DDCB] pb-6">
-                <div>
-                    <h2 className="text-2xl font-heading">Consultation Notes</h2>
-                    <p className="text-[10px] font-black uppercase text-[#FFA800] tracking-widest mt-1">Dr. {selectedVisit.doctorName || selectedVisit.doctorId?.name} • {selectedVisit.clinicName || selectedVisit.clinicId?.name}</p>
-                </div>
-                <button onClick={() => setSelectedVisit(null)} className="p-2 hover:bg-black/5 rounded-full transition-all text-[#967A53]"><X size={24} /></button>
-             </div>
-             <div className="p-8 bg-white rounded-3xl border border-[#E8DDCB] shadow-inner font-medium text-[#422D0B] leading-relaxed whitespace-pre-wrap min-h-[300px]">
-                {selectedVisit.notes || selectedVisit.diagnosis || 'No specific notes recorded.'}
-             </div>
+            <div className="flex justify-between mb-8 items-center border-b border-[#E8DDCB] pb-6">
+              <div>
+                <h2 className="text-2xl font-heading">Consultation Notes</h2>
+                <p className="text-[10px] font-black uppercase text-[#FFA800] tracking-widest mt-1">Dr. {selectedVisit.doctorName || selectedVisit.doctorId?.name} • {selectedVisit.clinicName || selectedVisit.clinicId?.name}</p>
+              </div>
+              <button onClick={() => setSelectedVisit(null)} className="p-2 hover:bg-black/5 rounded-full transition-all text-[#967A53]"><X size={24} /></button>
+            </div>
+            <div className="p-8 bg-white rounded-3xl border border-[#E8DDCB] shadow-inner font-medium text-[#422D0B] leading-relaxed whitespace-pre-wrap min-h-[300px]">
+              {selectedVisit.notes || selectedVisit.diagnosis || 'No specific notes recorded.'}
+            </div>
           </div>
         </div>
       )}

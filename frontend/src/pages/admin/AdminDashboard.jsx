@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client'; // 🔑 Added Socket Client
+import { SOCKET_URL } from '../../config/runtime';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-import { 
-  BarChart3, Users, Settings, ClipboardList, UserPlus, 
+import {
+  BarChart3, Users, Settings, ClipboardList, UserPlus,
   ArrowUpRight, ShieldCheck, Activity, Tv, Share2, Copy, Check, RefreshCw, FileSpreadsheet
 } from 'lucide-react';
 const API_URL = import.meta.env.VITE_API_URL;
-
 // Initialize socket
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const AdminDashboard = () => {
     newPatients: 0
   });
   const [loading, setLoading] = useState(true);
-  
+
   const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
   const clinicName = localStorage.getItem('clinicName') || 'Your Clinic';
@@ -112,7 +112,7 @@ const AdminDashboard = () => {
       icon: <Tv size={32} color="#FFA800" />,
       link: `/display/${clinicCode}`,
       bgColor: 'bg-[#FFA800]/10',
-      isExternal: true 
+      isExternal: true
     },
     {
       title: 'Clinical Reports',
@@ -143,17 +143,17 @@ const AdminDashboard = () => {
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         <main className="p-8 lg:p-12 max-w-6xl mx-auto w-full flex-grow">
-          
+
           <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <h1 className="text-5xl font-heading mb-2">Namaste, {adminName}</h1>
               <p className="text-[#967A53] font-medium flex items-center gap-2">
-                Central Command for <span className="text-[#FFA800] font-bold">{clinicName}</span> 
+                Central Command for <span className="text-[#FFA800] font-bold">{clinicName}</span>
                 <span className="bg-[#E8DDCB] px-2 py-0.5 rounded text-[10px] text-[#422D0B] font-black">{clinicCode}</span>
               </p>
             </div>
 
-            <button 
+            <button
               onClick={handleShare}
               className="bg-white border border-[#E8DDCB] p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:border-[#FFA800] transition-all group"
             >
@@ -168,10 +168,10 @@ const AdminDashboard = () => {
           </header>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-              <StatMini label="Today's Visits" value={loading ? <RefreshCw size={14} className="animate-spin"/> : stats.todayVisits} />
-              <StatMini label="Active Doctors" value={loading ? <RefreshCw size={14} className="animate-spin"/> : stats.activeDoctors} />
-              <StatMini label="Queue Avg" value={loading ? "..." : `${stats.avgWait} mins`} />
-              <StatMini label="Walk-ins" value={loading ? "..." : stats.newPatients} />
+            <StatMini label="Today's Visits" value={loading ? <RefreshCw size={14} className="animate-spin" /> : stats.todayVisits} />
+            <StatMini label="Active Doctors" value={loading ? <RefreshCw size={14} className="animate-spin" /> : stats.activeDoctors} />
+            <StatMini label="Queue Avg" value={loading ? "..." : `${stats.avgWait} mins`} />
+            <StatMini label="Walk-ins" value={loading ? "..." : stats.newPatients} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -194,9 +194,9 @@ const AdminDashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <QuickLink title="Duty Roster" icon={<UserPlus size={18}/>} onClick={() => navigate('/admin/staff-management')} />
-            <QuickLink title="Reception Desk" icon={<Users size={18}/>} onClick={() => navigate('/receptionist/dashboard')} />
-            <QuickLink title="Clinic Settings" icon={<Settings size={18}/>} onClick={() => navigate('/admin/settings')} />
+            <QuickLink title="Duty Roster" icon={<UserPlus size={18} />} onClick={() => navigate('/admin/staff-management')} />
+            <QuickLink title="Reception Desk" icon={<Users size={18} />} onClick={() => navigate('/receptionist/dashboard')} />
+            <QuickLink title="Clinic Settings" icon={<Settings size={18} />} onClick={() => navigate('/admin/settings')} />
           </div>
         </main>
         <Footer />
@@ -213,7 +213,7 @@ const StatMini = ({ label, value }) => (
 );
 
 const QuickLink = ({ title, icon, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
     className="flex items-center justify-center gap-3 py-5 px-6 bg-white border border-[#E8DDCB] rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#422D0B] hover:bg-[#FFA800] hover:text-white hover:border-[#FFA800] transition-all shadow-sm active:scale-95"
   >

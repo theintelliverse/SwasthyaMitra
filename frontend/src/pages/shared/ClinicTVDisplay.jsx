@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { io } from 'socket.io-client'; 
-import { 
-  Users, Stethoscope, ChevronRight, Siren, 
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../config/runtime';
+import {
+  Users, Stethoscope, ChevronRight, Siren,
   ArrowLeft, Monitor, Clock, RefreshCw, Zap
 } from 'lucide-react';
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ClinicTVDisplay = () => {
   const [doctors, setDoctors] = useState([]);
@@ -15,7 +16,7 @@ const ClinicTVDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [clinicName, setClinicName] = useState("Swasthya-Mitra Clinic");
   const [error, setError] = useState(null);
-  
+
   // Use a ref to track the room we joined to prevent repeated emits
   const joinedRoomRef = useRef(null);
 
@@ -26,16 +27,16 @@ const ClinicTVDisplay = () => {
       const res = await axios.get(`http://localhost:5000/api/staff/public/doctors/${clinicCode}`);
       setDoctors(res.data.doctors);
       setClinicName(res.data.clinicName);
-      
+
       // 🔑 THE FIX: Handshake logic
       if (res.data.doctors && res.data.doctors.length > 0) {
-          const actualClinicId = res.data.doctors[0].clinicId;
-          
-          if (actualClinicId && joinedRoomRef.current !== actualClinicId) {
-            console.log("🏥 Joining Clinic Room:", actualClinicId);
-            socket.emit('joinClinic', actualClinicId); 
-            joinedRoomRef.current = actualClinicId; // Mark as joined
-          }
+        const actualClinicId = res.data.doctors[0].clinicId;
+
+        if (actualClinicId && joinedRoomRef.current !== actualClinicId) {
+          console.log("🏥 Joining Clinic Room:", actualClinicId);
+          socket.emit('joinClinic', actualClinicId);
+          joinedRoomRef.current = actualClinicId; // Mark as joined
+        }
       }
       setLoading(false);
     } catch (err) {
@@ -57,10 +58,10 @@ const ClinicTVDisplay = () => {
     fetchDoctors();
 
     socket.on('queueUpdate', () => {
-        console.log("♻️ [SOCKET] Queue update detected");
-        // We use a functional update or closure-safe way to check selectedDoc
-        // But for simplicity in TV, we'll re-trigger the fetch logic
-        fetchDoctors(); 
+      console.log("♻️ [SOCKET] Queue update detected");
+      // We use a functional update or closure-safe way to check selectedDoc
+      // But for simplicity in TV, we'll re-trigger the fetch logic
+      fetchDoctors();
     });
 
     socket.on('doctorStatusChanged', () => {
@@ -102,7 +103,7 @@ const ClinicTVDisplay = () => {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           {doctors.map(doc => (
-            <button 
+            <button
               key={doc._id}
               onClick={() => setSelectedDoc(doc)}
               className="bg-white border border-[#E8DDCB] p-8 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] text-left hover:border-[#FFA800] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
@@ -112,8 +113,8 @@ const ClinicTVDisplay = () => {
               <p className="text-[#967A53] font-bold text-[10px] md:text-xs uppercase tracking-widest mb-6">{doc.specialization}</p>
               <div className="mt-auto flex justify-between items-center">
                 <span className={`text-[9px] font-black uppercase flex items-center gap-1.5 ${doc.isAvailable ? 'text-green-600' : 'text-red-400'}`}>
-                   <div className={`w-1.5 h-1.5 rounded-full ${doc.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
-                   {doc.isAvailable ? 'Cabin Active' : 'Away'}
+                  <div className={`w-1.5 h-1.5 rounded-full ${doc.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
+                  {doc.isAvailable ? 'Cabin Active' : 'Away'}
                 </span>
                 <ChevronRight size={18} className="text-[#E8DDCB] group-hover:text-[#FFA800]" />
               </div>
@@ -151,38 +152,38 @@ const ClinicTVDisplay = () => {
       <div className="flex-grow flex flex-col lg:flex-row overflow-hidden">
         <div className="w-full lg:w-3/5 p-8 md:p-16 flex flex-col justify-center items-center lg:border-r border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent">
           <div className="flex items-center gap-3 opacity-40 mb-6 md:mb-10">
-             <Zap size={16} className="text-[#FFA800]" />
-             <p className="text-xs md:text-xl font-black uppercase tracking-[0.4em]">Now Consulting</p>
+            <Zap size={16} className="text-[#FFA800]" />
+            <p className="text-xs md:text-xl font-black uppercase tracking-[0.4em]">Now Consulting</p>
           </div>
 
           {activePatient ? (
             <div className="text-center w-full px-4 animate-in zoom-in duration-700">
-               <div className={`mx-auto w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-[3rem] md:rounded-[4rem] lg:rounded-[6rem] flex flex-col items-center justify-center border-[8px] md:border-[12px] shadow-2xl mb-6 md:mb-10 transition-all ${activePatient.isEmergency ? 'border-red-600 bg-red-600 pulse-ring' : 'border-[#FFA800] bg-[#FFA800]'}`}>
-                  <span className="text-xs md:text-xl font-black uppercase opacity-60">Token No.</span>
-                  <span className="text-6xl md:text-9xl lg:text-[14rem] font-heading leading-none tabular-nums">{activePatient.tokenNumber}</span>
-               </div>
-               <h2 className="text-4xl md:text-6xl lg:text-7xl font-heading truncate">{activePatient.patientName}</h2>
-               {activePatient.isEmergency && (
-                 <p className="text-sm md:text-2xl font-black uppercase tracking-widest text-red-500 mt-4 animate-pulse">Priority Emergency</p>
-               )}
+              <div className={`mx-auto w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-[3rem] md:rounded-[4rem] lg:rounded-[6rem] flex flex-col items-center justify-center border-[8px] md:border-[12px] shadow-2xl mb-6 md:mb-10 transition-all ${activePatient.isEmergency ? 'border-red-600 bg-red-600 pulse-ring' : 'border-[#FFA800] bg-[#FFA800]'}`}>
+                <span className="text-xs md:text-xl font-black uppercase opacity-60">Token No.</span>
+                <span className="text-6xl md:text-9xl lg:text-[14rem] font-heading leading-none tabular-nums">{activePatient.tokenNumber}</span>
+              </div>
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-heading truncate">{activePatient.patientName}</h2>
+              {activePatient.isEmergency && (
+                <p className="text-sm md:text-2xl font-black uppercase tracking-widest text-red-500 mt-4 animate-pulse">Priority Emergency</p>
+              )}
             </div>
           ) : (
             <div className="text-center opacity-20">
-               <Clock size={64} className="mx-auto mb-6" />
-               <p className="text-2xl md:text-4xl font-heading italic">Waiting for Doctor...</p>
+              <Clock size={64} className="mx-auto mb-6" />
+              <p className="text-2xl md:text-4xl font-heading italic">Waiting for Doctor...</p>
             </div>
           )}
         </div>
 
         <div className="w-full lg:w-2/5 flex flex-col bg-black/10 border-t lg:border-t-0 border-white/5">
           <div className="p-6 md:p-10 border-b border-white/5 flex items-center justify-between">
-             <div className="flex items-center gap-3">
-                <Users size={24} className="text-[#FFA800]" />
-                <h3 className="text-xl md:text-3xl font-heading">Queue List</h3>
-             </div>
-             <span className="bg-[#FFA800] text-[#422D0B] px-4 py-1 rounded-xl font-black text-xs md:text-sm">{waitingPatients.length} Waiting</span>
+            <div className="flex items-center gap-3">
+              <Users size={24} className="text-[#FFA800]" />
+              <h3 className="text-xl md:text-3xl font-heading">Queue List</h3>
+            </div>
+            <span className="bg-[#FFA800] text-[#422D0B] px-4 py-1 rounded-xl font-black text-xs md:text-sm">{waitingPatients.length} Waiting</span>
           </div>
-          
+
           <div className="flex-grow overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 max-h-[40vh] lg:max-h-none">
             {waitingPatients.length > 0 ? (
               waitingPatients.map((p, idx) => (
@@ -191,7 +192,7 @@ const ClinicTVDisplay = () => {
                     <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-heading text-xl md:text-3xl shadow-lg ${p.isEmergency ? 'bg-red-600' : 'bg-white/10 text-white'}`}>{p.tokenNumber}</div>
                     <div>
                       <p className="text-lg md:text-2xl font-heading truncate max-w-[200px]">{p.patientName}</p>
-                      {p.isEmergency && <span className="text-[8px] font-black text-red-400 uppercase flex items-center gap-1"><Siren size={10}/> Priority</span>}
+                      {p.isEmergency && <span className="text-[8px] font-black text-red-400 uppercase flex items-center gap-1"><Siren size={10} /> Priority</span>}
                     </div>
                   </div>
                 </div>
@@ -203,13 +204,14 @@ const ClinicTVDisplay = () => {
             )}
           </div>
           <div className="p-4 md:p-6 bg-[#FFA800] text-[#422D0B] overflow-hidden whitespace-nowrap">
-             <p className="text-[10px] md:text-xs font-black uppercase tracking-widest animate-marquee inline-block pr-[100%]">
-                Carry your Digital Locker ID • Results will be synced automatically • Maintain silence in lounge area
-             </p>
+            <p className="text-[10px] md:text-xs font-black uppercase tracking-widest animate-marquee inline-block pr-[100%]">
+              Carry your Digital Locker ID • Results will be synced automatically • Maintain silence in lounge area
+            </p>
           </div>
         </div>
       </div>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes pulse-ring {
           0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
           70% { transform: scale(1.02); box-shadow: 0 0 0 30px rgba(220, 38, 38, 0); }

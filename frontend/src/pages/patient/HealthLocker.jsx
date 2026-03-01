@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { io } from 'socket.io-client'; 
-import { 
-  User, FileText, Activity, History, Download, Calendar, 
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../config/runtime';
+import {
+  User, FileText, Activity, History, Download, Calendar,
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCw, Smartphone, Hash
 } from 'lucide-react';
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const HealthLocker = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const HealthLocker = () => {
       const res = await axios.get('http://localhost:5000/api/auth/patient/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       // 🔑 Updated to use res.data.data from our new Controller
       setData(res.data.data);
       setLoading(false);
@@ -41,13 +42,13 @@ const HealthLocker = () => {
   useEffect(() => {
     fetchHealthData();
 
-    const userPhone = localStorage.getItem('userPhone')?.replace(/\D/g, '').slice(-10); 
-    
+    const userPhone = localStorage.getItem('userPhone')?.replace(/\D/g, '').slice(-10);
+
     if (userPhone) {
       socket.emit('joinClinic', userPhone);
       socket.on('queueUpdate', () => {
         console.log("♻️ Vault Refresh Triggered");
-        fetchHealthData(true); 
+        fetchHealthData(true);
       });
     }
 
@@ -76,46 +77,46 @@ const HealthLocker = () => {
   return (
     <div className="min-h-screen bg-[#FFFBF5] font-body text-[#422D0B] p-6 pb-20">
       <div className="max-w-5xl mx-auto">
-        
+
         <div className="flex justify-between items-center mb-8">
-          <button 
-            onClick={() => navigate(-1)} 
+          <button
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#967A53] hover:text-[#422D0B] transition-colors"
           >
             <ArrowLeft size={14} /> Close Vault
           </button>
           {isSyncing && (
             <div className="flex items-center gap-2 text-[#FFA800] animate-pulse">
-               <RefreshCw size={12} className="animate-spin" />
-               <span className="text-[8px] font-black uppercase tracking-widest">Live Sync Active</span>
+              <RefreshCw size={12} className="animate-spin" />
+              <span className="text-[8px] font-black uppercase tracking-widest">Live Sync Active</span>
             </div>
           )}
         </div>
 
         {/* --- Header --- */}
         <div className="bg-[#422D0B] rounded-[3rem] p-8 md:p-12 shadow-xl mb-10 flex flex-col md:flex-row gap-8 items-center relative overflow-hidden text-white">
-            <div className="absolute top-0 right-0 p-6 opacity-10">
-                <ShieldCheck size={120} />
+          <div className="absolute top-0 right-0 p-6 opacity-10">
+            <ShieldCheck size={120} />
+          </div>
+
+          <div className="w-24 h-24 bg-[#FFA800] rounded-[2rem] flex items-center justify-center text-white text-4xl font-heading shadow-lg z-10">
+            {data.name?.charAt(0) || 'P'}
+          </div>
+
+          <div className="text-center md:text-left z-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFC24A] mb-1">Authenticated Identity</p>
+            <h1 className="text-4xl font-heading">{data.name}</h1>
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+              <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Smartphone size={12} /> {data.phone}</p>
+              <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Hash size={12} /> {data.visitHistory?.length} Consultations</p>
             </div>
-            
-            <div className="w-24 h-24 bg-[#FFA800] rounded-[2rem] flex items-center justify-center text-white text-4xl font-heading shadow-lg z-10">
-                {data.name?.charAt(0) || 'P'}
-            </div>
-            
-            <div className="text-center md:text-left z-10">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFC24A] mb-1">Authenticated Identity</p>
-                <h1 className="text-4xl font-heading">{data.name}</h1>
-                <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
-                    <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Smartphone size={12}/> {data.phone}</p>
-                    <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Hash size={12}/> {data.visitHistory?.length} Consultations</p>
-                </div>
-            </div>
+          </div>
         </div>
 
         {/* --- Navigation Tabs --- */}
         <div className="flex gap-4 mb-8 bg-[#E8DDCB]/20 p-2 rounded-2xl w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
-          <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={<History size={16}/>} label="Consultations" />
-          <TabButton active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} icon={<FileText size={16}/>} label="Digital Locker" />
+          <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={<History size={16} />} label="Consultations" />
+          <TabButton active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} icon={<FileText size={16} />} label="Digital Locker" />
         </div>
 
         {/* --- Dynamic Content Area --- */}
@@ -173,7 +174,7 @@ const HealthLocker = () => {
 
 // UI Components
 const TabButton = ({ active, onClick, icon, label }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'bg-[#FFA800] text-white shadow-lg' : 'bg-white text-[#967A53] border border-[#E8DDCB] hover:border-[#422D0B]'}`}
   >
@@ -184,7 +185,7 @@ const TabButton = ({ active, onClick, icon, label }) => (
 const EmptyState = ({ message }) => (
   <div className="bg-white border-2 border-dashed border-[#E8DDCB] p-24 rounded-[4rem] text-center text-[#967A53] w-full flex flex-col items-center">
     <div className="w-16 h-16 bg-[#FFFBF5] rounded-full flex items-center justify-center mb-6 border border-[#E8DDCB]">
-        <Activity size={32} className="opacity-20" />
+      <Activity size={32} className="opacity-20" />
     </div>
     <p className="font-heading text-xl opacity-60 italic">{message}</p>
   </div>

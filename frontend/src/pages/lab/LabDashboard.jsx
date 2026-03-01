@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { io } from 'socket.io-client'; 
-import { 
-  Beaker, Upload, Smartphone, Hash, FileCheck, 
-  RefreshCw, Activity, Search 
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../config/runtime';
+import {
+  Beaker, Upload, Smartphone, Hash, FileCheck,
+  RefreshCw, Activity, Search
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io('http://localhost:5000');
+const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const LabDashboard = () => {
   const [labQueue, setLabQueue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  
+
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
@@ -48,7 +49,7 @@ const LabDashboard = () => {
 
       socket.on('queueUpdate', () => {
         console.log("♻️ Lab Feed Syncing...");
-        fetchLabQueue(true); 
+        fetchLabQueue(true);
       });
     }
 
@@ -62,21 +63,21 @@ const LabDashboard = () => {
 
     // 🔍 Pre-upload validation
     if (file.size > 5 * 1024 * 1024) { // 5MB Limit
-        return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
+      return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
     }
 
-    const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10); 
+    const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
 
     const formData = new FormData();
     // 🔑 IMPORTANT: Ensure this key ('file') matches upload.single('file') in your backend route
-    formData.append('file', file); 
+    formData.append('file', file);
     formData.append('title', 'Diagnostic Report');
     formData.append('fileType', file.type.includes('pdf') ? 'PDF' : 'Image');
 
-    Swal.fire({ 
-      title: 'Syncing to Locker...', 
+    Swal.fire({
+      title: 'Syncing to Locker...',
       html: '<p style="font-size: 12px; color: #967A53;">Encrypting and notifying doctor...</p>',
-      allowOutsideClick: false, 
+      allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
       background: '#FFFBF5'
     });
@@ -84,24 +85,24 @@ const LabDashboard = () => {
     try {
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
       const res = await axios.post(`http://localhost:5000/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data', 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
         }
       });
 
       if (res.data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Results Published',
-            text: 'Patient locker updated successfully.',
-            timer: 2000,
-            showConfirmButton: false,
-            background: '#FFFBF5'
-          });
-          
-          // Manually trigger a refresh to remove the patient from the list immediately
-          fetchLabQueue(true);
+        Swal.fire({
+          icon: 'success',
+          title: 'Results Published',
+          text: 'Patient locker updated successfully.',
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#FFFBF5'
+        });
+
+        // Manually trigger a refresh to remove the patient from the list immediately
+        fetchLabQueue(true);
       }
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
@@ -115,21 +116,21 @@ const LabDashboard = () => {
     }
   };
 
-  const filteredQueue = labQueue.filter(p => 
-    p.patientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredQueue = labQueue.filter(p =>
+    p.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.patientPhone.includes(searchTerm)
   );
 
   return (
     <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
       <Sidebar role="lab" />
-      
+
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         {/* Navigation - Marigold Style */}
         <nav className="bg-white border-b border-[#E8DDCB] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-[#FFA800] rounded-xl flex items-center justify-center text-white shadow-lg">
-               <Beaker size={20} />
+              <Beaker size={20} />
             </div>
             <div>
               <h1 className="font-heading text-xl">Diagnostics Station</h1>
@@ -139,19 +140,19 @@ const LabDashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967A53]" size={14} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Find Patient..."
                 className="pl-10 pr-4 py-2 bg-[#FFFBF5] border border-[#E8DDCB] rounded-xl outline-none focus:border-[#FFA800] text-xs font-bold w-64 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button 
+            <button
               onClick={() => fetchLabQueue(false)}
               className={`p-2 text-[#967A53] hover:text-[#FFA800] transition-colors ${isSyncing ? 'animate-spin' : ''}`}
             >
@@ -171,10 +172,10 @@ const LabDashboard = () => {
               </p>
             </div>
             <div className="bg-white border border-[#E8DDCB] px-6 py-4 rounded-3xl flex items-center gap-4 shadow-sm">
-                <p className="text-[10px] font-black uppercase text-[#967A53] tracking-widest">Active Samples</p>
-                <div className="w-10 h-10 bg-[#FFA800]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#FFA800]">
-                    {labQueue.length}
-                </div>
+              <p className="text-[10px] font-black uppercase text-[#967A53] tracking-widest">Active Samples</p>
+              <div className="w-10 h-10 bg-[#FFA800]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#FFA800]">
+                {labQueue.length}
+              </div>
             </div>
           </div>
 
@@ -197,35 +198,34 @@ const LabDashboard = () => {
 
                   <div className="flex items-center gap-8 w-full md:w-auto">
                     <div className="w-20 h-20 bg-[#FFFBF5] rounded-[2.5rem] border-2 border-[#E8DDCB] group-hover:border-[#FFA800]/30 flex flex-col items-center justify-center transition-colors">
-                        <p className="text-[8px] font-black text-[#967A53] uppercase mb-0.5">Token</p>
-                        <p className="text-3xl font-heading text-[#422D0B]">{p.tokenNumber}</p>
+                      <p className="text-[8px] font-black text-[#967A53] uppercase mb-0.5">Token</p>
+                      <p className="text-3xl font-heading text-[#422D0B]">{p.tokenNumber}</p>
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                          p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#FFA800]/10 text-[#FFA800] border-[#FFA800]/20'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#FFA800]/10 text-[#FFA800] border-[#FFA800]/20'
+                          }`}>
                           {p.requiredTest || 'General Diagnostic'}
                         </span>
                         {p.isEmergency && <span className="text-[8px] font-black text-red-600 animate-pulse uppercase tracking-tighter">🚨 Immediate Priority</span>}
                       </div>
                       <h3 className="text-3xl font-heading text-[#422D0B]">{p.patientName}</h3>
                       <div className="flex gap-6 mt-3">
-                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Smartphone size={12}/> {p.patientPhone}</p>
-                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Hash size={12}/> {p._id.slice(-6).toUpperCase()}</p>
+                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Smartphone size={12} /> {p.patientPhone}</p>
+                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Hash size={12} /> {p._id.slice(-6).toUpperCase()}</p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="w-full md:w-auto">
                     <label className="flex items-center justify-center gap-4 bg-[#422D0B] text-[#FFFBF5] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#FFA800] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
                       <Upload size={18} />
                       <span>Sync Digital Report</span>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*,application/pdf"
-                        onChange={(e) => handleFileUpload(p.patientPhone, p._id, e.target.files[0])} 
+                        onChange={(e) => handleFileUpload(p.patientPhone, p._id, e.target.files[0])}
                       />
                     </label>
                   </div>
