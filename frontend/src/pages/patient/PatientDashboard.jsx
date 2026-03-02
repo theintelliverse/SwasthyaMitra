@@ -114,7 +114,7 @@ const PatientDashboard = () => {
 
           <button
             onClick={() => navigate('/Patient/HealthLocker')}
-            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-[#1F6FB2] hover:bg-[#1A4F8A] text-[#0F766E] px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
+            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-[#0F766E] hover:bg-[#1F6FB2] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
           >
             <FolderHeart size={18} className="group-hover:animate-bounce" />
             Open Full Health Locker

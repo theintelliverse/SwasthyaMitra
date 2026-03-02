@@ -10,7 +10,7 @@ import {
 const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
-const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || '';
+const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath || '';
 
 const getDocumentFileName = (doc) => {
   const safeTitle = (doc?.title || 'Clinical_Report').replace(/[^a-z0-9-_]/gi, '_');
@@ -56,7 +56,14 @@ const HealthLocker = () => {
       anchor.remove();
       window.URL.revokeObjectURL(blobUrl);
     } catch {
-      window.open(fileUrl, '_blank', 'noopener,noreferrer');
+      const fallbackAnchor = document.createElement('a');
+      fallbackAnchor.href = fileUrl;
+      fallbackAnchor.target = '_blank';
+      fallbackAnchor.rel = 'noopener noreferrer';
+      fallbackAnchor.download = getDocumentFileName(doc);
+      document.body.appendChild(fallbackAnchor);
+      fallbackAnchor.click();
+      fallbackAnchor.remove();
     }
   };
 
