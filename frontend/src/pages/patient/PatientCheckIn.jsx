@@ -6,6 +6,40 @@ import { Phone, User, Stethoscope, ShieldCheck, ArrowRight, RefreshCw } from 'lu
 import { API_BASE_URL } from '../../config/runtime';
 
 const API_URL = API_BASE_URL;
+
+const normalizePhone = (value = '') => value.replace(/\D/g, '').slice(-10);
+
+const getErrorMessage = (error, fallback) => {
+  return (
+    error?.response?.data?.message ||
+    error?.message ||
+    fallback
+  );
+};
+
+const shouldTryAlternatePatientRoute = (error) => {
+  const status = error?.response?.status;
+  if (status === 404 || status === 405) {
+    return true;
+  }
+
+  return !error?.response && !!error?.request;
+};
+
+const postPatientAuthWithFallback = async (endpoint, payload) => {
+  const primaryUrl = `${API_URL}/api/auth/patient/${endpoint}`;
+  const fallbackUrl = `${API_URL}/api/patient/${endpoint}`;
+
+  try {
+    return await axios.post(primaryUrl, payload);
+  } catch (error) {
+    if (!shouldTryAlternatePatientRoute(error)) {
+      throw error;
+    }
+    return axios.post(fallbackUrl, payload);
+  }
+};
+
 const PatientCheckIn = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -17,6 +51,8 @@ const PatientCheckIn = () => {
   const [fetchError, setFetchError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const [formData, setFormData] = useState({
     patientName: '',
@@ -27,6 +63,7 @@ const PatientCheckIn = () => {
   useEffect(() => {
     const fetchClinicDoctors = async () => {
       try {
+        setLoading(true);
         setFetchError('');
         if (!API_URL) {
           throw new Error('API URL is not configured. Please set VITE_API_URL.');
@@ -36,11 +73,17 @@ const PatientCheckIn = () => {
         }
         const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
         const responseDoctors = Array.isArray(res.data?.doctors) ? res.data.doctors : [];
-        setDoctors(responseDoctors.filter((doc) => doc.isAvailable !== false));
+        const sortedDoctors = [...responseDoctors].sort((a, b) => {
+          const aUnavailable = a?.isAvailable === false;
+          const bUnavailable = b?.isAvailable === false;
+          if (aUnavailable === bUnavailable) return 0;
+          return aUnavailable ? 1 : -1;
+        });
+        setDoctors(sortedDoctors);
         setClinicName(res.data?.clinicName || 'Clinic');
         setLoading(false);
       } catch (error) {
-        const message = error.response?.data?.message || error.message || 'Could not load doctors.';
+        const message = getErrorMessage(error, 'Could not load doctors.');
         setFetchError(message);
         setDoctors([]);
         setLoading(false);
@@ -57,14 +100,19 @@ const PatientCheckIn = () => {
   const handleSendOTP = async (e) => {
     e.preventDefault();
     try {
+      setSendingOtp(true);
       if (!API_URL) {
         throw new Error('API URL is not configured. Please set VITE_API_URL.');
       }
       if (!formData.doctorId) {
         throw new Error('Please choose a consulting specialist first.');
       }
-      await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
-        phone: formData.patientPhone
+      const cleanPhone = normalizePhone(formData.patientPhone);
+      if (cleanPhone.length !== 10) {
+        throw new Error('Please enter a valid 10-digit mobile number.');
+      }
+      await postPatientAuthWithFallback('send-otp', {
+        phone: cleanPhone
       });
       setOtpSent(true);
       Swal.fire({
@@ -78,13 +126,15 @@ const PatientCheckIn = () => {
         background: '#EEF6FA'
       });
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to send OTP. Please check the phone number.';
+      const message = getErrorMessage(error, 'Failed to send OTP. Please check the phone number.');
       Swal.fire({
         icon: 'error',
         title: 'Dispatch Failed',
         text: message,
         confirmButtonColor: '#0F766E'
       });
+    } finally {
+      setSendingOtp(false);
     }
   };
 
@@ -92,24 +142,37 @@ const PatientCheckIn = () => {
   const handleVerifyAndCheckin = async (e) => {
     e.preventDefault();
     try {
+      setVerifyingOtp(true);
       if (!API_URL) {
         throw new Error('API URL is not configured. Please set VITE_API_URL.');
       }
+      const cleanPhone = normalizePhone(formData.patientPhone);
+      if (cleanPhone.length !== 10) {
+        throw new Error('Invalid mobile number. Please go back and correct it.');
+      }
+      const cleanOtp = otp.trim();
+      if (!/^\d{6}$/.test(cleanOtp)) {
+        throw new Error('Please enter a valid 6-digit OTP.');
+      }
       // 1. Verify OTP first
-      await axios.post(`${API_URL}/api/auth/patient/verify-otp`, {
-        phone: formData.patientPhone,
-        otp
+      await postPatientAuthWithFallback('verify-otp', {
+        phone: cleanPhone,
+        otp: cleanOtp
       });
 
       // 2. Submit the Gatekeeper Check-in Request
       const res = await axios.post(`${API_URL}/api/queue/public/checkin`, {
         patientName: formData.patientName,
-        patientPhone: formData.patientPhone,
+        patientPhone: cleanPhone,
         doctorId: formData.doctorId,
         clinicCode: clinicCode.toUpperCase()
       });
 
       if (res.data.success) {
+        const queueId = res.data.id || res.data.requestId;
+        if (!queueId) {
+          throw new Error('Request created but queue id is missing. Please retry once.');
+        }
         Swal.fire({
           title: 'Request Sent!',
           text: 'The receptionist has been notified. Please wait for approval.',
@@ -117,17 +180,19 @@ const PatientCheckIn = () => {
           confirmButtonColor: '#1F6FB2',
           background: '#EEF6FA'
         }).then(() => {
-          navigate(`/patient/status?id=${res.data.id}`);
+          navigate(`/patient/status?id=${queueId}`);
         });
       }
     } catch (error) {
-      console.error("Check-in Error:", error.response);
+      console.error('Check-in Error:', error?.response || error);
       Swal.fire({
         icon: 'error',
         title: 'Verification Failed',
-        text: error.response?.data?.message || 'Invalid code or check-in error.',
+        text: getErrorMessage(error, 'Invalid code or check-in error.'),
         confirmButtonColor: '#0F766E'
       });
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -168,6 +233,7 @@ const PatientCheckIn = () => {
                 <input
                   type="text" required placeholder="Dr. Patient Name"
                   className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E] transition-all placeholder:font-normal"
+                  value={formData.patientName}
                   onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
                 />
               </div>
@@ -180,6 +246,7 @@ const PatientCheckIn = () => {
                 <input
                   type="tel" required placeholder="91XXXXXXXXXX"
                   className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-medium text-[#0F766E] transition-all placeholder:font-normal"
+                  value={formData.patientPhone}
                   onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
                 />
               </div>
@@ -193,20 +260,21 @@ const PatientCheckIn = () => {
                   required
                   disabled={doctors.length === 0}
                   className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E] appearance-none cursor-pointer relative z-0"
+                  value={formData.doctorId}
                   onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
                 >
                   <option value="">{doctors.length === 0 ? 'No specialist available' : 'Choose Specialist'}</option>
                   {doctors.map(doc => (
-                    <option key={doc._id} value={doc._id}>
-                      Dr. {doc.name} ({doc.specialization || 'General'})
+                    <option key={doc._id} value={doc._id} disabled={doc.isAvailable === false}>
+                      Dr. {doc.name} ({doc.specialization || 'General'}){doc.isAvailable === false ? ' • On break' : ''}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            <button type="submit" className="w-full py-5 bg-[#1F6FB2] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-[#0F766E] transition-all active:scale-95 flex items-center justify-center gap-3">
-              Send OTP <ArrowRight size={18} />
+            <button disabled={sendingOtp || doctors.length === 0} type="submit" className="w-full py-5 bg-[#1F6FB2] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-[#0F766E] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-[#1F6FB2]">
+              {sendingOtp ? 'Sending OTP...' : 'Send OTP'} <ArrowRight size={18} />
             </button>
           </form>
         ) : (
@@ -219,12 +287,12 @@ const PatientCheckIn = () => {
             <input
               type="text" required maxLength="6" placeholder="0 0 0 0 0 0"
               className="w-full text-center text-4xl tracking-[0.4em] py-8 bg-[#EEF6FA] border-2 border-[#1F6FB2]/20 rounded-[2.5rem] outline-none focus:border-[#1F6FB2] font-heading text-[#0F766E] shadow-inner"
-              value={otp} onChange={(e) => setOtp(e.target.value)}
+              value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
             />
 
             <div className="flex flex-col gap-4">
-              <button type="submit" className="w-full py-5 bg-[#0F766E] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-[#1F6FB2] transition-all">
-                Confirm & Request Entry
+              <button disabled={verifyingOtp} type="submit" className="w-full py-5 bg-[#0F766E] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-[#1F6FB2] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-[#0F766E]">
+                {verifyingOtp ? 'Verifying...' : 'Confirm & Request Entry'}
               </button>
               <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-black uppercase text-[#3FA28C] tracking-[0.2em] hover:text-[#0F766E] transition-all">
                 ← Edit Information
