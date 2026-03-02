@@ -15,10 +15,13 @@ import {
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import ClinicQR from '../../components/ClinicQR';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../../config/runtime';
+
+const API_URL = API_BASE_URL;
 const ClinicSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     clinicCode: '',
@@ -30,6 +33,14 @@ const ClinicSettings = () => {
   useEffect(() => {
     const fetchClinicData = async () => {
       try {
+        setFetchError('');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        if (!API_URL) {
+          throw new Error('API URL is not configured. Please set VITE_API_URL.');
+        }
         const res = await axios.get(`${API_URL}/api/clinic/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -45,16 +56,24 @@ const ClinicSettings = () => {
         }
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching clinic data", err);
+        const message = err.response?.data?.message || err.message || 'Error fetching clinic data';
+        setFetchError(message);
+        if (err.response?.status === 401) {
+          navigate('/login');
+          return;
+        }
         setLoading(false);
       }
     };
     fetchClinicData();
-  }, [token]);
+  }, [token, navigate]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      if (!API_URL) {
+        throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
       const res = await axios.patch(`${API_URL}/api/clinic/settings`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -72,7 +91,8 @@ const ClinicSettings = () => {
         });
       }
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || 'Update failed', 'error');
+      const message = err.response?.data?.message || err.message || 'Update failed';
+      Swal.fire('Error', message, 'error');
     }
   };
 
@@ -106,6 +126,11 @@ const ClinicSettings = () => {
 
             {/* --- Main Settings Form --- */}
             <div className="lg:col-span-2 space-y-8">
+              {fetchError && (
+                <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-red-700 text-sm font-semibold">
+                  {fetchError}
+                </div>
+              )}
               <div className="bg-white border border-[#E8DDCB] rounded-[3.5rem] p-8 md:p-12 shadow-sm">
                 <form onSubmit={handleUpdate} className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
