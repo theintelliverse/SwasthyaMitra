@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
@@ -13,15 +14,22 @@ const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const LabDashboard = () => {
+  const navigate = useNavigate();
   const [labQueue, setLabQueue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const role = sessionStorage.getItem('role') || localStorage.getItem('role');
   const clinicId = sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
 
-  const fetchLabQueue = async (silent = false) => {
+  const fetchLabQueue = useCallback(async (silent = false) => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
@@ -39,6 +47,10 @@ const LabDashboard = () => {
       setLoading(false);
     } catch (err) {
       console.error("Lab Fetch Error:", err);
+      if (err?.response?.status === 401) {
+        navigate('/login');
+        return;
+      }
       Swal.fire({
         icon: 'error',
         title: 'Diagnostics Sync Failed',
@@ -50,9 +62,19 @@ const LabDashboard = () => {
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
     }
-  };
+  }, [navigate, token]);
 
   useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    if (role && !['lab', 'admin'].includes(role)) {
+      navigate('/unauthorized');
+      return;
+    }
+
     fetchLabQueue();
 
     if (clinicId) {
@@ -68,7 +90,7 @@ const LabDashboard = () => {
     return () => {
       socket.off('queueUpdate');
     };
-  }, [token, clinicId]);
+  }, [clinicId, fetchLabQueue, navigate, role, token]);
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
     if (!file) return;
@@ -117,6 +139,10 @@ const LabDashboard = () => {
       }
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
+      if (err?.response?.status === 401) {
+        navigate('/login');
+        return;
+      }
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
