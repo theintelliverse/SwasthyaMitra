@@ -189,30 +189,34 @@ const LabDashboard = () => {
           if (!progressEvent.total) return;
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           Swal.update({
-            html: `<p style="font-size: 12px; color: #3FA28C;">Uploading report... ${percent}%</p>`
+            html: `<p style="font-size: 12px; color: #3FA28C;">${percent >= 100 ? 'Finalizing on server...' : `Uploading report... ${percent}%`}</p>`
           });
         }
       });
 
-      if (res.data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Results Published',
-          text: 'Patient locker updated successfully.',
-          timer: 2000,
-          showConfirmButton: false,
-          background: '#EEF6FA'
-        });
-
-        // Manually trigger a refresh to remove the patient from the list immediately
-        fetchLabQueue(true);
+      if (!res?.data?.success) {
+        throw new Error(res?.data?.message || 'Server did not confirm report sync.');
       }
+
+      Swal.close();
+      Swal.fire({
+        icon: 'success',
+        title: 'Results Published',
+        text: 'Patient locker updated successfully.',
+        timer: 2000,
+        showConfirmButton: false,
+        background: '#EEF6FA'
+      });
+
+      // Manually trigger a refresh to remove the patient from the list immediately
+      fetchLabQueue(true);
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
       if (err?.response?.status === 401) {
         navigate('/login');
         return;
       }
+      Swal.close();
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
