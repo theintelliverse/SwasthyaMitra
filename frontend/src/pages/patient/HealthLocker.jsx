@@ -72,7 +72,7 @@ const HealthLocker = () => {
     else setIsSyncing(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/api/auth/patient/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });

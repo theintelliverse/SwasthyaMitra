@@ -12,7 +12,7 @@ const PatientQuickView = ({ phone, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('vitals');
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
   const fetchFullProfile = async (silent = false) => {
     if (!silent) setLoading(true);

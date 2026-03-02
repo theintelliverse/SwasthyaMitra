@@ -26,12 +26,18 @@ const Login = () => {
         const { token, user } = response.data;
 
         // 🔑 CORE AUTH DATA
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('role', user.role);
+        sessionStorage.setItem('userName', user.name);
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userName', user.name);
 
         // 🏥 CLINIC DATA (Crucial for WebSockets)
         // This ensures localStorage.getItem('clinicId') will no longer be null
+        sessionStorage.setItem('clinicId', user.clinicId);
+        sessionStorage.setItem('clinicName', user.clinicName || 'Our Clinic');
+        sessionStorage.setItem('clinicCode', formData.clinicCode.toUpperCase());
         localStorage.setItem('clinicId', user.clinicId);
         localStorage.setItem('clinicName', user.clinicName || 'Our Clinic');
         localStorage.setItem('clinicCode', formData.clinicCode.toUpperCase());

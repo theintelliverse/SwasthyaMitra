@@ -28,7 +28,7 @@ const ClinicSettings = () => {
     contactPhone: '',
     address: ''
   });
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
   useEffect(() => {
     const fetchClinicData = async () => {

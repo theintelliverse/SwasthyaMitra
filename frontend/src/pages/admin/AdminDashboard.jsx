@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
   const clinicName = localStorage.getItem('clinicName') || 'Your Clinic';
   const clinicCode = localStorage.getItem('clinicCode') || 'CITY01';

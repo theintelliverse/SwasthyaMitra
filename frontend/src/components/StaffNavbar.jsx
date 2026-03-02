@@ -5,8 +5,8 @@ import { LogOut, Bell, User, Settings, ShieldCheck } from 'lucide-react';
 const API_URL = import.meta.env.VITE_API_URL;
 const StaffNavbar = ({ roleName }) => {
   const navigate = useNavigate();
-  const clinicName = localStorage.getItem('clinicName') || 'Clinic';
-  const userName = localStorage.getItem('userName') || 'Staff Member';
+  const clinicName = sessionStorage.getItem('clinicName') || localStorage.getItem('clinicName') || 'Clinic';
+  const userName = sessionStorage.getItem('userName') || localStorage.getItem('userName') || 'Staff Member';
 
   const handleLogout = () => {
     Swal.fire({
@@ -20,7 +20,7 @@ const StaffNavbar = ({ roleName }) => {
       background: '#EEF6FA'
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.clear();
+        sessionStorage.clear();
         navigate('/login');
       }
     });
@@ -46,16 +46,16 @@ const StaffNavbar = ({ roleName }) => {
       <div className="flex items-center gap-6">
         {/* Quick Utilities */}
         <div className="hidden md:flex items-center gap-2 border-r border-[#AFC4D8] pr-6 mr-2">
-           <button className="p-2 text-[#3FA28C] hover:text-[#1F6FB2] hover:bg-[#EEF6FA] rounded-lg transition-all" title="Notifications">
-              <Bell size={18} />
-           </button>
-           <button 
-             onClick={() => navigate('/profile')} 
-             className="p-2 text-[#3FA28C] hover:text-[#1F6FB2] hover:bg-[#EEF6FA] rounded-lg transition-all" 
-             title="Settings"
-            >
-              <Settings size={18} />
-           </button>
+          <button className="p-2 text-[#3FA28C] hover:text-[#1F6FB2] hover:bg-[#EEF6FA] rounded-lg transition-all" title="Notifications">
+            <Bell size={18} />
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            className="p-2 text-[#3FA28C] hover:text-[#1F6FB2] hover:bg-[#EEF6FA] rounded-lg transition-all"
+            title="Settings"
+          >
+            <Settings size={18} />
+          </button>
         </div>
 
         {/* User Identity */}
@@ -64,8 +64,8 @@ const StaffNavbar = ({ roleName }) => {
             <p className="text-[10px] font-black uppercase text-[#0F766E]">{userName}</p>
             <p className="text-[8px] font-bold text-[#3FA28C] uppercase tracking-tighter">Authorized Access</p>
           </div>
-          
-          <button 
+
+          <button
             onClick={handleLogout}
             className="group flex items-center gap-2 px-4 py-2 bg-[#EEF6FA] border border-[#AFC4D8] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#3FA28C] hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all active:scale-95"
           >

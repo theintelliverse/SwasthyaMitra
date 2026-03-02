@@ -26,7 +26,7 @@ const PatientDashboard = () => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!token) {
       navigate('/patient/login');
       return;
@@ -95,7 +95,7 @@ const PatientDashboard = () => {
             </div>
           </div>
         </div>
-        <button onClick={() => { localStorage.clear(); navigate('/patient/login'); }} className="text-[10px] font-black uppercase text-[#3FA28C] hover:text-red-500 transition-colors flex items-center gap-2">
+        <button onClick={() => { sessionStorage.clear(); navigate('/patient/login'); }} className="text-[10px] font-black uppercase text-[#3FA28C] hover:text-red-500 transition-colors flex items-center gap-2">
           <LogOut size={14} /> Logout
         </button>
       </nav>

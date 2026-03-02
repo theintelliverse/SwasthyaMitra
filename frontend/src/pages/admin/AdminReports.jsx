@@ -28,7 +28,7 @@ const AdminReports = () => {
         else setIsSyncing(true);
 
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             const res = await axios.get(`${API_URL}/api/staff/admin/preview-data`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -49,7 +49,7 @@ const AdminReports = () => {
         if (!dates.start || !dates.end) return alert("Please select a valid date range.");
         setIsDownloading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             const response = await axios.get(
                 `${API_URL}/api/staff/admin/reports/download?startDate=${dates.start}&endDate=${dates.end}`,
                 {

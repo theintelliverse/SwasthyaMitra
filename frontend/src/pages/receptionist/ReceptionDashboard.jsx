@@ -31,8 +31,8 @@ const ReceptionDashboard = () => {
     isEmergency: false
   });
 
-  const token = localStorage.getItem('token');
-  const clinicId = localStorage.getItem('clinicId');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const clinicId = sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
 
   const fetchDashboardData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);

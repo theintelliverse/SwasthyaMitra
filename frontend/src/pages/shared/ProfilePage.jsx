@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
   useEffect(() => {
     const fetchProfile = async () => {

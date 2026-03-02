@@ -11,8 +11,8 @@ const MedicalHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
 
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const role = sessionStorage.getItem('role') || localStorage.getItem('role');
 
   useEffect(() => {
     const fetchHistory = async () => {

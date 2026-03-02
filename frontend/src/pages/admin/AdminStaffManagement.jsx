@@ -31,7 +31,7 @@ const AdminStaffManagement = () => {
     specialization: ''
   });
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
   const fetchStaff = async (showLoading = true) => {

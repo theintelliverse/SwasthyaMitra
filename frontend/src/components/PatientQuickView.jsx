@@ -17,7 +17,7 @@ const API_URL = API_BASE_URL;
 const PatientQuickView = ({ phone, onClose }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
   const vitals = Array.isArray(patientData?.vitals) ? patientData.vitals : [];
   const latestVitals = vitals.length > 0 ? vitals[vitals.length - 1] : null;

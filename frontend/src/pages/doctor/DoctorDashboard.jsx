@@ -19,8 +19,8 @@ const DoctorDashboard = () => {
   const [patientData, setPatientData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const token = localStorage.getItem('token');
-  const clinicId = localStorage.getItem('clinicId');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const clinicId = sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
   const navigate = useNavigate();
 
   const fetchMyStatus = async () => {
@@ -147,7 +147,7 @@ const DoctorDashboard = () => {
               {isOnBreak ? <Play size={12} fill="currentColor" /> : <Coffee size={12} />} {isOnBreak ? 'Resume Duty' : 'Take Break'}
             </button>
           </div>
-          <p className="text-[10px] font-black uppercase text-[#1F6FB2] tracking-widest underline decoration-2">Dr. {localStorage.getItem('userName') || 'Physician'}</p>
+          <p className="text-[10px] font-black uppercase text-[#1F6FB2] tracking-widest underline decoration-2">Dr. {(sessionStorage.getItem('userName') || localStorage.getItem('userName')) || 'Physician'}</p>
         </nav>
 
         <main className="p-6 lg:p-10 max-w-7xl mx-auto w-full grid lg:grid-cols-4 gap-10">

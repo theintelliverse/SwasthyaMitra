@@ -18,7 +18,7 @@ const LabDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
   const fetchLabQueue = async (silent = false) => {

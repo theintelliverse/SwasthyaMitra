@@ -6,6 +6,15 @@ import App from './App.jsx'
 import { API_BASE_URL } from './config/runtime'
 
 axios.interceptors.request.use((config) => {
+  const sessionToken = typeof window !== 'undefined'
+    ? (window.sessionStorage.getItem('token') || window.localStorage.getItem('token'))
+    : null
+
+  if (sessionToken) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${sessionToken}`
+  }
+
   if (typeof config.url === 'string') {
     const isAbsoluteHttpUrl = /^https?:\/\//i.test(config.url)
 

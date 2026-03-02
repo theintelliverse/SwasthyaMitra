@@ -29,11 +29,16 @@ const PatientLogin = () => {
   };
 
   const completePatientSession = (responseData, fallbackPhone) => {
+    sessionStorage.setItem('token', responseData.token);
+    sessionStorage.setItem('role', 'patient');
+    sessionStorage.setItem('userPhone', responseData.patient?.phone || fallbackPhone);
+
     localStorage.setItem('token', responseData.token);
     localStorage.setItem('role', 'patient');
     localStorage.setItem('userPhone', responseData.patient?.phone || fallbackPhone);
 
     const nameToStore = responseData.patient?.name || 'Valued Patient';
+    sessionStorage.setItem('patientName', nameToStore);
     localStorage.setItem('patientName', nameToStore);
 
     Swal.fire({

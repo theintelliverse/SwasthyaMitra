@@ -18,7 +18,7 @@ const LockerSearch = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
       // Normalize to last 10 digits
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
 
