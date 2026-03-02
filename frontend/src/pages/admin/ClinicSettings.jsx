@@ -25,7 +25,7 @@ const ClinicSettings = () => {
   const [formData, setFormData] = useState({
     name: '',
     clinicCode: '',
-    contactNumber: '',
+    contactPhone: '',
     address: ''
   });
   const token = localStorage.getItem('token');
@@ -46,11 +46,11 @@ const ClinicSettings = () => {
         });
 
         if (res.data.success) {
-          const { name, clinicCode, contactNumber, address } = res.data.data;
+          const { name, clinicCode, contactPhone, contactNumber, address } = res.data.data;
           setFormData({
             name: name || '',
             clinicCode: clinicCode || '',
-            contactNumber: contactNumber || '',
+            contactPhone: contactPhone || contactNumber || '',
             address: address || ''
           });
         }
@@ -175,8 +175,8 @@ const ClinicSettings = () => {
                         type="text"
                         placeholder="+91 00000 00000"
                         className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-medium text-[#422D0B]"
-                        value={formData.contactNumber}
-                        onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                        value={formData.contactPhone}
+                        onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                       />
                     </div>
                   </div>
