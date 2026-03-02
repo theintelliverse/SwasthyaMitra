@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
-  User, Phone, Stethoscope, AlertCircle, Clipboard,
-  Beaker, Activity, UserCheck, XCircle, Coffee,
-  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link
+  Stethoscope, Activity, UserCheck, XCircle, Coffee,
+  CheckCircle2, LayoutDashboard, Search, Siren, RefreshCw
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
+const normalizePhone = (value = '') => value.replace(/\D/g, '').slice(-10);
+
 const ReceptionDashboard = () => {
-  const navigate = useNavigate();
   const [queue, setQueue] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -35,23 +34,35 @@ const ReceptionDashboard = () => {
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
-  const fetchDashboardData = async (silent = false) => {
+  const fetchDashboardData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
+      if (!API_URL) {
+        throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
+
       const [queueRes, staffRes, pendingRes] = await Promise.all([
         axios.get(`${API_URL}/api/queue/live`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/staff/all`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/queue/pending`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      setQueue(queueRes.data.data);
-      setDoctors(staffRes.data.staff.filter(s => s.role === 'doctor'));
-      setPendingRequests(pendingRes.data.data);
+      setQueue(Array.isArray(queueRes.data?.data) ? queueRes.data.data : []);
+      const staff = Array.isArray(staffRes.data?.staff) ? staffRes.data.staff : [];
+      setDoctors(staff.filter(s => s.role === 'doctor'));
+      setPendingRequests(Array.isArray(pendingRes.data?.data) ? pendingRes.data.data : []);
       setLoading(false);
     } catch (err) {
       console.error("Dashboard Sync Error:", err);
+      if (!silent) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Sync Failed',
+          text: err?.response?.data?.message || err?.message || 'Could not load dashboard data.'
+        });
+      }
       setLoading(false);
     }
-  };
+  }, [token]);
 
   // 🔌 WebSocket Lifecycle with Debugging
   useEffect(() => {
@@ -97,7 +108,7 @@ const ReceptionDashboard = () => {
       socket.off('newCheckInRequest');
       socket.off('connect');
     };
-  }, [token, clinicId]);
+  }, [clinicId, fetchDashboardData]);
 
   // --- 🛠️ OPERATION: ADD VITALS ---
   const handleAddVitals = async (patientPhone) => {
@@ -124,12 +135,12 @@ const ReceptionDashboard = () => {
 
     if (formValues) {
       try {
-        await axios.patch(`${API_URL}/api/staff/update-patient-vitals/${patientPhone}`,
+        await axios.patch(`${API_URL}/api/staff/update-patient-profile/${patientPhone}`,
           { vitals: formValues },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         Swal.fire({ icon: 'success', title: 'Vitals Synced', timer: 1500, showConfirmButton: false });
-      } catch (err) {
+      } catch {
         Swal.fire('Error', 'Failed to update vitals', 'error');
       }
     }
@@ -152,21 +163,36 @@ const ReceptionDashboard = () => {
   const handleManualSubmit = async (e) => {
     e.preventDefault();
     if (isProcessing) return;
+
+    const cleanPhone = normalizePhone(formData.patientPhone);
+    if (cleanPhone.length !== 10) {
+      Swal.fire('Invalid Number', 'Enter a valid 10-digit mobile number.', 'warning');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const res = await axios.post(`${API_URL}/api/queue/add`, formData, { headers: { Authorization: `Bearer ${token}` } });
+      const payload = { ...formData, patientPhone: cleanPhone };
+      const res = await axios.post(`${API_URL}/api/queue/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data.success) {
         Swal.fire({ icon: formData.isEmergency ? 'warning' : 'success', title: formData.isEmergency ? 'Emergency Token Issued' : 'Token Generated', text: `${formData.patientName} is now in queue.`, timer: 2000, showConfirmButton: false, background: '#EEF6FA' });
         setFormData({ patientName: '', patientPhone: '', doctorId: '', visitType: 'Walk-in', isEmergency: false });
         await fetchDashboardData(true);
       }
-    } catch (err) { Swal.fire('Error', 'Registration failed', 'error'); } finally { setIsProcessing(false); }
+    } catch {
+      Swal.fire('Error', 'Registration failed', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleApprove = async (id) => {
     if (isProcessing) return;
-    const { value: emergencyStatus } = await Swal.fire({ title: 'Assign Priority?', text: "Is this a critical emergency case?", icon: 'question', showCancelButton: true, confirmButtonText: '🚨 Yes, Emergency', cancelButtonText: 'Standard Visit', confirmButtonColor: '#d33', cancelButtonColor: '#1F6FB2', background: '#EEF6FA' });
-    const isEmergency = emergencyStatus === true;
+    const result = await Swal.fire({ title: 'Assign Priority?', text: "Is this a critical emergency case?", icon: 'question', showCancelButton: true, confirmButtonText: '🚨 Yes, Emergency', cancelButtonText: 'Standard Visit', confirmButtonColor: '#d33', cancelButtonColor: '#1F6FB2', background: '#EEF6FA' });
+    if (result.isDismissed) {
+      return;
+    }
+    const isEmergency = result.isConfirmed;
     setIsProcessing(true);
     try {
       const res = await axios.patch(`${API_URL}/api/queue/approve/${id}`, { isEmergency }, { headers: { Authorization: `Bearer ${token}` } });
@@ -174,7 +200,11 @@ const ReceptionDashboard = () => {
         await fetchDashboardData(true);
         if (activeTab === 'pending' && pendingRequests.length <= 1) setActiveTab('live');
       }
-    } catch (err) { Swal.fire('Error', 'Approval failed', 'error'); } finally { setIsProcessing(false); }
+    } catch {
+      Swal.fire('Error', 'Approval failed', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const getDoctorLiveStatus = (docId) => {
@@ -185,6 +215,17 @@ const ReceptionDashboard = () => {
     if (activePatient) return { label: `Treating: ${activePatient.patientName}`, color: 'text-marigold', bg: 'bg-[#1F6FB2]/10', icon: <Activity size={14} />, waiting: waitingCount };
     return { label: 'Available', color: 'text-green-600', bg: 'bg-green-50', icon: <CheckCircle2 size={14} /> };
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-[#EEF6FA] items-center justify-center">
+        <div className="flex items-center gap-3 text-[#0F766E] font-heading text-xl">
+          <RefreshCw size={22} className="animate-spin text-[#1F6FB2]" />
+          Syncing Reception Dashboard...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
