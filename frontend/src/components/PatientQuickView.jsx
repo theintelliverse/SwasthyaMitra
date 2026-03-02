@@ -24,9 +24,10 @@ const PatientQuickView = ({ phone, onClose }) => {
 
   const vitals = Array.isArray(patientData?.vitals) ? patientData.vitals : [];
   const latestVitals = vitals.length > 0 ? vitals[vitals.length - 1] : null;
-  const documentsSource = Array.isArray(patientData?.documents)
-    ? patientData.documents
-    : (Array.isArray(patientData?.digitalLocker) ? patientData.digitalLocker : []);
+  const documentsSource = [
+    ...(Array.isArray(patientData?.documents) ? patientData.documents : []),
+    ...(Array.isArray(patientData?.digitalLocker) ? patientData.digitalLocker : [])
+  ];
 
   const getDocumentUrl = (doc) => (
     doc?.fileUrl ||
@@ -42,6 +43,10 @@ const PatientQuickView = ({ phone, onClose }) => {
 
   const documents = documentsSource
     .filter((doc) => Boolean(getDocumentUrl(doc)))
+    .filter((doc, index, self) => {
+      const currentUrl = getDocumentUrl(doc);
+      return self.findIndex((item) => getDocumentUrl(item) === currentUrl) === index;
+    })
     .sort((a, b) => new Date(b?.uploadedAt || b?.createdAt || 0) - new Date(a?.uploadedAt || a?.createdAt || 0));
 
   const getDocumentFileName = (doc) => {
