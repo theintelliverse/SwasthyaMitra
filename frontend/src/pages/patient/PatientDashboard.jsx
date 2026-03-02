@@ -88,7 +88,7 @@ const PatientDashboard = () => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#1F6FB2] rounded-xl flex items-center justify-center text-white font-heading text-xl shadow-md cursor-pointer" onClick={() => fetchProfile(true)}>S</div>
           <div>
-            <h1 className="font-heading text-lg leading-none">Swasthya Locker</h1>
+            <h1 className="font-heading text-lg leading-none">Appointory Locker</h1>
             <div className="flex items-center gap-1.5 mt-1">
               <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#1F6FB2] animate-ping' : 'bg-green-500'}`}></div>
               <p className="text-[8px] font-black text-[#3FA28C] uppercase tracking-widest">Live Security Active</p>
@@ -114,7 +114,7 @@ const PatientDashboard = () => {
 
           <button
             onClick={() => navigate('/Patient/HealthLocker')}
-            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-[#0F766E] hover:bg-[#1F6FB2] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
+            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
           >
             <FolderHeart size={18} className="group-hover:animate-bounce" />
             Open Full Health Locker
