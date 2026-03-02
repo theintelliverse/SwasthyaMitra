@@ -12,12 +12,43 @@ import Footer from '../../components/Footer';
 const API_URL = API_BASE_URL || import.meta.env.VITE_API_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
+const compressImageIfNeeded = async (file) => {
+  if (!file || !file.type?.startsWith('image/')) return file;
+  if (file.size <= 1.5 * 1024 * 1024) return file;
+
+  const imageBitmap = await createImageBitmap(file);
+  const maxDimension = 1920;
+  const scale = Math.min(1, maxDimension / Math.max(imageBitmap.width, imageBitmap.height));
+  const targetWidth = Math.max(1, Math.round(imageBitmap.width * scale));
+  const targetHeight = Math.max(1, Math.round(imageBitmap.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return file;
+
+  ctx.drawImage(imageBitmap, 0, 0, targetWidth, targetHeight);
+
+  const compressedBlob = await new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.82);
+  });
+
+  if (!compressedBlob || compressedBlob.size >= file.size) return file;
+
+  const compressedName = file.name.replace(/\.(png|webp|jpeg|jpg)$/i, '') + '-compressed.jpg';
+  return new File([compressedBlob], compressedName, {
+    type: 'image/jpeg',
+    lastModified: Date.now()
+  });
+};
+
 const LabDashboard = () => {
   const [labQueue, setLabQueue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [uploadingQueueId, setUploadingQueueId] = useState(null);
+  const [uploadingQueueIds, setUploadingQueueIds] = useState([]);
 
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
@@ -60,24 +91,31 @@ const LabDashboard = () => {
   }, [clinicId, fetchLabQueue]);
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
-    if (uploadingQueueId) {
+    if (uploadingQueueIds.includes(queueId)) {
       return;
     }
 
     if (!file) return;
 
     // 🔍 Pre-upload validation
-    if (file.size > 5 * 1024 * 1024) { // 5MB Limit
-      return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
+    if (file.size > 12 * 1024 * 1024) {
+      return Swal.fire('File Too Large', 'Please upload a file smaller than 12MB', 'warning');
     }
 
     const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
+    let uploadFile = file;
+
+    try {
+      uploadFile = await compressImageIfNeeded(file);
+    } catch (compressionError) {
+      console.warn('Image compression skipped:', compressionError);
+      uploadFile = file;
+    }
 
     const formData = new FormData();
-    // 🔑 IMPORTANT: Ensure this key ('file') matches upload.single('file') in your backend route
-    formData.append('file', file);
+    formData.append('file', uploadFile);
     formData.append('title', 'Diagnostic Report');
-    formData.append('fileType', file.type.includes('pdf') ? 'PDF' : 'Image');
+    formData.append('fileType', uploadFile.type.includes('pdf') ? 'PDF' : 'Image');
 
     Swal.fire({
       title: 'Syncing to Locker...',
@@ -88,14 +126,14 @@ const LabDashboard = () => {
     });
 
     try {
-      setUploadingQueueId(queueId);
+      setUploadingQueueIds((prev) => [...prev, queueId]);
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
       const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
         },
-        timeout: 120000,
+        timeout: 180000,
         onUploadProgress: (progressEvent) => {
           const total = progressEvent.total || 0;
           const loaded = progressEvent.loaded || 0;
@@ -118,11 +156,12 @@ const LabDashboard = () => {
         icon: 'success',
         title: 'Results Published',
         text: 'Patient locker updated successfully.',
-        timer: 2000,
+        timer: 1200,
         showConfirmButton: false,
         background: '#EEF6FA'
       });
 
+      setLabQueue((prev) => prev.filter((item) => item._id !== queueId));
       fetchLabQueue(true);
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
@@ -130,12 +169,12 @@ const LabDashboard = () => {
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
-        text: err.response?.data?.message || 'Check your connection or file format.',
+        text: err.response?.data?.message || err.message || 'Check your connection or file format.',
         confirmButtonColor: '#0F766E',
         background: '#EEF6FA'
       });
     } finally {
-      setUploadingQueueId(null);
+      setUploadingQueueIds((prev) => prev.filter((id) => id !== queueId));
     }
   };
 
@@ -241,14 +280,14 @@ const LabDashboard = () => {
                   </div>
 
                   <div className="w-full md:w-auto">
-                    <label className={`flex items-center justify-center gap-3 px-12 py-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-xl group-hover:scale-[1.02] active:scale-95 ${uploadingQueueId === p._id ? 'bg-[#3FA28C] text-white cursor-not-allowed' : 'bg-[#0F766E] text-[#EEF6FA] cursor-pointer hover:bg-[#1F6FB2]'}`}>
+                    <label className={`flex items-center justify-center gap-3 px-12 py-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-xl group-hover:scale-[1.02] active:scale-95 ${uploadingQueueIds.includes(p._id) ? 'bg-[#3FA28C] text-white cursor-not-allowed' : 'bg-[#0F766E] text-[#EEF6FA] cursor-pointer hover:bg-[#1F6FB2]'}`}>
                       <Upload size={18} />
-                      <span className="whitespace-nowrap">{uploadingQueueId === p._id ? 'Syncing...' : 'Sync Digital Report'}</span>
+                      <span className="whitespace-nowrap">{uploadingQueueIds.includes(p._id) ? 'Syncing...' : 'Sync Digital Report'}</span>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/*,application/pdf"
-                        disabled={Boolean(uploadingQueueId)}
+                        disabled={uploadingQueueIds.includes(p._id)}
                         onChange={(e) => {
                           const selectedFile = e.target.files?.[0];
                           handleFileUpload(p.patientPhone, p._id, selectedFile);
