@@ -10,11 +10,19 @@ import {
   Calendar,
   Weight
 } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../config/runtime';
+
+const API_URL = API_BASE_URL;
 const PatientQuickView = ({ phone, onClose }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
+
+  const vitals = Array.isArray(patientData?.vitals) ? patientData.vitals : [];
+  const latestVitals = vitals.length > 0 ? vitals[vitals.length - 1] : null;
+  const documents = Array.isArray(patientData?.documents)
+    ? patientData.documents.filter((doc) => (doc?.fileUrl || doc?.url || doc?.secure_url))
+    : [];
 
   useEffect(() => {
     const fetchFullProfile = async () => {
@@ -70,10 +78,10 @@ const PatientQuickView = ({ phone, onClose }) => {
 
           {/* --- Vitals Summary Row --- */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <SummaryCard label="Latest BP" val={patientData.vitals[0]?.bloodPressure || '--'} unit="mmHg" icon={<Activity size={14} />} />
-            <SummaryCard label="Pulse" val={patientData.vitals[0]?.pulseRate || '--'} unit="bpm" icon={<Activity size={14} />} />
-            <SummaryCard label="Weight" val={patientData.vitals[0]?.weight || '--'} unit="kg" icon={<Weight size={14} />} />
-            <SummaryCard label="BMI" val={patientData.vitals[0]?.bmi || '--'} unit="Score" icon={<Activity size={14} />} color="text-[#1F6FB2]" />
+            <SummaryCard label="Latest BP" val={latestVitals?.bloodPressure || '--'} unit="mmHg" icon={<Activity size={14} />} />
+            <SummaryCard label="Pulse" val={latestVitals?.pulseRate || '--'} unit="bpm" icon={<Activity size={14} />} />
+            <SummaryCard label="Weight" val={latestVitals?.weight || '--'} unit="kg" icon={<Weight size={14} />} />
+            <SummaryCard label="BMI" val={latestVitals?.bmi || '--'} unit="Score" icon={<Activity size={14} />} color="text-[#1F6FB2]" />
           </div>
 
           {/* --- Reports Section --- */}
@@ -83,22 +91,25 @@ const PatientQuickView = ({ phone, onClose }) => {
               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#3FA28C]">Clinical Reports & Imaging</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {patientData.documents.map((doc, i) => (
-                <a key={i} href={doc.fileUrl} target="_blank" rel="noreferrer"
-                  className="bg-white p-6 rounded-[2rem] border border-[#AFC4D8] hover:border-[#1F6FB2] hover:shadow-xl transition-all group flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#EEF6FA] rounded-xl flex items-center justify-center text-[#1F6FB2] border border-[#AFC4D8]">
-                      <FileText size={18} />
+              {documents.map((doc, i) => {
+                const fileUrl = doc.fileUrl || doc.url || doc.secure_url;
+                return (
+                  <a key={i} href={fileUrl} target="_blank" rel="noreferrer"
+                    className="bg-white p-6 rounded-[2rem] border border-[#AFC4D8] hover:border-[#1F6FB2] hover:shadow-xl transition-all group flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-[#EEF6FA] rounded-xl flex items-center justify-center text-[#1F6FB2] border border-[#AFC4D8]">
+                        <FileText size={18} />
+                      </div>
+                      <div className="max-w-[140px]">
+                        <p className="text-sm font-bold text-[#0F766E] truncate">{doc.title || 'Clinical Document'}</p>
+                        <p className="text-[8px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'}</p>
+                      </div>
                     </div>
-                    <div className="max-w-[140px]">
-                      <p className="text-sm font-bold text-[#0F766E] truncate">{doc.title}</p>
-                      <p className="text-[8px] font-black text-[#3FA28C] uppercase">{doc.fileType}</p>
-                    </div>
-                  </div>
-                  <ExternalLink size={16} className="text-[#AFC4D8] group-hover:text-[#1F6FB2]" />
-                </a>
-              ))}
-              {patientData.documents.length === 0 && (
+                    <ExternalLink size={16} className="text-[#AFC4D8] group-hover:text-[#1F6FB2]" />
+                  </a>
+                )
+              })}
+              {documents.length === 0 && (
                 <div className="col-span-full py-10 bg-white/50 border-2 border-dashed border-[#AFC4D8] rounded-[2rem] text-center italic text-[#3FA28C] text-sm">
                   No medical documents found in this locker.
                 </div>
@@ -123,7 +134,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#AFC4D8]/50">
-                  {patientData.vitals.map((v, i) => (
+                  {vitals.map((v, i) => (
                     <tr key={i} className="hover:bg-[#EEF6FA]/50 transition-colors">
                       <td className="p-6 text-sm font-bold text-[#0F766E]">{new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                       <td className="p-6 text-sm text-[#0F766E]">{v.bloodPressure} <span className="text-[10px] text-[#3FA28C]">mmHg</span></td>

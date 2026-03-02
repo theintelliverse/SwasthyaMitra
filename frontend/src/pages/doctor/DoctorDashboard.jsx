@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import { Activity, Beaker, FileText, Clock, Coffee, Play, CheckCircle, History, ShieldCheck, Circle, Siren, RefreshCw, FlaskConical } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import PatientQuickView from '../../components/PatientQuickView';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const DoctorDashboard = () => {
