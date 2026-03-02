@@ -96,7 +96,7 @@ const LandingPage = () => {
             <div className="h-px w-8 bg-sandstone"></div>
             <span className="font-heading text-sm">Twilio</span>
             <span className="font-heading text-sm">MERN Stack</span>
-            <span className="font-heading text-sm">Swasthya-Mitra</span>
+            <span className="font-heading text-sm">Appointory</span>
           </div>
         </div>
 
@@ -129,8 +129,8 @@ const LandingPage = () => {
                 <div
                   key={i}
                   className={`p-5 rounded-3xl border transition-all ${p.active
-                      ? 'bg-parchment border-marigold'
-                      : 'bg-white border-sandstone opacity-60'
+                    ? 'bg-parchment border-marigold'
+                    : 'bg-white border-sandstone opacity-60'
                     } flex justify-between items-center`}
                 >
                   <div className="flex items-center gap-3">
