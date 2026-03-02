@@ -1,14 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
   User, FileText, Activity, History, Download, Calendar,
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCw, Smartphone, Hash
 } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
+
+const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || '';
+
+const getDocumentFileName = (doc) => {
+  const safeTitle = (doc?.title || 'Clinical_Report').replace(/[^a-z0-9-_]/gi, '_');
+  const type = (doc?.fileType || '').toLowerCase();
+  if (type.includes('pdf')) return `${safeTitle}.pdf`;
+  if (type.includes('image')) return `${safeTitle}.jpg`;
+
+  const url = getDocumentUrl(doc);
+  const lastSegment = url.split('?')[0].split('/').pop() || '';
+  if (lastSegment.includes('.')) return lastSegment;
+
+  return `${safeTitle}.pdf`;
+};
 
 const HealthLocker = () => {
   const navigate = useNavigate();
@@ -17,7 +32,35 @@ const HealthLocker = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('history');
 
-  const fetchHealthData = async (silent = false) => {
+  const documents = Array.isArray(data?.documents)
+    ? data.documents
+    : (Array.isArray(data?.digitalLocker) ? data.digitalLocker : []);
+
+  const handleDownload = async (doc) => {
+    const fileUrl = getDocumentUrl(doc);
+    if (!fileUrl) return;
+
+    try {
+      const response = await fetch(fileUrl, { mode: 'cors' });
+      if (!response.ok) {
+        throw new Error('Failed to fetch file');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = blobUrl;
+      anchor.download = getDocumentFileName(doc);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(fileUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const fetchHealthData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
 
@@ -37,7 +80,7 @@ const HealthLocker = () => {
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchHealthData();
@@ -55,7 +98,7 @@ const HealthLocker = () => {
     return () => {
       socket.off('queueUpdate');
     };
-  }, [navigate]);
+  }, [fetchHealthData]);
 
   if (loading) return (
     <div className="min-h-screen bg-[#EEF6FA] flex flex-col items-center justify-center gap-4">
@@ -70,9 +113,6 @@ const HealthLocker = () => {
       <button onClick={() => navigate(-1)} className="px-8 py-3 bg-[#0F766E] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Go Back</button>
     </div>
   );
-
-  // 🔑 Updated logic for Stats: Extracting from visitHistory or locker
-  const latestVisit = data.visitHistory?.[0];
 
   return (
     <div className="min-h-screen bg-[#EEF6FA] font-body text-[#0F766E] p-6 pb-20">
@@ -124,7 +164,7 @@ const HealthLocker = () => {
           {activeTab === 'history' && (
             <div className="space-y-6">
               {data.visitHistory?.length > 0 ? (
-                data.visitHistory.map((record, i) => (
+                data.visitHistory.map((record) => (
                   <div key={record._id} className="bg-white p-8 rounded-[2.5rem] border border-[#AFC4D8] shadow-sm hover:border-[#1F6FB2] transition-all animate-in zoom-in-95 duration-300">
                     <div className="flex justify-between items-start mb-6">
                       <div>
@@ -146,21 +186,21 @@ const HealthLocker = () => {
 
           {activeTab === 'docs' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.digitalLocker?.length > 0 ? (
-                data.digitalLocker.map((doc, i) => (
+              {documents.length > 0 ? (
+                documents.map((doc, i) => (
                   <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-[#AFC4D8] flex items-center justify-between group hover:border-[#1F6FB2] transition-all animate-in zoom-in-95">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-[#EEF6FA] rounded-2xl flex items-center justify-center text-[#1F6FB2] border border-[#AFC4D8]">
                         <FileText size={20} />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm">{doc.title}</h4>
-                        <p className="text-[9px] font-black text-[#3FA28C] uppercase">{doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                        <h4 className="font-bold text-sm">{doc.title || 'Clinical Report'}</h4>
+                        <p className="text-[9px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'} • {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'Unknown date'}</p>
                       </div>
                     </div>
-                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="p-3 bg-[#0F766E] text-white hover:bg-[#1F6FB2] rounded-xl transition-all shadow-md">
+                    <button type="button" onClick={() => handleDownload(doc)} className="p-3 bg-[#0F766E] text-white hover:bg-[#1F6FB2] rounded-xl transition-all shadow-md">
                       <Download size={18} />
-                    </a>
+                    </button>
                   </div>
                 ))
               ) : <EmptyState message="Your Digital Locker is empty." />}
