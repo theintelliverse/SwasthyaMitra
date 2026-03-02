@@ -76,10 +76,10 @@ const LabDashboard = () => {
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #967A53;">Encrypting and notifying doctor...</p>',
+      html: '<p style="font-size: 12px; color: #3FA28C;">Encrypting and notifying doctor...</p>',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
-      background: '#FFFBF5'
+      background: '#EEF6FA'
     });
 
     try {
@@ -98,7 +98,7 @@ const LabDashboard = () => {
           text: 'Patient locker updated successfully.',
           timer: 2000,
           showConfirmButton: false,
-          background: '#FFFBF5'
+          background: '#EEF6FA'
         });
 
         // Manually trigger a refresh to remove the patient from the list immediately
@@ -110,8 +110,8 @@ const LabDashboard = () => {
         icon: 'error',
         title: 'Sync Failed',
         text: err.response?.data?.message || 'Check your connection or file format.',
-        confirmButtonColor: '#422D0B',
-        background: '#FFFBF5'
+        confirmButtonColor: '#0F766E',
+        background: '#EEF6FA'
       });
     }
   };
@@ -122,39 +122,39 @@ const LabDashboard = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
+    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
       <Sidebar role="lab" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         {/* Navigation - Marigold Style */}
-        <nav className="bg-white border-b border-[#E8DDCB] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+        <nav className="bg-white border-b border-[#AFC4D8] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-[#FFA800] rounded-xl flex items-center justify-center text-white shadow-lg">
+            <div className="w-10 h-10 bg-[#1F6FB2] rounded-xl flex items-center justify-center text-white shadow-lg">
               <Beaker size={20} />
             </div>
             <div>
               <h1 className="font-heading text-xl">Diagnostics Station</h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#FFA800] animate-ping' : 'bg-green-500'}`}></div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#967A53]">Node: {clinicId?.slice(-6).toUpperCase()}</p>
+                <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#1F6FB2] animate-ping' : 'bg-green-500'}`}></div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#3FA28C]">Node: {clinicId?.slice(-6).toUpperCase()}</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967A53]" size={14} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3FA28C]" size={14} />
               <input
                 type="text"
                 placeholder="Find Patient..."
-                className="pl-10 pr-4 py-2 bg-[#FFFBF5] border border-[#E8DDCB] rounded-xl outline-none focus:border-[#FFA800] text-xs font-bold w-64 transition-all"
+                className="pl-10 pr-4 py-2 bg-[#EEF6FA] border border-[#AFC4D8] rounded-xl outline-none focus:border-[#1F6FB2] text-xs font-bold w-64 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <button
               onClick={() => fetchLabQueue(false)}
-              className={`p-2 text-[#967A53] hover:text-[#FFA800] transition-colors ${isSyncing ? 'animate-spin' : ''}`}
+              className={`p-2 text-[#3FA28C] hover:text-[#1F6FB2] transition-colors ${isSyncing ? 'animate-spin' : ''}`}
             >
               <RefreshCw size={18} />
             </button>
@@ -165,15 +165,15 @@ const LabDashboard = () => {
           {/* Header Section */}
           <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
-              <h2 className="text-5xl font-heading mb-2 text-[#422D0B]">Diagnostic Feed</h2>
-              <p className="text-[#967A53] font-medium flex items-center gap-2 text-sm">
-                <Activity size={16} className="text-[#FFA800]" />
+              <h2 className="text-5xl font-heading mb-2 text-[#0F766E]">Diagnostic Feed</h2>
+              <p className="text-[#3FA28C] font-medium flex items-center gap-2 text-sm">
+                <Activity size={16} className="text-[#1F6FB2]" />
                 Waiting for report uploads to sync with Digital Lockers.
               </p>
             </div>
-            <div className="bg-white border border-[#E8DDCB] px-6 py-4 rounded-3xl flex items-center gap-4 shadow-sm">
-              <p className="text-[10px] font-black uppercase text-[#967A53] tracking-widest">Active Samples</p>
-              <div className="w-10 h-10 bg-[#FFA800]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#FFA800]">
+            <div className="bg-white border border-[#AFC4D8] px-6 py-4 rounded-3xl flex items-center gap-4 shadow-sm">
+              <p className="text-[10px] font-black uppercase text-[#3FA28C] tracking-widest">Active Samples</p>
+              <div className="w-10 h-10 bg-[#1F6FB2]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#1F6FB2]">
                 {labQueue.length}
               </div>
             </div>
@@ -182,43 +182,43 @@ const LabDashboard = () => {
           <div className="grid gap-6 pb-12">
             {loading ? (
               <div className="py-24 text-center animate-pulse">
-                <Beaker size={48} className="mx-auto text-[#E8DDCB] mb-4" />
-                <p className="text-[#967A53] font-heading text-xl">Linking to Sample Pipeline...</p>
+                <Beaker size={48} className="mx-auto text-[#AFC4D8] mb-4" />
+                <p className="text-[#3FA28C] font-heading text-xl">Linking to Sample Pipeline...</p>
               </div>
             ) : filteredQueue.length === 0 ? (
-              <div className="bg-white p-24 rounded-[4rem] text-center border-2 border-dashed border-[#E8DDCB] shadow-inner">
-                <FileCheck size={48} className="mx-auto text-[#E8DDCB] mb-6" />
-                <p className="text-[#967A53] font-heading text-2xl italic">Queue is currently clear.</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#967A53] mt-3 opacity-60">Ready for incoming referrals</p>
+              <div className="bg-white p-24 rounded-[4rem] text-center border-2 border-dashed border-[#AFC4D8] shadow-inner">
+                <FileCheck size={48} className="mx-auto text-[#AFC4D8] mb-6" />
+                <p className="text-[#3FA28C] font-heading text-2xl italic">Queue is currently clear.</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] mt-3 opacity-60">Ready for incoming referrals</p>
               </div>
             ) : (
               filteredQueue.map(p => (
-                <div key={p._id} className="bg-white p-8 rounded-[3.5rem] border border-[#E8DDCB] shadow-sm flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#FFA800] transition-all relative overflow-hidden">
+                <div key={p._id} className="bg-white p-8 rounded-[3.5rem] border border-[#AFC4D8] shadow-sm flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#1F6FB2] transition-all relative overflow-hidden">
                   {p.isEmergency && <div className="absolute top-0 left-0 w-2 h-full bg-red-500 animate-pulse"></div>}
 
                   <div className="flex items-center gap-8 w-full md:w-auto">
-                    <div className="w-20 h-20 bg-[#FFFBF5] rounded-[2.5rem] border-2 border-[#E8DDCB] group-hover:border-[#FFA800]/30 flex flex-col items-center justify-center transition-colors">
-                      <p className="text-[8px] font-black text-[#967A53] uppercase mb-0.5">Token</p>
-                      <p className="text-3xl font-heading text-[#422D0B]">{p.tokenNumber}</p>
+                    <div className="w-20 h-20 bg-[#EEF6FA] rounded-[2.5rem] border-2 border-[#AFC4D8] group-hover:border-[#1F6FB2]/30 flex flex-col items-center justify-center transition-colors">
+                      <p className="text-[8px] font-black text-[#3FA28C] uppercase mb-0.5">Token</p>
+                      <p className="text-3xl font-heading text-[#0F766E]">{p.tokenNumber}</p>
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#FFA800]/10 text-[#FFA800] border-[#FFA800]/20'
+                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#1F6FB2]/10 text-[#1F6FB2] border-[#1F6FB2]/20'
                           }`}>
                           {p.requiredTest || 'General Diagnostic'}
                         </span>
                         {p.isEmergency && <span className="text-[8px] font-black text-red-600 animate-pulse uppercase tracking-tighter">🚨 Immediate Priority</span>}
                       </div>
-                      <h3 className="text-3xl font-heading text-[#422D0B]">{p.patientName}</h3>
+                      <h3 className="text-3xl font-heading text-[#0F766E]">{p.patientName}</h3>
                       <div className="flex gap-6 mt-3">
-                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Smartphone size={12} /> {p.patientPhone}</p>
-                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Hash size={12} /> {p._id.slice(-6).toUpperCase()}</p>
+                        <p className="text-[10px] font-bold text-[#3FA28C] flex items-center gap-2"><Smartphone size={12} /> {p.patientPhone}</p>
+                        <p className="text-[10px] font-bold text-[#3FA28C] flex items-center gap-2"><Hash size={12} /> {p._id.slice(-6).toUpperCase()}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="w-full md:w-auto">
-                    <label className="flex items-center justify-center gap-4 bg-[#422D0B] text-[#FFFBF5] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#FFA800] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
+                    <label className="flex items-center justify-center gap-4 bg-[#0F766E] text-[#EEF6FA] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#1F6FB2] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
                       <Upload size={18} />
                       <span>Sync Digital Report</span>
                       <input
