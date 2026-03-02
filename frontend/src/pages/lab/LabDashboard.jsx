@@ -17,6 +17,7 @@ const LabDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [uploadingQueueId, setUploadingQueueId] = useState(null);
 
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
@@ -59,6 +60,10 @@ const LabDashboard = () => {
   }, [clinicId, fetchLabQueue]);
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
+    if (uploadingQueueId) {
+      return;
+    }
+
     if (!file) return;
 
     // 🔍 Pre-upload validation
@@ -83,6 +88,7 @@ const LabDashboard = () => {
     });
 
     try {
+      setUploadingQueueId(queueId);
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
       const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
@@ -128,6 +134,8 @@ const LabDashboard = () => {
         confirmButtonColor: '#0F766E',
         background: '#EEF6FA'
       });
+    } finally {
+      setUploadingQueueId(null);
     }
   };
 
@@ -233,14 +241,19 @@ const LabDashboard = () => {
                   </div>
 
                   <div className="w-full md:w-auto">
-                    <label className="flex items-center justify-center gap-4 bg-[#0F766E] text-[#EEF6FA] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#1F6FB2] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
+                    <label className={`flex items-center justify-center gap-3 px-12 py-5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-xl group-hover:scale-[1.02] active:scale-95 ${uploadingQueueId === p._id ? 'bg-[#3FA28C] text-white cursor-not-allowed' : 'bg-[#0F766E] text-[#EEF6FA] cursor-pointer hover:bg-[#1F6FB2]'}`}>
                       <Upload size={18} />
-                      <span>Sync Digital Report</span>
+                      <span className="whitespace-nowrap">{uploadingQueueId === p._id ? 'Syncing...' : 'Sync Digital Report'}</span>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/*,application/pdf"
-                        onChange={(e) => handleFileUpload(p.patientPhone, p._id, e.target.files[0])}
+                        disabled={Boolean(uploadingQueueId)}
+                        onChange={(e) => {
+                          const selectedFile = e.target.files?.[0];
+                          handleFileUpload(p.patientPhone, p._id, selectedFile);
+                          e.target.value = '';
+                        }}
                       />
                     </label>
                   </div>
