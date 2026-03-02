@@ -42,10 +42,13 @@ const PatientQuickView = ({ phone, onClose }) => {
   );
 
   const documents = documentsSource
-    .filter((doc) => Boolean(getDocumentUrl(doc)))
+    .filter((doc) => Boolean(doc))
     .filter((doc, index, self) => {
-      const currentUrl = getDocumentUrl(doc);
-      return self.findIndex((item) => getDocumentUrl(item) === currentUrl) === index;
+      const currentKey = getDocumentUrl(doc) || `${doc?.title || 'doc'}-${doc?.uploadedAt || doc?.createdAt || index}`;
+      return self.findIndex((item, itemIndex) => {
+        const itemKey = getDocumentUrl(item) || `${item?.title || 'doc'}-${item?.uploadedAt || item?.createdAt || itemIndex}`;
+        return itemKey === currentKey;
+      }) === index;
     })
     .sort((a, b) => new Date(b?.uploadedAt || b?.createdAt || 0) - new Date(a?.uploadedAt || a?.createdAt || 0));
 
@@ -246,6 +249,7 @@ const PatientQuickView = ({ phone, onClose }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {documents.map((doc, i) => {
+                const hasUsableUrl = Boolean(getDocumentUrl(doc));
                 return (
                   <div key={i}
                     className="bg-white p-6 rounded-[2rem] border border-[#AFC4D8] hover:border-[#1F6FB2] hover:shadow-xl transition-all group flex items-center justify-between">
@@ -262,7 +266,8 @@ const PatientQuickView = ({ phone, onClose }) => {
                       <button
                         type="button"
                         onClick={() => openDocument(doc)}
-                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all"
+                        disabled={!hasUsableUrl}
+                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="Open document"
                       >
                         <ExternalLink size={14} />
@@ -270,7 +275,8 @@ const PatientQuickView = ({ phone, onClose }) => {
                       <button
                         type="button"
                         onClick={() => downloadDocument(doc)}
-                        className="p-2.5 bg-[#0F766E] hover:bg-[#1F6FB2] text-white rounded-xl transition-all"
+                        disabled={!hasUsableUrl}
+                        className="p-2.5 bg-[#0F766E] hover:bg-[#1F6FB2] text-white rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="Download document"
                       >
                         <Download size={14} />
