@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
   Beaker, Upload, Smartphone, Hash, FileCheck,
   RefreshCw, Activity, Search
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const LabDashboard = () => {
@@ -19,21 +19,33 @@ const LabDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-  const clinicId = localStorage.getItem('clinicId');
+  const clinicId = sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
 
   const fetchLabQueue = async (silent = false) => {
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
+      if (!API_URL) {
+        throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
+
       const res = await axios.get(`${API_URL}/api/queue/live`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Filter for patients waiting for lab work
-      const pendingLab = res.data.data.filter(p => p.currentStage === 'Lab-Pending');
+      const queueData = Array.isArray(res.data?.data) ? res.data.data : [];
+      const pendingLab = queueData.filter(p => p.currentStage === 'Lab-Pending');
       setLabQueue(pendingLab);
       setLoading(false);
     } catch (err) {
       console.error("Lab Fetch Error:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Diagnostics Sync Failed',
+        text: err?.response?.data?.message || err?.message || 'Unable to load lab queue.',
+        confirmButtonColor: '#0F766E',
+        background: '#EEF6FA'
+      });
       setLoading(false);
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
@@ -62,8 +74,8 @@ const LabDashboard = () => {
     if (!file) return;
 
     // 🔍 Pre-upload validation
-    if (file.size > 5 * 1024 * 1024) { // 5MB Limit
-      return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
+    if (file.size > 10 * 1024 * 1024) { // 10MB Limit
+      return Swal.fire('File Too Large', 'Please upload a file smaller than 10MB', 'warning');
     }
 
     const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
@@ -86,7 +98,6 @@ const LabDashboard = () => {
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
       const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
         }
       });
@@ -109,7 +120,7 @@ const LabDashboard = () => {
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
-        text: err.response?.data?.message || 'Check your connection or file format.',
+        text: err.response?.data?.message || err.message || 'Check your connection or file format.',
         confirmButtonColor: '#0F766E',
         background: '#EEF6FA'
       });
@@ -225,7 +236,10 @@ const LabDashboard = () => {
                         type="file"
                         className="hidden"
                         accept="image/*,application/pdf"
-                        onChange={(e) => handleFileUpload(p.patientPhone, p._id, e.target.files[0])}
+                        onChange={(e) => {
+                          handleFileUpload(p.patientPhone, p._id, e.target.files[0]);
+                          e.target.value = '';
+                        }}
                       />
                     </label>
                   </div>
