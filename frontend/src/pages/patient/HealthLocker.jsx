@@ -4,13 +4,23 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
-  User, FileText, Activity, History, Download, Calendar,
+  User, FileText, Activity, History, Download, ExternalLink, Share2, Calendar,
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCw, Smartphone, Hash
 } from 'lucide-react';
 const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
-const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath || '';
+const getDocumentUrl = (doc) => (
+  doc?.fileUrl ||
+  doc?.url ||
+  doc?.secure_url ||
+  doc?.secureUrl ||
+  doc?.filePath ||
+  doc?.reportUrl ||
+  doc?.publicUrl ||
+  doc?.documentUrl ||
+  ''
+);
 
 const getDocumentFileName = (doc) => {
   const safeTitle = (doc?.title || 'Clinical_Report').replace(/[^a-z0-9-_]/gi, '_');
@@ -32,9 +42,38 @@ const HealthLocker = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('history');
 
-  const documents = Array.isArray(data?.documents)
-    ? data.documents
-    : (Array.isArray(data?.digitalLocker) ? data.digitalLocker : []);
+  const documents = [
+    ...(Array.isArray(data?.documents) ? data.documents : []),
+    ...(Array.isArray(data?.digitalLocker) ? data.digitalLocker : [])
+  ].filter(Boolean);
+
+  const openDocument = (doc) => {
+    const fileUrl = getDocumentUrl(doc);
+    if (!fileUrl) return;
+    window.open(fileUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShare = async (doc) => {
+    const fileUrl = getDocumentUrl(doc);
+    if (!fileUrl) return;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: doc?.title || 'Clinical Report',
+          text: 'Patient report link',
+          url: fileUrl
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fileUrl);
+      }
+    } catch {
+      // no-op
+    }
+  };
 
   const handleDownload = async (doc) => {
     const fileUrl = getDocumentUrl(doc);
@@ -205,9 +244,17 @@ const HealthLocker = () => {
                         <p className="text-[9px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'} • {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'Unknown date'}</p>
                       </div>
                     </div>
-                    <button type="button" onClick={() => handleDownload(doc)} className="p-3 bg-[#0F766E] text-white hover:bg-[#1F6FB2] rounded-xl transition-all shadow-md">
-                      <Download size={18} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => openDocument(doc)} className="p-3 bg-[#EEF6FA] text-[#1F6FB2] hover:bg-[#1F6FB2] hover:text-white rounded-xl transition-all border border-[#AFC4D8]">
+                        <ExternalLink size={16} />
+                      </button>
+                      <button type="button" onClick={() => handleShare(doc)} className="p-3 bg-[#EEF6FA] text-[#1F6FB2] hover:bg-[#1F6FB2] hover:text-white rounded-xl transition-all border border-[#AFC4D8]">
+                        <Share2 size={16} />
+                      </button>
+                      <button type="button" onClick={() => handleDownload(doc)} className="p-3 bg-[#0F766E] text-white hover:bg-[#1F6FB2] rounded-xl transition-all shadow-md">
+                        <Download size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : <EmptyState message="Your Digital Locker is empty." />}

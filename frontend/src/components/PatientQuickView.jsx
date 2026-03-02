@@ -8,6 +8,7 @@ import {
   History,
   Download,
   ExternalLink,
+  Share2,
   Pencil,
   Database,
   Calendar,
@@ -69,6 +70,39 @@ const PatientQuickView = ({ phone, onClose }) => {
     const url = getDocumentUrl(doc);
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const shareDocument = async (doc) => {
+    const fileUrl = getDocumentUrl(doc);
+    if (!fileUrl) return;
+
+    const title = doc?.title || 'Clinical Report';
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title,
+          text: `Patient report: ${title}`,
+          url: fileUrl
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fileUrl);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Report link copied',
+          showConfirmButton: false,
+          timer: 1800,
+          background: '#EEF6FA'
+        });
+      }
+    } catch (error) {
+      Swal.fire('Share Failed', error?.message || 'Could not share this report.', 'error');
+    }
   };
 
   const downloadDocument = async (doc) => {
@@ -271,6 +305,15 @@ const PatientQuickView = ({ phone, onClose }) => {
                         aria-label="Open document"
                       >
                         <ExternalLink size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => shareDocument(doc)}
+                        disabled={!hasUsableUrl}
+                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Share document"
+                      >
+                        <Share2 size={14} />
                       </button>
                       <button
                         type="button"
