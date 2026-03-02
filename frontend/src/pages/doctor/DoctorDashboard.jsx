@@ -16,6 +16,7 @@ const DoctorDashboard = () => {
   const [notes, setNotes] = useState("");
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [profilePhone, setProfilePhone] = useState('');
   const [patientData, setPatientData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -169,7 +170,7 @@ const DoctorDashboard = () => {
                       <div className="grid grid-cols-2 gap-4"><VitalBox label="BP" value={latestVitals?.bloodPressure} unit="mmHg" /><VitalBox label="Pulse" value={latestVitals?.pulseRate} unit="bpm" /></div>
                       <div className="flex flex-col gap-4">
                         <button disabled={isProcessing} onClick={() => handleStatusUpdate(activePatient._id, 'complete')} className="w-full py-5 bg-[#0F766E] text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-[#1F6FB2] transition-all shadow-xl disabled:opacity-50">{isProcessing ? 'Processing...' : 'Complete Visit'}</button>
-                        <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-[#1F6FB2]/10 text-[#1F6FB2] border border-[#1F6FB2]/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => setShowProfile(true)} className="flex-1 py-4 bg-[#EEF6FA] border border-[#AFC4D8] text-[#0F766E] rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
+                        <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-[#1F6FB2]/10 text-[#1F6FB2] border border-[#1F6FB2]/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => { setProfilePhone(activePatient.patientPhone || ''); setShowProfile(true); }} className="flex-1 py-4 bg-[#EEF6FA] border border-[#AFC4D8] text-[#0F766E] rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
                       </div>
                     </div>
                     <div className="bg-[#EEF6FA] p-8 rounded-[3rem] border border-[#AFC4D8] shadow-inner"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consultation notes..." className="w-full h-80 bg-white border border-[#AFC4D8] rounded-3xl p-6 outline-none focus:border-[#1F6FB2] text-sm font-medium"></textarea></div>
@@ -194,9 +195,17 @@ const DoctorDashboard = () => {
                     </div>
                     <p className="font-bold text-sm truncate">{p.patientName}</p>
                     <p className="text-[9px] text-[#3FA28C] mt-1 italic">{p.requiredTest || 'Diagnostics'}</p>
-                    {p.currentStage === 'Lab-Completed' && !activePatient && (
-                      <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full mt-4 py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#0F766E] transition-all">Recall Patient</button>
-                    )}
+                    <div className="mt-4 grid grid-cols-1 gap-2">
+                      <button
+                        onClick={() => { setProfilePhone(p.patientPhone || ''); setShowProfile(true); }}
+                        className="w-full py-2.5 bg-[#EEF6FA] text-[#0F766E] border border-[#AFC4D8] rounded-xl text-[9px] font-black uppercase hover:border-[#1F6FB2] hover:text-[#1F6FB2] transition-all"
+                      >
+                        View Health Locker
+                      </button>
+                      {p.currentStage === 'Lab-Completed' && !activePatient && (
+                        <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#0F766E] transition-all">Recall Patient</button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {labMonitoringList.length === 0 && (
@@ -232,7 +241,7 @@ const DoctorDashboard = () => {
           </div>
         </main>
       </div>
-      {showProfile && activePatient && <PatientQuickView phone={activePatient.patientPhone} onClose={() => setShowProfile(false)} />}
+      {showProfile && profilePhone && <PatientQuickView phone={profilePhone} onClose={() => setShowProfile(false)} />}
     </div>
   );
 };
