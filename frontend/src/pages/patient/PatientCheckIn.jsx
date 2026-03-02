@@ -9,11 +9,12 @@ const API_URL = API_BASE_URL;
 const PatientCheckIn = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const clinicCode = searchParams.get('code') || '';
+  const clinicCode = (searchParams.get('code') || '').trim().toUpperCase();
 
   const [doctors, setDoctors] = useState([]);
   const [clinicName, setClinicName] = useState('Clinic');
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
 
@@ -26,20 +27,30 @@ const PatientCheckIn = () => {
   useEffect(() => {
     const fetchClinicDoctors = async () => {
       try {
+        setFetchError('');
         if (!API_URL) {
           throw new Error('API URL is not configured. Please set VITE_API_URL.');
         }
+        if (!clinicCode) {
+          throw new Error('Invalid clinic code. Please use a valid check-in link.');
+        }
         const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
-        setDoctors(res.data.doctors);
-        setClinicName(res.data.clinicName);
+        const responseDoctors = Array.isArray(res.data?.doctors) ? res.data.doctors : [];
+        setDoctors(responseDoctors.filter((doc) => doc.isAvailable !== false));
+        setClinicName(res.data?.clinicName || 'Clinic');
         setLoading(false);
       } catch (error) {
-        console.error(error.message || "Could not load doctors");
-        console.error("Could not load doctors");
+        const message = error.response?.data?.message || error.message || 'Could not load doctors.';
+        setFetchError(message);
+        setDoctors([]);
         setLoading(false);
       }
     };
     if (clinicCode) fetchClinicDoctors();
+    else {
+      setLoading(false);
+      setFetchError('Clinic code missing in URL.');
+    }
   }, [clinicCode]);
 
   // --- Step 1: Send OTP ---
@@ -48,6 +59,9 @@ const PatientCheckIn = () => {
     try {
       if (!API_URL) {
         throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
+      if (!formData.doctorId) {
+        throw new Error('Please choose a consulting specialist first.');
       }
       await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
         phone: formData.patientPhone
@@ -139,6 +153,12 @@ const PatientCheckIn = () => {
           <p className="text-[#967A53] text-[10px] font-black uppercase tracking-[0.3em] mt-2">Verified Self Check-in</p>
         </header>
 
+        {fetchError && (
+          <div className="mb-6 p-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 text-xs font-semibold">
+            {fetchError}
+          </div>
+        )}
+
         {!otpSent ? (
           <form onSubmit={handleSendOTP} className="space-y-6">
             <div className="space-y-1">
@@ -171,13 +191,14 @@ const PatientCheckIn = () => {
                 <Stethoscope size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#967A53] z-10" />
                 <select
                   required
+                  disabled={doctors.length === 0}
                   className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B] appearance-none cursor-pointer relative z-0"
                   onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
                 >
-                  <option value="">Choose Specialist</option>
+                  <option value="">{doctors.length === 0 ? 'No specialist available' : 'Choose Specialist'}</option>
                   {doctors.map(doc => (
                     <option key={doc._id} value={doc._id}>
-                      Dr. {doc.name} ({doc.specialization})
+                      Dr. {doc.name} ({doc.specialization || 'General'})
                     </option>
                   ))}
                 </select>
