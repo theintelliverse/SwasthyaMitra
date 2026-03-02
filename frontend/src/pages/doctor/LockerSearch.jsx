@@ -35,32 +35,32 @@ const LockerSearch = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
+    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
       <Sidebar role="doctor" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         <main className="p-8 lg:p-20 max-w-4xl mx-auto w-full flex flex-col items-center justify-center min-h-full">
 
           {/* Top Icon with Morning Glow */}
-          <div className="w-24 h-24 bg-[#FFA800]/10 rounded-[2.5rem] flex items-center justify-center text-[#FFA800] mb-8 shadow-inner relative group">
+          <div className="w-24 h-24 bg-[#1F6FB2]/10 rounded-[2.5rem] flex items-center justify-center text-[#1F6FB2] mb-8 shadow-inner relative group">
             <ShieldCheck size={48} className="transition-transform group-hover:scale-110 duration-500" />
-            <div className="absolute inset-0 bg-[#FFA800] rounded-[2.5rem] animate-ping opacity-5"></div>
+            <div className="absolute inset-0 bg-[#1F6FB2] rounded-[2.5rem] animate-ping opacity-5"></div>
           </div>
 
           <header className="text-center mb-12">
-            <h1 className="text-5xl font-heading mb-4 text-[#422D0B]">Clinical Vault Search</h1>
-            <p className="text-[#967A53] font-medium max-w-md mx-auto leading-relaxed">
+            <h1 className="text-5xl font-heading mb-4 text-[#0F766E]">Clinical Vault Search</h1>
+            <p className="text-[#3FA28C] font-medium max-w-md mx-auto leading-relaxed">
               Retrieve encrypted patient history, vitals trends, and diagnostic files using a verified mobile number.
             </p>
           </header>
 
           <form onSubmit={handleSearch} className="w-full relative">
             <div className="relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#967A53]" size={24} />
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#3FA28C]" size={24} />
               <input
                 type="tel"
                 placeholder="Ex: 9876543210"
-                className="w-full pl-16 pr-44 py-8 bg-white border-2 border-[#E8DDCB] rounded-[3rem] outline-none focus:border-[#FFA800] shadow-2xl shadow-teak/5 font-heading text-3xl tracking-[0.1em] placeholder:text-[#E8DDCB] transition-all"
+                className="w-full pl-16 pr-44 py-8 bg-white border-2 border-[#AFC4D8] rounded-[3rem] outline-none focus:border-[#1F6FB2] shadow-2xl shadow-teak/5 font-heading text-3xl tracking-[0.1em] placeholder:text-[#AFC4D8] transition-all"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
@@ -68,7 +68,7 @@ const LockerSearch = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="absolute right-4 top-4 bottom-4 px-10 bg-[#422D0B] text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-[#FFA800] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+                className="absolute right-4 top-4 bottom-4 px-10 bg-[#0F766E] text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-[#1F6FB2] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
               >
                 {loading ? <RefreshCw size={18} className="animate-spin" /> : <>Access <ArrowRight size={18} /></>}
               </button>
@@ -86,16 +86,16 @@ const LockerSearch = () => {
           {/* Quick Info Tags */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 w-full opacity-60">
             <div className="flex flex-col items-center gap-3">
-              <div className="p-4 bg-white border border-[#E8DDCB] rounded-2xl text-[#967A53]"><User size={20} /></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#422D0B]">Historical Vitals</span>
+              <div className="p-4 bg-white border border-[#AFC4D8] rounded-2xl text-[#3FA28C]"><User size={20} /></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0F766E]">Historical Vitals</span>
             </div>
             <div className="flex flex-col items-center gap-3">
-              <div className="p-4 bg-white border border-[#E8DDCB] rounded-2xl text-[#967A53]"><FileText size={20} /></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#422D0B]">Digital Reports</span>
+              <div className="p-4 bg-white border border-[#AFC4D8] rounded-2xl text-[#3FA28C]"><FileText size={20} /></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0F766E]">Digital Reports</span>
             </div>
             <div className="flex flex-col items-center gap-3">
-              <div className="p-4 bg-white border border-[#E8DDCB] rounded-2xl text-[#967A53]"><Phone size={20} /></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#422D0B]">Secure Decryption</span>
+              <div className="p-4 bg-white border border-[#AFC4D8] rounded-2xl text-[#3FA28C]"><Phone size={20} /></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0F766E]">Secure Decryption</span>
             </div>
           </div>
         </main>

@@ -86,8 +86,8 @@ const ClinicSettings = () => {
           icon: 'success',
           title: 'Profile Updated',
           text: 'Clinic settings have been synced successfully.',
-          confirmButtonColor: '#422D0B',
-          background: '#FFFBF5'
+          confirmButtonColor: '#0F766E',
+          background: '#EEF6FA'
         });
       }
     } catch (err) {
@@ -97,26 +97,26 @@ const ClinicSettings = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FFFBF5] flex items-center justify-center">
-      <div className="animate-pulse font-heading text-xl text-[#967A53]">Opening Clinic Vault...</div>
+    <div className="min-h-screen bg-[#EEF6FA] flex items-center justify-center">
+      <div className="animate-pulse font-heading text-xl text-[#3FA28C]">Opening Clinic Vault...</div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
+    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
       {/* --- Sidebar Integrated --- */}
       <Sidebar role="admin" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         {/* --- Header Section --- */}
-        <header className="bg-white border-b border-[#E8DDCB] px-8 py-6 sticky top-0 z-30 shadow-sm">
+        <header className="bg-white border-b border-[#AFC4D8] px-8 py-6 sticky top-0 z-30 shadow-sm">
           <div className="max-w-6xl mx-auto flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#422D0B] rounded-2xl flex items-center justify-center text-white shadow-lg">
+            <div className="w-12 h-12 bg-[#0F766E] rounded-2xl flex items-center justify-center text-white shadow-lg">
               <SettingsIcon size={24} />
             </div>
             <div>
               <h1 className="font-heading text-3xl leading-none">Clinic Profile</h1>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#967A53] mt-1">Configure Global Facility Settings</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] mt-1">Configure Global Facility Settings</p>
             </div>
           </div>
         </header>
@@ -131,17 +131,17 @@ const ClinicSettings = () => {
                   {fetchError}
                 </div>
               )}
-              <div className="bg-white border border-[#E8DDCB] rounded-[3.5rem] p-8 md:p-12 shadow-sm">
+              <div className="bg-white border border-[#AFC4D8] rounded-[3.5rem] p-8 md:p-12 shadow-sm">
                 <form onSubmit={handleUpdate} className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Clinic Name */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Clinic Display Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Clinic Display Name</label>
                       <div className="relative">
-                        <Building size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
+                        <Building size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B] transition-all"
+                          className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E] transition-all"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
@@ -150,17 +150,17 @@ const ClinicSettings = () => {
 
                     {/* Clinic Code */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Unique Gateway Code</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Unique Gateway Code</label>
                       <div className="relative">
-                        <QrCode size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
+                        <QrCode size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-black uppercase text-[#FFA800] transition-all"
+                          className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-black uppercase text-[#1F6FB2] transition-all"
                           value={formData.clinicCode}
                           onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                         />
                       </div>
-                      <p className="text-[9px] text-[#967A53] ml-2 flex items-center gap-1 italic">
+                      <p className="text-[9px] text-[#3FA28C] ml-2 flex items-center gap-1 italic">
                         <AlertCircle size={10} /> Affects your public check-in URL.
                       </p>
                     </div>
@@ -168,13 +168,13 @@ const ClinicSettings = () => {
 
                   {/* Contact Number */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Verified Contact Number</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Verified Contact Number</label>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
+                      <Phone size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
                       <input
                         type="text"
                         placeholder="+91 00000 00000"
-                        className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-medium text-[#422D0B]"
+                        className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-medium text-[#0F766E]"
                         value={formData.contactPhone}
                         onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                       />
@@ -183,12 +183,12 @@ const ClinicSettings = () => {
 
                   {/* Physical Address */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Clinic Address</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Clinic Address</label>
                     <div className="relative">
-                      <MapPin size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
+                      <MapPin size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
                       <textarea
                         placeholder="Street, Landmark, City, Pincode..."
-                        className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-medium h-32 resize-none transition-all"
+                        className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-medium h-32 resize-none transition-all"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       ></textarea>
@@ -198,7 +198,7 @@ const ClinicSettings = () => {
                   <div className="pt-6">
                     <button
                       type="submit"
-                      className="w-full md:w-auto px-12 py-5 bg-[#FFA800] text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-[#422D0B] transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
+                      className="w-full md:w-auto px-12 py-5 bg-[#1F6FB2] text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-[#0F766E] transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
                     >
                       <Save size={18} /> Update Facility Details
                     </button>
@@ -209,12 +209,12 @@ const ClinicSettings = () => {
 
             {/* --- Right Sidebar: QR Live Preview & Danger Zone --- */}
             <div className="space-y-8">
-              <div className="bg-white border border-[#E8DDCB] p-8 rounded-[3rem] shadow-sm">
-                <h3 className="font-heading text-xl mb-6 border-b border-[#E8DDCB] pb-4">Live QR Preview</h3>
+              <div className="bg-white border border-[#AFC4D8] p-8 rounded-[3rem] shadow-sm">
+                <h3 className="font-heading text-xl mb-6 border-b border-[#AFC4D8] pb-4">Live QR Preview</h3>
                 <div className="transform scale-95 origin-top">
                   <ClinicQR clinicCode={formData.clinicCode} clinicName={formData.name} />
                 </div>
-                <p className="mt-6 text-[10px] text-[#967A53] leading-relaxed text-center px-4 font-medium italic">
+                <p className="mt-6 text-[10px] text-[#3FA28C] leading-relaxed text-center px-4 font-medium italic">
                   This QR code allows patients to join your queue instantly from their mobile devices.
                 </p>
               </div>

@@ -58,16 +58,16 @@ const HealthLocker = () => {
   }, [navigate]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FFFBF5] flex flex-col items-center justify-center gap-4">
-      <RefreshCw size={32} className="text-[#FFA800] animate-spin" />
-      <div className="font-heading text-xl text-[#422D0B]">Unlocking Appointory Vault...</div>
+    <div className="min-h-screen bg-[#EEF6FA] flex flex-col items-center justify-center gap-4">
+      <RefreshCw size={32} className="text-[#1F6FB2] animate-spin" />
+      <div className="font-heading text-xl text-[#0F766E]">Unlocking Appointory Vault...</div>
     </div>
   );
 
   if (!data) return (
-    <div className="min-h-screen bg-[#FFFBF5] flex flex-col items-center justify-center p-10">
-      <p className="font-heading text-xl text-[#967A53] mb-6">No records found for this account.</p>
-      <button onClick={() => navigate(-1)} className="px-8 py-3 bg-[#422D0B] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Go Back</button>
+    <div className="min-h-screen bg-[#EEF6FA] flex flex-col items-center justify-center p-10">
+      <p className="font-heading text-xl text-[#3FA28C] mb-6">No records found for this account.</p>
+      <button onClick={() => navigate(-1)} className="px-8 py-3 bg-[#0F766E] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Go Back</button>
     </div>
   );
 
@@ -75,18 +75,18 @@ const HealthLocker = () => {
   const latestVisit = data.visitHistory?.[0];
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5] font-body text-[#422D0B] p-6 pb-20">
+    <div className="min-h-screen bg-[#EEF6FA] font-body text-[#0F766E] p-6 pb-20">
       <div className="max-w-5xl mx-auto">
 
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#967A53] hover:text-[#422D0B] transition-colors"
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#3FA28C] hover:text-[#0F766E] transition-colors"
           >
             <ArrowLeft size={14} /> Close Vault
           </button>
           {isSyncing && (
-            <div className="flex items-center gap-2 text-[#FFA800] animate-pulse">
+            <div className="flex items-center gap-2 text-[#1F6FB2] animate-pulse">
               <RefreshCw size={12} className="animate-spin" />
               <span className="text-[8px] font-black uppercase tracking-widest">Live Sync Active</span>
             </div>
@@ -94,17 +94,17 @@ const HealthLocker = () => {
         </div>
 
         {/* --- Header --- */}
-        <div className="bg-[#422D0B] rounded-[3rem] p-8 md:p-12 shadow-xl mb-10 flex flex-col md:flex-row gap-8 items-center relative overflow-hidden text-white">
+        <div className="bg-[#0F766E] rounded-[3rem] p-8 md:p-12 shadow-xl mb-10 flex flex-col md:flex-row gap-8 items-center relative overflow-hidden text-white">
           <div className="absolute top-0 right-0 p-6 opacity-10">
             <ShieldCheck size={120} />
           </div>
 
-          <div className="w-24 h-24 bg-[#FFA800] rounded-[2rem] flex items-center justify-center text-white text-4xl font-heading shadow-lg z-10">
+          <div className="w-24 h-24 bg-[#1F6FB2] rounded-[2rem] flex items-center justify-center text-white text-4xl font-heading shadow-lg z-10">
             {data.name?.charAt(0) || 'P'}
           </div>
 
           <div className="text-center md:text-left z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFC24A] mb-1">Authenticated Identity</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1A4F8A] mb-1">Authenticated Identity</p>
             <h1 className="text-4xl font-heading">{data.name}</h1>
             <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
               <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Smartphone size={12} /> {data.phone}</p>
@@ -114,7 +114,7 @@ const HealthLocker = () => {
         </div>
 
         {/* --- Navigation Tabs --- */}
-        <div className="flex gap-4 mb-8 bg-[#E8DDCB]/20 p-2 rounded-2xl w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
+        <div className="flex gap-4 mb-8 bg-[#AFC4D8]/20 p-2 rounded-2xl w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
           <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={<History size={16} />} label="Consultations" />
           <TabButton active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} icon={<FileText size={16} />} label="Digital Locker" />
         </div>
@@ -125,17 +125,17 @@ const HealthLocker = () => {
             <div className="space-y-6">
               {data.visitHistory?.length > 0 ? (
                 data.visitHistory.map((record, i) => (
-                  <div key={record._id} className="bg-white p-8 rounded-[2.5rem] border border-[#E8DDCB] shadow-sm hover:border-[#FFA800] transition-all animate-in zoom-in-95 duration-300">
+                  <div key={record._id} className="bg-white p-8 rounded-[2.5rem] border border-[#AFC4D8] shadow-sm hover:border-[#1F6FB2] transition-all animate-in zoom-in-95 duration-300">
                     <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="font-heading text-xl text-[#422D0B]">Dr. {record.doctorId?.name}</h3>
-                        <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest">{record.clinicId?.name}</p>
+                        <h3 className="font-heading text-xl text-[#0F766E]">Dr. {record.doctorId?.name}</h3>
+                        <p className="text-[10px] font-black text-[#3FA28C] uppercase tracking-widest">{record.clinicId?.name}</p>
                       </div>
-                      <span className="text-[10px] font-bold text-[#FFA800] bg-[#FFA800]/10 px-4 py-1.5 rounded-full flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-[#1F6FB2] bg-[#1F6FB2]/10 px-4 py-1.5 rounded-full flex items-center gap-2">
                         <Calendar size={12} /> {new Date(record.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <div className="p-6 bg-[#FFFBF5] rounded-3xl border border-[#E8DDCB]/50 text-sm text-[#422D0B] leading-relaxed whitespace-pre-wrap font-medium">
+                    <div className="p-6 bg-[#EEF6FA] rounded-3xl border border-[#AFC4D8]/50 text-sm text-[#0F766E] leading-relaxed whitespace-pre-wrap font-medium">
                       {record.notes || 'No notes provided by doctor.'}
                     </div>
                   </div>
@@ -148,17 +148,17 @@ const HealthLocker = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.digitalLocker?.length > 0 ? (
                 data.digitalLocker.map((doc, i) => (
-                  <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-[#E8DDCB] flex items-center justify-between group hover:border-[#FFA800] transition-all animate-in zoom-in-95">
+                  <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-[#AFC4D8] flex items-center justify-between group hover:border-[#1F6FB2] transition-all animate-in zoom-in-95">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#FFFBF5] rounded-2xl flex items-center justify-center text-[#FFA800] border border-[#E8DDCB]">
+                      <div className="w-12 h-12 bg-[#EEF6FA] rounded-2xl flex items-center justify-center text-[#1F6FB2] border border-[#AFC4D8]">
                         <FileText size={20} />
                       </div>
                       <div>
                         <h4 className="font-bold text-sm">{doc.title}</h4>
-                        <p className="text-[9px] font-black text-[#967A53] uppercase">{doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                        <p className="text-[9px] font-black text-[#3FA28C] uppercase">{doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="p-3 bg-[#422D0B] text-white hover:bg-[#FFA800] rounded-xl transition-all shadow-md">
+                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="p-3 bg-[#0F766E] text-white hover:bg-[#1F6FB2] rounded-xl transition-all shadow-md">
                       <Download size={18} />
                     </a>
                   </div>
@@ -176,15 +176,15 @@ const HealthLocker = () => {
 const TabButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'bg-[#FFA800] text-white shadow-lg' : 'bg-white text-[#967A53] border border-[#E8DDCB] hover:border-[#422D0B]'}`}
+    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'bg-[#1F6FB2] text-white shadow-lg' : 'bg-white text-[#3FA28C] border border-[#AFC4D8] hover:border-[#0F766E]'}`}
   >
     {icon} {label}
   </button>
 );
 
 const EmptyState = ({ message }) => (
-  <div className="bg-white border-2 border-dashed border-[#E8DDCB] p-24 rounded-[4rem] text-center text-[#967A53] w-full flex flex-col items-center">
-    <div className="w-16 h-16 bg-[#FFFBF5] rounded-full flex items-center justify-center mb-6 border border-[#E8DDCB]">
+  <div className="bg-white border-2 border-dashed border-[#AFC4D8] p-24 rounded-[4rem] text-center text-[#3FA28C] w-full flex flex-col items-center">
+    <div className="w-16 h-16 bg-[#EEF6FA] rounded-full flex items-center justify-center mb-6 border border-[#AFC4D8]">
       <Activity size={32} className="opacity-20" />
     </div>
     <p className="font-heading text-xl opacity-60 italic">{message}</p>

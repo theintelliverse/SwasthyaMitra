@@ -27,8 +27,8 @@ const RegisterClinic = () => {
         icon: 'error',
         title: '<span style="font-family: var(--font-heading)">Passwords Mismatch</span>',
         text: 'Please ensure both passwords are identical.',
-        confirmButtonColor: '#422D0B',
-        background: '#FFFBF5',
+        confirmButtonColor: '#0F766E',
+        background: '#EEF6FA',
       });
     }
 
@@ -44,14 +44,14 @@ const RegisterClinic = () => {
           title: '<span style="font-family: var(--font-heading)">Clinic Registered!</span>',
           html: `
             <div style="font-family: var(--font-body)">
-              <p>Your unique code is: <b style="color: #FFA800">${response.data.clinicCode}</b></p>
+              <p>Your unique code is: <b style="color: #1F6FB2">${response.data.clinicCode}</b></p>
               <p style="font-size: 0.8rem; margin-top: 10px;">Please use this code to log in to your portal.</p>
             </div>
           `,
           confirmButtonText: 'Go to Login',
-          confirmButtonColor: '#FFA800',
-          background: '#FFFBF5',
-          color: '#422D0B',
+          confirmButtonColor: '#1F6FB2',
+          background: '#EEF6FA',
+          color: '#0F766E',
           allowOutsideClick: false
         }).then((result) => {
           if (result.isConfirmed) {
@@ -64,8 +64,8 @@ const RegisterClinic = () => {
         icon: 'error',
         title: '<span style="font-family: var(--font-heading)">Registration Failed</span>',
         text: error.response?.data?.message || 'Something went wrong. Please try again.',
-        confirmButtonColor: '#422D0B',
-        background: '#FFFBF5',
+        confirmButtonColor: '#0F766E',
+        background: '#EEF6FA',
       });
     } finally {
       setLoading(false);

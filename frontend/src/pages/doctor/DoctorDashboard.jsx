@@ -115,9 +115,9 @@ const DoctorDashboard = () => {
       title: 'Order Lab Diagnostics',
       input: 'text',
       inputPlaceholder: 'e.g., CBC, X-Ray',
-      confirmButtonColor: '#FFA800',
+      confirmButtonColor: '#1F6FB2',
       showCancelButton: true,
-      background: '#FFFBF5'
+      background: '#EEF6FA'
     });
     if (testName) {
       try {
@@ -137,17 +137,17 @@ const DoctorDashboard = () => {
   const latestVitals = patientData?.vitals?.[patientData.vitals.length - 1];
 
   return (
-    <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
+    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
       <Sidebar role="doctor" />
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
-        <nav className="bg-white border-b border-[#E8DDCB] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+        <nav className="bg-white border-b border-[#AFC4D8] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <h1 className="font-heading text-xl text-[#422D0B]">Consultation Hub</h1>
-            <button onClick={handleToggleBreak} className={`flex items-center gap-2 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${isOnBreak ? 'bg-red-500 text-white shadow-lg' : 'bg-[#FFFBF5] text-[#967A53] border border-[#E8DDCB] hover:border-[#FFA800]'}`}>
+            <h1 className="font-heading text-xl text-[#0F766E]">Consultation Hub</h1>
+            <button onClick={handleToggleBreak} className={`flex items-center gap-2 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${isOnBreak ? 'bg-red-500 text-white shadow-lg' : 'bg-[#EEF6FA] text-[#3FA28C] border border-[#AFC4D8] hover:border-[#1F6FB2]'}`}>
               {isOnBreak ? <Play size={12} fill="currentColor" /> : <Coffee size={12} />} {isOnBreak ? 'Resume Duty' : 'Take Break'}
             </button>
           </div>
-          <p className="text-[10px] font-black uppercase text-[#FFA800] tracking-widest underline decoration-2">Dr. {localStorage.getItem('userName') || 'Physician'}</p>
+          <p className="text-[10px] font-black uppercase text-[#1F6FB2] tracking-widest underline decoration-2">Dr. {localStorage.getItem('userName') || 'Physician'}</p>
         </nav>
 
         <main className="p-6 lg:p-10 max-w-7xl mx-auto w-full grid lg:grid-cols-4 gap-10">
@@ -155,53 +155,53 @@ const DoctorDashboard = () => {
             <section>
               <div className="flex justify-between items-center mb-5">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#967A53]">Active Patient</h2>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3FA28C]">Active Patient</h2>
                   {activePatient?.isEmergency && <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase animate-pulse"><Siren size={10} /> Emergency</span>}
                 </div>
                 {activePatient?.currentStage === 'Lab-Completed' && <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-[9px] font-black flex items-center gap-2 border border-green-200 animate-bounce"><CheckCircle size={12} /> LAB RESULTS READY</span>}
               </div>
 
               {activePatient ? (
-                <div className={`bg-white border p-8 md:p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden transition-all ${activePatient.isEmergency ? 'border-red-500 ring-4 ring-red-50' : 'border-[#E8DDCB]'}`}>
+                <div className={`bg-white border p-8 md:p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden transition-all ${activePatient.isEmergency ? 'border-red-500 ring-4 ring-red-50' : 'border-[#AFC4D8]'}`}>
                   <div className="grid md:grid-cols-2 gap-12 items-start">
                     <div className="space-y-8">
-                      <div><h3 className="text-5xl font-heading mb-3 text-[#422D0B]">{activePatient.patientName}</h3><p className="text-[#967A53] font-medium flex items-center gap-3">Token <span className={`font-black px-3 py-1 rounded-lg text-lg ${activePatient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#FFA800]/10 text-[#FFA800]'}`}>#{activePatient.tokenNumber}</span></p></div>
+                      <div><h3 className="text-5xl font-heading mb-3 text-[#0F766E]">{activePatient.patientName}</h3><p className="text-[#3FA28C] font-medium flex items-center gap-3">Token <span className={`font-black px-3 py-1 rounded-lg text-lg ${activePatient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#1F6FB2]/10 text-[#1F6FB2]'}`}>#{activePatient.tokenNumber}</span></p></div>
                       <div className="grid grid-cols-2 gap-4"><VitalBox label="BP" value={latestVitals?.bloodPressure} unit="mmHg" /><VitalBox label="Pulse" value={latestVitals?.pulseRate} unit="bpm" /></div>
                       <div className="flex flex-col gap-4">
-                        <button disabled={isProcessing} onClick={() => handleStatusUpdate(activePatient._id, 'complete')} className="w-full py-5 bg-[#422D0B] text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-[#FFA800] transition-all shadow-xl disabled:opacity-50">{isProcessing ? 'Processing...' : 'Complete Visit'}</button>
-                        <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-[#FFA800]/10 text-[#FFA800] border border-[#FFA800]/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => setShowProfile(true)} className="flex-1 py-4 bg-[#FFFBF5] border border-[#E8DDCB] text-[#422D0B] rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
+                        <button disabled={isProcessing} onClick={() => handleStatusUpdate(activePatient._id, 'complete')} className="w-full py-5 bg-[#0F766E] text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-[#1F6FB2] transition-all shadow-xl disabled:opacity-50">{isProcessing ? 'Processing...' : 'Complete Visit'}</button>
+                        <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-[#1F6FB2]/10 text-[#1F6FB2] border border-[#1F6FB2]/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => setShowProfile(true)} className="flex-1 py-4 bg-[#EEF6FA] border border-[#AFC4D8] text-[#0F766E] rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
                       </div>
                     </div>
-                    <div className="bg-[#FFFBF5] p-8 rounded-[3rem] border border-[#E8DDCB] shadow-inner"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consultation notes..." className="w-full h-80 bg-white border border-[#E8DDCB] rounded-3xl p-6 outline-none focus:border-[#FFA800] text-sm font-medium"></textarea></div>
+                    <div className="bg-[#EEF6FA] p-8 rounded-[3rem] border border-[#AFC4D8] shadow-inner"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consultation notes..." className="w-full h-80 bg-white border border-[#AFC4D8] rounded-3xl p-6 outline-none focus:border-[#1F6FB2] text-sm font-medium"></textarea></div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white border-2 border-dashed border-[#E8DDCB] p-24 rounded-[4rem] text-center"><p className="font-heading text-2xl text-[#967A53]">{isOnBreak ? 'Duty Halted' : 'Lounge Empty'}</p></div>
+                <div className="bg-white border-2 border-dashed border-[#AFC4D8] p-24 rounded-[4rem] text-center"><p className="font-heading text-2xl text-[#3FA28C]">{isOnBreak ? 'Duty Halted' : 'Lounge Empty'}</p></div>
               )}
             </section>
 
             {/* --- NEW SECTION: LAB MONITORING --- */}
             <section className="mt-12">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#967A53] mb-6">Lab Monitoring Area</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3FA28C] mb-6">Lab Monitoring Area</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {labMonitoringList.map(p => (
-                  <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-[#E8DDCB] opacity-60'}`}>
+                  <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-[#AFC4D8] opacity-60'}`}>
                     <div className="flex justify-between items-start mb-3">
-                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.currentStage === 'Lab-Completed' ? 'bg-green-500 text-white animate-pulse' : 'bg-[#FFFBF5] text-[#967A53]'}`}>
+                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.currentStage === 'Lab-Completed' ? 'bg-green-500 text-white animate-pulse' : 'bg-[#EEF6FA] text-[#3FA28C]'}`}>
                         {p.currentStage === 'Lab-Completed' ? 'REPORT READY' : 'IN LAB'}
                       </span>
                       <span className="text-[10px] font-heading">#{p.tokenNumber}</span>
                     </div>
                     <p className="font-bold text-sm truncate">{p.patientName}</p>
-                    <p className="text-[9px] text-[#967A53] mt-1 italic">{p.requiredTest || 'Diagnostics'}</p>
+                    <p className="text-[9px] text-[#3FA28C] mt-1 italic">{p.requiredTest || 'Diagnostics'}</p>
                     {p.currentStage === 'Lab-Completed' && !activePatient && (
-                      <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full mt-4 py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#422D0B] transition-all">Recall Patient</button>
+                      <button onClick={() => handleStatusUpdate(p._id, 'start')} className="w-full mt-4 py-2.5 bg-green-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-[#0F766E] transition-all">Recall Patient</button>
                     )}
                   </div>
                 ))}
                 {labMonitoringList.length === 0 && (
-                  <div className="col-span-full py-8 text-center bg-[#FFFBF5] rounded-3xl border border-dashed border-[#E8DDCB]">
-                    <p className="text-[10px] font-black text-[#967A53] uppercase tracking-widest">No patients currently in Lab</p>
+                  <div className="col-span-full py-8 text-center bg-[#EEF6FA] rounded-3xl border border-dashed border-[#AFC4D8]">
+                    <p className="text-[10px] font-black text-[#3FA28C] uppercase tracking-widest">No patients currently in Lab</p>
                   </div>
                 )}
               </div>
@@ -210,14 +210,14 @@ const DoctorDashboard = () => {
 
           {/* --- RIGHT SIDE: PRIMARY LIVE QUEUE --- */}
           <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#967A53]">Waiting Lounge</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3FA28C]">Waiting Lounge</h2>
             <div className="space-y-4">
               {primaryWaitingList.map((patient, index) => (
-                <div key={patient._id} className={`p-6 rounded-[2.5rem] border transition-all ${patient.isEmergency ? 'bg-red-50 border-red-600 ring-2 ring-red-200 animate-pulse' : 'bg-white border-[#E8DDCB]'}`}>
+                <div key={patient._id} className={`p-6 rounded-[2.5rem] border transition-all ${patient.isEmergency ? 'bg-red-50 border-red-600 ring-2 ring-red-200 animate-pulse' : 'bg-white border-[#AFC4D8]'}`}>
                   <div className="flex justify-between items-start">
-                    <div className="space-y-1"><div className="flex items-center gap-2"><span className={`text-[10px] font-black px-2 py-0.5 rounded ${patient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#FFA800]/10 text-[#FFA800]'}`}>#{patient.tokenNumber}</span> {patient.isEmergency && <Siren size={12} className="text-red-600" />}</div><p className="font-bold text-sm">{patient.patientName}</p></div>
+                    <div className="space-y-1"><div className="flex items-center gap-2"><span className={`text-[10px] font-black px-2 py-0.5 rounded ${patient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#1F6FB2]/10 text-[#1F6FB2]'}`}>#{patient.tokenNumber}</span> {patient.isEmergency && <Siren size={12} className="text-red-600" />}</div><p className="font-bold text-sm">{patient.patientName}</p></div>
                     {!activePatient && !isOnBreak && index === 0 && (
-                      <button disabled={isProcessing} onClick={() => handleStatusUpdate(patient._id, 'start')} className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase shadow-lg transition-all ${patient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#422D0B] text-white hover:bg-[#FFA800]'}`}>{isProcessing ? '...' : 'Call'}</button>
+                      <button disabled={isProcessing} onClick={() => handleStatusUpdate(patient._id, 'start')} className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase shadow-lg transition-all ${patient.isEmergency ? 'bg-red-600 text-white' : 'bg-[#0F766E] text-white hover:bg-[#1F6FB2]'}`}>{isProcessing ? '...' : 'Call'}</button>
                     )}
                   </div>
                 </div>
@@ -238,7 +238,7 @@ const DoctorDashboard = () => {
 };
 
 const VitalBox = ({ label, value, unit }) => (
-  <div className="bg-[#FFFBF5] p-5 rounded-3xl border border-[#E8DDCB]/50"><p className="text-[9px] font-black text-[#967A53] uppercase mb-1">{label}</p><p className="font-bold text-sm text-[#422D0B]">{value || '--'} <span className="text-[8px] opacity-50">{unit}</span></p></div>
+  <div className="bg-[#EEF6FA] p-5 rounded-3xl border border-[#AFC4D8]/50"><p className="text-[9px] font-black text-[#3FA28C] uppercase mb-1">{label}</p><p className="font-bold text-sm text-[#0F766E]">{value || '--'} <span className="text-[8px] opacity-50">{unit}</span></p></div>
 );
 
 export default DoctorDashboard;

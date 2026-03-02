@@ -83,10 +83,10 @@ const PatientStatus = () => {
       text: "This will remove your check-in request.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#422D0B',
-      cancelButtonColor: '#E8DDCB',
+      confirmButtonColor: '#0F766E',
+      cancelButtonColor: '#AFC4D8',
       confirmButtonText: 'Yes, Cancel',
-      background: '#FFFBF5',
+      background: '#EEF6FA',
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
