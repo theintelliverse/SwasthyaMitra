@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
 import {
   Beaker, Upload, Smartphone, Hash, FileCheck,
   RefreshCw, Activity, Search
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = API_BASE_URL || import.meta.env.VITE_API_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const LabDashboard = () => {
@@ -18,10 +18,10 @@ const LabDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
-  const fetchLabQueue = async (silent = false) => {
+  const fetchLabQueue = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
@@ -38,7 +38,7 @@ const LabDashboard = () => {
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchLabQueue();
@@ -56,7 +56,7 @@ const LabDashboard = () => {
     return () => {
       socket.off('queueUpdate');
     };
-  }, [token, clinicId]);
+  }, [clinicId, fetchLabQueue]);
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
     if (!file) return;
@@ -76,7 +76,7 @@ const LabDashboard = () => {
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #3FA28C;">Encrypting and notifying doctor...</p>',
+      html: '<p id="upload-status-text" style="font-size:12px;color:#3FA28C;">Syncing to Locker...</p>',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
       background: '#EEF6FA'
@@ -88,24 +88,39 @@ const LabDashboard = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
+        },
+        timeout: 120000,
+        onUploadProgress: (progressEvent) => {
+          const total = progressEvent.total || 0;
+          const loaded = progressEvent.loaded || 0;
+          if (!total) return;
+
+          const percent = Math.round((loaded * 100) / total);
+          const el = document.getElementById('upload-status-text');
+          if (!el) return;
+
+          el.textContent = percent >= 100 ? 'Finalizing on server...' : 'Syncing to Locker...';
         }
       });
 
-      if (res.data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Results Published',
-          text: 'Patient locker updated successfully.',
-          timer: 2000,
-          showConfirmButton: false,
-          background: '#EEF6FA'
-        });
-
-        // Manually trigger a refresh to remove the patient from the list immediately
-        fetchLabQueue(true);
+      if (!res?.data?.success) {
+        throw new Error(res?.data?.message || 'Upload failed while finalizing report.');
       }
+
+      Swal.close();
+      Swal.fire({
+        icon: 'success',
+        title: 'Results Published',
+        text: 'Patient locker updated successfully.',
+        timer: 2000,
+        showConfirmButton: false,
+        background: '#EEF6FA'
+      });
+
+      fetchLabQueue(true);
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
+      Swal.close();
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',

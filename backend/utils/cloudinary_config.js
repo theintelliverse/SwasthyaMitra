@@ -1,6 +1,9 @@
 const { v2: cloudinary } = require('cloudinary');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinaryStoragePackage = require('multer-storage-cloudinary');
 require('dotenv').config();
+
+const CloudinaryStorage =
+  cloudinaryStoragePackage.CloudinaryStorage || cloudinaryStoragePackage;
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -19,3 +22,4 @@ const storage = new CloudinaryStorage({
 });
 
 module.exports = { cloudinary, storage };
+
