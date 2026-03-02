@@ -3,7 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Phone, User, Stethoscope, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../../config/runtime';
+
+const API_URL = API_BASE_URL;
 const PatientCheckIn = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -24,11 +26,15 @@ const PatientCheckIn = () => {
   useEffect(() => {
     const fetchClinicDoctors = async () => {
       try {
+        if (!API_URL) {
+          throw new Error('API URL is not configured. Please set VITE_API_URL.');
+        }
         const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
         setDoctors(res.data.doctors);
         setClinicName(res.data.clinicName);
         setLoading(false);
-      } catch (err) {
+      } catch (error) {
+        console.error(error.message || "Could not load doctors");
         console.error("Could not load doctors");
         setLoading(false);
       }
@@ -40,6 +46,9 @@ const PatientCheckIn = () => {
   const handleSendOTP = async (e) => {
     e.preventDefault();
     try {
+      if (!API_URL) {
+        throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
       await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
         phone: formData.patientPhone
       });
@@ -49,16 +58,17 @@ const PatientCheckIn = () => {
         position: 'top-end',
         icon: 'info',
         title: 'OTP Sent successfully',
-        text: 'Check your server console for the code.',
+        text: 'Check your mobile SMS for the code.',
         showConfirmButton: false,
         timer: 4000,
         background: '#FFFBF5'
       });
-    } catch (err) {
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to send OTP. Please check the phone number.';
       Swal.fire({
         icon: 'error',
         title: 'Dispatch Failed',
-        text: 'Failed to send OTP. Please check the phone number.',
+        text: message,
         confirmButtonColor: '#422D0B'
       });
     }
@@ -68,6 +78,9 @@ const PatientCheckIn = () => {
   const handleVerifyAndCheckin = async (e) => {
     e.preventDefault();
     try {
+      if (!API_URL) {
+        throw new Error('API URL is not configured. Please set VITE_API_URL.');
+      }
       // 1. Verify OTP first
       await axios.post(`${API_URL}/api/auth/patient/verify-otp`, {
         phone: formData.patientPhone,
@@ -93,12 +106,12 @@ const PatientCheckIn = () => {
           navigate(`/patient/status?id=${res.data.id}`);
         });
       }
-    } catch (err) {
-      console.error("Check-in Error:", err.response);
+    } catch (error) {
+      console.error("Check-in Error:", error.response);
       Swal.fire({
         icon: 'error',
         title: 'Verification Failed',
-        text: err.response?.data?.message || 'Invalid code or check-in error.',
+        text: error.response?.data?.message || 'Invalid code or check-in error.',
         confirmButtonColor: '#422D0B'
       });
     }
