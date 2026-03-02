@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-  X, 
-  FileText, 
-  Activity, 
-  History, 
-  ExternalLink, 
+import {
+  X,
+  FileText,
+  Activity,
+  History,
+  ExternalLink,
   Database,
   Calendar,
   Weight
@@ -19,7 +19,7 @@ const PatientQuickView = ({ phone, onClose }) => {
   useEffect(() => {
     const fetchFullProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/staff/patient-full-profile/${phone}`, {
+        const res = await axios.get(`${API_URL}/api/staff/patient-full-profile/${phone}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatientData(res.data.data);
@@ -46,7 +46,7 @@ const PatientQuickView = ({ phone, onClose }) => {
   return (
     <div className="fixed inset-0 bg-[#422D0B]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-10">
       <div className="bg-[#FFFBF5] w-full max-w-5xl max-h-[90vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-[#E8DDCB]">
-        
+
         {/* --- Header --- */}
         <div className="p-8 md:px-12 border-b border-[#E8DDCB] flex justify-between items-center bg-white">
           <div className="flex items-center gap-4">
@@ -58,8 +58,8 @@ const PatientQuickView = ({ phone, onClose }) => {
               <p className="text-[10px] font-black uppercase tracking-widest text-[#967A53]">Digital Health Locker • {phone}</p>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-3 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all text-[#967A53]"
           >
             <X size={28} />
@@ -67,13 +67,13 @@ const PatientQuickView = ({ phone, onClose }) => {
         </div>
 
         <div className="flex-grow p-8 md:p-12 overflow-y-auto space-y-12">
-          
+
           {/* --- Vitals Summary Row --- */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <SummaryCard label="Latest BP" val={patientData.vitals[0]?.bloodPressure || '--'} unit="mmHg" icon={<Activity size={14}/>} />
-            <SummaryCard label="Pulse" val={patientData.vitals[0]?.pulseRate || '--'} unit="bpm" icon={<Activity size={14}/>} />
-            <SummaryCard label="Weight" val={patientData.vitals[0]?.weight || '--'} unit="kg" icon={<Weight size={14}/>} />
-            <SummaryCard label="BMI" val={patientData.vitals[0]?.bmi || '--'} unit="Score" icon={<Activity size={14}/>} color="text-[#FFA800]" />
+            <SummaryCard label="Latest BP" val={patientData.vitals[0]?.bloodPressure || '--'} unit="mmHg" icon={<Activity size={14} />} />
+            <SummaryCard label="Pulse" val={patientData.vitals[0]?.pulseRate || '--'} unit="bpm" icon={<Activity size={14} />} />
+            <SummaryCard label="Weight" val={patientData.vitals[0]?.weight || '--'} unit="kg" icon={<Weight size={14} />} />
+            <SummaryCard label="BMI" val={patientData.vitals[0]?.bmi || '--'} unit="Score" icon={<Activity size={14} />} color="text-[#FFA800]" />
           </div>
 
           {/* --- Reports Section --- */}
@@ -84,8 +84,8 @@ const PatientQuickView = ({ phone, onClose }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {patientData.documents.map((doc, i) => (
-                <a key={i} href={doc.fileUrl} target="_blank" rel="noreferrer" 
-                   className="bg-white p-6 rounded-[2rem] border border-[#E8DDCB] hover:border-[#FFA800] hover:shadow-xl transition-all group flex items-center justify-between">
+                <a key={i} href={doc.fileUrl} target="_blank" rel="noreferrer"
+                  className="bg-white p-6 rounded-[2rem] border border-[#E8DDCB] hover:border-[#FFA800] hover:shadow-xl transition-all group flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-[#FFFBF5] rounded-xl flex items-center justify-center text-[#FFA800] border border-[#E8DDCB]">
                       <FileText size={18} />
@@ -113,38 +113,38 @@ const PatientQuickView = ({ phone, onClose }) => {
               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#967A53]">Vitals History Logs</h3>
             </div>
             <div className="bg-white border border-[#E8DDCB] rounded-[2.5rem] overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-[#FFFBF5] border-b border-[#E8DDCB]">
-                        <tr className="text-[9px] font-black uppercase tracking-widest text-[#967A53]">
-                            <th className="p-6">Captured Date</th>
-                            <th className="p-6">BP (Syst/Diast)</th>
-                            <th className="p-6">Pulse</th>
-                            <th className="p-6">Weight & BMI</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E8DDCB]/50">
-                        {patientData.vitals.map((v, i) => (
-                            <tr key={i} className="hover:bg-[#FFFBF5]/50 transition-colors">
-                                <td className="p-6 text-sm font-bold text-[#422D0B]">{new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                                <td className="p-6 text-sm text-[#422D0B]">{v.bloodPressure} <span className="text-[10px] text-[#967A53]">mmHg</span></td>
-                                <td className="p-6 text-sm text-[#422D0B]">{v.pulseRate} <span className="text-[10px] text-[#967A53]">bpm</span></td>
-                                <td className="p-6">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-sm font-bold text-[#422D0B]">{v.weight} kg</span>
-                                    <span className="px-2 py-0.5 bg-[#FFA800]/10 text-[#FFA800] text-[10px] font-black rounded-lg">BMI: {v.bmi}</span>
-                                  </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+              <table className="w-full text-left">
+                <thead className="bg-[#FFFBF5] border-b border-[#E8DDCB]">
+                  <tr className="text-[9px] font-black uppercase tracking-widest text-[#967A53]">
+                    <th className="p-6">Captured Date</th>
+                    <th className="p-6">BP (Syst/Diast)</th>
+                    <th className="p-6">Pulse</th>
+                    <th className="p-6">Weight & BMI</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E8DDCB]/50">
+                  {patientData.vitals.map((v, i) => (
+                    <tr key={i} className="hover:bg-[#FFFBF5]/50 transition-colors">
+                      <td className="p-6 text-sm font-bold text-[#422D0B]">{new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                      <td className="p-6 text-sm text-[#422D0B]">{v.bloodPressure} <span className="text-[10px] text-[#967A53]">mmHg</span></td>
+                      <td className="p-6 text-sm text-[#422D0B]">{v.pulseRate} <span className="text-[10px] text-[#967A53]">bpm</span></td>
+                      <td className="p-6">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-bold text-[#422D0B]">{v.weight} kg</span>
+                          <span className="px-2 py-0.5 bg-[#FFA800]/10 text-[#FFA800] text-[10px] font-black rounded-lg">BMI: {v.bmi}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         </div>
 
         {/* --- Footer Note --- */}
         <div className="p-6 bg-[#422D0B] text-[#FFFBF5]/60 text-[10px] font-medium text-center uppercase tracking-widest">
-           Authorized Clinical Access Only • All interactions are logged
+          Authorized Clinical Access Only • All interactions are logged
         </div>
       </div>
     </div>

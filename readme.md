@@ -1,7 +1,8 @@
-# 🏥 Swasthya Mitra (Health Mitra)
+# 🏥 Appointory (Health Mitra)
+
 **A Real-time Clinical Management & Digital Health Locker System**
 
-Swasthya Mitra is a comprehensive MERN-stack platform designed to bridge the gap between clinics and patients. It features a real-time token system, automated lab referrals, and an encrypted digital health vault for patients.
+Appointory is a comprehensive MERN-stack platform designed to bridge the gap between clinics and patients. It features a real-time token system, automated lab referrals, and an encrypted digital health vault for patients.
 
 ---
 

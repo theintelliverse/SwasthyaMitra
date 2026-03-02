@@ -14,7 +14,7 @@ const ClinicTVDisplay = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [clinicName, setClinicName] = useState("Swasthya-Mitra Clinic");
+  const [clinicName, setClinicName] = useState("Appointory Clinic");
   const [error, setError] = useState(null);
 
   // Use a ref to track the room we joined to prevent repeated emits
@@ -24,7 +24,7 @@ const ClinicTVDisplay = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/staff/public/doctors/${clinicCode}`);
+      const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
       setDoctors(res.data.doctors);
       setClinicName(res.data.clinicName);
 
@@ -48,9 +48,11 @@ const ClinicTVDisplay = () => {
 
   const fetchQueue = async (docId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/queue/public/doctor-display/${docId}`);
+      const res = await axios.get(`${API_URL}/api/queue/public/doctor-display/${docId}`);
       setQueue(res.data.data || []);
-    } catch (err) { /* Silent fail */ }
+    } catch (err) {
+      console.error("TV Queue Fetch Error:", err);
+    }
   };
 
   // 🔌 WebSocket Lifecycle: Register Listeners ONCE

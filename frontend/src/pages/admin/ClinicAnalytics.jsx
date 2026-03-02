@@ -35,8 +35,8 @@ const ClinicAnalytics = () => {
     setIsSyncing(true);
     try {
       const [queueRes, staffRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/queue/live', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/staff/all', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/queue/live`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/staff/all`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       const liveQueue = queueRes.data.data;

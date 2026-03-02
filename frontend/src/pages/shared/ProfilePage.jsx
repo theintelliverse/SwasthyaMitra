@@ -9,7 +9,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const res = await axios.get('http://localhost:5000/api/auth/me', {
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(res.data.data);
@@ -20,12 +20,12 @@ const ProfilePage = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.patch('http://localhost:5000/api/auth/update-profile', user, {
+      await axios.patch(`${API_URL}/api/auth/update-profile`, user, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Swal.fire('Success', 'Profile updated successfully', 'success');
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       Swal.fire('Error', 'Update failed', 'error');
     }
   };
@@ -35,7 +35,7 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-parchment p-6 lg:p-10 font-body text-teak">
       <div className="max-w-4xl mx-auto bg-white rounded-[3rem] shadow-xl overflow-hidden border border-sandstone">
-        
+
         {/* Banner Decor */}
         <div className="h-32 bg-marigold/20 w-full relative">
           <div className="absolute -bottom-12 left-10">
@@ -53,7 +53,7 @@ const ProfilePage = () => {
                 {user.role} {user.specialization ? `• ${user.specialization}` : ''}
               </p>
             </div>
-            <button 
+            <button
               onClick={() => setIsEditing(!isEditing)}
               className="px-6 py-2 border-2 border-marigold text-marigold font-black text-[10px] uppercase rounded-full hover:bg-marigold hover:text-white transition-all"
             >
@@ -63,57 +63,57 @@ const ProfilePage = () => {
 
           <form onSubmit={handleUpdate} className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
-               <label className="text-[10px] font-black uppercase text-khaki">Full Name</label>
-               <input 
+              <label className="text-[10px] font-black uppercase text-khaki">Full Name</label>
+              <input
                 disabled={!isEditing}
                 className="w-full p-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold disabled:opacity-50"
                 value={user.name}
-                onChange={(e) => setUser({...user, name: e.target.value})}
-               />
+                onChange={(e) => setUser({ ...user, name: e.target.value })}
+              />
             </div>
             <div className="space-y-4">
-               <label className="text-[10px] font-black uppercase text-khaki">Email Address</label>
-               <input 
+              <label className="text-[10px] font-black uppercase text-khaki">Email Address</label>
+              <input
                 disabled // Email shouldn't be changed here
                 className="w-full p-4 bg-parchment border border-sandstone rounded-2xl opacity-50"
                 value={user.email}
-               />
+              />
             </div>
-            
+
             {user.role === 'doctor' && (
               <>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase text-khaki">Education</label>
-                  <input 
+                  <input
                     disabled={!isEditing}
                     placeholder="MBBS, MD"
                     className="w-full p-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold"
                     value={user.education || ''}
-                    onChange={(e) => setUser({...user, education: e.target.value})}
+                    onChange={(e) => setUser({ ...user, education: e.target.value })}
                   />
                 </div>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase text-khaki">Years of Experience</label>
-                  <input 
+                  <input
                     type="number"
                     disabled={!isEditing}
                     className="w-full p-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold"
                     value={user.experience || ''}
-                    onChange={(e) => setUser({...user, experience: e.target.value})}
+                    onChange={(e) => setUser({ ...user, experience: e.target.value })}
                   />
                 </div>
               </>
             )}
 
             <div className="md:col-span-2 space-y-4">
-               <label className="text-[10px] font-black uppercase text-khaki">Professional Bio</label>
-               <textarea 
+              <label className="text-[10px] font-black uppercase text-khaki">Professional Bio</label>
+              <textarea
                 disabled={!isEditing}
                 maxLength="500"
                 className="w-full p-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold h-32 resize-none"
                 value={user.bio || ''}
-                onChange={(e) => setUser({...user, bio: e.target.value})}
-               />
+                onChange={(e) => setUser({ ...user, bio: e.target.value })}
+              />
             </div>
 
             {isEditing && (

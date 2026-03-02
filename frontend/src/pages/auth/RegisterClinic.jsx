@@ -36,7 +36,7 @@ const RegisterClinic = () => {
 
     try {
       // 2. Backend API Call
-      const response = await axios.post('http://localhost:5000/api/auth/register-clinic', formData);
+      const response = await axios.post(`${API_URL}/api/auth/register-clinic`, formData);
 
       if (response.data.success) {
         Swal.fire({
@@ -84,7 +84,7 @@ const RegisterClinic = () => {
         </div>
 
         <div className="w-full max-w-5xl bg-white border border-sandstone rounded-[3rem] shadow-2xl shadow-teak/5 overflow-hidden grid lg:grid-cols-5">
-          
+
           {/* Left Sidebar - Information */}
           <div className="lg:col-span-2 bg-teak p-10 lg:p-12 text-parchment flex flex-col justify-between">
             <div>
@@ -93,7 +93,7 @@ const RegisterClinic = () => {
               <p className="text-parchment/70 text-sm leading-relaxed mb-8 font-medium italic">
                 "Modernizing Indian healthcare, one clinic at a time."
               </p>
-              
+
               <ul className="space-y-4">
                 {['Multi-role Staff Management', 'AI Wait-time Prediction', 'WhatsApp Notifications'].map((item, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-sm font-semibold">
@@ -106,7 +106,7 @@ const RegisterClinic = () => {
 
             <div className="mt-12 pt-12 border-t border-parchment/10">
               <p className="text-xs text-parchment/50 font-medium">Already registered?</p>
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 className="text-saffron font-bold hover:text-white transition-colors mt-1"
               >
@@ -118,18 +118,18 @@ const RegisterClinic = () => {
           {/* Right Sidebar - Form */}
           <div className="lg:col-span-3 p-10 lg:p-16">
             <form onSubmit={handleSubmit} className="space-y-8">
-              
+
               {/* Section 1: Clinic Info */}
               <div className="space-y-5">
                 <h3 className="text-xs font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Clinic Information</h3>
-                
+
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Name</label>
                     <input
                       type="text" required placeholder="City Care Hospital"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold"
-                      onChange={(e) => setFormData({...formData, clinicName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -137,7 +137,7 @@ const RegisterClinic = () => {
                     <input
                       type="text" required placeholder="e.g. CITY01"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold uppercase"
-                      onChange={(e) => setFormData({...formData, clinicCode: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                     />
                   </div>
                 </div>
@@ -147,7 +147,7 @@ const RegisterClinic = () => {
                   <input
                     type="text" required placeholder="Street, Sector, City, State"
                     className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
               </div>
@@ -155,14 +155,14 @@ const RegisterClinic = () => {
               {/* Section 2: Admin Info */}
               <div className="space-y-5 pt-4">
                 <h3 className="text-xs font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Admin Account</h3>
-                
+
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
                     <input
                       type="text" required placeholder="Dr. Haraprasad"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({...formData, adminName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -170,7 +170,7 @@ const RegisterClinic = () => {
                     <input
                       type="tel" required placeholder="+91 XXXXX XXXXX"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                     />
                   </div>
                 </div>
@@ -180,7 +180,7 @@ const RegisterClinic = () => {
                   <input
                     type="email" required placeholder="admin@clinic.com"
                     className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
 
@@ -190,7 +190,7 @@ const RegisterClinic = () => {
                     <input
                       type="password" required placeholder="••••••••"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -198,7 +198,7 @@ const RegisterClinic = () => {
                     <input
                       type="password" required placeholder="••••••••"
                       className="w-full px-5 py-3 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     />
                   </div>
                 </div>

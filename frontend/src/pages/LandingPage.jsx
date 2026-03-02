@@ -10,10 +10,10 @@ const LandingPage = () => {
       <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto border-b border-sandstone/30">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
-            <span className="text-white font-heading text-2xl">S</span>
+            <span className="text-white font-heading text-2xl">A</span>
           </div>
           <h1 className="font-heading text-2xl tracking-tight hidden sm:block">
-            Swasthya-Mitra
+            Appointory
           </h1>
         </div>
 
@@ -208,9 +208,9 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-marigold rounded flex items-center justify-center text-white font-heading text-xs">S</div>
+          <div className="w-6 h-6 bg-marigold rounded flex items-center justify-center text-white font-heading text-xs">A</div>
           <p className="text-[10px] font-black text-khaki uppercase tracking-widest">
-            © 2026 Swasthya-Mitra — Built for Bharat
+            © 2026 Appointory — Built for Bharat
           </p>
         </div>
         <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-teak">

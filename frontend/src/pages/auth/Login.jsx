@@ -20,7 +20,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const response = await axios.post(`${API_URL}/api/auth/login`, formData);
 
       if (response.data.success) {
         const { token, user } = response.data;
@@ -75,10 +75,10 @@ const Login = () => {
 
         <div className="flex items-center gap-4 mb-12 cursor-pointer group" onClick={() => navigate('/')}>
           <div className="w-12 h-12 bg-marigold rounded-2xl flex items-center justify-center shadow-xl shadow-marigold/20 group-hover:scale-110 transition-transform duration-300">
-            <span className="text-white font-heading text-3xl">S</span>
+            <span className="text-white font-heading text-3xl">A</span>
           </div>
           <div>
-            <h1 className="font-heading text-2xl tracking-tight leading-none">Swasthya-Mitra</h1>
+            <h1 className="font-heading text-2xl tracking-tight leading-none">Appointory</h1>
             <p className="text-[8px] font-black uppercase tracking-[0.3em] text-khaki mt-1">Provider Portal</p>
           </div>
         </div>

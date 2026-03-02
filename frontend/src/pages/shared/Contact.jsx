@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Footer from '../../components/Footer';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const initialForm = {
     name: '',
@@ -26,7 +27,7 @@ const Contact = () => {
         setFeedback({ type: '', text: '' });
 
         try {
-            const response = await axios.post('http://localhost:5000/api/contact', formData);
+            const response = await axios.post(`${API_URL}/api/contact`, formData);
 
             if (response.data?.success) {
                 setFeedback({ type: 'success', text: 'Your message has been sent successfully.' });
@@ -47,9 +48,9 @@ const Contact = () => {
             <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full border-b border-sandstone/30">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
-                        <span className="text-white font-heading text-2xl">S</span>
+                        <span className="text-white font-heading text-2xl">A</span>
                     </div>
-                    <h1 className="font-heading text-2xl tracking-tight hidden sm:block">Swasthya-Mitra</h1>
+                    <h1 className="font-heading text-2xl tracking-tight hidden sm:block">Appointory</h1>
                 </div>
                 <Link
                     to="/"

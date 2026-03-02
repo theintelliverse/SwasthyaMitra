@@ -19,7 +19,7 @@ const PatientQuickView = ({ phone, onClose }) => {
     else setIsSyncing(true);
 
     try {
-      const res = await axios.get(`http://localhost:5000/api/staff/patient-full-profile/${phone}`, {
+      const res = await axios.get(`${API_URL}/api/staff/patient-full-profile/${phone}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPatient(res.data.data);
@@ -178,7 +178,7 @@ const PatientQuickView = ({ phone, onClose }) => {
 
         <div className="px-8 py-4 bg-white border-t border-[#E8DDCB] text-center">
           <p className="text-[9px] font-black text-[#967A53] uppercase tracking-widest">
-            🔒 Data secured via Swasthya-Mitra Clinical Vault
+            🔒 Data secured via Appointory Clinical Vault
           </p>
         </div>
       </div>

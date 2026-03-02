@@ -75,7 +75,7 @@ const Terms = () => {
             id: 'platform',
             title: 'Platform Usage',
             content:
-                'Swasthya-Mitra is provided to support clinic operations and patient access to records. Users must provide accurate details and use the platform only for lawful healthcare-related purposes.'
+                'Appointory is provided to support clinic operations and patient access to records. Users must provide accurate details and use the platform only for lawful healthcare-related purposes.'
         },
         {
             id: 'account',
@@ -96,9 +96,9 @@ const Terms = () => {
             <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full border-b border-sandstone/30">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
-                        <span className="text-white font-heading text-2xl">S</span>
+                        <span className="text-white font-heading text-2xl">A</span>
                     </div>
-                    <h1 className="font-heading text-2xl tracking-tight hidden sm:block">Swasthya-Mitra</h1>
+                    <h1 className="font-heading text-2xl tracking-tight hidden sm:block">Appointory</h1>
                 </div>
                 <Link
                     to="/"

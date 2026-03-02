@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { 
-  Save, 
-  MapPin, 
-  Phone, 
-  ShieldAlert, 
-  Building, 
+import {
+  Save,
+  MapPin,
+  Phone,
+  ShieldAlert,
+  Building,
   QrCode,
   AlertCircle,
   Settings as SettingsIcon
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-import ClinicQR from '../../components/ClinicQR'; 
+import ClinicQR from '../../components/ClinicQR';
 const API_URL = import.meta.env.VITE_API_URL;
 const ClinicSettings = () => {
   const navigate = useNavigate();
@@ -30,10 +30,10 @@ const ClinicSettings = () => {
   useEffect(() => {
     const fetchClinicData = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/clinic/me', {
+        const res = await axios.get(`${API_URL}/api/clinic/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         if (res.data.success) {
           const { name, clinicCode, contactNumber, address } = res.data.data;
           setFormData({
@@ -55,7 +55,7 @@ const ClinicSettings = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.patch('http://localhost:5000/api/clinic/settings', formData, {
+      const res = await axios.patch(`${API_URL}/api/clinic/settings`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -103,7 +103,7 @@ const ClinicSettings = () => {
 
         <main className="flex-grow max-w-6xl w-full mx-auto p-6 md:p-10">
           <div className="grid lg:grid-cols-3 gap-10">
-            
+
             {/* --- Main Settings Form --- */}
             <div className="lg:col-span-2 space-y-8">
               <div className="bg-white border border-[#E8DDCB] rounded-[3.5rem] p-8 md:p-12 shadow-sm">
@@ -114,11 +114,11 @@ const ClinicSettings = () => {
                       <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Clinic Display Name</label>
                       <div className="relative">
                         <Building size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
-                        <input 
+                        <input
                           type="text" required
                           className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-bold text-[#422D0B] transition-all"
                           value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
                       </div>
                     </div>
@@ -128,11 +128,11 @@ const ClinicSettings = () => {
                       <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Unique Gateway Code</label>
                       <div className="relative">
                         <QrCode size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
-                        <input 
+                        <input
                           type="text" required
                           className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-black uppercase text-[#FFA800] transition-all"
                           value={formData.clinicCode}
-                          onChange={(e) => setFormData({...formData, clinicCode: e.target.value})}
+                          onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                         />
                       </div>
                       <p className="text-[9px] text-[#967A53] ml-2 flex items-center gap-1 italic">
@@ -146,12 +146,12 @@ const ClinicSettings = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Verified Contact Number</label>
                     <div className="relative">
                       <Phone size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="+91 00000 00000"
                         className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-medium text-[#422D0B]"
                         value={formData.contactNumber}
-                        onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                       />
                     </div>
                   </div>
@@ -161,17 +161,17 @@ const ClinicSettings = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2">Clinic Address</label>
                     <div className="relative">
                       <MapPin size={16} className="absolute left-5 top-4.5 text-[#E8DDCB]" />
-                      <textarea 
+                      <textarea
                         placeholder="Street, Landmark, City, Pincode..."
                         className="w-full pl-12 pr-6 py-4 bg-[#FFFBF5] border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] font-medium h-32 resize-none transition-all"
                         value={formData.address}
-                        onChange={(e) => setFormData({...formData, address: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       ></textarea>
                     </div>
                   </div>
 
                   <div className="pt-6">
-                    <button 
+                    <button
                       type="submit"
                       className="w-full md:w-auto px-12 py-5 bg-[#FFA800] text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-[#422D0B] transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
                     >
@@ -195,20 +195,20 @@ const ClinicSettings = () => {
               </div>
 
               <div className="bg-red-50 border border-red-100 rounded-[2.5rem] p-8">
-                  <div className="flex items-center gap-2 mb-4 text-red-800">
-                     <ShieldAlert size={20} />
-                     <h4 className="font-heading text-lg">Danger Zone</h4>
-                  </div>
-                  <p className="text-red-600/70 text-[10px] mb-6 font-bold uppercase tracking-tight">
-                    Deactivation will freeze all active queues and staff access.
-                  </p>
-                  <button 
-                    type="button"
-                    className="w-full py-4 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                    onClick={() => Swal.fire('Security Protocol', 'Facility deactivation requires administrative override. Please contact support.', 'info')}
-                  >
-                      Request Termination
-                  </button>
+                <div className="flex items-center gap-2 mb-4 text-red-800">
+                  <ShieldAlert size={20} />
+                  <h4 className="font-heading text-lg">Danger Zone</h4>
+                </div>
+                <p className="text-red-600/70 text-[10px] mb-6 font-bold uppercase tracking-tight">
+                  Deactivation will freeze all active queues and staff access.
+                </p>
+                <button
+                  type="button"
+                  className="w-full py-4 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                  onClick={() => Swal.fire('Security Protocol', 'Facility deactivation requires administrative override. Please contact support.', 'info')}
+                >
+                  Request Termination
+                </button>
               </div>
             </div>
 

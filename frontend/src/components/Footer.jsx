@@ -10,10 +10,10 @@ const Footer = () => {
         <div className="flex flex-col items-center md:items-start gap-2">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-marigold rounded flex items-center justify-center shadow-sm">
-              <span className="text-white font-heading text-xs">S</span>
+              <span className="text-white font-heading text-xs">A</span>
             </div>
             <span className="font-heading text-sm tracking-tight text-teak">
-              Swasthya-Mitra
+              Appointory
             </span>
           </div>
           <p className="text-[9px] font-black uppercase tracking-[0.1em] text-khaki">

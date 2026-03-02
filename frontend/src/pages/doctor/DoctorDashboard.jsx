@@ -25,7 +25,7 @@ const DoctorDashboard = () => {
 
   const fetchMyStatus = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/auth/me', {
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsOnBreak(!res.data.data.isAvailable);
@@ -34,7 +34,7 @@ const DoctorDashboard = () => {
 
   const fetchMyQueue = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/queue/my-queue', {
+      const res = await axios.get(`${API_URL}/api/queue/my-queue`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -80,7 +80,7 @@ const DoctorDashboard = () => {
     if (activePatient) {
       const fetchPatientDetails = async () => {
         try {
-          const res = await axios.get(`http://localhost:5000/api/staff/patient-full-profile/${activePatient.patientPhone}`, {
+          const res = await axios.get(`${API_URL}/api/staff/patient-full-profile/${activePatient.patientPhone}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPatientData(res.data.data);
@@ -97,7 +97,7 @@ const DoctorDashboard = () => {
       const endpoint = action === 'start' ? 'start' : 'complete';
       const payload = action === 'complete' ? { notes } : {};
 
-      const res = await axios.patch(`http://localhost:5000/api/queue/${endpoint}/${id}`, payload, {
+      const res = await axios.patch(`${API_URL}/api/queue/${endpoint}/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -121,7 +121,7 @@ const DoctorDashboard = () => {
     });
     if (testName) {
       try {
-        await axios.patch(`http://localhost:5000/api/queue/refer/lab/${id}`, { testName }, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.patch(`${API_URL}/api/queue/refer/lab/${id}`, { testName }, { headers: { Authorization: `Bearer ${token}` } });
         fetchMyQueue();
       } catch (err) { Swal.fire('Error', 'Referral failed', 'error'); }
     }
@@ -129,7 +129,7 @@ const DoctorDashboard = () => {
 
   const handleToggleBreak = async () => {
     try {
-      const res = await axios.patch('http://localhost:5000/api/staff/toggle-status/me', {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.patch(`${API_URL}/api/staff/toggle-status/me`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setIsOnBreak(!res.data.isAvailable);
     } catch (err) { Swal.fire('Error', 'Status toggle failed', 'error'); }
   };

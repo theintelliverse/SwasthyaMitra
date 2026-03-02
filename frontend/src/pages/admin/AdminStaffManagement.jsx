@@ -37,7 +37,7 @@ const AdminStaffManagement = () => {
   const fetchStaff = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/staff/all', {
+      const res = await axios.get(`${API_URL}/api/staff/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStaffList(res.data.staff || []);
@@ -77,7 +77,7 @@ const AdminStaffManagement = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/staff/add', formData, {
+      const res = await axios.post(`${API_URL}/api/staff/add`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -115,7 +115,7 @@ const AdminStaffManagement = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/staff/delete/${id}`, {
+          await axios.delete(`${API_URL}/api/staff/delete/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           Swal.fire('Archived!', 'Staff access has been restricted.', 'success');

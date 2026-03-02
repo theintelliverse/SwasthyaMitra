@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-    Download, FileSpreadsheet, ArrowLeft, Loader2, 
-    Users, BriefcaseMedical, Search, Eye, Table as TableIcon, RefreshCcw, ShieldCheck 
+import {
+    Download, FileSpreadsheet, ArrowLeft, Loader2,
+    Users, BriefcaseMedical, Search, Eye, Table as TableIcon, RefreshCcw, ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 const API_URL = import.meta.env.VITE_API_URL;
 const AdminReports = () => {
     const navigate = useNavigate();
-    
+
     // States
     const [view, setView] = useState('medical'); // 'medical' or 'staff'
     const [data, setData] = useState({ medicalRecords: [], staffList: [] });
@@ -29,13 +29,13 @@ const AdminReports = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/staff/admin/preview-data', {
+            const res = await axios.get(`${API_URL}/api/staff/admin/preview-data`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Access nested data structure correctly
-            setData({ 
-                medicalRecords: res.data.medicalRecords || [], 
-                staffList: res.data.staffList || [] 
+            setData({
+                medicalRecords: res.data.medicalRecords || [],
+                staffList: res.data.staffList || []
             });
         } catch (err) {
             console.error("Preview fetch failed", err);
@@ -51,13 +51,13 @@ const AdminReports = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                `http://localhost:5000/api/staff/admin/reports/download?startDate=${dates.start}&endDate=${dates.end}`,
-                { 
-                    headers: { Authorization: `Bearer ${token}` }, 
-                    responseType: 'blob' 
+                `${API_URL}/api/staff/admin/reports/download?startDate=${dates.start}&endDate=${dates.end}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    responseType: 'blob'
                 }
             );
-            
+
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -65,10 +65,10 @@ const AdminReports = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-        } catch (err) { 
-            alert("No records found for this period to export."); 
-        } finally { 
-            setIsDownloading(false); 
+        } catch (err) {
+            alert("No records found for this period to export.");
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -91,7 +91,7 @@ const AdminReports = () => {
     return (
         <div className="flex min-h-screen bg-[#FFFBF5] text-[#422D0B] font-body">
             <Sidebar role="admin" />
-            
+
             <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar">
                 {/* Header Section */}
                 <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
@@ -117,13 +117,13 @@ const AdminReports = () => {
                                 <h3 className="font-heading text-xl">Export Portal</h3>
                                 <ShieldCheck size={20} className="text-[#FFA800] opacity-30" />
                             </div>
-                            
+
                             <div className="space-y-5 mb-10">
-                                <DateInput label="Start Date" onChange={(e) => setDates({...dates, start: e.target.value})} />
-                                <DateInput label="End Date" onChange={(e) => setDates({...dates, end: e.target.value})} />
+                                <DateInput label="Start Date" onChange={(e) => setDates({ ...dates, start: e.target.value })} />
+                                <DateInput label="End Date" onChange={(e) => setDates({ ...dates, end: e.target.value })} />
                             </div>
 
-                            <button 
+                            <button
                                 onClick={handleDownload}
                                 disabled={isDownloading}
                                 className="w-full bg-[#422D0B] text-[#FFFBF5] py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#FFA800] transition-all shadow-xl disabled:opacity-50 active:scale-95"
@@ -131,7 +131,7 @@ const AdminReports = () => {
                                 {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
                                 {isDownloading ? 'Building CSV...' : 'Download Full CSV'}
                             </button>
-                            
+
                             <div className="mt-8 p-6 bg-[#FFFBF5] border border-dashed border-[#E8DDCB] rounded-3xl">
                                 <p className="text-[10px] font-bold text-[#967A53] leading-relaxed">
                                     Exports include patient demographics, doctor notes, and consultation duration.
@@ -147,8 +147,8 @@ const AdminReports = () => {
                             <div className="p-8 border-b border-[#E8DDCB] flex flex-col md:flex-row justify-between items-center gap-4 bg-[#FFFBF5]/30">
                                 <div className="relative w-full md:w-80">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967A53]" size={16} />
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder={`Search ${view}...`}
                                         className="w-full pl-11 pr-4 py-3 bg-white border border-[#E8DDCB] rounded-2xl outline-none focus:border-[#FFA800] text-sm font-bold"
                                         value={searchTerm}
@@ -159,7 +159,7 @@ const AdminReports = () => {
                                     <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : ''} />
                                 </button>
                             </div>
-                            
+
                             <div className="flex-grow overflow-auto p-6 custom-scrollbar">
                                 <table className="w-full text-left border-separate border-spacing-y-3">
                                     <thead className="sticky top-0 bg-white z-10">
@@ -224,7 +224,7 @@ const AdminReports = () => {
 
 // Sub-components for cleaner code
 const TabBtn = ({ active, onClick, icon, label }) => (
-    <button 
+    <button
         onClick={onClick}
         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${active ? 'bg-[#FFA800] text-white shadow-md' : 'text-[#967A53] hover:bg-[#FFFBF5]'}`}
     >
@@ -235,8 +235,8 @@ const TabBtn = ({ active, onClick, icon, label }) => (
 const DateInput = ({ label, onChange }) => (
     <div>
         <label className="text-[10px] font-black uppercase tracking-widest text-[#967A53] ml-2 block mb-2">{label}</label>
-        <input 
-            type="date" 
+        <input
+            type="date"
             className="w-full bg-[#FFFBF5] border border-[#E8DDCB] p-4 rounded-2xl outline-none focus:border-[#FFA800] text-sm font-bold transition-colors"
             onChange={onChange}
         />

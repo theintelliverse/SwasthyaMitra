@@ -25,7 +25,7 @@ const LabDashboard = () => {
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/queue/live', {
+      const res = await axios.get(`${API_URL}/api/queue/live`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Filter for patients waiting for lab work
@@ -84,7 +84,7 @@ const LabDashboard = () => {
 
     try {
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
-      const res = await axios.post(`http://localhost:5000/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
+      const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`

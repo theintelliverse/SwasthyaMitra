@@ -189,7 +189,7 @@ const PatientLogin = () => {
 
         <div className="mt-10 pt-8 border-t border-sandstone/50 flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 text-[9px] font-black uppercase text-khaki/70 tracking-tighter">
-            <ShieldCheck size={12} /> Privacy Protected by Swasthya-Mitra
+            <ShieldCheck size={12} /> Privacy Protected by Appointory
           </div>
           <button onClick={() => navigate('/')} className="text-[10px] font-bold text-khaki hover:text-teak">
             Back to Tracker

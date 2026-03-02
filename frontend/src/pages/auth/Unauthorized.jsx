@@ -8,7 +8,7 @@ const Unauthorized = () => {
   return (
     <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
       <div className="flex-grow flex flex-col justify-center items-center px-6 text-center">
-        
+
         {/* Visual Icon */}
         <div className="relative mb-8">
           <div className="w-24 h-24 bg-saffron/20 rounded-full flex items-center justify-center animate-pulse">
@@ -24,20 +24,20 @@ const Unauthorized = () => {
           Access Restricted
         </h2>
         <p className="text-khaki max-w-md mx-auto mb-10 font-medium leading-relaxed">
-          It looks like you don't have the necessary permissions to view this section of the 
-          <span className="text-teak font-bold"> Swasthya-Mitra</span> portal.
+          It looks like you don't have the necessary permissions to view this section of the
+          <span className="text-teak font-bold"> Appointory</span> portal.
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <button 
+          <button
             onClick={() => navigate(-1)} // Go back to previous page
             className="px-8 py-3 bg-white border-2 border-sandstone rounded-2xl font-bold hover:border-teak transition-all active:scale-95"
           >
             Go Back
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/')}
             className="px-8 py-3 bg-teak text-parchment rounded-2xl font-bold hover:bg-marigold transition-all shadow-lg active:scale-95"
           >

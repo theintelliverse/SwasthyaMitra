@@ -6,11 +6,12 @@ import App from './App.jsx'
 import { API_BASE_URL } from './config/runtime'
 
 axios.interceptors.request.use((config) => {
-  if (typeof config.url === 'string' && config.url.startsWith('http://localhost:5000')) {
-    if (API_BASE_URL) {
-      config.url = config.url.replace('http://localhost:5000', API_BASE_URL)
-    } else {
-      config.url = config.url.replace('http://localhost:5000', '')
+  if (typeof config.url === 'string') {
+    const isAbsoluteHttpUrl = /^https?:\/\//i.test(config.url)
+
+    if (!isAbsoluteHttpUrl && API_BASE_URL) {
+      const normalizedPath = config.url.startsWith('/') ? config.url : `/${config.url}`
+      config.url = `${API_BASE_URL}${normalizedPath}`
     }
   }
 

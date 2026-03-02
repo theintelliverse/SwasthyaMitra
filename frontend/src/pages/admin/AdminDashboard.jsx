@@ -37,10 +37,10 @@ const AdminDashboard = () => {
   const fetchLiveStats = async () => {
     try {
       // We fetch live queue to calculate stats
-      const res = await axios.get('http://localhost:5000/api/queue/live', {
+      const res = await axios.get(`${API_URL}/api/queue/live`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const staffRes = await axios.get('http://localhost:5000/api/staff/all', {
+      const staffRes = await axios.get(`${API_URL}/api/staff/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

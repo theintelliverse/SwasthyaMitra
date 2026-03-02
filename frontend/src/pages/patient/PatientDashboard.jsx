@@ -33,7 +33,7 @@ const PatientDashboard = () => {
     }
 
     try {
-      const res = await axios.get('http://localhost:5000/api/auth/patient/profile', {
+      const res = await axios.get(`${API_URL}/api/auth/patient/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

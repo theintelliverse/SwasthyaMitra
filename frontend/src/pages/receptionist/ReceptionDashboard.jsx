@@ -39,9 +39,9 @@ const ReceptionDashboard = () => {
     if (!silent) setLoading(true);
     try {
       const [queueRes, staffRes, pendingRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/queue/live', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/staff/all', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/queue/pending', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/queue/live`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/staff/all`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/queue/pending`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setQueue(queueRes.data.data);
       setDoctors(staffRes.data.staff.filter(s => s.role === 'doctor'));
@@ -124,7 +124,7 @@ const ReceptionDashboard = () => {
 
     if (formValues) {
       try {
-        await axios.patch(`http://localhost:5000/api/staff/update-patient-vitals/${patientPhone}`,
+        await axios.patch(`${API_URL}/api/staff/update-patient-vitals/${patientPhone}`,
           { vitals: formValues },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -154,7 +154,7 @@ const ReceptionDashboard = () => {
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/queue/add', formData, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API_URL}/api/queue/add`, formData, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data.success) {
         Swal.fire({ icon: formData.isEmergency ? 'warning' : 'success', title: formData.isEmergency ? 'Emergency Token Issued' : 'Token Generated', text: `${formData.patientName} is now in queue.`, timer: 2000, showConfirmButton: false, background: '#FFFBF5' });
         setFormData({ patientName: '', patientPhone: '', doctorId: '', visitType: 'Walk-in', isEmergency: false });
@@ -169,7 +169,7 @@ const ReceptionDashboard = () => {
     const isEmergency = emergencyStatus === true;
     setIsProcessing(true);
     try {
-      const res = await axios.patch(`http://localhost:5000/api/queue/approve/${id}`, { isEmergency }, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.patch(`${API_URL}/api/queue/approve/${id}`, { isEmergency }, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data.success) {
         await fetchDashboardData(true);
         if (activeTab === 'pending' && pendingRequests.length <= 1) setActiveTab('live');

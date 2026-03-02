@@ -23,7 +23,7 @@ const HealthLocker = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/auth/patient/profile', {
+      const res = await axios.get(`${API_URL}/api/auth/patient/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -60,7 +60,7 @@ const HealthLocker = () => {
   if (loading) return (
     <div className="min-h-screen bg-[#FFFBF5] flex flex-col items-center justify-center gap-4">
       <RefreshCw size={32} className="text-[#FFA800] animate-spin" />
-      <div className="font-heading text-xl text-[#422D0B]">Unlocking Swasthya Vault...</div>
+      <div className="font-heading text-xl text-[#422D0B]">Unlocking Appointory Vault...</div>
     </div>
   );
 
