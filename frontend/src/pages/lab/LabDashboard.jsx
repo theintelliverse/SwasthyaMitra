@@ -13,6 +13,61 @@ import Footer from '../../components/Footer';
 const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
+const MAX_IMAGE_UPLOAD_BYTES = 2 * 1024 * 1024;
+
+const loadImageElement = (file) => new Promise((resolve, reject) => {
+  const image = new Image();
+  const objectUrl = URL.createObjectURL(file);
+
+  image.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+    resolve(image);
+  };
+
+  image.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    reject(new Error('Image processing failed.'));
+  };
+
+  image.src = objectUrl;
+});
+
+const optimizeImageForUpload = async (file) => {
+  if (!file?.type?.startsWith('image/')) {
+    return file;
+  }
+
+  if (file.size <= MAX_IMAGE_UPLOAD_BYTES) {
+    return file;
+  }
+
+  const image = await loadImageElement(file);
+  const maxDimension = 1800;
+  const scale = Math.min(maxDimension / image.width, maxDimension / image.height, 1);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    return file;
+  }
+
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob((result) => resolve(result), 'image/jpeg', 0.8);
+  });
+
+  if (!blob) {
+    return file;
+  }
+
+  const compressedName = file.name.replace(/\.[^.]+$/, '.jpg');
+  return new File([blob], compressedName, { type: 'image/jpeg' });
+};
+
 const LabDashboard = () => {
   const navigate = useNavigate();
   const [labQueue, setLabQueue] = useState([]);
@@ -102,15 +157,22 @@ const LabDashboard = () => {
 
     const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
 
+    let uploadFile = file;
+    try {
+      uploadFile = await optimizeImageForUpload(file);
+    } catch {
+      uploadFile = file;
+    }
+
     const formData = new FormData();
     // 🔑 IMPORTANT: Ensure this key ('file') matches upload.single('file') in your backend route
-    formData.append('file', file);
+    formData.append('file', uploadFile);
     formData.append('title', 'Diagnostic Report');
-    formData.append('fileType', file.type.includes('pdf') ? 'PDF' : 'Image');
+    formData.append('fileType', uploadFile.type.includes('pdf') ? 'PDF' : 'Image');
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #3FA28C;">Encrypting and notifying doctor...</p>',
+      html: '<p style="font-size: 12px; color: #3FA28C;">Preparing upload...</p>',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
       background: '#EEF6FA'
@@ -121,6 +183,14 @@ const LabDashboard = () => {
       const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
+        },
+        timeout: 60000,
+        onUploadProgress: (progressEvent) => {
+          if (!progressEvent.total) return;
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          Swal.update({
+            html: `<p style="font-size: 12px; color: #3FA28C;">Uploading report... ${percent}%</p>`
+          });
         }
       });
 
