@@ -1,4 +1,4 @@
-# 🏥 Appointory (Health Mitra)
+# 🏥 Appointory 
 
 **A Real-time Clinical Management & Digital Health Locker System**
 
