@@ -5,6 +5,7 @@ import {
   FileText,
   Activity,
   History,
+  Download,
   ExternalLink,
   Database,
   Calendar,
@@ -20,9 +21,57 @@ const PatientQuickView = ({ phone, onClose }) => {
 
   const vitals = Array.isArray(patientData?.vitals) ? patientData.vitals : [];
   const latestVitals = vitals.length > 0 ? vitals[vitals.length - 1] : null;
-  const documents = Array.isArray(patientData?.documents)
-    ? patientData.documents.filter((doc) => (doc?.fileUrl || doc?.url || doc?.secure_url))
-    : [];
+  const documentsSource = Array.isArray(patientData?.documents)
+    ? patientData.documents
+    : (Array.isArray(patientData?.digitalLocker) ? patientData.digitalLocker : []);
+
+  const documents = documentsSource
+    .filter((doc) => (doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath));
+
+  const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath || '';
+
+  const getDocumentFileName = (doc) => {
+    const safeTitle = (doc?.title || 'Clinical_Report').replace(/[^a-z0-9-_]/gi, '_');
+    const type = (doc?.fileType || '').toLowerCase();
+    if (type.includes('pdf')) return `${safeTitle}.pdf`;
+    if (type.includes('image')) return `${safeTitle}.jpg`;
+
+    const url = getDocumentUrl(doc);
+    const lastSegment = url.split('?')[0].split('/').pop() || '';
+    if (lastSegment.includes('.')) return lastSegment;
+
+    return `${safeTitle}.pdf`;
+  };
+
+  const openDocument = (doc) => {
+    const url = getDocumentUrl(doc);
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const downloadDocument = async (doc) => {
+    const fileUrl = getDocumentUrl(doc);
+    if (!fileUrl) return;
+
+    try {
+      const response = await fetch(fileUrl, { mode: 'cors' });
+      if (!response.ok) {
+        throw new Error('Failed to fetch file');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = blobUrl;
+      anchor.download = getDocumentFileName(doc);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      openDocument(doc);
+    }
+  };
 
   useEffect(() => {
     const fetchFullProfile = async () => {
@@ -92,9 +141,8 @@ const PatientQuickView = ({ phone, onClose }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {documents.map((doc, i) => {
-                const fileUrl = doc.fileUrl || doc.url || doc.secure_url;
                 return (
-                  <a key={i} href={fileUrl} target="_blank" rel="noreferrer"
+                  <div key={i}
                     className="bg-white p-6 rounded-[2rem] border border-[#AFC4D8] hover:border-[#1F6FB2] hover:shadow-xl transition-all group flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-[#EEF6FA] rounded-xl flex items-center justify-center text-[#1F6FB2] border border-[#AFC4D8]">
@@ -105,8 +153,25 @@ const PatientQuickView = ({ phone, onClose }) => {
                         <p className="text-[8px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'}</p>
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-[#AFC4D8] group-hover:text-[#1F6FB2]" />
-                  </a>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openDocument(doc)}
+                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all"
+                        aria-label="Open document"
+                      >
+                        <ExternalLink size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadDocument(doc)}
+                        className="p-2.5 bg-[#0F766E] hover:bg-[#1F6FB2] text-white rounded-xl transition-all"
+                        aria-label="Download document"
+                      >
+                        <Download size={14} />
+                      </button>
+                    </div>
+                  </div>
                 )
               })}
               {documents.length === 0 && (
