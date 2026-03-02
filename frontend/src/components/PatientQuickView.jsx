@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import {
   X,
   FileText,
@@ -7,6 +8,7 @@ import {
   History,
   Download,
   ExternalLink,
+  Pencil,
   Database,
   Calendar,
   Weight
@@ -17,6 +19,7 @@ const API_URL = API_BASE_URL;
 const PatientQuickView = ({ phone, onClose }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isUpdatingVitals, setIsUpdatingVitals] = useState(false);
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
   const vitals = Array.isArray(patientData?.vitals) ? patientData.vitals : [];
@@ -25,10 +28,21 @@ const PatientQuickView = ({ phone, onClose }) => {
     ? patientData.documents
     : (Array.isArray(patientData?.digitalLocker) ? patientData.digitalLocker : []);
 
-  const documents = documentsSource
-    .filter((doc) => (doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath));
+  const getDocumentUrl = (doc) => (
+    doc?.fileUrl ||
+    doc?.url ||
+    doc?.secure_url ||
+    doc?.secureUrl ||
+    doc?.filePath ||
+    doc?.reportUrl ||
+    doc?.publicUrl ||
+    doc?.documentUrl ||
+    ''
+  );
 
-  const getDocumentUrl = (doc) => doc?.fileUrl || doc?.url || doc?.secure_url || doc?.filePath || '';
+  const documents = documentsSource
+    .filter((doc) => Boolean(getDocumentUrl(doc)))
+    .sort((a, b) => new Date(b?.uploadedAt || b?.createdAt || 0) - new Date(a?.uploadedAt || a?.createdAt || 0));
 
   const getDocumentFileName = (doc) => {
     const safeTitle = (doc?.title || 'Clinical_Report').replace(/[^a-z0-9-_]/gi, '_');
@@ -70,6 +84,82 @@ const PatientQuickView = ({ phone, onClose }) => {
       window.URL.revokeObjectURL(blobUrl);
     } catch {
       openDocument(doc);
+    }
+  };
+
+  const handleEditVitals = async () => {
+    if (!patientData) return;
+
+    const initialWeight = latestVitals?.weight ?? '';
+    const initialHeight = latestVitals?.height ?? '';
+    const initialBmi = latestVitals?.bmi ?? '';
+
+    const { value: formValues } = await Swal.fire({
+      title: 'Update Patient Vitals',
+      background: '#EEF6FA',
+      showCancelButton: true,
+      confirmButtonColor: '#1F6FB2',
+      html:
+        `<input id="swal-bp" class="swal2-input" placeholder="Blood Pressure (e.g. 120/80)" value="${latestVitals?.bloodPressure || ''}">` +
+        `<input id="swal-pulse" class="swal2-input" placeholder="Pulse Rate (bpm)" value="${latestVitals?.pulseRate || ''}">` +
+        `<input id="swal-weight" class="swal2-input" placeholder="Weight (kg)" value="${initialWeight}">` +
+        `<input id="swal-height" class="swal2-input" placeholder="Height (cm)" value="${initialHeight}">` +
+        `<input id="swal-bmi" class="swal2-input" placeholder="BMI Score" value="${initialBmi}">`,
+      preConfirm: () => {
+        const weightVal = document.getElementById('swal-weight').value.trim();
+        const heightVal = document.getElementById('swal-height').value.trim();
+        const bmiVal = document.getElementById('swal-bmi').value.trim();
+
+        const parsedWeight = weightVal ? Number(weightVal) : undefined;
+        const parsedHeight = heightVal ? Number(heightVal) : undefined;
+        let parsedBmi = bmiVal ? Number(bmiVal) : undefined;
+
+        if (!bmiVal && parsedWeight && parsedHeight) {
+          const meters = parsedHeight / 100;
+          parsedBmi = meters > 0 ? Number((parsedWeight / (meters * meters)).toFixed(1)) : undefined;
+        }
+
+        return {
+          bloodPressure: document.getElementById('swal-bp').value.trim(),
+          pulseRate: document.getElementById('swal-pulse').value.trim(),
+          weight: Number.isFinite(parsedWeight) ? parsedWeight : undefined,
+          height: Number.isFinite(parsedHeight) ? parsedHeight : undefined,
+          bmi: Number.isFinite(parsedBmi) ? parsedBmi : undefined
+        };
+      }
+    });
+
+    if (!formValues) return;
+
+    const targetPhone = patientData.phone || phone;
+    if (!targetPhone) {
+      Swal.fire('Error', 'Missing patient phone for update.', 'error');
+      return;
+    }
+
+    try {
+      setIsUpdatingVitals(true);
+      const res = await axios.patch(
+        `${API_URL}/api/staff/update-patient-profile/${targetPhone}`,
+        { vitals: formValues },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data?.success && res.data?.data) {
+        setPatientData(res.data.data);
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Vitals Updated',
+        timer: 1400,
+        showConfirmButton: false,
+        background: '#EEF6FA'
+      });
+    } catch (error) {
+      Swal.fire('Error', error?.response?.data?.message || 'Failed to update vitals.', 'error');
+    } finally {
+      setIsUpdatingVitals(false);
     }
   };
 
@@ -132,6 +222,16 @@ const PatientQuickView = ({ phone, onClose }) => {
             <SummaryCard label="Weight" val={latestVitals?.weight || '--'} unit="kg" icon={<Weight size={14} />} />
             <SummaryCard label="BMI" val={latestVitals?.bmi || '--'} unit="Score" icon={<Activity size={14} />} color="text-[#1F6FB2]" />
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleEditVitals}
+              disabled={isUpdatingVitals}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0F766E] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#1F6FB2] transition-all disabled:opacity-50"
+            >
+              <Pencil size={13} /> {isUpdatingVitals ? 'Updating...' : 'Edit Vitals'}
+            </button>
+          </div>
 
           {/* --- Reports Section --- */}
           <section>
@@ -150,7 +250,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                       </div>
                       <div className="max-w-[140px]">
                         <p className="text-sm font-bold text-[#0F766E] truncate">{doc.title || 'Clinical Document'}</p>
-                        <p className="text-[8px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'}</p>
+                        <p className="text-[8px] font-black text-[#3FA28C] uppercase">{doc.fileType || 'Report'} • {(doc.uploadedAt || doc.createdAt) ? new Date(doc.uploadedAt || doc.createdAt).toLocaleDateString() : 'Unknown date'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
