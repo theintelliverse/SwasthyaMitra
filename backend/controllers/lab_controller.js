@@ -34,11 +34,15 @@ exports.uploadLabReport = async (req, res) => {
             });
         }
 
-        const uploadedUrl =
-            req.file?.path ||
+        const uploadedUrlRaw =
             req.file?.secure_url ||
+            req.file?.path ||
             req.file?.url ||
             null;
+
+        const uploadedUrl = uploadedUrlRaw
+            ? uploadedUrlRaw.replace(/^http:\/\//i, 'https://')
+            : null;
 
         if (!uploadedUrl) {
             console.error("❌ [4] Upload object missing accessible URL:", req.file);
@@ -53,7 +57,7 @@ exports.uploadLabReport = async (req, res) => {
             visitId: queueId,
             title: req.body.title || "Lab Report",
             fileUrl: uploadedUrl,
-            secureUrl: req.file?.secure_url || uploadedUrl,
+            secureUrl: (req.file?.secure_url || uploadedUrl || '').replace(/^http:\/\//i, 'https://'),
             fileType: req.body.fileType || "Diagnostic",
             uploadedAt: Date.now()
         });

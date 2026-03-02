@@ -16,6 +16,16 @@ import {
 import { API_BASE_URL } from '../config/runtime';
 
 const API_URL = API_BASE_URL;
+
+const normalizeUrl = (value = '') => value.toString().trim().replace(/^http:\/\//i, 'https://');
+
+const toCloudinaryDownloadUrl = (url = '') => {
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+    return url;
+  }
+  return url.replace('/upload/', '/upload/fl_attachment/');
+};
+
 const PatientQuickView = ({ phone, onClose }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +39,8 @@ const PatientQuickView = ({ phone, onClose }) => {
     ...(Array.isArray(patientData?.digitalLocker) ? patientData.digitalLocker : [])
   ];
 
-  const getDocumentUrl = (doc) => (
+  const getDocumentUrl = (doc) => normalizeUrl(
+    doc?.secureUrl ||
     doc?.fileUrl ||
     doc?.url ||
     doc?.secure_url ||
@@ -67,13 +78,35 @@ const PatientQuickView = ({ phone, onClose }) => {
 
   const openDocument = (doc) => {
     const url = getDocumentUrl(doc);
-    if (!url) return;
+    if (!url) {
+      Swal.fire('Missing File Link', 'This report does not have a valid file URL. Please re-upload from Lab.', 'warning');
+      return;
+    }
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const downloadDocument = async (doc) => {
     const fileUrl = getDocumentUrl(doc);
-    if (!fileUrl) return;
+    if (!fileUrl) {
+      Swal.fire('Missing File Link', 'This report does not have a valid file URL. Please re-upload from Lab.', 'warning');
+      return;
+    }
+
+    const downloadUrl = toCloudinaryDownloadUrl(fileUrl);
+
+    try {
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.download = getDocumentFileName(doc);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      return;
+    } catch {
+      // fallback below
+    }
 
     try {
       const response = await fetch(fileUrl, { mode: 'cors' });
@@ -249,7 +282,6 @@ const PatientQuickView = ({ phone, onClose }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {documents.map((doc, i) => {
-                const hasUsableUrl = Boolean(getDocumentUrl(doc));
                 return (
                   <div key={i}
                     className="bg-white p-6 rounded-[2rem] border border-[#AFC4D8] hover:border-[#1F6FB2] hover:shadow-xl transition-all group flex items-center justify-between">
@@ -266,8 +298,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                       <button
                         type="button"
                         onClick={() => openDocument(doc)}
-                        disabled={!hasUsableUrl}
-                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-2.5 bg-[#EEF6FA] hover:bg-[#1F6FB2] hover:text-white rounded-xl text-[#1F6FB2] transition-all"
                         aria-label="Open document"
                       >
                         <ExternalLink size={14} />
@@ -275,8 +306,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                       <button
                         type="button"
                         onClick={() => downloadDocument(doc)}
-                        disabled={!hasUsableUrl}
-                        className="p-2.5 bg-[#0F766E] hover:bg-[#1F6FB2] text-white rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-2.5 bg-[#0F766E] hover:bg-[#1F6FB2] text-white rounded-xl transition-all"
                         aria-label="Download document"
                       >
                         <Download size={14} />

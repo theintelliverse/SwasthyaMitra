@@ -10,16 +10,27 @@ import {
 const API_URL = API_BASE_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
+const normalizeUrl = (value = '') => value.toString().trim().replace(/^http:\/\//i, 'https://');
+
+const toCloudinaryDownloadUrl = (url = '') => {
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+    return url;
+  }
+  return url.replace('/upload/', '/upload/fl_attachment/');
+};
+
 const getDocumentUrl = (doc) => (
-  doc?.fileUrl ||
-  doc?.url ||
-  doc?.secure_url ||
-  doc?.secureUrl ||
-  doc?.filePath ||
-  doc?.reportUrl ||
-  doc?.publicUrl ||
-  doc?.documentUrl ||
-  ''
+  normalizeUrl(
+    doc?.secureUrl ||
+    doc?.fileUrl ||
+    doc?.url ||
+    doc?.secure_url ||
+    doc?.secureUrl ||
+    doc?.filePath ||
+    doc?.reportUrl ||
+    doc?.publicUrl ||
+    doc?.documentUrl ||
+    '')
 );
 
 const getDocumentFileName = (doc) => {
@@ -49,7 +60,9 @@ const HealthLocker = () => {
 
   const openDocument = (doc) => {
     const fileUrl = getDocumentUrl(doc);
-    if (!fileUrl) return;
+    if (!fileUrl) {
+      return;
+    }
     window.open(fileUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -78,6 +91,22 @@ const HealthLocker = () => {
   const handleDownload = async (doc) => {
     const fileUrl = getDocumentUrl(doc);
     if (!fileUrl) return;
+
+    const downloadUrl = toCloudinaryDownloadUrl(fileUrl);
+
+    try {
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.download = getDocumentFileName(doc);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      return;
+    } catch {
+      // fallback below
+    }
 
     try {
       const response = await fetch(fileUrl, { mode: 'cors' });
