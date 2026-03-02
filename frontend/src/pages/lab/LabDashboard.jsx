@@ -172,7 +172,7 @@ const LabDashboard = () => {
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #3FA28C;">Preparing upload...</p>',
+      html: '<p style="font-size: 12px; color: #3FA28C;">Syncing to Locker...</p>',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
       background: '#EEF6FA'
@@ -189,7 +189,7 @@ const LabDashboard = () => {
           if (!progressEvent.total) return;
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           Swal.update({
-            html: `<p style="font-size: 12px; color: #3FA28C;">${percent >= 100 ? 'Finalizing on server...' : `Uploading report... ${percent}%`}</p>`
+            html: `<p style="font-size: 12px; color: #3FA28C;">${percent >= 100 ? 'Finalizing on server...' : 'Syncing to Locker...'}</p>`
           });
         }
       });
