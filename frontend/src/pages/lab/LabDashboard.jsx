@@ -1,135 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { API_BASE_URL, SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL } from '../../config/runtime';
 import {
   Beaker, Upload, Smartphone, Hash, FileCheck,
   RefreshCw, Activity, Search
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-const API_URL = API_BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
-const MAX_IMAGE_UPLOAD_BYTES = 2 * 1024 * 1024;
-
-const loadImageElement = (file) => new Promise((resolve, reject) => {
-  const image = new Image();
-  const objectUrl = URL.createObjectURL(file);
-
-  image.onload = () => {
-    URL.revokeObjectURL(objectUrl);
-    resolve(image);
-  };
-
-  image.onerror = () => {
-    URL.revokeObjectURL(objectUrl);
-    reject(new Error('Image processing failed.'));
-  };
-
-  image.src = objectUrl;
-});
-
-const optimizeImageForUpload = async (file) => {
-  if (!file?.type?.startsWith('image/')) {
-    return file;
-  }
-
-  if (file.size <= MAX_IMAGE_UPLOAD_BYTES) {
-    return file;
-  }
-
-  const image = await loadImageElement(file);
-  const maxDimension = 1800;
-  const scale = Math.min(maxDimension / image.width, maxDimension / image.height, 1);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-
-  const context = canvas.getContext('2d');
-  if (!context) {
-    return file;
-  }
-
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-  const blob = await new Promise((resolve) => {
-    canvas.toBlob((result) => resolve(result), 'image/jpeg', 0.8);
-  });
-
-  if (!blob) {
-    return file;
-  }
-
-  const compressedName = file.name.replace(/\.[^.]+$/, '.jpg');
-  return new File([blob], compressedName, { type: 'image/jpeg' });
-};
-
 const LabDashboard = () => {
-  const navigate = useNavigate();
   const [labQueue, setLabQueue] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-  const role = sessionStorage.getItem('role') || localStorage.getItem('role');
-  const clinicId = sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
+  const token = localStorage.getItem('token');
+  const clinicId = localStorage.getItem('clinicId');
 
-  const fetchLabQueue = useCallback(async (silent = false) => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
+  const fetchLabQueue = async (silent = false) => {
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
-      if (!API_URL) {
-        throw new Error('API URL is not configured. Please set VITE_API_URL.');
-      }
-
       const res = await axios.get(`${API_URL}/api/queue/live`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Filter for patients waiting for lab work
-      const queueData = Array.isArray(res.data?.data) ? res.data.data : [];
-      const pendingLab = queueData.filter(p => p.currentStage === 'Lab-Pending');
+      const pendingLab = res.data.data.filter(p => p.currentStage === 'Lab-Pending');
       setLabQueue(pendingLab);
       setLoading(false);
     } catch (err) {
       console.error("Lab Fetch Error:", err);
-      if (err?.response?.status === 401) {
-        navigate('/login');
-        return;
-      }
-      Swal.fire({
-        icon: 'error',
-        title: 'Diagnostics Sync Failed',
-        text: err?.response?.data?.message || err?.message || 'Unable to load lab queue.',
-        confirmButtonColor: '#0F766E',
-        background: '#EEF6FA'
-      });
       setLoading(false);
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
     }
-  }, [navigate, token]);
+  };
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    if (role && !['lab', 'admin'].includes(role)) {
-      navigate('/unauthorized');
-      return;
-    }
-
     fetchLabQueue();
 
     if (clinicId) {
@@ -145,84 +56,62 @@ const LabDashboard = () => {
     return () => {
       socket.off('queueUpdate');
     };
-  }, [clinicId, fetchLabQueue, navigate, role, token]);
+  }, [token, clinicId]);
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
     if (!file) return;
 
     // 🔍 Pre-upload validation
-    if (file.size > 10 * 1024 * 1024) { // 10MB Limit
-      return Swal.fire('File Too Large', 'Please upload a file smaller than 10MB', 'warning');
+    if (file.size > 5 * 1024 * 1024) { // 5MB Limit
+      return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
     }
 
     const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
 
-    let uploadFile = file;
-    try {
-      uploadFile = await optimizeImageForUpload(file);
-    } catch {
-      uploadFile = file;
-    }
-
     const formData = new FormData();
     // 🔑 IMPORTANT: Ensure this key ('file') matches upload.single('file') in your backend route
-    formData.append('file', uploadFile);
+    formData.append('file', file);
     formData.append('title', 'Diagnostic Report');
-    formData.append('fileType', uploadFile.type.includes('pdf') ? 'PDF' : 'Image');
+    formData.append('fileType', file.type.includes('pdf') ? 'PDF' : 'Image');
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #3FA28C;">Syncing to Locker...</p>',
+      html: '<p style="font-size: 12px; color: #967A53;">Encrypting and notifying doctor...</p>',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
-      background: '#EEF6FA'
+      background: '#FFFBF5'
     });
 
     try {
       console.log(`📤 Sending upload request for ${cleanPhone}...`);
       const res = await axios.post(`${API_URL}/api/staff/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
-        },
-        timeout: 60000,
-        onUploadProgress: (progressEvent) => {
-          if (!progressEvent.total) return;
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          Swal.update({
-            html: `<p style="font-size: 12px; color: #3FA28C;">${percent >= 100 ? 'Finalizing on server...' : 'Syncing to Locker...'}</p>`
-          });
         }
       });
 
-      if (!res?.data?.success) {
-        throw new Error(res?.data?.message || 'Server did not confirm report sync.');
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Results Published',
+          text: 'Patient locker updated successfully.',
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#FFFBF5'
+        });
+
+        // Manually trigger a refresh to remove the patient from the list immediately
+        fetchLabQueue(true);
       }
-
-      Swal.close();
-      Swal.fire({
-        icon: 'success',
-        title: 'Results Published',
-        text: 'Patient locker updated successfully.',
-        timer: 2000,
-        showConfirmButton: false,
-        background: '#EEF6FA'
-      });
-
-      // Manually trigger a refresh to remove the patient from the list immediately
-      fetchLabQueue(true);
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
-      if (err?.response?.status === 401) {
-        navigate('/login');
-        return;
-      }
-      Swal.close();
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
-        text: err.response?.data?.message || err.message || 'Check your connection or file format.',
-        confirmButtonColor: '#0F766E',
-        background: '#EEF6FA'
+        text: err.response?.data?.message || 'Check your connection or file format.',
+        confirmButtonColor: '#422D0B',
+        background: '#FFFBF5'
       });
     }
   };
@@ -233,39 +122,39 @@ const LabDashboard = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
+    <div className="flex min-h-screen bg-[#FFFBF5] font-body text-[#422D0B]">
       <Sidebar role="lab" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         {/* Navigation - Marigold Style */}
-        <nav className="bg-white border-b border-[#AFC4D8] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+        <nav className="bg-white border-b border-[#E8DDCB] px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-[#1F6FB2] rounded-xl flex items-center justify-center text-white shadow-lg">
+            <div className="w-10 h-10 bg-[#FFA800] rounded-xl flex items-center justify-center text-white shadow-lg">
               <Beaker size={20} />
             </div>
             <div>
               <h1 className="font-heading text-xl">Diagnostics Station</h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#1F6FB2] animate-ping' : 'bg-green-500'}`}></div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#3FA28C]">Node: {clinicId?.slice(-6).toUpperCase()}</p>
+                <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-[#FFA800] animate-ping' : 'bg-green-500'}`}></div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#967A53]">Node: {clinicId?.slice(-6).toUpperCase()}</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3FA28C]" size={14} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967A53]" size={14} />
               <input
                 type="text"
                 placeholder="Find Patient..."
-                className="pl-10 pr-4 py-2 bg-[#EEF6FA] border border-[#AFC4D8] rounded-xl outline-none focus:border-[#1F6FB2] text-xs font-bold w-64 transition-all"
+                className="pl-10 pr-4 py-2 bg-[#FFFBF5] border border-[#E8DDCB] rounded-xl outline-none focus:border-[#FFA800] text-xs font-bold w-64 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <button
               onClick={() => fetchLabQueue(false)}
-              className={`p-2 text-[#3FA28C] hover:text-[#1F6FB2] transition-colors ${isSyncing ? 'animate-spin' : ''}`}
+              className={`p-2 text-[#967A53] hover:text-[#FFA800] transition-colors ${isSyncing ? 'animate-spin' : ''}`}
             >
               <RefreshCw size={18} />
             </button>
@@ -276,15 +165,15 @@ const LabDashboard = () => {
           {/* Header Section */}
           <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
-              <h2 className="text-5xl font-heading mb-2 text-[#0F766E]">Diagnostic Feed</h2>
-              <p className="text-[#3FA28C] font-medium flex items-center gap-2 text-sm">
-                <Activity size={16} className="text-[#1F6FB2]" />
+              <h2 className="text-5xl font-heading mb-2 text-[#422D0B]">Diagnostic Feed</h2>
+              <p className="text-[#967A53] font-medium flex items-center gap-2 text-sm">
+                <Activity size={16} className="text-[#FFA800]" />
                 Waiting for report uploads to sync with Digital Lockers.
               </p>
             </div>
-            <div className="bg-white border border-[#AFC4D8] px-6 py-4 rounded-3xl flex items-center gap-4 shadow-sm">
-              <p className="text-[10px] font-black uppercase text-[#3FA28C] tracking-widest">Active Samples</p>
-              <div className="w-10 h-10 bg-[#1F6FB2]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#1F6FB2]">
+            <div className="bg-white border border-[#E8DDCB] px-6 py-4 rounded-3xl flex items-center gap-4 shadow-sm">
+              <p className="text-[10px] font-black uppercase text-[#967A53] tracking-widest">Active Samples</p>
+              <div className="w-10 h-10 bg-[#FFA800]/10 rounded-xl flex items-center justify-center text-2xl font-heading text-[#FFA800]">
                 {labQueue.length}
               </div>
             </div>
@@ -293,53 +182,50 @@ const LabDashboard = () => {
           <div className="grid gap-6 pb-12">
             {loading ? (
               <div className="py-24 text-center animate-pulse">
-                <Beaker size={48} className="mx-auto text-[#AFC4D8] mb-4" />
-                <p className="text-[#3FA28C] font-heading text-xl">Linking to Sample Pipeline...</p>
+                <Beaker size={48} className="mx-auto text-[#E8DDCB] mb-4" />
+                <p className="text-[#967A53] font-heading text-xl">Linking to Sample Pipeline...</p>
               </div>
             ) : filteredQueue.length === 0 ? (
-              <div className="bg-white p-24 rounded-[4rem] text-center border-2 border-dashed border-[#AFC4D8] shadow-inner">
-                <FileCheck size={48} className="mx-auto text-[#AFC4D8] mb-6" />
-                <p className="text-[#3FA28C] font-heading text-2xl italic">Queue is currently clear.</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] mt-3 opacity-60">Ready for incoming referrals</p>
+              <div className="bg-white p-24 rounded-[4rem] text-center border-2 border-dashed border-[#E8DDCB] shadow-inner">
+                <FileCheck size={48} className="mx-auto text-[#E8DDCB] mb-6" />
+                <p className="text-[#967A53] font-heading text-2xl italic">Queue is currently clear.</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#967A53] mt-3 opacity-60">Ready for incoming referrals</p>
               </div>
             ) : (
               filteredQueue.map(p => (
-                <div key={p._id} className="bg-white p-8 rounded-[3.5rem] border border-[#AFC4D8] shadow-sm flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#1F6FB2] transition-all relative overflow-hidden">
+                <div key={p._id} className="bg-white p-8 rounded-[3.5rem] border border-[#E8DDCB] shadow-sm flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#FFA800] transition-all relative overflow-hidden">
                   {p.isEmergency && <div className="absolute top-0 left-0 w-2 h-full bg-red-500 animate-pulse"></div>}
 
                   <div className="flex items-center gap-8 w-full md:w-auto">
-                    <div className="w-20 h-20 bg-[#EEF6FA] rounded-[2.5rem] border-2 border-[#AFC4D8] group-hover:border-[#1F6FB2]/30 flex flex-col items-center justify-center transition-colors">
-                      <p className="text-[8px] font-black text-[#3FA28C] uppercase mb-0.5">Token</p>
-                      <p className="text-3xl font-heading text-[#0F766E]">{p.tokenNumber}</p>
+                    <div className="w-20 h-20 bg-[#FFFBF5] rounded-[2.5rem] border-2 border-[#E8DDCB] group-hover:border-[#FFA800]/30 flex flex-col items-center justify-center transition-colors">
+                      <p className="text-[8px] font-black text-[#967A53] uppercase mb-0.5">Token</p>
+                      <p className="text-3xl font-heading text-[#422D0B]">{p.tokenNumber}</p>
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#1F6FB2]/10 text-[#1F6FB2] border-[#1F6FB2]/20'
+                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${p.isEmergency ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#FFA800]/10 text-[#FFA800] border-[#FFA800]/20'
                           }`}>
                           {p.requiredTest || 'General Diagnostic'}
                         </span>
                         {p.isEmergency && <span className="text-[8px] font-black text-red-600 animate-pulse uppercase tracking-tighter">🚨 Immediate Priority</span>}
                       </div>
-                      <h3 className="text-3xl font-heading text-[#0F766E]">{p.patientName}</h3>
+                      <h3 className="text-3xl font-heading text-[#422D0B]">{p.patientName}</h3>
                       <div className="flex gap-6 mt-3">
-                        <p className="text-[10px] font-bold text-[#3FA28C] flex items-center gap-2"><Smartphone size={12} /> {p.patientPhone}</p>
-                        <p className="text-[10px] font-bold text-[#3FA28C] flex items-center gap-2"><Hash size={12} /> {p._id.slice(-6).toUpperCase()}</p>
+                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Smartphone size={12} /> {p.patientPhone}</p>
+                        <p className="text-[10px] font-bold text-[#967A53] flex items-center gap-2"><Hash size={12} /> {p._id.slice(-6).toUpperCase()}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="w-full md:w-auto">
-                    <label className="flex items-center justify-center gap-4 bg-[#0F766E] text-[#EEF6FA] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#1F6FB2] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
+                    <label className="flex items-center justify-center gap-4 bg-[#422D0B] text-[#FFFBF5] px-12 py-5 rounded-2xl cursor-pointer hover:bg-[#FFA800] transition-all font-black text-[10px] uppercase tracking-[0.2em] shadow-xl group-hover:scale-[1.02] active:scale-95">
                       <Upload size={18} />
                       <span>Sync Digital Report</span>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/*,application/pdf"
-                        onChange={(e) => {
-                          handleFileUpload(p.patientPhone, p._id, e.target.files[0]);
-                          e.target.value = '';
-                        }}
+                        onChange={(e) => handleFileUpload(p.patientPhone, p._id, e.target.files[0])}
                       />
                     </label>
                   </div>
