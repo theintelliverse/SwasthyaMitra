@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Footer from '../../components/Footer';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const RegisterClinic = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);

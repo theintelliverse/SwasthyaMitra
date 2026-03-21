@@ -6,7 +6,7 @@ import {
   Users, Stethoscope, ChevronRight, Siren,
   ArrowLeft, Monitor, Clock, RefreshCw, Zap
 } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ClinicTVDisplay = () => {
@@ -14,7 +14,7 @@ const ClinicTVDisplay = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [clinicName, setClinicName] = useState("Appointory Clinic");
+  const [clinicName, setClinicName] = useState("Swasthya-Mitra Clinic");
   const [error, setError] = useState(null);
 
   // Use a ref to track the room we joined to prevent repeated emits
@@ -50,9 +50,7 @@ const ClinicTVDisplay = () => {
     try {
       const res = await axios.get(`${API_URL}/api/queue/public/doctor-display/${docId}`);
       setQueue(res.data.data || []);
-    } catch (err) {
-      console.error("TV Queue Fetch Error:", err);
-    }
+    } catch (err) { /* Silent fail */ }
   };
 
   // 🔌 WebSocket Lifecycle: Register Listeners ONCE
@@ -85,22 +83,22 @@ const ClinicTVDisplay = () => {
   }, [selectedDoc, doctors]);
 
   if (loading && !error) return (
-    <div className="min-h-screen bg-[#EEF6FA] flex flex-col items-center justify-center p-6 text-center">
-      <RefreshCw size={40} className="text-[#1F6FB2] animate-spin mb-4" />
-      <p className="font-heading text-xl text-[#0F766E]">Initializing Digital Display...</p>
+    <div className="min-h-screen bg-parchment flex flex-col items-center justify-center p-6 text-center">
+      <RefreshCw size={40} className="text-marigold animate-spin mb-4" />
+      <p className="font-heading text-xl text-teak">Initializing Digital Display...</p>
     </div>
   );
 
   if (!selectedDoc) {
     return (
-      <div className="min-h-screen bg-[#EEF6FA] p-6 md:p-12 font-body text-[#0F766E] animate-in fade-in duration-500">
+      <div className="min-h-screen bg-parchment p-6 md:p-12 font-body text-teak animate-in fade-in duration-500">
         <header className="mb-12 md:mb-20 text-center">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-[#1F6FB2] rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl relative">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-marigold rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl relative">
             <Monitor size={32} />
-            <div className="absolute inset-0 bg-[#1F6FB2] rounded-3xl animate-ping opacity-10"></div>
+            <div className="absolute inset-0 bg-marigold rounded-3xl animate-ping opacity-10"></div>
           </div>
           <h1 className="text-4xl md:text-6xl font-heading mb-2">{clinicName}</h1>
-          <p className="text-sm md:text-xl text-[#3FA28C] font-black uppercase tracking-widest">Select Cabin to Monitor</p>
+          <p className="text-sm md:text-xl text-khaki font-black uppercase tracking-widest">Select Cabin to Monitor</p>
         </header>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
@@ -108,17 +106,17 @@ const ClinicTVDisplay = () => {
             <button
               key={doc._id}
               onClick={() => setSelectedDoc(doc)}
-              className="bg-white border border-[#AFC4D8] p-8 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] text-left hover:border-[#1F6FB2] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
+              className="bg-white border border-sandstone p-8 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] text-left hover:border-marigold hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
             >
               <div className={`absolute top-0 right-0 w-2 h-full ${doc.isAvailable ? 'bg-green-500' : 'bg-red-400 opacity-50'}`}></div>
-              <h3 className="text-2xl md:text-4xl font-heading mb-1 leading-tight text-[#0F766E]">Dr. {doc.name}</h3>
-              <p className="text-[#3FA28C] font-bold text-[10px] md:text-xs uppercase tracking-widest mb-6">{doc.specialization}</p>
+              <h3 className="text-2xl md:text-4xl font-heading mb-1 leading-tight text-teak">Dr. {doc.name}</h3>
+              <p className="text-khaki font-bold text-[10px] md:text-xs uppercase tracking-widest mb-6">{doc.specialization}</p>
               <div className="mt-auto flex justify-between items-center">
                 <span className={`text-[9px] font-black uppercase flex items-center gap-1.5 ${doc.isAvailable ? 'text-green-600' : 'text-red-400'}`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${doc.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
                   {doc.isAvailable ? 'Cabin Active' : 'Away'}
                 </span>
-                <ChevronRight size={18} className="text-[#AFC4D8] group-hover:text-[#1F6FB2]" />
+                <ChevronRight size={18} className="text-sandstone group-hover:text-marigold" />
               </div>
             </button>
           ))}
@@ -131,7 +129,7 @@ const ClinicTVDisplay = () => {
   const waitingPatients = queue.filter(p => p.status === 'Waiting');
 
   return (
-    <div className="min-h-screen bg-[#0F766E] text-[#EEF6FA] flex flex-col font-body overflow-x-hidden animate-in zoom-in-95 duration-500">
+    <div className="min-h-screen bg-teak text-parchment flex flex-col font-body overflow-x-hidden animate-in zoom-in-95 duration-500">
       <nav className="bg-black/20 backdrop-blur-xl p-6 md:p-10 border-b border-white/5 flex justify-between items-center">
         <div className="flex items-center gap-4 md:gap-8">
           <button onClick={() => setSelectedDoc(null)} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-white/40 hover:text-white transition-all">
@@ -139,7 +137,7 @@ const ClinicTVDisplay = () => {
           </button>
           <div>
             <h1 className="text-3xl md:text-5xl font-heading leading-none">Dr. {selectedDoc.name}</h1>
-            <p className="text-[10px] md:text-sm text-[#1F6FB2] font-black uppercase tracking-widest mt-1">{selectedDoc.specialization}</p>
+            <p className="text-[10px] md:text-sm text-marigold font-black uppercase tracking-widest mt-1">{selectedDoc.specialization}</p>
           </div>
         </div>
         <div className="flex flex-col items-end">
@@ -154,13 +152,13 @@ const ClinicTVDisplay = () => {
       <div className="flex-grow flex flex-col lg:flex-row overflow-hidden">
         <div className="w-full lg:w-3/5 p-8 md:p-16 flex flex-col justify-center items-center lg:border-r border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent">
           <div className="flex items-center gap-3 opacity-40 mb-6 md:mb-10">
-            <Zap size={16} className="text-[#1F6FB2]" />
+            <Zap size={16} className="text-marigold" />
             <p className="text-xs md:text-xl font-black uppercase tracking-[0.4em]">Now Consulting</p>
           </div>
 
           {activePatient ? (
             <div className="text-center w-full px-4 animate-in zoom-in duration-700">
-              <div className={`mx-auto w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-[3rem] md:rounded-[4rem] lg:rounded-[6rem] flex flex-col items-center justify-center border-[8px] md:border-[12px] shadow-2xl mb-6 md:mb-10 transition-all ${activePatient.isEmergency ? 'border-red-600 bg-red-600 pulse-ring' : 'border-[#1F6FB2] bg-[#1F6FB2]'}`}>
+              <div className={`mx-auto w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-[3rem] md:rounded-[4rem] lg:rounded-[6rem] flex flex-col items-center justify-center border-[8px] md:border-[12px] shadow-2xl mb-6 md:mb-10 transition-all ${activePatient.isEmergency ? 'border-red-600 bg-red-600 pulse-ring' : 'border-marigold bg-marigold'}`}>
                 <span className="text-xs md:text-xl font-black uppercase opacity-60">Token No.</span>
                 <span className="text-6xl md:text-9xl lg:text-[14rem] font-heading leading-none tabular-nums">{activePatient.tokenNumber}</span>
               </div>
@@ -180,10 +178,10 @@ const ClinicTVDisplay = () => {
         <div className="w-full lg:w-2/5 flex flex-col bg-black/10 border-t lg:border-t-0 border-white/5">
           <div className="p-6 md:p-10 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Users size={24} className="text-[#1F6FB2]" />
+              <Users size={24} className="text-marigold" />
               <h3 className="text-xl md:text-3xl font-heading">Queue List</h3>
             </div>
-            <span className="bg-[#1F6FB2] text-[#0F766E] px-4 py-1 rounded-xl font-black text-xs md:text-sm">{waitingPatients.length} Waiting</span>
+            <span className="bg-marigold text-teak px-4 py-1 rounded-xl font-black text-xs md:text-sm">{waitingPatients.length} Waiting</span>
           </div>
 
           <div className="flex-grow overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 max-h-[40vh] lg:max-h-none">
@@ -205,7 +203,7 @@ const ClinicTVDisplay = () => {
               </div>
             )}
           </div>
-          <div className="p-4 md:p-6 bg-[#1F6FB2] text-[#0F766E] overflow-hidden whitespace-nowrap">
+          <div className="p-4 md:p-6 bg-marigold text-teak overflow-hidden whitespace-nowrap">
             <p className="text-[10px] md:text-xs font-black uppercase tracking-widest animate-marquee inline-block pr-[100%]">
               Carry your Digital Locker ID • Results will be synced automatically • Maintain silence in lounge area
             </p>

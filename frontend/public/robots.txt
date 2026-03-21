@@ -1,4 +1,75 @@
+# Appointory SEO Robot Configuration
+# Version 1.0
+# Generated for appointory.in
+
+# Block bad bots and crawlers
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+User-agent: SemrushBot-SA
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MojeekBot
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /admin
+Disallow: /doctor
+Disallow: /patient
+Disallow: /receptionist
+Disallow: /lab
+
+# Allow all legitimate indexing
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+Crawl-delay: 1
+
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/
+Disallow: /patient/
+Disallow: /receptionist/
+Disallow: /lab/
+Disallow: /*.json$
+Disallow: /*?*=
+Crawl-delay: 1
+Request-rate: 30/60
 
-Sitemap: /sitemap.xml
+# Sitemap locations
+Sitemap: https://www.appointory.in/sitemap.xml
+Sitemap: https://www.appointory.in/sitemap-index.xml
+
+# Allow crawling of common static assets
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.svg$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.webp$
+
+# Disallow access to sensitive paths
+Disallow: /config/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /node_modules/
+Disallow: /*?*utm_
+Disallow: /*?*gclid=

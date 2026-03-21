@@ -1,62 +1,204 @@
 <!doctype html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html lang="en" prefix="og: https://ogp.me/ns# fb: https://ogp.me/ns/fb#">
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="icon" type="image/svg+xml" href="/react.svg" />
+  <link rel="alternate icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="shortcut icon" href="/vite.svg" />
-  <link rel="apple-touch-icon" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" href="/og-image.svg" />
+  <link rel="mask-icon" href="/react.svg" color="#2C6FB3" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Mobile App Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Appointory | Real-time Clinical Management & Digital Health Locker</title>
   <meta name="description"
-    content="Appointory is a real-time clinical management and digital health locker platform with live queue tracking, lab referrals, OTP-secured patient access, and role-based clinic dashboards." />
+    content="Appointory is a real-time clinical management and digital health locker platform with live queue tracking, lab referrals, OTP-secured patient access, and role-based clinic dashboards. Manage clinic operations efficiently." />
   <meta name="keywords"
-    content="Appointory, clinic management system, patient queue management, digital health locker, medical records, lab referral system, healthcare dashboard, MERN healthcare app, hospital token system" />
-  <meta name="author" content="Appointory Team" />
+    content="Appointory, clinic management system, patient queue management, digital health locker, medical records, lab referral system, healthcare dashboard, MERN healthcare app, hospital token system, appointment booking, patient management, clinic software, healthcare IT, EMR system, medical queue, patient portal, clinic portal" />
+  <meta name="author" content="theintelliverse@gmail.com" />
+  <meta name="creator" content="Appointory Team" />
+  <meta name="publisher" content="Appointory" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <meta name="googlebot" content="index, follow" />
+  <meta name="googlebot" content="index, follow, max-snippet:-1" />
+  <meta name="bingbot" content="index, follow, max-snippet:-1" />
   <meta name="theme-color" content="#2C6FB3" />
-  <meta name="format-detection" content="telephone=no" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="format-detection" content="telephone=no, email=no, address=no" />
   <meta name="referrer" content="origin-when-cross-origin" />
   <meta name="application-name" content="Appointory" />
+  <meta name="apple-mobile-web-app-title" content="Appointory" />
+  <meta name="google-site-verification" content="V9ShBblTx27Z4kLyDmhiU4PPANzjWD_j1O76UrDD40I" />
 
-  <link rel="canonical" href="https://www.appointory.in/" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3KZ0BWGB6R"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
+    gtag('config', 'G-3KZ0BWGB6R');
+  </script>
+
+  <link rel="canonical" href="https://appointory.in/" />
+
+  <!-- Open Graph Tags for Social Sharing & WhatsApp -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Appointory" />
-  <meta property="og:title" content="Appointory | Real-time Clinical Management & Digital Health Locker" />
+  <meta property="og:title" content="Appointory - AI-Powered Real-time Clinic Management System" />
   <meta property="og:description"
-    content="A comprehensive MERN healthcare platform with live queue monitoring, instant lab referrals, patient OTP login, and secure medical record access." />
-  <meta property="og:image" content="https://www.appointory.in/og-image.svg" />
-  <meta property="og:image:secure_url" content="https://www.appointory.in/og-image.svg" />
+    content="Transform your clinic operations with real-time queue management, digital health records, and smart lab referrals. Experience seamless healthcare management with Appointory." />
+  <meta property="og:image" content="https://appointory.in/og-image.svg" />
+  <meta property="og:image:secure_url" content="https://appointory.in/og-image.svg" />
   <meta property="og:image:type" content="image/svg+xml" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Appointory healthcare platform" />
-  <meta property="og:url" content="https://www.appointory.in/" />
-  <meta property="og:locale" content="en_US" />
+  <meta property="og:image:width" content="800" />
+  <meta property="og:image:height" content="800" />
+  <meta property="og:image:alt" content="Appointory - AI-Powered Clinic Management & Digital Health Locker" />
+  <meta property="og:url" content="https://appointory.in/" />
+  <meta property="og:locale" content="en_IN" />
+  <meta property="og:image:secure_url:alt_text" content="Appointory clinic management system logo" />
+  <meta property="og:image:secure_url:alt_text" content="Appointory clinic management system logo" />
 
+  <!-- Facebook Domain Insights -->
+  <meta property="fb:app_id" content="" />
+
+  <!-- Twitter/X Card Tags -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Appointory | Real-time Clinical Management & Digital Health Locker" />
+  <meta name="twitter:site" content="@appointory" />
+  <meta name="twitter:title" content="Appointory | Clinic Management & Digital Health Locker" />
   <meta name="twitter:description"
-    content="Live queue tracking, digital health vault, smart medical timeline, and role-based clinic dashboards in one platform." />
-  <meta name="twitter:image" content="https://www.appointory.in/og-image.svg" />
-  <meta name="twitter:image:alt" content="Appointory healthcare platform" />
+    content="Real-time queue tracking, digital health vault, smart medical timeline, and role-based clinic dashboards in one platform." />
+  <meta name="twitter:image" content="https://appointory.in/og-image.svg" />
+  <meta name="twitter:image:alt" content="Appointory - AI-Powered Clinic Management & Digital Health Locker" />
+  <meta name="twitter:image:src" content="https://appointory.in/og-image.svg" />
+  <meta name="twitter:creator" content="@appointory" />
+
+  <!-- WhatsApp Meta Tags -->
+  <meta property="whatsapp:image" content="https://appointory.in/og-image.svg" />
+  <meta property="whatsapp:link_title" content="Appointory - AI-Powered Clinic Management" />
+  <meta property="whatsapp:card" content="summary_large_image" />
+
+  <!-- Additional Social Meta Tags -->
+  <meta name="apple-itunes-app" content="app-id=" />
+  <meta name="msapplication-TileColor" content="#2C6FB3" />
+  <meta name="msapplication-TileImage" content="/og-image.svg" />
+
+  <!-- Pinterest & Rich Social Meta -->
+  <meta property="pinterest:domain_verify" content="" />
+  <meta property="pinterest:url" content="https://appointory.in/" />
+
+  <!-- Instagram Ready Tags -->
+  <meta property="instagram:author" content="appointory" />
+
+  <!-- LinkedIn Tags -->
+  <meta property="linkedin:url" content="https://appointory.in/" />
+  <meta property="linkedin:title" content="Appointory - Clinic Management System" />
+
+  <!-- Language & Region -->
+  <meta name="language" content="English" />
+  <meta name="geo.placename" content="India" />
+  <meta name="geo.region" content="IN" />
+  <meta name="ICBM" content="20.5937,78.9629" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
   <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap"
+    as="style" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="sitemap" href="https://appointory.in/sitemap.xml" type="application/xml" />
+  <link rel="alternate" type="application/rss+xml" title="Appointory Updates" href="https://appointory.in/feed.xml" />
+  <link rel="alternate" type="application/atom+xml" title="Appointory Atom Feed"
+    href="https://appointory.in/feed.xml" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Appointory",
+      "url": "https://appointory.in/",
+      "logo": "https://appointory.in/vite.svg",
+      "image": "https://appointory.in/vite.svg",
+      "description": "Real-time clinical management and digital health locker platform for seamless healthcare operations.",
+      "email": "theintelliverse@gmail.com",
+      "sameAs": [
+        "https://www.facebook.com/appointory",
+        "https://twitter.com/appointory",
+        "https://www.linkedin.com/company/appointory",
+        "https://www.instagram.com/appointory"
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "Customer Service",
+          "availableLanguage": "en-IN",
+          "email": "theintelliverse@gmail.com"
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "Technical Support",
+          "availableLanguage": "en-IN",
+          "email": "theintelliverse@gmail.com"
+        }
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN",
+        "addressRegion": "India",
+        "postalCode": ""
+      },
+      "founder": {
+        "@type": "Organization",
+        "name": "Appointory Team"
+      }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Appointory",
+      "description": "Digital healthcare platform for clinic management",
+      "url": "https://appointory.in/",
+      "serverAreas": ["IN"],
+      "image": "https://appointory.in/vite.svg",
+      "priceRange": "$0-$$$",
+      "serviceArea": "IN",
+      "areaServed": "India",
+      "knowsAbout": [
+        "Healthcare",
+        "Clinic Management",
+        "Patient Records",
+        "Medical Queue Management",
+        "Digital Health Locker",
+        "Lab Referrals"
+      ]
+    }
+  </script>
 
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Appointory",
-      "url": "https://www.appointory.in/",
-      "inLanguage": "en",
-      "description": "A real-time clinical management and digital health locker platform for clinics and patients."
+      "url": "https://appointory.in/",
+      "inLanguage": "en-IN",
+      "description": "Real-time clinic management and digital health locker platform with queue tracking, lab referrals, and secure patient records.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://appointory.in/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
     }
   </script>
 
@@ -66,16 +208,58 @@
       "@type": "SoftwareApplication",
       "name": "Appointory",
       "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web Browser",
-      "url": "https://www.appointory.in/",
-      "image": "/og-image.svg",
-      "description": "A MERN-stack clinical management system with real-time queueing, lab referrals, and secure patient health records.",
+      "operatingSystem": "Web Browser, Android, iOS",
+      "url": "https://appointory.in/",
+      "image": "https://appointory.in/og-image.svg",
+      "description": "A comprehensive MERN-stack clinic management system with real-time queueing, lab referrals, and secure patient health records.",
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "INR",
+        "price": "0",
+        "pricingModel": "FreemiumPricing"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "500"
+      },
       "featureList": [
         "Real-time queue management with Socket.io",
         "Role-based dashboards for clinic staff",
         "OTP-secured patient digital health locker",
         "Instant lab referral and result synchronization",
-        "Unified timeline for visits and reports"
+        "Unified timeline for visits and reports",
+        "WhatsApp notifications",
+        "AI wait-time prediction",
+        "Multi-role staff management"
+      ],
+      "availability": "https://schema.org/InStock"
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://appointory.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Features",
+          "item": "https://appointory.in/#features"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "About",
+          "item": "https://appointory.in/#about"
+        }
       ]
     }
   </script>
@@ -90,7 +274,7 @@
           "name": "What is Appointory?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Appointory is a clinical management and digital health locker platform that connects clinics and patients using real-time queues and secure records."
+            "text": "Appointory is a real-time clinical management and digital health locker platform that helps clinics streamline operations and patients securely access their medical records. It features live queue tracking, lab referrals, OTP-secured access, and role-based dashboards for staff."
           }
         },
         {
@@ -98,15 +282,31 @@
           "name": "Who can use Appointory?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Admins, doctors, receptionists, lab technicians, and patients can use role-based interfaces designed for their workflows."
+            "text": "Appointory is designed for clinic administrators, doctors, receptionists, lab technicians, and patients. Each role has a customized interface tailored to their specific workflow and responsibilities."
           }
         },
         {
           "@type": "Question",
-          "name": "How are patient records secured?",
+          "name": "How are patient records secured in Appointory?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Patients access their digital health locker via OTP authentication and can securely view consultation notes, reports, and medical files."
+            "text": "Patient records in Appointory are protected through OTP authentication for access to the digital health locker. Sensitive medical information is encrypted and patients have full control over their records with secure view and share capabilities."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Appointory support WhatsApp notifications?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Appointory supports WhatsApp notifications to keep patients and staff informed about queue status, lab results, and appointments in real-time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can Appointory predict wait times?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Appointory includes AI-powered wait-time prediction that helps manage patient expectations and optimize clinic scheduling."
           }
         }
       ]

@@ -1,16 +1,31 @@
-# React + Vite
+# 🏥 Appointory 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**A Real-time Clinical Management & Digital Health Locker System**
 
-Currently, two official plugins are available:
+Appointory is a comprehensive MERN-stack platform designed to bridge the gap between clinics and patients. It features a real-time token system, automated lab referrals, and an encrypted digital health vault for patients.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👨‍⚕️ For Clinics (Admin, Doctor, Receptionist)
+* **Live Queue Management**: Real-time patient tracking with Socket.io integration.
+* **Dual Monitoring**: Separate zones for "Waiting Lounge" and "Lab Monitoring Area".
+* **Instant Lab Referrals**: Doctors can refer patients to the lab; results sync back to the doctor's cabin instantly.
+* **Business Intelligence**: Admins can export clinical visit data and staff performance to CSV.
+* **Role-Based Access**: Secure dashboards for Admins, Doctors, Receptionists, and Lab Technicians.
 
-## Expanding the ESLint configuration
+### 🤒 For Patients
+* **Live Lounge Tracker**: Patients can track their token status, estimated wait time, and doctor availability on their own phones.
+* **Digital Health Vault**: Secure access via OTP to view consultation notes, X-rays, and diagnostic reports.
+* **Unified Timeline**: A smart history that merges clinical visits with uploaded medical documents.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Tech Stack
+* **Frontend**: React.js, Tailwind CSS (Morning Marigold Theme), Lucide Icons.
+* **Backend**: Node.js, Express.js.
+* **Database**: MongoDB (Mongoose ODM).
+* **Real-time**: Socket.io.
+* **Communication**: Twilio SMS API.
+* **Storage**: Cloudinary (for medical images/PDFs).

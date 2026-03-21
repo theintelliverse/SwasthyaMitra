@@ -46,7 +46,6 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
 
           {/* --- 📱 Patient Routes (QR & OTP) --- */}
-          <Route path="/patient" element={<Navigate to="/patient/login" replace />} />
           <Route path="/patient/checkin" element={<PatientCheckIn />} />
           <Route path="/patient/status" element={<PatientStatus />} />
           <Route path="/patient/login" element={<PatientLogin />} />

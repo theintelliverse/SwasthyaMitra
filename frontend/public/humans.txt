@@ -1,0 +1,27 @@
+/* humanstxt.org */
+
+/* TEAM */
+Developer: Appointory Development Team
+Email: theintelliverse@gmail.com
+Location: India
+Web: https://appointory.in
+
+/* SITE */
+Name: Appointory
+Description: Real-time Clinic Management & Digital Health Locker Platform
+Standards: HTML5, CSS3, JavaScript, React, Node.js
+Version: 1.0
+Updated: 2026-03-02
+Language: English, Hindi
+Charset: UTF-8
+Technology Stack: MERN (MongoDB, Express.js, React, Node.js)
+
+/* THANKS */
+We thank our users, partners, and the open-source community that makes Appointory possible.
+
+/* CONTACT */
+Email: theintelliverse@gmail.com
+Phone: +91 (India)
+Website: https://appointory.in
+Twitter: @appointory
+LinkedIn: appointory

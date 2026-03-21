@@ -10,7 +10,7 @@ import {
   BarChart3, Users, Settings, ClipboardList, UserPlus,
   ArrowUpRight, ShieldCheck, Activity, Tv, Share2, Copy, Check, RefreshCw, FileSpreadsheet
 } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 // Initialize socket
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
   const clinicName = localStorage.getItem('clinicName') || 'Your Clinic';
   const clinicCode = localStorage.getItem('clinicCode') || 'CITY01';
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
       desc: 'Launch the public-facing queue monitor for waiting room TVs.',
       icon: <Tv size={32} color="#1F6FB2" />,
       link: `/display/${clinicCode}`,
-      bgColor: 'bg-[#1F6FB2]/10',
+      bgColor: 'bg-marigold/10',
       isExternal: true
     },
     {
@@ -119,26 +119,26 @@ const AdminDashboard = () => {
       desc: 'Download clinical data, staff logs, and visit summaries.',
       icon: <FileSpreadsheet size={32} color="#0F766E" />,
       link: '/Admin/reports',
-      bgColor: 'bg-[#0F766E]/10'
+      bgColor: 'bg-teak/10'
     },
     {
       title: 'Staff Management',
       desc: 'Add doctors, manage roles, and monitor duty status.',
       icon: <Users size={32} color="#3FA28C" />,
       link: '/admin/staff-management',
-      bgColor: 'bg-[#3FA28C]/10'
+      bgColor: 'bg-khaki/10'
     },
     {
       title: 'Medical History',
       desc: 'Access past consultation records and digital summaries.',
       icon: <ClipboardList size={32} color="#1F6FB2" />,
       link: '/admin/history',
-      bgColor: 'bg-[#1F6FB2]/10'
+      bgColor: 'bg-marigold/10'
     }
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
+    <div className="flex min-h-screen bg-parchment font-body text-teak">
       <Sidebar role="admin" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
@@ -147,22 +147,22 @@ const AdminDashboard = () => {
           <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <h1 className="text-5xl font-heading mb-2">Namaste, {adminName}</h1>
-              <p className="text-[#3FA28C] font-medium flex items-center gap-2">
-                Central Command for <span className="text-[#1F6FB2] font-bold">{clinicName}</span>
-                <span className="bg-[#AFC4D8] px-2 py-0.5 rounded text-[10px] text-[#0F766E] font-black">{clinicCode}</span>
+              <p className="text-khaki font-medium flex items-center gap-2">
+                Central Command for <span className="text-marigold font-bold">{clinicName}</span>
+                <span className="bg-sandstone px-2 py-0.5 rounded text-[10px] text-teak font-black">{clinicCode}</span>
               </p>
             </div>
 
             <button
               onClick={handleShare}
-              className="bg-white border border-[#AFC4D8] p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:border-[#1F6FB2] transition-all group"
+              className="bg-white border border-sandstone p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:border-marigold transition-all group"
             >
-              <div className="w-10 h-10 bg-[#0F766E] rounded-full flex items-center justify-center text-white group-hover:bg-[#1F6FB2] transition-colors">
+              <div className="w-10 h-10 bg-teak rounded-full flex items-center justify-center text-white group-hover:bg-marigold transition-colors">
                 {copied ? <Check size={18} /> : <Share2 size={18} />}
               </div>
               <div className="text-left">
-                <p className="text-[8px] font-black uppercase text-[#3FA28C]">Public Monitor</p>
-                <p className="text-xs font-bold text-[#0F766E]">Share Live Queue</p>
+                <p className="text-[8px] font-black uppercase text-khaki">Public Monitor</p>
+                <p className="text-xs font-bold text-teak">Share Live Queue</p>
               </div>
             </button>
           </header>
@@ -179,16 +179,16 @@ const AdminDashboard = () => {
               <button
                 key={idx}
                 onClick={() => m.isExternal ? window.open(m.link, '_blank') : navigate(m.link)}
-                className="group bg-white border border-[#AFC4D8] p-10 rounded-[3rem] text-left transition-all hover:shadow-2xl hover:border-[#1F6FB2] flex items-center gap-8 relative overflow-hidden"
+                className="group bg-white border border-sandstone p-10 rounded-[3rem] text-left transition-all hover:shadow-2xl hover:border-marigold flex items-center gap-8 relative overflow-hidden"
               >
                 <div className={`shrink-0 w-20 h-20 ${m.bgColor} rounded-[2rem] flex items-center justify-center group-hover:scale-110 transition-transform`}>
                   {m.icon}
                 </div>
                 <div>
                   <h3 className="font-heading text-2xl mb-2">{m.title}</h3>
-                  <p className="text-sm text-[#3FA28C] font-medium leading-relaxed">{m.desc}</p>
+                  <p className="text-sm text-khaki font-medium leading-relaxed">{m.desc}</p>
                 </div>
-                <ArrowUpRight className="absolute top-8 right-8 text-[#AFC4D8] group-hover:text-[#1F6FB2] transition-colors" size={24} />
+                <ArrowUpRight className="absolute top-8 right-8 text-sandstone group-hover:text-marigold transition-colors" size={24} />
               </button>
             ))}
           </div>
@@ -206,16 +206,16 @@ const AdminDashboard = () => {
 };
 
 const StatMini = ({ label, value }) => (
-  <div className="bg-white border border-[#AFC4D8] p-5 rounded-3xl flex flex-col justify-center min-h-[100px]">
-    <p className="text-[9px] font-black uppercase text-[#3FA28C] tracking-widest mb-1">{label}</p>
-    <div className="text-2xl font-heading text-[#0F766E]">{value}</div>
+  <div className="bg-white border border-sandstone p-5 rounded-3xl flex flex-col justify-center min-h-[100px]">
+    <p className="text-[9px] font-black uppercase text-khaki tracking-widest mb-1">{label}</p>
+    <div className="text-2xl font-heading text-teak">{value}</div>
   </div>
 );
 
 const QuickLink = ({ title, icon, onClick }) => (
   <button
     onClick={onClick}
-    className="flex items-center justify-center gap-3 py-5 px-6 bg-white border border-[#AFC4D8] rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#0F766E] hover:bg-[#1F6FB2] hover:text-white hover:border-[#1F6FB2] transition-all shadow-sm active:scale-95"
+    className="flex items-center justify-center gap-3 py-5 px-6 bg-white border border-sandstone rounded-2xl text-[10px] font-black uppercase tracking-widest text-teak hover:bg-marigold hover:text-white hover:border-marigold transition-all shadow-sm active:scale-95"
   >
     {icon} {title}
   </button>

@@ -15,65 +15,46 @@ import {
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import ClinicQR from '../../components/ClinicQR';
-import { API_BASE_URL } from '../../config/runtime';
-
-const API_URL = API_BASE_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const ClinicSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     clinicCode: '',
-    contactPhone: '',
+    contactNumber: '',
     address: ''
   });
-  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchClinicData = async () => {
       try {
-        setFetchError('');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
-        if (!API_URL) {
-          throw new Error('API URL is not configured. Please set VITE_API_URL.');
-        }
         const res = await axios.get(`${API_URL}/api/clinic/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         if (res.data.success) {
-          const { name, clinicCode, contactPhone, contactNumber, address } = res.data.data;
+          const { name, clinicCode, contactNumber, address } = res.data.data;
           setFormData({
             name: name || '',
             clinicCode: clinicCode || '',
-            contactPhone: contactPhone || contactNumber || '',
+            contactNumber: contactNumber || '',
             address: address || ''
           });
         }
         setLoading(false);
       } catch (err) {
-        const message = err.response?.data?.message || err.message || 'Error fetching clinic data';
-        setFetchError(message);
-        if (err.response?.status === 401) {
-          navigate('/login');
-          return;
-        }
+        console.error("Error fetching clinic data", err);
         setLoading(false);
       }
     };
     fetchClinicData();
-  }, [token, navigate]);
+  }, [token]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      if (!API_URL) {
-        throw new Error('API URL is not configured. Please set VITE_API_URL.');
-      }
       const res = await axios.patch(`${API_URL}/api/clinic/settings`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -91,32 +72,31 @@ const ClinicSettings = () => {
         });
       }
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'Update failed';
-      Swal.fire('Error', message, 'error');
+      Swal.fire('Error', err.response?.data?.message || 'Update failed', 'error');
     }
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#EEF6FA] flex items-center justify-center">
-      <div className="animate-pulse font-heading text-xl text-[#3FA28C]">Opening Clinic Vault...</div>
+    <div className="min-h-screen bg-parchment flex items-center justify-center">
+      <div className="animate-pulse font-heading text-xl text-khaki">Opening Clinic Vault...</div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
+    <div className="flex min-h-screen bg-parchment font-body text-teak">
       {/* --- Sidebar Integrated --- */}
       <Sidebar role="admin" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
         {/* --- Header Section --- */}
-        <header className="bg-white border-b border-[#AFC4D8] px-8 py-6 sticky top-0 z-30 shadow-sm">
+        <header className="bg-white border-b border-sandstone px-8 py-6 sticky top-0 z-30 shadow-sm">
           <div className="max-w-6xl mx-auto flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#0F766E] rounded-2xl flex items-center justify-center text-white shadow-lg">
+            <div className="w-12 h-12 bg-teak rounded-2xl flex items-center justify-center text-white shadow-lg">
               <SettingsIcon size={24} />
             </div>
             <div>
               <h1 className="font-heading text-3xl leading-none">Clinic Profile</h1>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] mt-1">Configure Global Facility Settings</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-khaki mt-1">Configure Global Facility Settings</p>
             </div>
           </div>
         </header>
@@ -126,22 +106,17 @@ const ClinicSettings = () => {
 
             {/* --- Main Settings Form --- */}
             <div className="lg:col-span-2 space-y-8">
-              {fetchError && (
-                <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-red-700 text-sm font-semibold">
-                  {fetchError}
-                </div>
-              )}
-              <div className="bg-white border border-[#AFC4D8] rounded-[3.5rem] p-8 md:p-12 shadow-sm">
+              <div className="bg-white border border-sandstone rounded-[3.5rem] p-8 md:p-12 shadow-sm">
                 <form onSubmit={handleUpdate} className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Clinic Name */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Clinic Display Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Display Name</label>
                       <div className="relative">
-                        <Building size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
+                        <Building size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E] transition-all"
+                          className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
@@ -150,17 +125,17 @@ const ClinicSettings = () => {
 
                     {/* Clinic Code */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Unique Gateway Code</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Unique Gateway Code</label>
                       <div className="relative">
-                        <QrCode size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
+                        <QrCode size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-black uppercase text-[#1F6FB2] transition-all"
+                          className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-black uppercase text-marigold transition-all"
                           value={formData.clinicCode}
                           onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                         />
                       </div>
-                      <p className="text-[9px] text-[#3FA28C] ml-2 flex items-center gap-1 italic">
+                      <p className="text-[9px] text-khaki ml-2 flex items-center gap-1 italic">
                         <AlertCircle size={10} /> Affects your public check-in URL.
                       </p>
                     </div>
@@ -168,27 +143,27 @@ const ClinicSettings = () => {
 
                   {/* Contact Number */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Verified Contact Number</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Verified Contact Number</label>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
+                      <Phone size={16} className="absolute left-5 top-4.5 text-sandstone" />
                       <input
                         type="text"
                         placeholder="+91 00000 00000"
-                        className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-medium text-[#0F766E]"
-                        value={formData.contactPhone}
-                        onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                        className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.contactNumber}
+                        onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                       />
                     </div>
                   </div>
 
                   {/* Physical Address */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Clinic Address</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Address</label>
                     <div className="relative">
-                      <MapPin size={16} className="absolute left-5 top-4.5 text-[#AFC4D8]" />
+                      <MapPin size={16} className="absolute left-5 top-4.5 text-sandstone" />
                       <textarea
                         placeholder="Street, Landmark, City, Pincode..."
-                        className="w-full pl-12 pr-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-medium h-32 resize-none transition-all"
+                        className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium h-32 resize-none transition-all"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       ></textarea>
@@ -198,7 +173,7 @@ const ClinicSettings = () => {
                   <div className="pt-6">
                     <button
                       type="submit"
-                      className="w-full md:w-auto px-12 py-5 bg-[#1F6FB2] text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-[#0F766E] transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
+                      className="w-full md:w-auto px-12 py-5 bg-marigold text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-teak transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
                     >
                       <Save size={18} /> Update Facility Details
                     </button>
@@ -209,12 +184,12 @@ const ClinicSettings = () => {
 
             {/* --- Right Sidebar: QR Live Preview & Danger Zone --- */}
             <div className="space-y-8">
-              <div className="bg-white border border-[#AFC4D8] p-8 rounded-[3rem] shadow-sm">
-                <h3 className="font-heading text-xl mb-6 border-b border-[#AFC4D8] pb-4">Live QR Preview</h3>
+              <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm">
+                <h3 className="font-heading text-xl mb-6 border-b border-sandstone pb-4">Live QR Preview</h3>
                 <div className="transform scale-95 origin-top">
                   <ClinicQR clinicCode={formData.clinicCode} clinicName={formData.name} />
                 </div>
-                <p className="mt-6 text-[10px] text-[#3FA28C] leading-relaxed text-center px-4 font-medium italic">
+                <p className="mt-6 text-[10px] text-khaki leading-relaxed text-center px-4 font-medium italic">
                   This QR code allows patients to join your queue instantly from their mobile devices.
                 </p>
               </div>

@@ -1,0 +1,264 @@
+
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle logoDesc">
+    <title id="logoTitle">Appointory Logo</title>
+    <desc id="logoDesc">A stylized logo featuring a brain with circuit patterns, a calendar with a checkmark, and a location pin with a clock, representing the AI-powered appointment scheduling system for clinics.</desc>
+    <defs>
+        <!-- Soft Drop Shadow Filter for main elements -->
+        <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#a4c2c7" flood-opacity="0.6"/>
+        </filter>
+
+        <!-- Brain Gradient -->
+        <linearGradient id="brain-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3FA28C" />
+            <stop offset="100%" stop-color="#0F766E" />
+        </linearGradient>
+
+        <!-- Calendar Body Gradient -->
+        <linearGradient id="cal-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3FA28C" />
+            <stop offset="100%" stop-color="#0F766E" />
+        </linearGradient>
+
+        <!-- Calendar Paper Gradient -->
+        <linearGradient id="paper-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#EEF6FA" />
+            <stop offset="100%" stop-color="#EEF6FA" />
+        </linearGradient>
+
+        <!-- Location Pin Gradients (Left & Right for 3D fold effect) -->
+        <linearGradient id="pin-left-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1F6FB2" />
+            <stop offset="100%" stop-color="#1A4F8A" />
+        </linearGradient>
+        <linearGradient id="pin-right-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1A4F8A" />
+            <stop offset="100%" stop-color="#0F766E" />
+        </linearGradient>
+
+        <linearGradient id="title-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#0F766E" />
+            <stop offset="22%" stop-color="#1A4F8A" />
+            <stop offset="50%" stop-color="#1F6FB2" />
+            <stop offset="78%" stop-color="#1A4F8A" />
+            <stop offset="100%" stop-color="#0F766E" />
+        </linearGradient>
+
+        <filter id="title-glow" x="-30%" y="-40%" width="160%" height="220%">
+            <feDropShadow dx="0" dy="5" stdDeviation="3.2" flood-color="#1A4F8A" flood-opacity="0.55"/>
+            <feDropShadow dx="0" dy="1" stdDeviation="1.6" flood-color="#0F766E" flood-opacity="0.45"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="0.8" flood-color="#EEF6FA" flood-opacity="0.35"/>
+        </filter>
+
+        <!-- Right Hemisphere Brain Path -->
+        <path id="brain-right" d="
+            M 412 180
+            C 435 140, 485 150, 505 190
+            C 555 170, 595 210, 565 260
+            C 630 260, 650 330, 600 375
+            C 645 410, 600 490, 540 475
+            C 530 535, 455 550, 435 500
+            C 425 515, 412 515, 412 480
+            Z" />
+
+        <!-- 4-Pointed Sparkle Star -->
+        <g id="sparkle">
+            <path d="M 0,-20 Q 0,0 20,0 Q 0,0 0,20 Q 0,0 -20,0 Q 0,0 0,-20 Z" fill="#AFC4D8"/>
+        </g>
+    </defs>
+
+    <rect width="800" height="800" fill="#EEF6FA"/>
+
+    <g id="main-illustration" transform="matrix(0.65 0 0 0.65 150 60)">
+    
+
+    <!-- Base Floor Shadow -->
+    <ellipse cx="400" cy="710" rx="180" ry="20" fill="#AFC4D8" opacity="0.8"/>
+
+    <!-- Sparkles -->
+    <use href="#sparkle" x="180" y="240" transform="scale(0.8)"/>
+    <use href="#sparkle" x="140" y="320" transform="scale(0.5)"/>
+    <use href="#sparkle" x="230" y="280" transform="scale(0.3)"/>
+    
+    <use href="#sparkle" x="660" y="600" transform="scale(0.9)"/>
+    <use href="#sparkle" x="720" y="480" transform="scale(0.6)"/>
+    <use href="#sparkle" x="690" y="650" transform="scale(0.4)"/>
+    <circle cx="680" cy="460" r="4" fill="#AFC4D8"/>
+    <circle cx="160" cy="280" r="3" fill="#AFC4D8"/>
+
+    <!-- ========================================== -->
+    <!-- 1. THE BRAIN                               -->
+    <!-- ========================================== -->
+    <g filter="url(#soft-shadow)">
+        <!-- Thick White Outline Backdrop -->
+        <use href="#brain-right" fill="#ffffff" stroke="#ffffff" stroke-width="16" stroke-linejoin="round"/>
+        <use href="#brain-right" fill="#ffffff" stroke="#ffffff" stroke-width="16" stroke-linejoin="round" transform="scale(-1, 1) translate(-800, 0)"/>
+
+        <!-- Colored Brain Base -->
+        <use href="#brain-right" fill="url(#brain-grad)"/>
+        <use href="#brain-right" fill="url(#brain-grad)" transform="scale(-1, 1) translate(-800, 0)"/>
+
+        <!-- Circuits (Lines & Nodes) -->
+        <g stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            
+            <!-- RIGHT HEMISPHERE CIRCUITS -->
+            <path d="M 412 250 L 450 250 L 480 220 L 510 220" />
+            <path d="M 412 300 L 470 300 L 490 320 L 550 320" />
+            <path d="M 412 350 L 440 350 L 460 370 L 500 370" />
+            <path d="M 460 370 L 460 400 L 490 430" />
+            <path d="M 412 400 L 430 400 L 450 420 L 520 420" />
+            <path d="M 412 450 L 420 450 L 440 470 L 480 470" />
+            <!-- Floating fragments -->
+            <path d="M 520 270 L 540 290 L 570 290" />
+            <path d="M 530 360 L 560 360 L 580 380" />
+            <path d="M 480 270 L 490 280 L 490 290" />
+
+            <!-- LEFT HEMISPHERE CIRCUITS (Asymmetrical layout like original) -->
+            <path d="M 388 230 L 350 230 L 320 200 L 280 200" />
+            <path d="M 388 280 L 330 280 L 300 310 L 250 310" />
+            <path d="M 330 280 L 330 250 L 300 220" />
+            <path d="M 388 330 L 360 330 L 340 350 L 280 350" />
+            <path d="M 388 390 L 340 390 L 310 420 L 240 420" />
+            <path d="M 310 420 L 310 450 L 280 480" />
+            <path d="M 388 440 L 370 440 L 350 460 L 290 460" />
+            <!-- Floating fragments -->
+            <path d="M 260 260 L 240 260 L 220 280" />
+            <path d="M 270 380 L 240 380 L 210 410" />
+            <path d="M 300 260 L 280 260 L 270 250" />
+
+        </g>
+
+        <!-- Circuit Dots (White) -->
+        <g fill="#ffffff">
+            <!-- Right dots -->
+            <circle cx="510" cy="220" r="4"/>
+            <circle cx="550" cy="320" r="4"/>
+            <circle cx="500" cy="370" r="4"/>
+            <circle cx="490" cy="430" r="4"/>
+            <circle cx="520" cy="420" r="4"/>
+            <circle cx="480" cy="470" r="4"/>
+            <circle cx="520" cy="270" r="4"/>
+            <circle cx="570" cy="290" r="4"/>
+            <circle cx="530" cy="360" r="4"/>
+            <circle cx="580" cy="380" r="4"/>
+            <circle cx="480" cy="270" r="4"/>
+            <circle cx="490" cy="290" r="4"/>
+
+            <!-- Left dots -->
+            <circle cx="280" cy="200" r="4"/>
+            <circle cx="250" cy="310" r="4"/>
+            <circle cx="300" cy="220" r="4"/>
+            <circle cx="280" cy="350" r="4"/>
+            <circle cx="240" cy="420" r="4"/>
+            <circle cx="280" cy="480" r="4"/>
+            <circle cx="290" cy="460" r="4"/>
+            <circle cx="260" cy="260" r="4"/>
+            <circle cx="220" cy="280" r="4"/>
+            <circle cx="270" cy="380" r="4"/>
+            <circle cx="210" cy="410" r="4"/>
+            <circle cx="300" cy="260" r="4"/>
+            <circle cx="270" cy="250" r="4"/>
+        </g>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 2. THE CALENDAR                            -->
+    <!-- ========================================== -->
+    <g filter="url(#soft-shadow)">
+        <!-- Thick White Outline Backdrop -->
+        <rect x="120" y="340" width="240" height="220" rx="25" fill="#ffffff" stroke="#ffffff" stroke-width="18" stroke-linejoin="round"/>
+        
+        <!-- Main Teal Calendar Body -->
+        <rect x="120" y="340" width="240" height="220" rx="25" fill="url(#cal-grad)"/>
+
+        <!-- White Paper Sheet -->
+        <rect x="140" y="400" width="200" height="140" rx="12" fill="url(#paper-grad)"/>
+
+        <!-- Top Binder Rings -->
+        <rect x="170" y="320" width="24" height="45" rx="12" fill="#AFC4D8" stroke="#EEF6FA" stroke-width="4"/>
+        <rect x="290" y="320" width="24" height="45" rx="12" fill="#AFC4D8" stroke="#EEF6FA" stroke-width="4"/>
+
+        <!-- Teal Grid Squares -->
+        <g fill="#3FA28C">
+            <!-- Row 1 -->
+            <rect x="232" y="420" width="26" height="26" rx="4"/>
+            <rect x="268" y="420" width="26" height="26" rx="4"/>
+            <!-- Row 2 -->
+            <rect x="196" y="456" width="26" height="26" rx="4"/>
+            <rect x="232" y="456" width="26" height="26" rx="4"/>
+            <rect x="268" y="456" width="26" height="26" rx="4"/>
+            <!-- Row 3 -->
+            <rect x="160" y="492" width="26" height="26" rx="4"/>
+            <rect x="196" y="492" width="26" height="26" rx="4"/>
+            <rect x="232" y="492" width="26" height="26" rx="4"/>
+            <rect x="268" y="492" width="26" height="26" rx="4"/>
+        </g>
+
+        <!-- Huge Blue Checkmark -->
+        <path d="M 165 465 L 205 505 L 270 410" fill="none" stroke="#1F6FB2" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 3. THE LOCATION PIN & CLOCK                -->
+    <!-- ========================================== -->
+    <g filter="url(#soft-shadow)">
+        
+        <!-- Thick White Outline Backdrop -->
+        <path d="M 400 680
+                 C 400 680, 500 540, 500 460
+                 A 100 100 0 1 0 300 460
+                 C 300 540, 400 680, 400 680 Z" 
+              fill="#ffffff" stroke="#ffffff" stroke-width="18" stroke-linejoin="round"/>
+
+        <!-- Left Half Pin (Lighter Blue) -->
+        <path d="M 400 680
+                 C 400 680, 500 540, 500 460
+                 A 100 100 0 1 0 300 460
+                 C 300 540, 400 680, 400 680 Z" 
+              fill="url(#pin-left-grad)"/>
+
+        <!-- Right Half Pin (Darker Blue Fold Effect) -->
+        <path d="M 400 680
+                 C 400 680, 500 540, 500 460
+                 A 100 100 0 0 0 400 360
+                 V 680 Z" 
+              fill="url(#pin-right-grad)"/>
+
+        <!-- Clock Face Base -->
+        <circle cx="400" cy="460" r="70" fill="#AFC4D8"/>
+
+        <!-- Clock Dots (12, 3, 6, 9) -->
+        <circle cx="400" cy="400" r="5" fill="#1A4F8A"/>
+        <circle cx="460" cy="460" r="5" fill="#1A4F8A"/>
+        <circle cx="400" cy="520" r="5" fill="#1A4F8A"/>
+        <circle cx="340" cy="460" r="5" fill="#1A4F8A"/>
+
+        <!-- Clock Hands -->
+        <path d="M 400 405 L 400 460 L 445 460" fill="none" stroke="#1A4F8A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Center joint dot to ensure smooth connection -->
+        <circle cx="400" cy="460" r="6" fill="#1A4F8A"/>
+    </g>
+
+    </g>
+
+
+    
+    <text x="415" y="590" text-anchor="middle" font-family="'Noto Sans Devanagari', 'Mangal', 'Noto Sans Bengali', 'Noto Sans', sans-serif" font-size="50" font-weight="800" letter-spacing="0.5" fill="url(#title-grad)" stroke="#0F766E" stroke-width="1.6" paint-order="stroke fill" stroke-linejoin="round" filter="url(#title-glow)">
+            Appointory
+        </text>
+    <text x="415" y="587" text-anchor="middle" font-family="'Noto Sans Devanagari', 'Mangal', 'Noto Sans Bengali', 'Noto Sans', sans-serif" font-size="50" font-weight="800" letter-spacing="0.5" fill="#EEF6FA" opacity="0.14">
+            Appointory
+        </text>
+        <text x="400" y="640" text-anchor="middle" font-family="'Noto Sans Devanagari', 'Mangal', 'Noto Sans Bengali', 'Noto Sans', sans-serif" font-size="25" fill="#475569">
+            <tspan x="415" dy="0">
+                Appointory handles everything from patient queue
+            </tspan>
+            <tspan x="415" dy="30">
+                management to AI wait-time prediction. Your
+            </tspan>
+            <tspan x="415" dy="30">
+                clinic&apos;s digital assistant that never sleeps.
+            </tspan>
+        </text>
+</svg>

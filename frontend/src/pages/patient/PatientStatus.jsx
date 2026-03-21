@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
 import { Clock, ShieldCheck, Lock, XCircle, ArrowRight, UserCheck, RefreshCw, RefreshCcw } from 'lucide-react';
 import Footer from '../../components/Footer';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const PatientStatus = () => {
@@ -20,7 +20,7 @@ const PatientStatus = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const fetchStatus = useCallback(async (silent = false) => {
+  const fetchStatus = async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
 
@@ -41,12 +41,12 @@ const PatientStatus = () => {
         }
       }
       setLoading(false);
-    } catch {
+    } catch (err) {
       setLoading(false);
     } finally {
       setTimeout(() => setIsSyncing(false), 1000);
     }
-  }, [queueId, clinicId]);
+  };
 
   // 🔌 WebSocket Lifecycle: Listeners
   useEffect(() => {
@@ -64,7 +64,7 @@ const PatientStatus = () => {
       socket.off('queueUpdate');
       socket.off('doctorStatusChanged');
     };
-  }, [fetchStatus]);
+  }, [queueId]);
 
   // 🔌 WebSocket Lifecycle: Room Joining
   useEffect(() => {
@@ -92,7 +92,7 @@ const PatientStatus = () => {
         try {
           await axios.delete(`${API_URL}/api/queue/public/cancel/${queueId}`);
           navigate('/');
-        } catch {
+        } catch (err) {
           Swal.fire('Error', 'Could not cancel.', 'error');
         }
       }
@@ -191,7 +191,7 @@ const PatientStatus = () => {
 
         <div className="w-full p-8 bg-teak text-white rounded-[2.5rem] shadow-xl mb-10 flex items-center justify-between group">
           <div className="text-left">
-            <p className="text-[10px] font-black text-marigold uppercase tracking-widest mb-1">Health Records</p>
+            <p className="text-[10px] font-black text-saffron uppercase tracking-widest mb-1">Health Records</p>
             <h4 className="text-lg font-heading">Locker Access</h4>
           </div>
           <button onClick={() => navigate('/patient/login')} className="p-4 bg-white/10 hover:bg-marigold rounded-2xl transition-all">

@@ -1,0 +1,185 @@
+{
+  "name": "Appointory - Clinic Management & Digital Health Locker",
+  "short_name": "Appointory",
+  "description": "Real-time clinic management and digital health locker platform with AI-powered scheduling, queue management, and secure patient records",
+  "start_url": "https://appointory.in/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2C6FB3",
+  "background_color": "#FFFFFF",
+  "categories": ["healthcare", "medical", "clinic", "health", "appointments"],
+  "icons": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "256x256",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/files",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"],
+        "text/plain": [".txt"]
+      }
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Patient Login",
+      "short_name": "Patient",
+      "description": "Access your digital health locker and medical records",
+      "url": "/patient/login",
+      "icons": [
+        {
+          "src": "/og-image.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Clinic Login",
+      "short_name": "Clinic",
+      "description": "Manage your clinic operations and patient queue",
+      "url": "/login",
+      "icons": [
+        {
+          "src": "/og-image.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Patient Quick View",
+      "short_name": "Quick View",
+      "description": "View your current appointment status",
+      "url": "/patient/status",
+      "icons": [
+        {
+          "src": "/og-image.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Health Locker",
+      "short_name": "My Health",
+      "description": "View and manage your medical records securely",
+      "url": "/patient/health-locker",
+      "icons": [
+        {
+          "src": "/og-image.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "800x800",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "800x800",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "",
+      "id": ""
+    }
+  ]
+}

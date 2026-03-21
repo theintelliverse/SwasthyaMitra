@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Appointory - Clinic Management Updates</title>
+    <link>https://appointory.in/</link>
+    <description>Real-time clinic management and digital health locker platform updates</description>
+    <language>en-in</language>
+    <lastBuildDate>Mon, 02 Mar 2026 00:00:00 GMT</lastBuildDate>
+    <webMaster>theintelliverse@gmail.com</webMaster>
+    <managingEditor>theintelliverse@gmail.com</managingEditor>
+    <ttl>3600</ttl>
+    <image>
+      <url>https://appointory.in/vite.svg</url>
+      <title>Appointory Logo</title>
+      <link>https://appointory.in/</link>
+    </image>
+    
+    <item>
+      <title>Appointory Launched - AI-Powered Clinic Management Platform</title>
+      <link>https://appointory.in/</link>
+      <description>Introducing Appointory - A comprehensive platform for clinic management with real-time queue tracking, digital health records, and AI-powered scheduling</description>
+      <pubDate>Mon, 02 Mar 2026 00:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://appointory.in/</guid>
+      <category>Healthcare Technology</category>
+      <category>Clinic Management</category>
+      <content:encoded><![CDATA[
+        Appointory is now live! Experience seamless clinic operations with:
+        - Real-time queue management with Socket.io
+        - Digital health locker for secure patient records
+        - OTP-secured patient access
+        - Lab referral integration
+        - Role-based dashboards
+        - AI wait-time prediction
+        - WhatsApp notifications
+        - Multi-role staff management
+      ]]></content:encoded>
+    </item>
+
+    <item>
+      <title>Key Features - Digital Health Locker</title>
+      <link>https://appointory.in/patient/health-locker</link>
+      <description>Secure your medical records with Appointory's digital health locker</description>
+      <pubDate>Sun, 01 Mar 2026 00:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://appointory.in/patient/health-locker</guid>
+      <category>Features</category>
+      <category>Patient Health</category>
+    </item>
+
+    <item>
+      <title>Clinic Dashboard - Real-time Operations</title>
+      <link>https://appointory.in/admin/dashboard</link>
+      <description>Manage your clinic with real-time insights and patient queue management</description>
+      <pubDate>Sat, 28 Feb 2026 00:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://appointory.in/admin/dashboard</guid>
+      <category>Features</category>
+      <category>Clinic Management</category>
+    </item>
+
+  </channel>
+</rss>

@@ -1,0 +1,5 @@
+Contact: theintelliverse@gmail.com
+Contact: https://appointory.in/contact
+Expires: 2027-03-02T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://appointory.in/.well-known/security.txt

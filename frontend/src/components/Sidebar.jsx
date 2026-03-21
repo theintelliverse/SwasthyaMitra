@@ -12,14 +12,14 @@ import {
   ShieldCheck,
   Search
 } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const Sidebar = ({ role }) => {
   const navigate = useNavigate();
-  const clinicName = sessionStorage.getItem('clinicName') || localStorage.getItem('clinicName') || 'Swasthya Hub';
-  const userName = sessionStorage.getItem('userName') || localStorage.getItem('userName') || 'User';
+  const clinicName = localStorage.getItem('clinicName') || 'Appointory Hub';
+  const userName = localStorage.getItem('userName') || 'User';
 
   const handleLogout = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -47,22 +47,22 @@ const Sidebar = ({ role }) => {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-[#AFC4D8] flex flex-col p-6 sticky top-0 z-40">
+    <aside className="w-64 min-h-screen bg-white border-r border-sandstone flex flex-col p-6 sticky top-0 z-40">
 
       {/* --- Clinic Branding --- */}
       <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => navigate(`/${role}/dashboard`)}>
-        <div className="w-10 h-10 bg-[#1F6FB2] rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
-          <span className="text-white font-heading font-bold text-xl">A</span>
+        <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
+          <span className="text-white font-heading font-bold text-xl">S</span>
         </div>
         <div>
-          <h2 className="font-heading text-lg leading-tight text-[#0F766E]">Appointory</h2>
-          <p className="text-[9px] font-black uppercase tracking-widest text-[#3FA28C]">{clinicName}</p>
+          <h2 className="font-heading text-lg leading-tight text-teak">Appointory</h2>
+          <p className="text-[9px] font-black uppercase tracking-widest text-khaki">{clinicName}</p>
         </div>
       </div>
 
       {/* --- Navigation Links --- */}
       <nav className="flex-grow space-y-1.5">
-        <p className="text-[9px] font-black uppercase text-[#3FA28C] mb-4 px-4 tracking-[0.2em] opacity-60">Menu</p>
+        <p className="text-[9px] font-black uppercase text-khaki mb-4 px-4 tracking-[0.2em] opacity-60">Menu</p>
         {menuItems[role]?.map((item) => (
           <NavLink
             key={item.path}
@@ -70,8 +70,8 @@ const Sidebar = ({ role }) => {
             className={({ isActive }) => `
               flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all
               ${isActive
-                ? 'bg-[#EEF6FA] text-[#1F6FB2] border border-[#AFC4D8] shadow-sm'
-                : 'text-[#3FA28C] hover:bg-[#EEF6FA] hover:text-[#0F766E]'}
+                ? 'bg-parchment text-marigold border border-sandstone shadow-sm'
+                : 'text-khaki hover:bg-parchment hover:text-teak'}
             `}
           >
             {item.icon}
@@ -81,14 +81,14 @@ const Sidebar = ({ role }) => {
       </nav>
 
       {/* --- Bottom Profile Section --- */}
-      <div className="pt-6 border-t border-[#AFC4D8] mt-auto space-y-2">
-        <div className="px-4 py-3 mb-2 flex items-center gap-3 bg-[#EEF6FA] rounded-2xl border border-[#AFC4D8]/50">
-          <div className="w-8 h-8 bg-[#0F766E] rounded-lg flex items-center justify-center text-white text-[10px] font-black">
+      <div className="pt-6 border-t border-sandstone mt-auto space-y-2">
+        <div className="px-4 py-3 mb-2 flex items-center gap-3 bg-parchment rounded-2xl border border-sandstone/50">
+          <div className="w-8 h-8 bg-teak rounded-lg flex items-center justify-center text-white text-[10px] font-black">
             {userName.charAt(0)}
           </div>
           <div className="overflow-hidden">
-            <p className="text-[10px] font-black text-[#0F766E] truncate uppercase">{userName}</p>
-            <p className="text-[8px] font-bold text-[#3FA28C] uppercase tracking-tighter capitalize">{role}</p>
+            <p className="text-[10px] font-black text-teak truncate uppercase">{userName}</p>
+            <p className="text-[8px] font-bold text-khaki uppercase tracking-tighter capitalize">{role}</p>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ const Sidebar = ({ role }) => {
           to="/profile"
           className={({ isActive }) => `
             flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all
-            ${isActive ? 'bg-[#1F6FB2] text-white' : 'text-[#3FA28C] hover:bg-[#EEF6FA] hover:text-[#0F766E]'}
+            ${isActive ? 'bg-marigold text-white' : 'text-khaki hover:bg-parchment hover:text-teak'}
           `}
         >
           <UserCircle size={20} />

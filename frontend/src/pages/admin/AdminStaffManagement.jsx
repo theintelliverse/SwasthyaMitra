@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 // Initialize socket
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -31,7 +31,7 @@ const AdminStaffManagement = () => {
     specialization: ''
   });
 
-  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
 
   const fetchStaff = async (showLoading = true) => {
@@ -135,7 +135,7 @@ const AdminStaffManagement = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#EEF6FA] font-body text-[#0F766E]">
+    <div className="flex min-h-screen bg-parchment font-body text-teak">
       <Sidebar role="admin" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
@@ -145,13 +145,13 @@ const AdminStaffManagement = () => {
             <div>
               <h1 className="text-5xl font-heading mb-2">Staff Roster</h1>
               <div className="flex gap-4 mt-4">
-                <button onClick={() => setActiveView('active')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-[#0F766E] text-white shadow-lg' : 'bg-white border border-[#AFC4D8] text-[#3FA28C]'}`}>Current Team</button>
-                <button onClick={() => setActiveView('archived')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-[#0F766E] text-white shadow-lg' : 'bg-white border border-[#AFC4D8] text-[#3FA28C]'}`}>Past Staff</button>
+                <button onClick={() => setActiveView('active')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Current Team</button>
+                <button onClick={() => setActiveView('archived')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Past Staff</button>
               </div>
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-2 px-8 py-4 bg-[#1F6FB2] text-white rounded-2xl font-bold shadow-xl hover:bg-[#0F766E] transition-all"
+              className="flex items-center gap-2 px-8 py-4 bg-marigold text-white rounded-2xl font-bold shadow-xl hover:bg-teak transition-all"
             >
               {showAddForm ? 'Close Portal' : <><UserPlus size={18} /> Add New Professional</>}
             </button>
@@ -165,7 +165,7 @@ const AdminStaffManagement = () => {
           </div>
 
           {showAddForm && (
-            <div className="bg-white border border-[#AFC4D8] p-10 rounded-[3rem] shadow-2xl mb-12 animate-in fade-in slide-in-from-top-4">
+            <div className="bg-white border border-sandstone p-10 rounded-[3rem] shadow-2xl mb-12 animate-in fade-in slide-in-from-top-4">
               <h2 className="font-heading text-2xl mb-8">Clinical Credentialing</h2>
               <form onSubmit={handleAddStaff} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <InputGroup label="Full Name" type="text" placeholder="Dr. Sameer Khan" onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
@@ -173,9 +173,9 @@ const AdminStaffManagement = () => {
                 <InputGroup label="Access Token" type="password" placeholder="Temporary Password" onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">Assigned Role</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Assigned Role</label>
                   <select
-                    className="px-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E]"
+                    className="px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak"
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
                     <option value="doctor">Medical Practitioner</option>
@@ -189,7 +189,7 @@ const AdminStaffManagement = () => {
                 )}
 
                 <div className="flex items-end">
-                  <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-[#0F766E] text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-[#1F6FB2] transition-all disabled:opacity-50">
+                  <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-teak text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-marigold transition-all disabled:opacity-50">
                     {isSubmitting ? 'Syncing...' : 'Authorize Access'}
                   </button>
                 </div>
@@ -198,10 +198,10 @@ const AdminStaffManagement = () => {
           )}
 
           <div className="relative mb-8 max-w-md">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#3FA28C]" size={18} />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" size={18} />
             <input
               type="text" placeholder="Filter by name or specialty..."
-              className="w-full pl-14 pr-6 py-4 bg-white border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] text-sm"
+              className="w-full pl-14 pr-6 py-4 bg-white border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -215,9 +215,9 @@ const AdminStaffManagement = () => {
               </div>
             ) : filteredStaff.length > 0 ? (
               filteredStaff.map((member) => (
-                <div key={member._id} className={`bg-white border border-[#AFC4D8] p-8 rounded-[3rem] shadow-sm group relative transition-all hover:border-[#1F6FB2] ${activeView === 'archived' ? 'grayscale opacity-80' : ''}`}>
+                <div key={member._id} className={`bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm group relative transition-all hover:border-marigold ${activeView === 'archived' ? 'grayscale opacity-80' : ''}`}>
                   <div className="flex justify-between items-start mb-6">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-[#EEF6FA] border border-[#AFC4D8]">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-parchment border border-sandstone">
                       {member.role === 'doctor' ? '🩺' : member.role === 'lab' ? '🔬' : '👤'}
                     </div>
                     {member.isActive !== false ? (
@@ -230,20 +230,20 @@ const AdminStaffManagement = () => {
                     )}
                   </div>
 
-                  <h3 className="text-2xl font-heading text-[#0F766E] mb-1">{member.name}</h3>
-                  <p className="text-[10px] font-black text-[#1F6FB2] uppercase tracking-widest mb-6">
+                  <h3 className="text-2xl font-heading text-teak mb-1">{member.name}</h3>
+                  <p className="text-[10px] font-black text-marigold uppercase tracking-widest mb-6">
                     {member.role === 'doctor' ? member.specialization : member.role === 'lab' ? 'Diagnostics' : 'Reception'}
                   </p>
 
-                  <div className="pt-6 border-t border-[#AFC4D8]/50 flex items-center justify-between">
-                    <span className="text-[9px] font-bold text-[#3FA28C] truncate max-w-[120px]">{member.email}</span>
+                  <div className="pt-6 border-t border-sandstone/50 flex items-center justify-between">
+                    <span className="text-[9px] font-bold text-khaki truncate max-w-[120px]">{member.email}</span>
                     <div className="flex gap-1">
                       {activeView === 'active' && (
-                        <button onClick={() => handleArchive(member._id, member.name)} className="p-2.5 text-[#3FA28C] hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                        <button onClick={() => handleArchive(member._id, member.name)} className="p-2.5 text-khaki hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
                           <Archive size={16} />
                         </button>
                       )}
-                      <button className="p-2.5 text-[#3FA28C] hover:text-[#1F6FB2] hover:bg-[#EEF6FA] rounded-xl transition-all">
+                      <button className="p-2.5 text-khaki hover:text-marigold hover:bg-parchment rounded-xl transition-all">
                         <History size={16} />
                       </button>
                     </div>
@@ -251,9 +251,9 @@ const AdminStaffManagement = () => {
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-24 text-center bg-white rounded-[3.5rem] border border-dashed border-[#AFC4D8] flex flex-col items-center">
-                <AlertCircle size={32} className="text-[#AFC4D8] mb-4" />
-                <p className="text-[#3FA28C] font-medium italic">No personnel records found in this section.</p>
+              <div className="col-span-full py-24 text-center bg-white rounded-[3.5rem] border border-dashed border-sandstone flex flex-col items-center">
+                <AlertCircle size={32} className="text-sandstone mb-4" />
+                <p className="text-khaki font-medium italic">No personnel records found in this section.</p>
               </div>
             )}
           </div>
@@ -266,23 +266,23 @@ const AdminStaffManagement = () => {
 
 // StatBox and InputGroup components remain unchanged...
 const StatBox = ({ icon, label, val }) => (
-  <div className="bg-white border border-[#AFC4D8] p-5 rounded-2xl flex items-center gap-4">
-    <div className="w-10 h-10 bg-[#EEF6FA] rounded-xl flex items-center justify-center text-[#1F6FB2] shadow-sm">
+  <div className="bg-white border border-sandstone p-5 rounded-2xl flex items-center gap-4">
+    <div className="w-10 h-10 bg-parchment rounded-xl flex items-center justify-center text-marigold shadow-sm">
       {icon}
     </div>
     <div>
-      <p className="text-[8px] font-black uppercase tracking-widest text-[#3FA28C]">{label}</p>
-      <p className="text-xl font-heading text-[#0F766E]">{val}</p>
+      <p className="text-[8px] font-black uppercase tracking-widest text-khaki">{label}</p>
+      <p className="text-xl font-heading text-teak">{val}</p>
     </div>
   </div>
 );
 
 const InputGroup = ({ label, type, placeholder, onChange }) => (
   <div className="flex flex-col gap-2">
-    <label className="text-[10px] font-black uppercase tracking-widest text-[#3FA28C] ml-2">{label}</label>
+    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">{label}</label>
     <input
       type={type} placeholder={placeholder} required
-      className="px-6 py-4 bg-[#EEF6FA] border border-[#AFC4D8] rounded-2xl outline-none focus:border-[#1F6FB2] font-bold text-[#0F766E] transition-all placeholder:text-[#AFC4D8] placeholder:font-normal text-sm"
+      className="px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all placeholder:text-sandstone placeholder:font-normal text-sm"
       onChange={onChange}
     />
   </div>

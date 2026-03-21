@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { ShieldCheck, Lock, Smartphone, ArrowRight, RefreshCw } from 'lucide-react';
-import { API_BASE_URL } from '../../config/runtime';
-
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const PatientLogin = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Phone, 2: OTP
@@ -14,100 +13,73 @@ const PatientLogin = () => {
     otp: ''
   });
 
-  const normalizePhone = (value) => {
-    const digits = (value || '').replace(/\D/g, '');
-    if (digits.length < 10) return null;
-    return digits.slice(-10);
-  };
-
-  const backendSendOtp = async (cleanPhone) => {
-    const apiUrl = `${API_BASE_URL}/api/auth/patient/send-otp`;
-    const res = await axios.post(apiUrl, { phone: cleanPhone });
-    if (!res.data?.success) {
-      throw new Error('Failed to send OTP from backup service.');
-    }
-  };
-
-  const completePatientSession = (responseData, fallbackPhone) => {
-    sessionStorage.setItem('token', responseData.token);
-    sessionStorage.setItem('role', 'patient');
-    sessionStorage.setItem('userPhone', responseData.patient?.phone || fallbackPhone);
-
-    localStorage.setItem('token', responseData.token);
-    localStorage.setItem('role', 'patient');
-    localStorage.setItem('userPhone', responseData.patient?.phone || fallbackPhone);
-
-    const nameToStore = responseData.patient?.name || 'Valued Patient';
-    sessionStorage.setItem('patientName', nameToStore);
-    localStorage.setItem('patientName', nameToStore);
-
-    Swal.fire({
-      icon: 'success',
-      title: 'Vault Unlocked',
-      text: `Namaste, ${nameToStore}`,
-      timer: 1500,
-      showConfirmButton: false,
-      background: '#EEF6FA',
-      color: '#0F766E'
-    });
-
-    navigate('/patient/dashboard');
-  };
-
   // Step 1: Request OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const cleanPhone = normalizePhone(formData.phone);
-      if (!cleanPhone) {
-        Swal.fire('Error', 'Please enter a valid 10-digit mobile number.', 'error');
-        return;
-      }
-
-      await backendSendOtp(cleanPhone);
-      setFormData((prev) => ({ ...prev, phone: cleanPhone }));
-      setStep(2);
-
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'OTP sent via backup service',
-        showConfirmButton: false,
-        timer: 3000,
-        background: '#EEF6FA',
-        color: '#0F766E'
+      const res = await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
+        phone: formData.phone
       });
+      if (res.data.success) {
+        setStep(2);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'OTP sent to your server console',
+          showConfirmButton: false,
+          timer: 3000,
+          background: '#EEF6FA',
+          color: '#0F766E'
+        });
+      }
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || err.message || 'Failed to send OTP. Please try again.', 'error');
+      Swal.fire('Error', err.response?.data?.message || 'Failed to send OTP', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify OTP via backend
+  // Step 2: Verify OTP for Locker Access
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const apiUrl = `${API_BASE_URL}/api/auth/patient/verify-locker`;
-      const res = await axios.post(apiUrl, {
+      // Hits the dedicated locker verification route
+      const res = await axios.post(`${API_URL}/api/auth/patient/verify-locker`, {
         phone: formData.phone,
         otp: formData.otp
       });
 
       if (res.data.success) {
-        completePatientSession(res.data, formData.phone);
+        // --- 🔐 SESSION MANAGEMENT ---
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('role', 'patient');
+
+        // Ensure we save the name correctly for the Dashboard Welcome Banner
+        const nameToStore = res.data.patient?.name || 'Valued Patient';
+        localStorage.setItem('patientName', nameToStore);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Vault Unlocked',
+          text: `Namaste, ${nameToStore}`,
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#EEF6FA',
+          color: '#0F766E'
+        });
+
+        // 🚀 Redirect to the Patient Dashboard
+        navigate('/patient/dashboard');
       }
     } catch (err) {
       // 🚨 FAILED VERIFICATION: Reset to Step 1
       Swal.fire({
         icon: 'error',
         title: 'Access Denied',
-        text: err.response?.data?.message || err.message || 'OTP verification failed.',
+        text: err.response?.data?.message || 'Invalid OTP. Please try again.',
         confirmButtonColor: '#1F6FB2',
         background: '#EEF6FA',
         color: '#0F766E'
@@ -200,7 +172,6 @@ const PatientLogin = () => {
             Back to Tracker
           </button>
         </div>
-
       </div>
     </div>
   );

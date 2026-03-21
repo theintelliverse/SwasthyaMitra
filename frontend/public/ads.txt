@@ -1,0 +1,8 @@
+# ads.txt - Authorized Digital Sellers
+# For more information about this initiative, please visit https://iabtechlab.com/ads-txt
+
+# Appointory.in Official Ad Sales
+appointory.in, direct, f08c47fec0942fa0
+
+# If you have authorized partners to sell inventory, add them below:
+# partner.com, reseller, partner-identifier
