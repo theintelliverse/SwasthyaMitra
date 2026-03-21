@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
 import {
   FileText, Clock, ExternalLink, LogOut,
-  ShieldCheck, Activity, Search, Building2, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCw, RefreshCcw, FolderHeart
+  ShieldCheck, Activity, Search, Building2, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCw, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -14,6 +14,7 @@ const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, em
 const PatientDashboard = () => {
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,7 +23,7 @@ const PatientDashboard = () => {
   const [shareFile, setShareFile] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const fetchProfile = async (silent = false) => {
+  const fetchProfile = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
 
@@ -33,11 +34,17 @@ const PatientDashboard = () => {
     }
 
     try {
-      const res = await axios.get(`${API_URL}/api/auth/patient/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [profileRes, appointmentsRes] = await Promise.all([
+        axios.get(`${API_URL}/api/auth/patient/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/api/auth/patient/appointments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { success: true, data: [] } }))
+      ]);
 
-      setPatientData(res.data.data);
+      setPatientData(profileRes.data.data);
+      setAppointments(appointmentsRes.data.data || []);
     } catch (err) {
       console.error("❌ Vault Access Error:", err.response?.data || err.message);
       if (err.response?.status === 401) navigate('/patient/login');
@@ -45,7 +52,7 @@ const PatientDashboard = () => {
       setLoading(false);
       setTimeout(() => setIsSyncing(false), 1000);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchProfile();
@@ -55,7 +62,7 @@ const PatientDashboard = () => {
       socket.on('queueUpdate', () => fetchProfile(true));
     }
     return () => socket.off('queueUpdate');
-  }, []);
+  }, [fetchProfile]);
 
   const handleCopyLink = (url) => {
     navigator.clipboard.writeText(url);
@@ -114,7 +121,7 @@ const PatientDashboard = () => {
 
           <button
             onClick={() => navigate('/Patient/HealthLocker')}
-            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3 bg-marigold hover:bg-saffron text-teak px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
+            className="mt-8 md:mt-0 relative z-10 flex items-center gap-3  bg-marigold hover:bg-saffron text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
           >
             <FolderHeart size={18} className="group-hover:animate-bounce" />
             Open Full Health Locker
@@ -145,6 +152,76 @@ const PatientDashboard = () => {
           </div>
 
           <div className="lg:col-span-3 space-y-8">
+            {/* Appointments Section */}
+            {appointments && appointments.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-heading text-3xl flex items-center gap-2">
+                    <Calendar size={28} className="text-marigold" />
+                    Upcoming Appointments
+                  </h3>
+                  <button
+                    onClick={() => navigate('/patient/book-appointment')}
+                    className="flex items-center gap-2 px-4 py-2 bg-marigold text-white rounded-xl text-sm font-bold hover:bg-saffron transition-all"
+                  >
+                    <Plus size={16} />
+                    Book Now
+                  </button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 mb-8">
+                  {appointments
+                    .filter(app => app.status === 'Scheduled')
+                    .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
+                    .slice(0, 2)
+                    .map((appointment) => (
+                      <div
+                        key={appointment._id}
+                        className="bg-white p-6 rounded-2xl border border-marigold/30 hover:border-marigold shadow-sm hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-3">
+                            <Stethoscope size={24} className="text-marigold mt-1" />
+                            <div>
+                              <h4 className="font-bold text-teak">Dr. {appointment.doctorName}</h4>
+                              <p className="text-xs text-khaki">{appointment.clinicName}</p>
+                            </div>
+                          </div>
+                          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold">
+                            Scheduled
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-teak">
+                          <Clock size={14} className="text-marigold" />
+                          {new Date(appointment.appointmentDate).toLocaleString('en-IN', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Book Appointment CTA */}
+            {(!appointments || appointments.length === 0) && (
+              <div className="bg-gradient-to-r from-marigold/10 to-saffron/10 p-8 rounded-[2rem] border border-marigold/30 text-center">
+                <Calendar size={40} className="text-marigold mx-auto mb-4" />
+                <h3 className="font-heading text-2xl text-teak mb-2">No Appointments Yet</h3>
+                <p className="text-khaki mb-6">Book your appointment with a doctor at your preferred clinic</p>
+                <button
+                  onClick={() => navigate('/patient/book-appointment')}
+                  className="inline-flex items-center gap-2 px-6 py-4 bg-marigold text-white rounded-2xl font-bold hover:bg-saffron transition-all"
+                >
+                  <Plus size={18} />
+                  Book Appointment
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <h3 className="font-heading text-3xl">Recent Visits</h3>
               <button onClick={() => fetchProfile(true)} className="p-3 bg-white border border-sandstone rounded-2xl text-khaki hover:text-marigold transition-all">

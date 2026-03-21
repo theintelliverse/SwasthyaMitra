@@ -88,6 +88,15 @@ const LandingPage = () => {
               Create Admin Account
             </button>
           </p>
+          <div className="text-sm font-medium text-khaki">
+              New to Appointory?{' '}
+              <button
+                onClick={() => navigate('/patient/register')}
+                className="font-bold text-marigold hover:underline underline-offset-4"
+              >
+                Create Account
+              </button>
+          </div>
 
           <div className="flex items-center gap-4 pt-4 grayscale opacity-70">
             <p className="text-[9px] font-black uppercase tracking-widest">

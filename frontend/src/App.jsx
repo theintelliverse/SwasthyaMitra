@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
 import RegisterClinic from './pages/auth/RegisterClinic';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import AdminStaffManagement from './pages/admin/AdminStaffManagement';
 import Unauthorized from './pages/auth/Unauthorized';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -20,6 +22,9 @@ import AdminReports from './pages/admin/AdminReports';
 import PatientCheckIn from './pages/patient/PatientCheckIn';
 import PatientStatus from './pages/patient/PatientStatus';
 import PatientLogin from './pages/patient/PatientLogin';
+import PatientRegister from './pages/patient/PatientRegister';
+import PatientForgotPassword from './pages/patient/PatientForgotPassword';
+import BookAppointment from './pages/patient/BookAppointment';
 import HealthLocker from './pages/patient/HealthLocker';
 import PatientDashboard from './pages/patient/PatientDashboard';
 import LockerSearch from './pages/doctor/LockerSearch';
@@ -41,6 +46,8 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register-clinic" element={<RegisterClinic />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
@@ -49,6 +56,16 @@ const App = () => {
           <Route path="/patient/checkin" element={<PatientCheckIn />} />
           <Route path="/patient/status" element={<PatientStatus />} />
           <Route path="/patient/login" element={<PatientLogin />} />
+          <Route path="/patient/register" element={<PatientRegister />} />
+          <Route path="/patient/forgot-password" element={<PatientForgotPassword />} />
+          <Route
+            path="/patient/book-appointment"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <BookAppointment />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/patient/dashboard"
             element={

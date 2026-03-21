@@ -139,6 +139,16 @@ const Login = () => {
                 {loading ? <RefreshCw className="animate-spin" size={20} /> : <>Sign In <ArrowRight size={20} /></>}
               </button>
             </div>
+
+            <div className="text-center pt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-xs text-khaki hover:text-marigold font-bold uppercase tracking-widest transition-colors"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </form>
 
           <div className="mt-12 text-center">

@@ -129,6 +129,16 @@ const PatientLogin = () => {
             >
               {loading ? <RefreshCw size={18} className="animate-spin" /> : <>Request OTP <ArrowRight size={18} /></>}
             </button>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/patient/forgot-password')}
+                className="text-xs text-khaki hover:text-marigold font-bold uppercase tracking-widest transition-colors"
+              >
+                Can't Access Account?
+              </button>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-8 animate-in slide-in-from-right-8 duration-500">
@@ -168,9 +178,20 @@ const PatientLogin = () => {
           <div className="flex items-center gap-2 text-[9px] font-black uppercase text-khaki/70 tracking-tighter">
             <ShieldCheck size={12} /> Privacy Protected by Appointory
           </div>
-          <button onClick={() => navigate('/')} className="text-[10px] font-bold text-khaki hover:text-teak">
-            Back to Tracker
-          </button>
+          <div className="space-y-2 text-center w-full">
+            <button onClick={() => navigate('/')} className="text-[10px] font-bold text-khaki hover:text-teak block w-full">
+              Back to Tracker
+            </button>
+            <div className="text-[9px] text-khaki">
+              New to Appointory?{' '}
+              <button
+                onClick={() => navigate('/patient/register')}
+                className="font-bold text-marigold hover:text-saffron transition-colors"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
