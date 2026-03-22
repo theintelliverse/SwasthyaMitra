@@ -52,7 +52,7 @@ const Sidebar = ({ role }) => {
       {/* --- Clinic Branding --- */}
       <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => navigate(`/${role}/dashboard`)}>
         <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">
-          <span className="text-white font-heading font-bold text-xl">S</span>
+          <span className="text-white font-heading font-bold text-xl">A</span>
         </div>
         <div>
           <h2 className="font-heading text-lg leading-tight text-teak">Appointory</h2>

@@ -16,26 +16,60 @@ const PatientLogin = () => {
   // Step 1: Request OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
+
+    // ✅ Validate phone number
+    const cleanPhone = formData.phone.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Phone',
+        text: 'Please enter a valid 10-digit phone number',
+        confirmButtonColor: '#FF6B6B',
+        background: '#FFF5F5',
+        color: '#C92A2A'
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
         phone: formData.phone
       });
+
       if (res.data.success) {
         setStep(2);
+
+        // ✅ Show OTP in dev mode if available
+        const devOtp = res.data.debugOtp ? ` (Dev OTP: ${res.data.debugOtp})` : '';
+
         Swal.fire({
-          toast: true,
-          position: 'top-end',
           icon: 'success',
-          title: 'OTP sent to your server console',
-          showConfirmButton: false,
-          timer: 3000,
+          title: '📱 OTP Sent!',
+          html: `<p>${res.data.message}</p><p style="font-size: 12px; color: #666; margin-top: 10px;">${devOtp}</p>`,
+          confirmButtonText: 'OK',
           background: '#EEF6FA',
-          color: '#0F766E'
+          color: '#0F766E',
+          confirmButtonColor: '#FFA800',
+          allowOutsideClick: false
         });
+      } else {
+        throw new Error(res.data.message || 'Failed to send OTP');
       }
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || 'Failed to send OTP', 'error');
+      console.error('OTP Send Error:', err);
+
+      // ✅ Show dev OTP if available
+      const devOtp = err.response?.data?.debugOtp ? `<br/><br/><small><strong>Dev OTP:</strong> ${err.response.data.debugOtp}</small>` : '';
+
+      Swal.fire({
+        icon: 'error',
+        title: '❌ Failed to Send OTP',
+        html: `<p>${err.response?.data?.message || 'Unable to send OTP. Please check your phone number and try again.'}</p>${devOtp}`,
+        confirmButtonColor: '#FF6B6B',
+        background: '#FFF5F5',
+        color: '#C92A2A'
+      });
     } finally {
       setLoading(false);
     }
@@ -44,6 +78,21 @@ const PatientLogin = () => {
   // Step 2: Verify OTP for Locker Access
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
+
+    // ✅ Validate OTP
+    const cleanOtp = formData.otp.replace(/\D/g, '');
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid OTP',
+        text: 'Please enter a valid 6-digit OTP',
+        confirmButtonColor: '#FF6B6B',
+        background: '#FFF5F5',
+        color: '#C92A2A'
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       // Hits the dedicated locker verification route
@@ -63,29 +112,43 @@ const PatientLogin = () => {
 
         Swal.fire({
           icon: 'success',
-          title: 'Vault Unlocked',
-          text: `Namaste, ${nameToStore}`,
+          title: '🔐 Vault Unlocked!',
+          html: `<p>Namaste, <strong>${nameToStore}</strong>!</p><p style="font-size: 12px; color: #666; margin-top: 10px;">Redirecting to your health locker...</p>`,
           timer: 1500,
           showConfirmButton: false,
           background: '#EEF6FA',
-          color: '#0F766E'
+          color: '#0F766E',
+          didOpen: () => {
+            // 🔊 Play success sound using Web Audio API
+            playSuccessSound();
+          }
         });
 
-        // 🚀 Redirect to the Patient Dashboard
-        navigate('/patient/dashboard');
+        // 🚀 Redirect to the Patient Dashboard after a short delay
+        setTimeout(() => {
+          navigate('/patient/dashboard');
+        }, 500);
+      } else {
+        throw new Error(res.data.message || 'Verification failed');
       }
     } catch (err) {
-      // 🚨 FAILED VERIFICATION: Reset to Step 1
+      console.error('OTP Verification Error:', err);
+
+      // 🚨 FAILED VERIFICATION: Show detailed error
+      const errorMessage = err.response?.data?.message || 'Invalid OTP. Please try again.';
+
       Swal.fire({
         icon: 'error',
-        title: 'Access Denied',
-        text: err.response?.data?.message || 'Invalid OTP. Please try again.',
-        confirmButtonColor: '#1F6FB2',
-        background: '#EEF6FA',
-        color: '#0F766E'
+        title: '❌ Access Denied',
+        html: `<p>${errorMessage}</p><p style="font-size: 12px; color: #666; margin-top: 10px;">Please check your OTP and try again.</p>`,
+        confirmButtonText: 'Try Again',
+        confirmButtonColor: '#FF6B6B',
+        background: '#FFF5F5',
+        color: '#C92A2A',
+        allowOutsideClick: false
       }).then(() => {
+        // Reset OTP field but keep phone for retry
         setFormData({ ...formData, otp: '' });
-        setStep(1); // Kick back to phone entry on failure
       });
     } finally {
       setLoading(false);
@@ -196,6 +259,35 @@ const PatientLogin = () => {
       </div>
     </div>
   );
+};
+
+// 🔊 SUCCESS SOUND GENERATOR using Web Audio API
+const playSuccessSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioContext.currentTime;
+
+    // Create oscillator for a pleasant beep
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    // Play two tones for a success "ding-ding" effect
+    osc.frequency.setValueAtTime(800, now); // Higher frequency
+    osc.frequency.setValueAtTime(600, now + 0.15); // Lower frequency
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+
+    console.log('✅ Success sound played');
+  } catch (error) {
+    console.warn('🔊 Sound playback unavailable (might be blocked by browser):', error);
+  }
 };
 
 export default PatientLogin;

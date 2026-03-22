@@ -124,13 +124,63 @@ const ReceptionDashboard = () => {
 
     if (formValues) {
       try {
-        await axios.patch(`${API_URL}/api/staff/update-patient-vitals/${patientPhone}`,
+        // Validate that at least one field is filled
+        const hasData = Object.values(formValues).some(v => v && v.trim() !== '');
+        if (!hasData) {
+          Swal.fire('Warning', 'Please enter at least one vital sign', 'warning');
+          return;
+        }
+
+        console.log('📤 Sent vitals to API:', {
+          phone: patientPhone,
+          vitals: formValues
+        });
+
+        const res = await axios.patch(`${API_URL}/api/staff/update-patient-vitals/${patientPhone}`,
           { vitals: formValues },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        Swal.fire({ icon: 'success', title: 'Vitals Synced', timer: 1500, showConfirmButton: false });
+
+        console.log('✅ Vitals saved successfully:', res.data);
+
+        Swal.fire({ 
+          icon: 'success', 
+          title: 'Vitals Synced', 
+          text: 'Patient vitals have been updated successfully',
+          timer: 1500, 
+          showConfirmButton: false,
+          background: '#EEF6FA'
+        });
       } catch (err) {
-        Swal.fire('Error', 'Failed to update vitals', 'error');
+        console.error('❌ Error updating vitals:', {
+          message: err.message,
+          status: err.response?.status,
+          data: err.response?.data,
+          phone: patientPhone
+        });
+
+        const errorMsg = err.response?.data?.message || err.message || 'Failed to update vitals';
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to Update Vitals',
+          html: `
+            <div style="text-align: left; font-size: 14px;">
+              <p><strong>Error:</strong> ${errorMsg}</p>
+              <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 12px;">
+                <p style="margin: 0 0 8px 0; font-weight: bold;">Troubleshooting:</p>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li>Check your internet connection</li>
+                  <li>Verify the patient exists in the system</li>
+                  <li>Ensure your authentication is valid</li>
+                  <li>Try again or contact support</li>
+                </ul>
+              </div>
+            </div>
+          `,
+          background: '#EEF6FA',
+          confirmButtonColor: '#FF6B6B'
+        });
       }
     }
   };

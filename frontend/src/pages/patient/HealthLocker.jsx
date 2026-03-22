@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
+import ReportViewer from '../../components/ReportViewer';
 import {
-  User, FileText, Activity, History, Download, Calendar,
+  User, FileText, Activity, History, Download, Calendar, Eye,
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCw, Smartphone, Hash,
   Droplet, Heart, Weight, Pill
 } from 'lucide-react';
@@ -17,6 +18,7 @@ const HealthLocker = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('vitals');
+  const [selectedReportIndex, setSelectedReportIndex] = useState(null);
 
   const fetchHealthData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -134,7 +136,7 @@ const HealthLocker = () => {
 
         {/* --- Dynamic Content Area --- */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+
           {/* Vitals History Tab */}
           {activeTab === 'vitals' && (
             <div className="space-y-6">
@@ -240,42 +242,52 @@ const HealthLocker = () => {
               {data.documents?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {data.documents.map((doc, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-sandstone shadow-sm hover:border-marigold transition-all">
+                    <button 
+                      key={i} 
+                      onClick={() => setSelectedReportIndex(i)}
+                      className="bg-white p-6 rounded-[2.5rem] border border-sandstone shadow-sm hover:border-marigold hover:shadow-xl transition-all text-left group"
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h4 className="font-heading text-lg text-teak mb-1">{doc.title}</h4>
+                          <h4 className="font-heading text-lg text-teak mb-1 group-hover:text-marigold transition-colors">{doc.title}</h4>
                           <p className="text-[9px] font-black text-khaki uppercase tracking-widest">
                             {doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}
                           </p>
                         </div>
-                        <div className="w-12 h-12 bg-marigold/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <FileText size={24} className="text-marigold" />
+                        <div className="w-12 h-12 bg-marigold/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-marigold group-hover:text-white transition-all">
+                          <Eye size={24} className="text-marigold group-hover:text-white" />
                         </div>
                       </div>
                       
-                      {/* Display image if available */}
+                      {/* Display image preview if available */}
                       {doc.fileUrl && (
                         <ImagePreview imageUrl={doc.fileUrl} title={doc.title} />
                       )}
 
-                      {doc.fileUrl && (
-                        <a 
-                          href={doc.fileUrl} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="w-full inline-flex items-center justify-center gap-2 py-3 bg-teak hover:bg-marigold text-white rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest shadow-md mt-4"
-                        >
-                          <Download size={16} /> Open Full Report
-                        </a>
-                      )}
-                    </div>
+                      <div className="mt-4 flex gap-2">
+                        <div className="flex-1 py-3 bg-teak/10 text-teak rounded-xl font-bold text-[10px] uppercase tracking-widest text-center group-hover:bg-teak group-hover:text-white transition-all">
+                          👁️ View Report
+                        </div>
+                        {doc.fileUrl && (
+                          <a 
+                            href={doc.fileUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-4 py-3 bg-marigold hover:bg-marigold/80 text-white rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest shadow-md"
+                            title="Download Report"
+                          >
+                            <Download size={16} />
+                          </a>
+                        )}
+                      </div>
+                    </button>
                   ))}
                 </div>
               ) : <EmptyState message="No clinical reports found." />}
             </div>
           )}
 
-          {/* Consultation History Tab */}
           {activeTab === 'history' && (
             <div className="space-y-6">
               <h2 className="font-heading text-2xl text-teak mb-6">Consultation History</h2>
@@ -291,7 +303,7 @@ const HealthLocker = () => {
                         <Calendar size={12} /> {new Date(record.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {record.symptoms && (
                         <div className="p-4 bg-parchment rounded-2xl border border-sandstone/50">
@@ -313,6 +325,15 @@ const HealthLocker = () => {
           )}
         </div>
       </div>
+
+      {/* 🔑 Report Viewer Modal */}
+      {selectedReportIndex !== null && (
+        <ReportViewer
+          documents={data.documents}
+          initialIndex={selectedReportIndex}
+          onClose={() => setSelectedReportIndex(null)}
+        />
+      )}
     </div>
   );
 };
@@ -332,8 +353,8 @@ const VitalCard = ({ icon, label, value, color }) => (
 
 // Image Preview Component with Better Error Handling
 const ImagePreview = ({ imageUrl, title }) => {
-  const [imageError, setImageError] = React.useState(false);
-  const [imageLoading, setImageLoading] = React.useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   return (
     <div className="mb-4 rounded-xl overflow-hidden border border-sandstone/50 h-48 bg-gray-100 relative flex items-center justify-center">
@@ -344,8 +365,8 @@ const ImagePreview = ({ imageUrl, title }) => {
               <RefreshCw size={28} className="text-marigold animate-spin" />
             </div>
           )}
-          <img 
-            src={imageUrl} 
+          <img
+            src={imageUrl}
             alt={title}
             className="w-full h-full object-cover"
             onLoad={() => setImageLoading(false)}

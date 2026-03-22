@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -12,27 +12,37 @@ const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, em
 
 const DoctorDashboard = () => {
   const [myQueue, setMyQueue] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState("");
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEditingVitals, setIsEditingVitals] = useState(false);
+  const [editableVitals, setEditableVitals] = useState({
+    bloodPressure: '',
+    pulseRate: '',
+    temperature: '',
+    weight: '',
+    bmi: ''
+  });
 
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
   const navigate = useNavigate();
 
-  const fetchMyStatus = async () => {
+  const fetchMyStatus = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsOnBreak(!res.data.data.isAvailable);
-    } catch (err) { console.error("Status fetch failed"); }
-  };
+      // eslint-disable-next-line no-unused-vars
+    } catch (_err) {
+      // Status fetch failed, continue silently
+    }
+  }, [token]);
 
-  const fetchMyQueue = async () => {
+  const fetchMyQueue = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/api/queue/my-queue`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -44,12 +54,10 @@ const DoctorDashboard = () => {
       });
 
       setMyQueue(sortedQueue);
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
       if (err.response?.status === 401) navigate('/login');
     }
-  };
+  }, [token, navigate]);
 
   useEffect(() => {
     fetchMyStatus();
@@ -68,7 +76,7 @@ const DoctorDashboard = () => {
       socket.off('queueUpdate');
       socket.off('doctorStatusChanged');
     };
-  }, [token, clinicId]);
+  }, [token, clinicId, fetchMyQueue, fetchMyStatus]);
 
   const activePatient = myQueue.find(p => p.status === 'In-Consultation');
 
@@ -84,11 +92,14 @@ const DoctorDashboard = () => {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPatientData(res.data.data);
-        } catch (err) { console.error("Locker fetch failed"); }
+          // eslint-disable-next-line no-unused-vars
+        } catch (_err) {
+          // Patient fetch failed, continue silently
+        }
       };
       fetchPatientDetails();
     } else { setPatientData(null); }
-  }, [activePatient?.patientPhone, token]);
+  }, [activePatient, token]);
 
   const handleStatusUpdate = async (id, action) => {
     if (isProcessing) return;
@@ -105,7 +116,8 @@ const DoctorDashboard = () => {
         if (action === 'complete') { setNotes(""); setPatientData(null); }
         await fetchMyQueue();
       }
-    } catch (err) {
+      // eslint-disable-next-line no-unused-vars
+    } catch (_err) {
       Swal.fire('Error', 'Action failed', 'error');
     } finally { setIsProcessing(false); }
   };
@@ -123,7 +135,8 @@ const DoctorDashboard = () => {
       try {
         await axios.patch(`${API_URL}/api/queue/refer/lab/${id}`, { testName }, { headers: { Authorization: `Bearer ${token}` } });
         fetchMyQueue();
-      } catch (err) { Swal.fire('Error', 'Referral failed', 'error'); }
+        // eslint-disable-next-line no-unused-vars
+      } catch (_err) { Swal.fire('Error', 'Referral failed', 'error'); }
     }
   };
 
@@ -131,7 +144,106 @@ const DoctorDashboard = () => {
     try {
       const res = await axios.patch(`${API_URL}/api/staff/toggle-status/me`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setIsOnBreak(!res.data.isAvailable);
-    } catch (err) { Swal.fire('Error', 'Status toggle failed', 'error'); }
+      // eslint-disable-next-line no-unused-vars
+    } catch (_err) { Swal.fire('Error', 'Status toggle failed', 'error'); }
+  };
+
+  // Handle editing vitals
+  const handleEditVitals = () => {
+    if (latestVitals) {
+      setEditableVitals({
+        bloodPressure: latestVitals.bloodPressure || '',
+        pulseRate: latestVitals.pulseRate || '',
+        temperature: latestVitals.temperature || '',
+        weight: latestVitals.weight || '',
+        bmi: latestVitals.bmi || ''
+      });
+    }
+    setIsEditingVitals(true);
+  };
+
+  // Save vitals to backend
+  const handleSaveVitals = async () => {
+    if (!activePatient) {
+      Swal.fire('Error', 'No active patient selected', 'error');
+      return;
+    }
+
+    try {
+      // Validate that at least one vital is filled
+      const hasData = Object.values(editableVitals).some(v => v && v.toString().trim() !== '');
+      if (!hasData) {
+        Swal.fire('Warning', 'Please enter at least one vital sign', 'warning');
+        return;
+      }
+
+      console.log('📤 Saving vitals:', {
+        queueId: activePatient._id,
+        vitals: editableVitals
+      });
+
+      setIsProcessing(true);
+      
+      const res = await axios.post(`${API_URL}/api/queue/update-vitals/${activePatient._id}`, editableVitals, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log('✅ Vitals saved:', res.data);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Vitals Updated',
+        text: 'Patient vitals have been saved successfully',
+        confirmButtonColor: '#FFA800',
+        background: '#EEF6FA'
+      });
+
+      setIsEditingVitals(false);
+      
+      // Refresh patient data
+      if (activePatient) {
+        const refreshRes = await axios.get(`${API_URL}/api/staff/patient-full-profile/${activePatient.patientPhone}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPatientData(refreshRes.data.data);
+      }
+    } catch (err) {
+      console.error('❌ Error saving vitals:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+        activePatient: activePatient
+      });
+
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to update vitals. Please try again.';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Update Vitals',
+        html: `
+          <div style="text-align: left; font-size: 14px;">
+            <p><strong>Error:</strong> ${errorMsg}</p>
+            <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 12px;">
+              <p style="margin: 0 0 8px 0; font-weight: bold;">Troubleshooting:</p>
+              <ul style="margin: 0; padding-left: 20px;">
+                <li>Ensure you are logged in as a doctor</li>
+                <li>Make sure a patient is in consultation</li>
+                <li>Check your internet connection</li>
+                <li>Try again or contact support</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        confirmButtonColor: '#FF6B6B',
+        background: '#EEF6FA'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleVitalChange = (field, value) => {
+    setEditableVitals(prev => ({ ...prev, [field]: value }));
   };
 
   const latestVitals = patientData?.vitals?.[patientData.vitals.length - 1];
@@ -166,10 +278,62 @@ const DoctorDashboard = () => {
                   <div className="grid md:grid-cols-2 gap-12 items-start">
                     <div className="space-y-8">
                       <div><h3 className="text-5xl font-heading mb-3 text-teak">{activePatient.patientName}</h3><p className="text-khaki font-medium flex items-center gap-3">Token <span className={`font-black px-3 py-1 rounded-lg text-lg ${activePatient.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold/10 text-marigold'}`}>#{activePatient.tokenNumber}</span></p></div>
-                      <div className="grid grid-cols-2 gap-4"><VitalBox label="BP" value={latestVitals?.bloodPressure} unit="mmHg" /><VitalBox label="Pulse" value={latestVitals?.pulseRate} unit="bpm" /></div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {!isEditingVitals ? (
+                          <>
+                            <VitalBox label="BP" value={latestVitals?.bloodPressure} unit="mmHg" />
+                            <VitalBox label="Pulse" value={latestVitals?.pulseRate} unit="bpm" />
+                            <VitalBox label="Temp" value={latestVitals?.temperature} unit="°C" />
+                            <VitalBox label="Weight" value={latestVitals?.weight} unit="kg" />
+                            <VitalBox label="BMI" value={latestVitals?.bmi} unit="Score" />
+                          </>
+                        ) : (
+                          <>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-khaki uppercase mb-1">BP (mmHg)</p>
+                              <input type="text" placeholder="e.g., 120/80" value={editableVitals.bloodPressure} onChange={(e) => handleVitalChange('bloodPressure', e.target.value)} className="w-full px-3 py-2 border border-sandstone rounded-lg outline-none focus:border-marigold text-sm font-medium" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-khaki uppercase mb-1">Pulse (bpm)</p>
+                              <input type="number" min="0" placeholder="e.g., 72" value={editableVitals.pulseRate} onChange={(e) => handleVitalChange('pulseRate', e.target.value)} className="w-full px-3 py-2 border border-sandstone rounded-lg outline-none focus:border-marigold text-sm font-medium" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-khaki uppercase mb-1">Temp (°C)</p>
+                              <input type="number" min="0" step="0.1" placeholder="e.g., 98.6" value={editableVitals.temperature} onChange={(e) => handleVitalChange('temperature', e.target.value)} className="w-full px-3 py-2 border border-sandstone rounded-lg outline-none focus:border-marigold text-sm font-medium" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-khaki uppercase mb-1">Weight (kg)</p>
+                              <input type="number" min="0" step="0.1" placeholder="e.g., 70" value={editableVitals.weight} onChange={(e) => handleVitalChange('weight', e.target.value)} className="w-full px-3 py-2 border border-sandstone rounded-lg outline-none focus:border-marigold text-sm font-medium" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-khaki uppercase mb-1">BMI (Score)</p>
+                              <input type="number" min="0" step="0.1" placeholder="e.g., 24.5" value={editableVitals.bmi} onChange={(e) => handleVitalChange('bmi', e.target.value)} className="w-full px-3 py-2 border border-sandstone rounded-lg outline-none focus:border-marigold text-sm font-medium" />
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <div className="flex flex-col gap-4">
-                        <button disabled={isProcessing} onClick={() => handleStatusUpdate(activePatient._id, 'complete')} className="w-full py-5 bg-teak text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-marigold transition-all shadow-xl disabled:opacity-50">{isProcessing ? 'Processing...' : 'Complete Visit'}</button>
-                        <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-marigold/10 text-marigold border border-marigold/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => setShowProfile(true)} className="flex-1 py-4 bg-parchment border border-sandstone text-teak rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
+                        {!isEditingVitals ? (
+                          <>
+                            <button disabled={isProcessing} onClick={() => handleStatusUpdate(activePatient._id, 'complete')} className="w-full py-5 bg-teak text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-marigold transition-all shadow-xl disabled:opacity-50">{isProcessing ? 'Processing...' : 'Complete Visit'}</button>
+                            <button onClick={handleEditVitals} className="w-full py-3 bg-marigold/20 text-marigold rounded-xl font-bold text-sm uppercase tracking-widest border border-marigold/30 hover:bg-marigold/30 transition-all">✏️ Edit Vitals</button>
+                            <div className="flex gap-4"><button onClick={() => handleReferToLab(activePatient._id)} className="flex-1 py-4 bg-marigold/10 text-marigold border border-marigold/20 rounded-2xl font-black text-[10px] uppercase tracking-widest">Refer to Lab</button><button onClick={() => setShowProfile(true)} className="flex-1 py-4 bg-parchment border border-sandstone text-teak rounded-2xl font-black text-[10px] uppercase tracking-widest">Health Locker</button></div>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={handleSaveVitals} disabled={isProcessing} className="w-full py-5 bg-green-600 text-white rounded-[1.5rem] font-bold text-sm uppercase tracking-widest hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl flex items-center justify-center gap-2">
+                              {isProcessing ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                  Saving...
+                                </>
+                              ) : (
+                                <>💾 Save Vitals</>
+                              )}
+                            </button>
+                            <button onClick={() => setIsEditingVitals(false)} className="w-full py-3 bg-gray-300 text-gray-700 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-gray-400 transition-all">Cancel</button>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="bg-parchment p-8 rounded-[3rem] border border-sandstone shadow-inner"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consultation notes..." className="w-full h-80 bg-white border border-sandstone rounded-3xl p-6 outline-none focus:border-marigold text-sm font-medium"></textarea></div>
