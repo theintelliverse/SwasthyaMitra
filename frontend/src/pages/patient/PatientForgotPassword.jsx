@@ -111,7 +111,6 @@ const PatientForgotPassword = () => {
         setLoading(true);
         try {
             // Just verify the OTP first - don't need backend confirmation, move to password step
-            const cleanOtpValue = formData.otp;
             // In a real app, you might want to verify this against the server
             // For now, we proceed to password creation
             setStep(3);
