@@ -13,6 +13,8 @@ const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, em
 const DoctorDashboard = () => {
   const [myQueue, setMyQueue] = useState([]);
   const [notes, setNotes] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [medicines, setMedicines] = useState([{ name: '', time: '', amount: '', total: '' }]);
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [patientData, setPatientData] = useState(null);
@@ -106,14 +108,28 @@ const DoctorDashboard = () => {
     setIsProcessing(true);
     try {
       const endpoint = action === 'start' ? 'start' : 'complete';
-      const payload = action === 'complete' ? { notes } : {};
+      // Filter medicines to only include entries with at least name or amount
+      const filteredMedicines = medicines.filter(m => (m.name && m.name.trim()) || (m.amount && m.amount.trim()));
+      
+      const payload = action === 'complete' ? {
+        notes,
+        diagnosis,
+        medicines: filteredMedicines
+      } : {};
+
+      console.log('📤 Sending payload:', payload); // Debug log
 
       const res = await axios.patch(`${API_URL}/api/queue/${endpoint}/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.data.success) {
-        if (action === 'complete') { setNotes(""); setPatientData(null); }
+        if (action === 'complete') {
+          setNotes("");
+          setDiagnosis("");
+          setMedicines([{ name: '', time: '', amount: '', total: '' }]);
+          setPatientData(null);
+        }
         await fetchMyQueue();
       }
       // eslint-disable-next-line no-unused-vars
@@ -183,7 +199,7 @@ const DoctorDashboard = () => {
       });
 
       setIsProcessing(true);
-      
+
       const res = await axios.post(`${API_URL}/api/queue/update-vitals/${activePatient._id}`, editableVitals, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -199,7 +215,7 @@ const DoctorDashboard = () => {
       });
 
       setIsEditingVitals(false);
-      
+
       // Refresh patient data
       if (activePatient) {
         const refreshRes = await axios.get(`${API_URL}/api/staff/patient-full-profile/${activePatient.patientPhone}`, {
@@ -216,7 +232,7 @@ const DoctorDashboard = () => {
       });
 
       const errorMsg = err.response?.data?.message || err.message || 'Failed to update vitals. Please try again.';
-      
+
       Swal.fire({
         icon: 'error',
         title: 'Failed to Update Vitals',
@@ -244,6 +260,20 @@ const DoctorDashboard = () => {
 
   const handleVitalChange = (field, value) => {
     setEditableVitals(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddMedicine = () => {
+    setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }]);
+  };
+
+  const handleRemoveMedicine = (index) => {
+    setMedicines(medicines.filter((_, i) => i !== index));
+  };
+
+  const handleMedicineChange = (index, field, value) => {
+    const updated = [...medicines];
+    updated[index][field] = value;
+    setMedicines(updated);
   };
 
   const latestVitals = patientData?.vitals?.[patientData.vitals.length - 1];
@@ -336,7 +366,116 @@ const DoctorDashboard = () => {
                         )}
                       </div>
                     </div>
-                    <div className="bg-parchment p-8 rounded-[3rem] border border-sandstone shadow-inner"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consultation notes..." className="w-full h-80 bg-white border border-sandstone rounded-3xl p-6 outline-none focus:border-marigold text-sm font-medium"></textarea></div>
+                    <div className="bg-parchment p-8 rounded-[3rem] border border-sandstone shadow-inner space-y-6">
+                      {/* Diagnosis Box */}
+                      <div>
+                        <p className="text-[9px] font-black text-khaki uppercase mb-2 tracking-widest">Diagnosis</p>
+                        <textarea
+                          value={diagnosis}
+                          onChange={(e) => setDiagnosis(e.target.value)}
+                          placeholder="Enter diagnosis details..."
+                          className="w-full h-24 bg-white border border-sandstone rounded-2xl p-4 outline-none focus:border-marigold text-sm font-medium"
+                        />
+                      </div>
+
+                      {/* Medicine Details */}
+                      <div>
+                        <div className="flex justify-between items-center mb-3">
+                          <p className="text-[9px] font-black text-khaki uppercase tracking-widest">Medicine Details</p>
+                          <button 
+                            onClick={handleAddMedicine}
+                            className="text-xs font-bold text-marigold hover:text-teak transition-colors px-3 py-1 rounded-lg bg-marigold/10 hover:bg-marigold/20"
+                          >
+                            + Add Medicine
+                          </button>
+                        </div>
+                        <div className="space-y-4 max-h-60 overflow-y-auto">
+                          {medicines.map((medicine, idx) => (
+                            <div key={idx} className="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-xl border-2 border-yellow-200 space-y-3">
+                              <div className="flex justify-between items-start mb-2">
+                                <p className="text-[8px] font-black text-marigold uppercase">Medicine #{idx + 1}</p>
+                                {medicines.length > 1 && (
+                                  <button
+                                    onClick={() => handleRemoveMedicine(idx)}
+                                    className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
+                                  >
+                                    ✕ Remove
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Medicine Name */}
+                              <div>
+                                <label className="text-[8px] font-bold text-khaki uppercase block mb-1">🏥 Kyare kai Vastu (Medicine Name)</label>
+                                <input 
+                                  type="text" 
+                                  placeholder="e.g., Amoxicillin, Paracetamol" 
+                                  value={medicine.name}
+                                  onChange={(e) => handleMedicineChange(idx, 'name', e.target.value)}
+                                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg outline-none focus:border-marigold focus:ring-2 focus:ring-marigold/20 text-sm font-medium"
+                                />
+                              </div>
+
+                              {/* Time and Amount Grid */}
+                              <div className="grid grid-cols-2 gap-3">
+                                {/* Time */}
+                                <div>
+                                  <label className="text-[8px] font-bold text-khaki uppercase block mb-1">🕐 Kone bethe (When)</label>
+                                  <select
+                                    value={medicine.time}
+                                    onChange={(e) => handleMedicineChange(idx, 'time', e.target.value)}
+                                    className="w-full px-3 py-2 border border-yellow-300 rounded-lg outline-none focus:border-marigold focus:ring-2 focus:ring-marigold/20 text-sm font-medium bg-white"
+                                  >
+                                    <option value="">Select Time</option>
+                                    <option value="Savar (Morning)">Savar (🌅 Morning)</option>
+                                    <option value="Bapor (Afternoon)">Bapor (☀️ Afternoon)</option>
+                                    <option value="Sanj (Evening)">Sanj (🌆 Evening)</option>
+                                    <option value="Ratri (Night)">Ratri (🌙 Night)</option>
+                                    <option value="Savar + Sanj">Savar + Sanj</option>
+                                    <option value="Savar + Bapor + Sanj">Savar + Bapor + Sanj</option>
+                                  </select>
+                                </div>
+
+                                {/* Per Dose Amount */}
+                                <div>
+                                  <label className="text-[8px] font-bold text-khaki uppercase block mb-1">💊 Per Dose (Dosage)</label>
+                                  <input 
+                                    type="text" 
+                                    placeholder="e.g., 500mg, 1 tablet" 
+                                    value={medicine.amount}
+                                    onChange={(e) => handleMedicineChange(idx, 'amount', e.target.value)}
+                                    className="w-full px-3 py-2 border border-yellow-300 rounded-lg outline-none focus:border-marigold focus:ring-2 focus:ring-marigold/20 text-sm font-medium"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Total Quantity */}
+                              <div>
+                                <label className="text-[8px] font-bold text-khaki uppercase block mb-1">📦 Total Ketli (Total Quantity to Purchase)</label>
+                                <input 
+                                  type="text" 
+                                  placeholder="e.g., 30 tablets, 60ml bottle" 
+                                  value={medicine.total}
+                                  onChange={(e) => handleMedicineChange(idx, 'total', e.target.value)}
+                                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg outline-none focus:border-marigold focus:ring-2 focus:ring-marigold/20 text-sm font-medium"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Consultation Notes */}
+                      <div>
+                        <p className="text-[9px] font-black text-khaki uppercase mb-2 tracking-widest">Consultation Notes</p>
+                        <textarea
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Consultation notes..."
+                          className="w-full h-20 bg-white border border-sandstone rounded-2xl p-4 outline-none focus:border-marigold text-sm font-medium"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (

@@ -63,7 +63,7 @@ const HealthLocker = () => {
   if (loading) return (
     <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4">
       <RefreshCw size={32} className="text-marigold animate-spin" />
-      <div className="font-heading text-xl text-teak">Unlocking Swasthya Vault...</div>
+      <div className="font-heading text-xl text-teak">Unlocking Appointory Vault...</div>
     </div>
   );
 
@@ -78,60 +78,82 @@ const HealthLocker = () => {
   const latestVitals = data.vitals?.[0];
 
   return (
-    <div className="min-h-screen bg-parchment font-body text-teak p-6 pb-20">
+    <div className="min-h-screen bg-parchment font-body text-teak p-3 sm:p-4 md:p-6 pb-20">
       <div className="max-w-6xl mx-auto">
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-khaki hover:text-teak transition-colors"
+            className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest text-khaki hover:text-teak transition-colors"
           >
-            <ArrowLeft size={14} /> Close Vault
+            <ArrowLeft size={14} /> <span className="hidden xs:inline">Close Vault</span><span className="xs:hidden">Back</span>
           </button>
           {isSyncing && (
             <div className="flex items-center gap-2 text-marigold animate-pulse">
               <RefreshCw size={12} className="animate-spin" />
-              <span className="text-[8px] font-black uppercase tracking-widest">Live Sync Active</span>
+              <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Live Sync Active</span>
             </div>
           )}
         </div>
 
         {/* --- Header --- */}
-        <div className="bg-teak rounded-[3rem] p-8 md:p-12 shadow-xl mb-10 flex flex-col md:flex-row gap-8 items-center relative overflow-hidden text-white">
-          <div className="absolute top-0 right-0 p-6 opacity-10">
-            <ShieldCheck size={120} />
+        <div className="bg-teak rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-4 sm:p-6 md:p-8 lg:p-12 shadow-lg md:shadow-xl mb-6 sm:mb-8 md:mb-10 flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8 items-center relative overflow-hidden text-white">
+          <div className="absolute top-0 right-0 p-3 sm:p-4 md:p-6 opacity-10">
+            <ShieldCheck size={80} className="sm:h-[100px] md:h-[120px]" />
           </div>
 
-          <div className="w-24 h-24 bg-marigold rounded-[2rem] flex items-center justify-center text-white text-4xl font-heading shadow-lg z-10">
+          <div className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 bg-marigold rounded-xl sm:rounded-2xl md:rounded-[2rem] flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-heading shadow-lg z-10">
             {data.name?.charAt(0) || 'P'}
           </div>
 
           <div className="text-center md:text-left z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-saffron mb-1">Authenticated Identity</p>
-            <h1 className="text-4xl font-heading">{data.name}</h1>
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
-              <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Smartphone size={12} /> {data.phone}</p>
-              <p className="text-white/60 text-[10px] font-bold flex items-center gap-2"><Hash size={12} /> {data.medicalHistory?.length || 0} Consultations</p>
+            <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider sm:tracking-[0.3em] text-saffron mb-1">Authenticated Identity</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading">{data.name}</h1>
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-2 sm:gap-4 mt-2 sm:mt-3">
+              <p className="text-white/60 text-[8px] sm:text-[9px] md:text-[10px] font-bold flex items-center justify-center md:justify-start gap-2"><Smartphone size={12} /> {data.phone}</p>
+              <p className="text-white/60 text-[8px] sm:text-[9px] md:text-[10px] font-bold flex items-center justify-center md:justify-start gap-2"><Hash size={12} /> {data.medicalHistory?.length || 0} Consultations</p>
             </div>
           </div>
         </div>
 
         {/* --- Latest Vitals Dashboard --- */}
         {latestVitals && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-            <VitalCard icon={<Droplet size={20} />} label="Blood Pressure" value={latestVitals.bloodPressure || '-- mmHg'} color="from-red-500" />
-            <VitalCard icon={<Heart size={20} />} label="Pulse Rate" value={latestVitals.pulseRate || '-- bpm'} color="from-pink-500" />
-            <VitalCard icon={<Weight size={20} />} label="Weight" value={latestVitals.weight ? `${latestVitals.weight} kg` : '-- kg'} color="from-blue-500" />
-            <VitalCard icon={<TrendingUp size={20} />} label="BMI" value={latestVitals.bmi ? latestVitals.bmi.toFixed(2) : '-- Score'} color="from-green-500" />
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8 md:mb-10">
+            <VitalCard icon={<Droplet size={16} className="sm:h-5 sm:w-5 md:h-5 md:w-5" />} label="BP" labelFull="Blood Pressure" value={latestVitals.bloodPressure || '-- mmHg'} color="from-red-500" />
+            <VitalCard icon={<Heart size={16} className="sm:h-5 sm:w-5 md:h-5 md:w-5" />} label="Pulse" labelFull="Pulse Rate" value={latestVitals.pulseRate || '-- bpm'} color="from-pink-500" />
+            <VitalCard icon={<Weight size={16} className="sm:h-5 sm:w-5 md:h-5 md:w-5" />} label="Weight" labelFull="Weight" value={latestVitals.weight ? `${latestVitals.weight} kg` : '-- kg'} color="from-blue-500" />
+            <VitalCard icon={<TrendingUp size={16} className="sm:h-5 sm:w-5 md:h-5 md:w-5" />} label="BMI" labelFull="BMI" value={latestVitals.bmi ? latestVitals.bmi.toFixed(2) : '-- Score'} color="from-green-500" />
           </div>
         )}
 
-        {/* --- Navigation Tabs --- */}
-        <div className="flex gap-4 mb-8 bg-sandstone/20 p-2 rounded-2xl w-fit overflow-x-auto no-scrollbar">
-          <TabButton active={activeTab === 'vitals'} onClick={() => setActiveTab('vitals')} icon={<Heart size={16} />} label="Vitals" />
-          <TabButton active={activeTab === 'medicine'} onClick={() => setActiveTab('medicine')} icon={<Pill size={16} />} label="Medicine" />
-          <TabButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon={<FileText size={16} />} label="Reports" />
-          <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={<History size={16} />} label="History" />
+        {/* --- Navigation Tabs (Responsive) --- */}
+        <div className="sticky top-0 z-40 mb-8 bg-white shadow-md rounded-b-[2rem]">
+          <div className="flex gap-2 sm:gap-3 md:gap-4 p-3 sm:p-4 md:p-6 bg-gradient-to-r from-parchment to-sandstone/10 rounded-b-[2rem] overflow-x-auto overflow-y-hidden no-scrollbar">
+            <TabButton 
+              active={activeTab === 'vitals'} 
+              onClick={() => setActiveTab('vitals')} 
+              icon={<Heart size={16} />} 
+              label="Vitals" 
+            />
+            <TabButton 
+              active={activeTab === 'medicine'} 
+              onClick={() => setActiveTab('medicine')} 
+              icon={<Pill size={16} />} 
+              label="Medicine" 
+            />
+            <TabButton 
+              active={activeTab === 'reports'} 
+              onClick={() => setActiveTab('reports')} 
+              icon={<FileText size={16} />} 
+              label="Reports" 
+            />
+            <TabButton 
+              active={activeTab === 'history'} 
+              onClick={() => setActiveTab('history')} 
+              icon={<History size={16} />} 
+              label="History" 
+            />
+          </div>
         </div>
 
         {/* --- Dynamic Content Area --- */}
@@ -139,85 +161,171 @@ const HealthLocker = () => {
 
           {/* Vitals History Tab */}
           {activeTab === 'vitals' && (
-            <div className="space-y-6">
-              <h2 className="font-heading text-2xl text-teak mb-6">Vitals History Logs</h2>
+            <div className="space-y-4 sm:space-y-6">
+              <h2 className="font-heading text-xl sm:text-2xl text-teak mb-4 sm:mb-6">Vitals History Logs</h2>
               {data.vitals?.length > 0 ? (
-                <div className="overflow-x-auto rounded-[2.5rem] border border-sandstone bg-white">
-                  <table className="w-full">
-                    <thead className="bg-teak text-white">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-bold">Captured Date</th>
-                        <th className="px-6 py-4 text-left text-sm font-bold">BP (Systolic/Diastolic)</th>
-                        <th className="px-6 py-4 text-left text-sm font-bold">Pulse Rate</th>
-                        <th className="px-6 py-4 text-left text-sm font-bold">Temperature</th>
-                        <th className="px-6 py-4 text-left text-sm font-bold">Weight & BMI</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-sandstone">
-                      {data.vitals.map((vital, i) => (
-                        <tr key={i} className="hover:bg-parchment transition-colors">
-                          <td className="px-6 py-4 text-sm font-medium">
-                            {new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
-                          </td>
-                          <td className="px-6 py-4 text-sm">{vital.bloodPressure || '-- mmHg'}</td>
-                          <td className="px-6 py-4 text-sm">{vital.pulseRate || '-- bpm'}</td>
-                          <td className="px-6 py-4 text-sm">{vital.temperature || '-- °C'}</td>
-                          <td className="px-6 py-4 text-sm">
-                            <div>{vital.weight ? `${vital.weight} kg` : '-- kg'}</div>
-                            <div className="text-khaki font-bold">BMI: {vital.bmi ? vital.bmi.toFixed(2) : '--'}</div>
-                          </td>
+                <>
+                  {/* Desktop View */}
+                  <div className="hidden md:block overflow-x-auto rounded-2xl md:rounded-[2.5rem] border border-sandstone bg-white">
+                    <table className="w-full">
+                      <thead className="bg-teak text-white">
+                        <tr>
+                          <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold">Captured Date</th>
+                          <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold">BP</th>
+                          <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold">Pulse</th>
+                          <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold">Temp</th>
+                          <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold">Weight & BMI</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-sandstone">
+                        {data.vitals.map((vital, i) => (
+                          <tr key={i} className="hover:bg-parchment transition-colors">
+                            <td className="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium">
+                              {new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                            </td>
+                            <td className="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm">{vital.bloodPressure || '-- mmHg'}</td>
+                            <td className="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm">{vital.pulseRate || '-- bpm'}</td>
+                            <td className="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm">{vital.temperature || '-- °C'}</td>
+                            <td className="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm">
+                              <div>{vital.weight ? `${vital.weight} kg` : '-- kg'}</div>
+                              <div className="text-khaki font-bold">BMI: {vital.bmi ? vital.bmi.toFixed(2) : '--'}</div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-3">
+                    {data.vitals.map((vital, i) => (
+                      <div key={i} className="bg-white p-4 rounded-xl border border-sandstone shadow-sm">
+                        <p className="text-xs font-bold text-marigold mb-3">
+                          {new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-parchment p-2 rounded-lg">
+                            <p className="text-[8px] font-black text-khaki uppercase mb-1">BP</p>
+                            <p className="text-sm font-bold text-teak">{vital.bloodPressure || '-- mmHg'}</p>
+                          </div>
+                          <div className="bg-parchment p-2 rounded-lg">
+                            <p className="text-[8px] font-black text-khaki uppercase mb-1">Pulse</p>
+                            <p className="text-sm font-bold text-teak">{vital.pulseRate || '-- bpm'}</p>
+                          </div>
+                          <div className="bg-parchment p-2 rounded-lg">
+                            <p className="text-[8px] font-black text-khaki uppercase mb-1">Temp</p>
+                            <p className="text-sm font-bold text-teak">{vital.temperature || '-- °C'}</p>
+                          </div>
+                          <div className="bg-parchment p-2 rounded-lg">
+                            <p className="text-[8px] font-black text-khaki uppercase mb-1">Weight</p>
+                            <p className="text-sm font-bold text-teak">{vital.weight ? `${vital.weight} kg` : '-- kg'}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-sandstone/50">
+                          <p className="text-[8px] font-black text-khaki uppercase mb-1">BMI</p>
+                          <p className="text-sm font-bold text-teak">{vital.bmi ? vital.bmi.toFixed(2) : '--'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : <EmptyState message="No vitals records found." />}
             </div>
           )}
 
           {/* Medicine/Prescription Tab */}
           {activeTab === 'medicine' && (
-            <div className="space-y-6">
-              <h2 className="font-heading text-2xl text-teak mb-6">Medicine & Prescriptions</h2>
+            <div className="space-y-4 sm:space-y-6">
+              <h2 className="font-heading text-xl sm:text-2xl text-teak mb-4 sm:mb-6">Medicine & Prescriptions</h2>
               {data.medicalHistory?.length > 0 ? (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {data.medicalHistory.map((record, i) => (
-                    <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-sandstone shadow-sm hover:border-marigold transition-all">
-                      <div className="flex justify-between items-start mb-6">
+                    <div key={i} className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl md:rounded-[2.5rem] border border-sandstone shadow-sm hover:border-marigold transition-all">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
                         <div>
-                          <h3 className="font-heading text-xl text-teak flex items-center gap-2">
-                            <Pill size={20} className="text-marigold" />
+                          <h3 className="font-heading text-lg sm:text-xl text-teak flex items-center gap-2">
+                            <Pill size={18} className="text-marigold flex-shrink-0" />
                             Prescription
                           </h3>
-                          <p className="text-[10px] font-black text-khaki uppercase tracking-widest mt-1">{record.clinicName}</p>
+                          <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-khaki uppercase tracking-wider sm:tracking-widest mt-1">{record.clinicName}</p>
                         </div>
-                        <span className="text-[10px] font-bold text-marigold bg-marigold/10 px-4 py-1.5 rounded-full flex items-center gap-2">
+                        <span className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-marigold bg-marigold/10 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-2 flex-shrink-0">
                           <Calendar size={12} /> {new Date(record.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
                         </span>
                       </div>
 
                       {/* Prescription Details */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="p-4 bg-parchment rounded-2xl border border-sandstone/50">
-                          <p className="text-[10px] font-black text-khaki uppercase tracking-widest mb-2">Doctor</p>
-                          <p className="font-bold text-teak">Dr. {record.doctorName}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+                        <div className="p-3 sm:p-4 bg-parchment rounded-lg sm:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-khaki uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">Doctor</p>
+                          <p className="font-bold text-sm sm:text-base text-teak">Dr. {record.doctorName}</p>
                         </div>
-                        <div className="p-4 bg-parchment rounded-2xl border border-sandstone/50">
-                          <p className="text-[10px] font-black text-khaki uppercase tracking-widest mb-2">Diagnosis</p>
-                          <p className="font-bold text-teak">{record.diagnosis || 'N/A'}</p>
+                        <div className="p-3 sm:p-4 bg-parchment rounded-lg sm:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-khaki uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">Diagnosis</p>
+                          <p className="font-bold text-sm sm:text-base text-teak">{record.diagnosis || 'N/A'}</p>
                         </div>
                       </div>
 
                       {/* Symptoms */}
                       {record.symptoms && (
-                        <div className="mb-6 p-4 bg-parchment rounded-2xl border border-sandstone/50">
-                          <p className="text-[10px] font-black text-khaki uppercase tracking-widest mb-2">Symptoms</p>
-                          <p className="text-sm text-teak leading-relaxed whitespace-pre-wrap">{record.symptoms}</p>
+                        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-parchment rounded-lg sm:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-khaki uppercase tracking-wider sm:tracking-widest mb-2">Symptoms</p>
+                          <p className="text-xs sm:text-sm text-teak leading-relaxed whitespace-pre-wrap">{record.symptoms}</p>
                         </div>
                       )}
 
-                      {/* Prescription Details */}
-                      {record.prescription && (
+                      {/* Medicine Details */}
+                      {record.medicines && Array.isArray(record.medicines) && record.medicines.filter(m => m.name || m.amount).length > 0 ? (
+                        <div className="p-4 sm:p-6 bg-yellow-50 rounded-lg sm:rounded-2xl border-2 border-yellow-200">
+                          <h4 className="font-heading text-base sm:text-lg text-teak mb-3 sm:mb-4 flex items-center gap-2">
+                            <Pill size={18} className="text-marigold flex-shrink-0" />
+                            <span className="text-xs sm:text-sm md:text-base">Medicine Details</span>
+                          </h4>
+                          <div className="space-y-3 sm:space-y-4">
+                            {record.medicines.map((med, idx) => (
+                              (med.name || med.amount || med.time || med.total) && (
+                                <div key={idx} className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 border-yellow-200 shadow-sm">
+                                  {/* Medicine Name Header */}
+                                  <div className="mb-3 pb-3 border-b border-yellow-100">
+                                    <p className="text-[7px] sm:text-[8px] md:text-[9px] font-black text-marigold uppercase tracking-wider mb-1">💊 Medicine #{idx + 1}</p>
+                                    <p className="font-bold text-sm sm:text-base text-teak">{med.name || 'N/A'}</p>
+                                  </div>
+
+                                  {/* Time, Dosage, Total Grid */}
+                                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3">
+                                    {/* Time */}
+                                    {med.time && (
+                                      <div className="bg-orange-50 p-2.5 sm:p-3 rounded-lg border border-orange-200">
+                                        <p className="text-[7px] sm:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">🕐 Time</p>
+                                        <p className="font-bold text-xs sm:text-sm text-teak">{med.time}</p>
+                                      </div>
+                                    )}
+
+                                    {/* Per Dose Amount */}
+                                    {med.amount && (
+                                      <div className="bg-blue-50 p-2.5 sm:p-3 rounded-lg border border-blue-200">
+                                        <p className="text-[7px] sm:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">Per Dose</p>
+                                        <p className="font-bold text-xs sm:text-sm text-teak">{med.amount}</p>
+                                      </div>
+                                    )}
+
+                                    {/* Total Quantity */}
+                                    {med.total && (
+                                      <div className="bg-green-50 p-2.5 sm:p-3 rounded-lg border border-green-200 col-span-2 sm:col-span-1">
+                                        <p className="text-[7px] sm:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">📦 Total Ketli</p>
+                                        <p className="font-bold text-xs sm:text-sm text-teak">{med.total}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Fallback for legacy prescription field */}
+                      {(!record.medicines || !Array.isArray(record.medicines) || record.medicines.filter(m => m.name || m.amount).length === 0) && record.prescription && (
                         <div className="p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200">
                           <h4 className="font-heading text-lg text-teak mb-4 flex items-center gap-2">
                             <Pill size={18} className="text-marigold" />
@@ -242,8 +350,8 @@ const HealthLocker = () => {
               {data.documents?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {data.documents.map((doc, i) => (
-                    <button 
-                      key={i} 
+                    <button
+                      key={i}
                       onClick={() => setSelectedReportIndex(i)}
                       className="bg-white p-6 rounded-[2.5rem] border border-sandstone shadow-sm hover:border-marigold hover:shadow-xl transition-all text-left group"
                     >
@@ -258,7 +366,7 @@ const HealthLocker = () => {
                           <Eye size={24} className="text-marigold group-hover:text-white" />
                         </div>
                       </div>
-                      
+
                       {/* Display image preview if available */}
                       {doc.fileUrl && (
                         <ImagePreview imageUrl={doc.fileUrl} title={doc.title} />
@@ -269,10 +377,10 @@ const HealthLocker = () => {
                           👁️ View Report
                         </div>
                         {doc.fileUrl && (
-                          <a 
-                            href={doc.fileUrl} 
-                            target="_blank" 
-                            rel="noreferrer" 
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="px-4 py-3 bg-marigold hover:bg-marigold/80 text-white rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest shadow-md"
                             title="Download Report"
@@ -339,15 +447,16 @@ const HealthLocker = () => {
 };
 
 // UI Components
-const VitalCard = ({ icon, label, value, color }) => (
-  <div className={`bg-gradient-to-br ${color} to-opacity-20 p-6 rounded-[2rem] shadow-lg border border-white/20`}>
-    <div className="flex items-center gap-3 mb-3">
-      <div className="p-2 bg-white/20 rounded-lg text-white">
+const VitalCard = ({ icon, label, labelFull, value, color }) => (
+  <div className={`bg-gradient-to-br ${color} to-opacity-20 p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl md:rounded-[2rem] shadow-md md:shadow-lg border border-white/20`}>
+    <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 mb-2 sm:mb-3">
+      <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg text-white">
         {icon}
       </div>
-      <p className="text-xs font-black text-white uppercase tracking-widest">{label}</p>
+      <p className="text-[7px] sm:text-[8px] md:text-xs font-black text-white uppercase tracking-wider sm:tracking-widest hidden sm:block">{labelFull}</p>
+      <p className="text-[8px] font-black text-white uppercase sm:hidden">{label}</p>
     </div>
-    <p className="font-heading text-3xl text-white font-bold">{value}</p>
+    <p className="font-heading text-lg sm:text-2xl md:text-3xl text-white font-bold line-clamp-2">{value}</p>
   </div>
 );
 
@@ -393,9 +502,20 @@ const ImagePreview = ({ imageUrl, title }) => {
 const TabButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'bg-marigold text-white shadow-lg' : 'bg-white text-khaki border border-sandstone hover:border-teak'}`}
+    className={`
+      px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3
+      rounded-lg sm:rounded-xl text-[8px] sm:text-[9px] md:text-[10px] 
+      font-black uppercase tracking-wider sm:tracking-widest 
+      flex items-center gap-1 sm:gap-2 
+      transition-all duration-300 whitespace-nowrap
+      flex-shrink-0
+      ${active 
+        ? 'bg-marigold text-white shadow-lg scale-105' 
+        : 'bg-white text-khaki border-2 border-sandstone hover:border-marigold hover:text-marigold hover:shadow-md active:scale-95'
+      }
+    `}
   >
-    {icon} {label}
+    {icon} <span className="hidden sm:inline">{label}</span>
   </button>
 );
 
