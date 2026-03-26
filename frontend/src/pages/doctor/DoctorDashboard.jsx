@@ -20,6 +20,7 @@ const DoctorDashboard = () => {
   const [patientData, setPatientData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isEditingVitals, setIsEditingVitals] = useState(false);
+  const [lastQueueUpdate, setLastQueueUpdate] = useState(Date.now());
   const [editableVitals, setEditableVitals] = useState({
     bloodPressure: '',
     pulseRate: '',
@@ -56,6 +57,7 @@ const DoctorDashboard = () => {
       });
 
       setMyQueue(sortedQueue);
+      setLastQueueUpdate(Date.now()); // 🔴 Update timestamp for live indicator
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
     }
@@ -74,9 +76,15 @@ const DoctorDashboard = () => {
       socket.on('doctorStatusChanged', () => { fetchMyStatus(); });
     }
 
+    // 🔄 Live Queue Polling - Refresh every 5 seconds to ensure real-time updates
+    const pollInterval = setInterval(() => {
+      fetchMyQueue();
+    }, 5000);
+
     return () => {
       socket.off('queueUpdate');
       socket.off('doctorStatusChanged');
+      clearInterval(pollInterval);
     };
   }, [token, clinicId, fetchMyQueue, fetchMyStatus]);
 
@@ -485,10 +493,16 @@ const DoctorDashboard = () => {
 
             {/* --- NEW SECTION: LAB MONITORING --- */}
             <section className="mt-12">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-khaki mb-6">Lab Monitoring Area</h2>
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-khaki">Lab Monitoring Area</h2>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest">LIVE</span>
+                </div>
+              </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {labMonitoringList.map(p => (
-                  <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-sandstone opacity-60'}`}>
+                  <div key={p._id} className={`p-6 rounded-[2.5rem] border bg-white transition-all animate-in duration-300 ${p.currentStage === 'Lab-Completed' ? 'border-green-200 ring-2 ring-green-50' : 'border-sandstone opacity-60'}`}>
                     <div className="flex justify-between items-start mb-3">
                       <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.currentStage === 'Lab-Completed' ? 'bg-green-500 text-white animate-pulse' : 'bg-parchment text-khaki'}`}>
                         {p.currentStage === 'Lab-Completed' ? 'REPORT READY' : 'IN LAB'}
@@ -508,15 +522,24 @@ const DoctorDashboard = () => {
                   </div>
                 )}
               </div>
+              <div className="mt-4 pt-4 border-t border-sandstone text-center">
+                <p className="text-[8px] text-khaki opacity-60">Last updated: {new Date(lastQueueUpdate).toLocaleTimeString()}</p>
+              </div>
             </section>
           </div>
 
           {/* --- RIGHT SIDE: PRIMARY LIVE QUEUE --- */}
           <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-khaki">Waiting Lounge</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-khaki">Waiting Lounge</h2>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-[8px] font-black text-green-600 uppercase tracking-widest">LIVE</span>
+              </div>
+            </div>
             <div className="space-y-4">
               {primaryWaitingList.map((patient, index) => (
-                <div key={patient._id} className={`p-6 rounded-[2.5rem] border transition-all ${patient.isEmergency ? 'bg-red-50 border-red-600 ring-2 ring-red-200 animate-pulse' : 'bg-white border-sandstone'}`}>
+                <div key={patient._id} className={`p-6 rounded-[2.5rem] border transition-all animate-in duration-300 ${patient.isEmergency ? 'bg-red-50 border-red-600 ring-2 ring-red-200 animate-pulse' : 'bg-white border-sandstone'}`}>
                   <div className="flex justify-between items-start">
                     <div className="space-y-1"><div className="flex items-center gap-2"><span className={`text-[10px] font-black px-2 py-0.5 rounded ${patient.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold/10 text-marigold'}`}>#{patient.tokenNumber}</span> {patient.isEmergency && <Siren size={12} className="text-red-600" />}</div><p className="font-bold text-sm">{patient.patientName}</p></div>
                     {!activePatient && !isOnBreak && index === 0 && (
@@ -531,6 +554,9 @@ const DoctorDashboard = () => {
                   <p className="text-[10px] font-black uppercase">Lounge Empty</p>
                 </div>
               )}
+              <div className="pt-4 border-t border-sandstone text-center">
+                <p className="text-[8px] text-khaki opacity-60">Last updated: {new Date(lastQueueUpdate).toLocaleTimeString()}</p>
+              </div>
             </div>
           </div>
         </main>

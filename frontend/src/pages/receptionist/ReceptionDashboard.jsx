@@ -23,6 +23,7 @@ const ReceptionDashboard = () => {
   const [activeTab, setActiveTab] = useState('live');
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lastQueueUpdate, setLastQueueUpdate] = useState(Date.now());
 
   const [formData, setFormData] = useState({
     patientName: '',
@@ -46,6 +47,7 @@ const ReceptionDashboard = () => {
       setQueue(queueRes.data.data);
       setDoctors(staffRes.data.staff.filter(s => s.role === 'doctor'));
       setPendingRequests(pendingRes.data.data);
+      setLastQueueUpdate(Date.now()); // 🔴 Update timestamp for live indicator
       setLoading(false);
     } catch (err) {
       console.error("Dashboard Sync Error:", err);
@@ -91,11 +93,17 @@ const ReceptionDashboard = () => {
       console.warn("⚠️ clinicId missing from LocalStorage. Socket Room not joined.");
     }
 
+    // 🔄 Live Queue Polling - Refresh every 5 seconds to ensure real-time updates
+    const pollInterval = setInterval(() => {
+      fetchDashboardData(true);
+    }, 5000);
+
     return () => {
       socket.off('queueUpdate');
       socket.off('doctorStatusChanged');
       socket.off('newCheckInRequest');
       socket.off('connect');
+      clearInterval(pollInterval);
     };
   }, [token, clinicId]);
 
@@ -297,7 +305,15 @@ const ReceptionDashboard = () => {
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white border border-sandstone rounded-[3.5rem] overflow-hidden shadow-sm flex flex-col h-full">
               <div className="px-10 py-8 border-b border-sandstone flex flex-col md:flex-row justify-between md:items-center gap-4 bg-parchment/30">
-                <h3 className="font-heading text-2xl text-teak">{activeTab === 'live' ? 'Live Flow' : 'External Requests'}</h3>
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="font-heading text-2xl text-teak">{activeTab === 'live' ? 'Live Flow' : 'External Requests'}</h3>
+                  {activeTab === 'live' && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-[8px] font-black text-green-600 uppercase tracking-widest">LIVE</span>
+                    </div>
+                  )}
+                </div>
                 <div className="relative">
                   <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
                   <input type="text" placeholder="Search patients..." className="pl-11 pr-4 py-3 bg-white border border-sandstone rounded-2xl text-xs outline-none focus:border-marigold w-full md:w-64" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -316,7 +332,7 @@ const ReceptionDashboard = () => {
                   <tbody className="divide-y divide-[#AFC4D8]/30">
                     {activeTab === 'live' ? (
                       queue.filter(p => p.patientName.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => a.isEmergency === b.isEmergency ? 0 : a.isEmergency ? -1 : 1).map((p) => (
-                        <tr key={p._id} className={`${p.isEmergency ? 'bg-red-50/50' : ''} hover:bg-parchment/50 transition-colors`}>
+                        <tr key={p._id} className={`${p.isEmergency ? 'bg-red-50/50' : ''} hover:bg-parchment/50 transition-colors animate-in duration-300`}>
                           <td className="px-10 py-6">
                             <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center border shadow-sm ${p.isEmergency ? 'border-red-600 bg-red-600 text-white' : 'border-sandstone bg-white'}`}><span className={`text-[8px] font-black uppercase ${p.isEmergency ? 'text-white' : 'text-khaki'}`}>TK</span><span className="font-heading text-xl">{p.tokenNumber}</span></div>
                           </td>
@@ -350,6 +366,11 @@ const ReceptionDashboard = () => {
                   </tbody>
                 </table>
               </div>
+              {activeTab === 'live' && (
+                <div className="px-10 py-4 border-t border-sandstone bg-parchment/20 text-center">
+                  <p className="text-[8px] text-khaki opacity-60">Last updated: {new Date(lastQueueUpdate).toLocaleTimeString()}</p>
+                </div>
+              )}
             </div>
           </div>
         </main>
