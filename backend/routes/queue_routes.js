@@ -9,6 +9,7 @@ const {
     getDoctorQueue,
     getConfirmedAppointments,
     getNext7DaysAppointments,
+    getDoctorScheduledAppointments,
     selfCheckIn,
     getPatientStatus,
     getMedicalHistory,
@@ -55,6 +56,8 @@ router.get('/live', authorize('receptionist', 'doctor', 'admin', 'lab'), getLive
 
 // Doctor
 router.get('/my-queue', authorize('doctor'), getDoctorQueue);
+// 📅 Doctor: My scheduled appointments next 7 days
+router.get('/my-scheduled', authorize('doctor'), getDoctorScheduledAppointments);
 // 📅 Confirmed appointments menu
 router.get('/confirmed', authorize('receptionist', 'doctor', 'admin'), getConfirmedAppointments);
 // 📅 Next 7 days appointments

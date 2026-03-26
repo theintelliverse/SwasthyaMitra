@@ -364,10 +364,10 @@ exports.registerPatient = async (req, res) => {
  */
 exports.bookAppointment = async (req, res) => {
     try {
-        const { clinicId, doctorId, appointmentDate } = req.body;
+        const { clinicId, doctorId, appointmentDate, reason } = req.body;
         const patientId = req.user?.id;
 
-        console.log('🔍 Booking appointment:', { clinicId, doctorId, appointmentDate, patientId });
+        console.log('🔍 Booking appointment:', { clinicId, doctorId, appointmentDate, reason, patientId });
 
         if (!clinicId || !doctorId || !appointmentDate) {
             return res.status(400).json({ success: false, message: "Clinic, doctor, and date are required" });
@@ -403,6 +403,7 @@ exports.bookAppointment = async (req, res) => {
             patientPhone: patient.phone,
             visitType: 'Appointment',
             appointmentDate: new Date(appointmentDate), // Store the appointment date
+            reason: reason || '', // Save the reason for visit
             status: 'Pending-Approval',
             isApproved: false,
             isEmergency: false

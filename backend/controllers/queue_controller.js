@@ -386,6 +386,31 @@ exports.getNext7DaysAppointments = async (req, res) => {
     }
 };
 
+// 📅 Doctor: Get my scheduled appointments for next 7 days
+exports.getDoctorScheduledAppointments = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const next7days = new Date(today);
+        next7days.setDate(next7days.getDate() + 7);
+        
+        const doctorId = req.user.id || req.user._id;
+        const appointments = await Queue.find({
+            clinicId: req.user.clinicId,
+            doctorId: doctorId,
+            visitType: 'Appointment',
+            isApproved: true,
+            appointmentDate: { $gte: today, $lt: next7days }
+        }).sort({ appointmentDate: 1, createdAt: 1 })
+          .populate('clinicId', 'name');
+        
+        res.status(200).json({ success: true, data: appointments });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // 1️⃣1️⃣ PUBLIC: Live Tracker Status
 exports.getPatientStatus = async (req, res) => {
     try {
