@@ -23,8 +23,15 @@ const ClinicSettings = () => {
     name: '',
     clinicCode: '',
     contactNumber: '',
-    address: ''
+    address: '',
+    openingTime: '09:00',
+    closingTime: '17:00',
+    breakStartTime: '12:00',
+    breakEndTime: '14:00',
+    slotDurationMinutes: 30,
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
   });
+  const weekdayOptions = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -35,12 +42,18 @@ const ClinicSettings = () => {
         });
 
         if (res.data.success) {
-          const { name, clinicCode, contactNumber, address } = res.data.data;
+          const { name, clinicCode, contactNumber, contactPhone, address, openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays } = res.data.data;
           setFormData({
             name: name || '',
             clinicCode: clinicCode || '',
-            contactNumber: contactNumber || '',
-            address: address || ''
+            contactNumber: contactNumber || contactPhone || '',
+            address: address || '',
+            openingTime: openingTime || '09:00',
+            closingTime: closingTime || '17:00',
+            breakStartTime: breakStartTime || '12:00',
+            breakEndTime: breakEndTime || '14:00',
+            slotDurationMinutes: slotDurationMinutes || 30,
+            workingDays: workingDays && workingDays.length ? workingDays : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
           });
         }
         setLoading(false);
@@ -168,6 +181,84 @@ const ClinicSettings = () => {
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       ></textarea>
                     </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Opening Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.openingTime}
+                        onChange={(e) => setFormData({ ...formData, openingTime: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Closing Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.closingTime}
+                        onChange={(e) => setFormData({ ...formData, closingTime: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Break Start</label>
+                      <input
+                        type="time"
+                        className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.breakStartTime}
+                        onChange={(e) => setFormData({ ...formData, breakStartTime: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Break End</label>
+                      <input
+                        type="time"
+                        className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.breakEndTime}
+                        onChange={(e) => setFormData({ ...formData, breakEndTime: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Slot (Minutes)</label>
+                      <input
+                        type="number"
+                        min="10"
+                        max="120"
+                        className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        value={formData.slotDurationMinutes}
+                        onChange={(e) => setFormData({ ...formData, slotDurationMinutes: Number(e.target.value) || 30 })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Working Days</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {weekdayOptions.map((day) => {
+                        const selected = formData.workingDays.includes(day);
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => {
+                              const nextDays = selected
+                                ? formData.workingDays.filter((d) => d !== day)
+                                : [...formData.workingDays, day];
+                              setFormData({ ...formData, workingDays: nextDays });
+                            }}
+                            className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${selected ? 'bg-teak text-white border-teak' : 'bg-parchment text-khaki border-sandstone hover:border-marigold'}`}
+                          >
+                            {day.slice(0, 3)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[9px] text-khaki italic ml-2">Quick Slots will be shown only on selected days.</p>
                   </div>
 
                   <div className="pt-6">

@@ -74,38 +74,62 @@ const BookAppointment = () => {
         }
     }, [formData.clinicId]);
 
-    // Generate available time slots
+    const getSelectedClinic = () => clinics.find(c => c._id === formData.clinicId);
+    const getSelectedDoctor = () => doctors.find(d => d._id === formData.doctorId);
+
+    // Generate available time slots based on clinic settings
     const generateAvailableSlots = useCallback(() => {
         const today = new Date();
         const slots = [];
+        const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+        const selectedClinic = clinics.find(c => c._id === formData.clinicId);
+        const openingTime = selectedClinic?.openingTime || '09:00';
+        const closingTime = selectedClinic?.closingTime || '17:00';
+        const breakStartTime = selectedClinic?.breakStartTime || '12:00';
+        const breakEndTime = selectedClinic?.breakEndTime || '14:00';
+        const slotDurationMinutes = Number(selectedClinic?.slotDurationMinutes || 30);
+        const workingDays = selectedClinic?.workingDays?.length
+            ? selectedClinic.workingDays
+            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+        const [openHour, openMinute] = openingTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closingTime.split(':').map(Number);
+        const [breakStartHour, breakStartMinute] = breakStartTime.split(':').map(Number);
+        const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
         
         for (let d = 1; d <= 14; d++) {
             const date = new Date(today);
             date.setDate(date.getDate() + d);
             
-            // Skip Sundays
-            if (date.getDay() === 0) continue;
+            const currentDay = weekdayMap[date.getDay()];
+            if (!workingDays.includes(currentDay)) continue;
 
-            // Morning slots (9 AM - 12 PM)
-            for (let hour = 9; hour < 12; hour++) {
-                for (let min = 0; min < 60; min += 30) {
-                    const slot = new Date(date);
-                    slot.setHours(hour, min, 0);
-                    slots.push(slot);
-                }
-            }
+            const start = new Date(date);
+            start.setHours(openHour, openMinute, 0, 0);
 
-            // Afternoon slots (2 PM - 5 PM)
-            for (let hour = 14; hour < 17; hour++) {
-                for (let min = 0; min < 60; min += 30) {
-                    const slot = new Date(date);
-                    slot.setHours(hour, min, 0);
-                    slots.push(slot);
-                }
+            const end = new Date(date);
+            end.setHours(closeHour, closeMinute, 0, 0);
+
+            const breakStart = new Date(date);
+            breakStart.setHours(breakStartHour, breakStartMinute, 0, 0);
+
+            const breakEnd = new Date(date);
+            breakEnd.setHours(breakEndHour, breakEndMinute, 0, 0);
+
+            for (let slot = new Date(start); slot < end; slot = new Date(slot.getTime() + slotDurationMinutes * 60000)) {
+                // Skip break window
+                if (slot >= breakStart && slot < breakEnd) continue;
+
+                const slotKey = slot.toISOString().slice(0, 16);
+                // Hide already booked/filled slots from quick slots
+                if (bookedSlots.includes(slotKey)) continue;
+
+                slots.push(new Date(slot));
             }
         }
         setAvailableSlots(slots);
-    }, []);
+    }, [bookedSlots, clinics, formData.clinicId]);
 
     // Fetch booked slots for the selected doctor
     const fetchBookedSlots = useCallback(async () => {
@@ -142,6 +166,13 @@ const BookAppointment = () => {
         }
     }, [formData.doctorId, fetchBookedSlots]);
 
+    // Re-generate slots whenever booked slots or selected clinic changes
+    useEffect(() => {
+        if (formData.clinicId && formData.doctorId) {
+            generateAvailableSlots();
+        }
+    }, [formData.clinicId, formData.doctorId, bookedSlots, generateAvailableSlots]);
+
     // Predict wait time based on appointment type and doctor
     const predictWaitTime = useCallback(() => {
         if (!formData.doctorId) return null;
@@ -176,7 +207,6 @@ const BookAppointment = () => {
     const handleSelectDoctor = (doctorId) => {
         try {
             setFormData({ ...formData, doctorId });
-            generateAvailableSlots();
             setStep(3);
         } catch (error) {
             console.error('Error selecting doctor:', error);
@@ -271,8 +301,6 @@ const BookAppointment = () => {
         }
     };
 
-    const getSelectedClinic = () => clinics.find(c => c._id === formData.clinicId);
-    const getSelectedDoctor = () => doctors.find(d => d._id === formData.doctorId);
     const filteredClinics = clinics.filter(c => c.name.toLowerCase().includes(searchClinic.toLowerCase()));
 
     // Progress bar component
