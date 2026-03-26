@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
 import {
   FileText, Clock, ExternalLink, LogOut,
-  ShieldCheck, Activity, Search, Building2, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCw, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope
+  ShieldCheck, Activity, Search, Building2, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCw, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -22,6 +22,7 @@ const PatientDashboard = () => {
   const [previewFile, setPreviewFile] = useState(null);
   const [shareFile, setShareFile] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [lastVisitUpdate, setLastVisitUpdate] = useState(Date.now());
 
   const fetchProfile = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -45,6 +46,7 @@ const PatientDashboard = () => {
 
       setPatientData(profileRes.data.data);
       setAppointments(appointmentsRes.data.data || []);
+      setLastVisitUpdate(Date.now()); // Update timestamp for Recent Visits
     } catch (err) {
       console.error("❌ Vault Access Error:", err.response?.data || err.message);
       if (err.response?.status === 401) navigate('/patient/login');
@@ -61,7 +63,16 @@ const PatientDashboard = () => {
       socket.emit('joinClinic', patientPhone);
       socket.on('queueUpdate', () => fetchProfile(true));
     }
-    return () => socket.off('queueUpdate');
+
+    // 🔄 Auto-refresh Recent Visits every 10 seconds for live updates
+    const visitPollInterval = setInterval(() => {
+      fetchProfile(true);
+    }, 10000);
+
+    return () => {
+      socket.off('queueUpdate');
+      clearInterval(visitPollInterval);
+    };
   }, [fetchProfile]);
 
   const handleCopyLink = (url) => {
@@ -72,7 +83,6 @@ const PatientDashboard = () => {
 
   // 🔑 FIX 1: Accessing correct DB fields for Name and Counters
   const displayName = patientData?.name || "User";
-  const uniqueClinicsCount = patientData?.visitHistory ? new Set(patientData.visitHistory.map(h => h.clinicId?._id || h.clinicId)).size : 0;
 
   // 🔑 FIX 2: Ensuring the Reports count looks at 'documents'
   const reportsCount = patientData?.documents?.length || 0;
@@ -112,11 +122,6 @@ const PatientDashboard = () => {
           <div className="relative z-10 text-center md:text-left">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-saffron mb-3">Verified Patient Profile</p>
             <h2 className="text-5xl font-heading mb-4 capitalize">{displayName}</h2>
-            <div className="flex gap-4 justify-center md:justify-start">
-              <span className="bg-white/10 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-white/5">
-                {uniqueClinicsCount} Facilities Visited
-              </span>
-            </div>
           </div>
 
           <button
@@ -133,10 +138,114 @@ const PatientDashboard = () => {
 
         <div className="grid lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1 space-y-8">
+            {/* Enhanced Consultations Card */}
+            <div className="bg-white border border-sandstone rounded-[3rem] shadow-sm overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-teal-50 to-blue-50 px-8 py-6 border-b border-sandstone/30">
+                <h3 className="font-heading text-xl text-teak mb-2 flex items-center gap-2">
+                  <Stethoscope size={20} className="text-marigold" />
+                  Consultations
+                </h3>
+                <p className="text-[8px] font-black text-khaki uppercase tracking-widest">Medical Visit History</p>
+              </div>
+
+              {/* Content */}
+              <div className="p-8">
+                {patientData?.visitHistory && patientData.visitHistory.length > 0 ? (
+                  <>
+                    {/* Big Number Display */}
+                    <div className="mb-6 p-6 bg-gradient-to-br from-marigold/10 to-saffron/10 rounded-2xl border-2 border-marigold/30">
+                      <p className="text-[9px] font-black text-marigold uppercase tracking-wider mb-2">Total Consultations</p>
+                      <p className="font-heading text-5xl text-teak mb-1">{patientData.visitHistory.length}</p>
+                      <p className="text-[8px] text-khaki font-bold">Medical visits recorded</p>
+                    </div>
+
+                    {/* Recent Consultation */}
+                    {(() => {
+                      const latestConsult = patientData.visitHistory.sort((a, b) => 
+                        new Date(b.date || b.visitDate) - new Date(a.date || a.visitDate)
+                      )[0];
+                      
+                      return (
+                        <div className="bg-parchment p-4 rounded-2xl border border-sandstone/50 mb-4">
+                          <p className="text-[8px] font-black text-khaki uppercase tracking-wider mb-3">📅 Latest Visit</p>
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              <span className="text-[8px] font-black text-marigold uppercase">Doctor:</span>
+                              <span className="text-sm font-bold text-teak">Dr. {latestConsult.doctorName || 'N/A'}</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="text-[8px] font-black text-marigold uppercase">Date:</span>
+                              <span className="text-sm font-bold text-teak">{new Date(latestConsult.date || latestConsult.visitDate).toLocaleDateString('en-IN')}</span>
+                            </div>
+                            {latestConsult.clinicName && (
+                              <div className="flex items-start gap-2">
+                                <span className="text-[8px] font-black text-marigold uppercase">Clinic:</span>
+                                <span className="text-sm font-bold text-teak">{latestConsult.clinicName}</span>
+                              </div>
+                            )}
+                            {latestConsult.diagnosis && (
+                              <div className="flex items-start gap-2 mt-3 pt-3 border-t border-sandstone/30">
+                                <span className="text-[8px] font-black text-khaki uppercase">Diagnosis:</span>
+                                <span className="text-[13px] font-bold text-teak line-clamp-2">{latestConsult.diagnosis}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center">
+                        <p className="text-[7px] font-black text-khaki uppercase mb-1">Avg Per Year</p>
+                        <p className="font-heading text-lg text-teak">{(patientData.visitHistory.length / 1).toFixed(1)}</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                        <p className="text-[7px] font-black text-khaki uppercase mb-1">Last 90 Days</p>
+                        <p className="font-heading text-lg text-teak">
+                          {patientData.visitHistory.filter(v => {
+                            const visitDate = new Date(v.date || v.visitDate);
+                            const ninetyDaysAgo = new Date();
+                            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                            return visitDate >= ninetyDaysAgo;
+                          }).length}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <Stethoscope size={40} className="text-marigold opacity-20 mx-auto mb-3" />
+                    <p className="font-heading text-lg text-khaki mb-1">No Consultations Yet</p>
+                    <p className="text-[9px] text-khaki opacity-60 mb-4">Schedule an appointment to get started</p>
+                    <button 
+                      onClick={() => navigate('/patient/book-appointment')}
+                      className="text-[8px] font-black bg-teak text-white px-4 py-2 rounded-xl uppercase tracking-wider hover:bg-marigold transition-all"
+                    >
+                      Book Appointment
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Button */}
+              {patientData?.visitHistory && patientData.visitHistory.length > 0 && (
+                <div className="border-t border-sandstone/30 px-8 py-4 bg-parchment/30">
+                  <button 
+                    onClick={() => document.querySelector('.Latest Visit')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="w-full text-center text-[10px] font-black text-marigold uppercase tracking-widest hover:text-teak transition-colors"
+                  >
+                    View Full History →
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Reports Mini Card */}
             <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm">
-              <h3 className="font-heading text-xl mb-6 flex items-center gap-2"><Activity className="text-marigold" size={20} /> Snapshot</h3>
-              <VitalMini label="Consultations" val={patientData?.visitHistory?.length} unit="Visits" />
-              <VitalMini label="Reports" val={reportsCount} unit="Files" />
+              <h3 className="font-heading text-xl mb-6 flex items-center gap-2"><FileText className="text-marigold" size={20} /> Reports</h3>
+              <VitalMini label="Medical Files" val={reportsCount} unit="Documents" />
             </div>
             <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm sticky top-32">
               <h3 className="font-heading text-lg mb-4">Quick Find</h3>
@@ -153,7 +262,7 @@ const PatientDashboard = () => {
 
           <div className="lg:col-span-3 space-y-8">
             {/* Appointments Section */}
-            {appointments && appointments.length > 0 && (
+            {appointments && appointments.length > 0 && appointments.some(app => app.status === 'Scheduled' && new Date(app.appointmentDate) > new Date()) && (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-heading text-3xl flex items-center gap-2">
@@ -171,7 +280,17 @@ const PatientDashboard = () => {
 
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                   {appointments
-                    .filter(app => app.status === 'Scheduled')
+                    .filter(app => {
+                      // ✅ Filter 1: Only show Scheduled appointments (not Completed, Cancelled, etc.)
+                      if (app.status !== 'Scheduled') return false;
+                      
+                      // ✅ Filter 2: Only show future appointments (not past dates)
+                      const appointmentTime = new Date(app.appointmentDate);
+                      const now = new Date();
+                      if (appointmentTime <= now) return false;
+                      
+                      return true;
+                    })
                     .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
                     .slice(0, 2)
                     .map((appointment) => (
@@ -207,7 +326,7 @@ const PatientDashboard = () => {
             )}
 
             {/* Book Appointment CTA */}
-            {(!appointments || appointments.length === 0) && (
+            {(!appointments || appointments.length === 0 || !appointments.some(app => app.status === 'Scheduled' && new Date(app.appointmentDate) > new Date())) && (
               <div className="bg-gradient-to-r from-marigold/10 to-saffron/10 p-8 rounded-[2rem] border border-marigold/30 text-center">
                 <Calendar size={40} className="text-marigold mx-auto mb-4" />
                 <h3 className="font-heading text-2xl text-teak mb-2">No Appointments Yet</h3>
@@ -222,73 +341,188 @@ const PatientDashboard = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <h3 className="font-heading text-3xl">Recent Visits</h3>
-              <button onClick={() => fetchProfile(true)} className="p-3 bg-white border border-sandstone rounded-2xl text-khaki hover:text-marigold transition-all">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="font-heading text-3xl text-teak">Latest Visit</h3>
+              <button onClick={() => fetchProfile(true)} className="p-3 bg-white border border-sandstone rounded-2xl text-khaki hover:text-marigold transition-all hover:border-marigold">
                 <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : ''} />
               </button>
             </div>
 
             {filteredHistory.length > 0 ? (
-              filteredHistory.map((visit) => {
-                // 🔑 FIX 3: Prioritize 'documents' over 'digitalLocker' to match your DB Example
-                const allDocs = patientData?.documents || patientData?.digitalLocker || [];
-                const visitReports = allDocs.filter(doc =>
-                  doc.visitId === (visit.visitId || visit._id)
-                );
+              <div className="space-y-6">
+                {(() => {
+                  const latestVisit = filteredHistory
+                    .sort((a, b) => new Date(b.date || b.visitDate) - new Date(a.date || a.visitDate))[0];
+                  
+                  if (!latestVisit) return null;
+                  
+                  const allDocs = patientData?.documents || patientData?.digitalLocker || [];
+                  const visitReports = allDocs.filter(doc => doc.visitId === (latestVisit.visitId || latestVisit._id));
 
-                return (
-                  <div key={visit._id} className="bg-white p-8 rounded-[3.5rem] border border-sandstone shadow-sm hover:border-marigold transition-all animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex justify-between items-start mb-6">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Building2 size={16} className="text-khaki" />
-                          <h4 className="font-heading text-2xl text-teak">{visit.clinicName || visit.clinicId?.name}</h4>
+                  return (
+                    <div key={latestVisit._id} className="bg-white p-6 md:p-8 rounded-xl md:rounded-2xl border border-sandstone shadow-sm hover:border-marigold transition-all">
+                      {/* Header with Clinic & Date */}
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
+                        <div>
+                          <h3 className="font-heading text-lg md:text-xl text-teak flex items-center gap-2 mb-2">
+                            <Pill size={20} className="text-marigold flex-shrink-0" />
+                            Latest Medical Visit
+                          </h3>
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest">{latestVisit.clinicName}</p>
                         </div>
-                        <p className="text-[10px] font-black uppercase text-marigold tracking-widest">
-                          {new Date(visit.date || visit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })} • Dr. {visit.doctorName || visit.doctorId?.name}
-                        </p>
+                        <span className="text-[8px] md:text-[9px] font-bold text-marigold bg-marigold/10 px-4 py-2 rounded-full flex items-center gap-2 flex-shrink-0">
+                          <Calendar size={12} /> {new Date(latestVisit.date || latestVisit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                        </span>
                       </div>
-                    </div>
 
-                    <div className="bg-parchment p-6 rounded-[2rem] border border-sandstone/50 mb-8 font-medium text-teak text-sm line-clamp-2">
-                      {visit.notes || visit.diagnosis || 'Routine consultation summary.'}
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <button onClick={() => setSelectedVisit(visit)} className="flex items-center justify-between p-5 bg-teak text-white rounded-2xl hover:bg-marigold transition-all shadow-lg group">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20"><Pill size={18} /></div>
-                          <span className="text-xs font-bold uppercase tracking-widest">View Summary</span>
+                      {/* Prescription Details Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                        <div className="p-4 md:p-5 bg-parchment rounded-lg md:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-2">👨‍⚕️ Doctor</p>
+                          <p className="font-bold text-base md:text-lg text-teak">Dr. {latestVisit.doctorName || latestVisit.doctorId?.name}</p>
                         </div>
-                        <ChevronRight size={18} />
-                      </button>
+                        <div className="p-4 md:p-5 bg-parchment rounded-lg md:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-2">🔍 Diagnosis</p>
+                          <p className="font-bold text-base md:text-lg text-teak">{latestVisit.diagnosis || 'N/A'}</p>
+                        </div>
+                      </div>
 
-                      <div className="space-y-3">
-                        {visitReports?.length > 0 ? (
+                      {/* Symptoms */}
+                      {latestVisit.symptoms && (
+                        <div className="mb-6 p-4 md:p-5 bg-parchment rounded-lg md:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-3">🩹 Symptoms</p>
+                          <p className="text-sm md:text-base text-teak leading-relaxed whitespace-pre-wrap">{latestVisit.symptoms}</p>
+                        </div>
+                      )}
+
+                      {/* Vitals Display */}
+                      {latestVisit.vitals && Object.keys(latestVisit.vitals).some(k => latestVisit.vitals[k]) && (
+                        <div className="mb-6 p-4 md:p-5 bg-parchment rounded-lg md:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-4">📊 Vitals Recorded</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {latestVisit.vitals.bloodPressure && (
+                              <div className="bg-white p-3 rounded-lg border border-sandstone/50 text-center">
+                                <p className="text-[7px] md:text-[8px] font-bold text-khaki uppercase mb-1">BP</p>
+                                <p className="font-bold text-sm md:text-base text-teak">{latestVisit.vitals.bloodPressure}</p>
+                              </div>
+                            )}
+                            {latestVisit.vitals.pulseRate && (
+                              <div className="bg-white p-3 rounded-lg border border-sandstone/50 text-center">
+                                <p className="text-[7px] md:text-[8px] font-bold text-khaki uppercase mb-1">Pulse</p>
+                                <p className="font-bold text-sm md:text-base text-teak">{latestVisit.vitals.pulseRate} bpm</p>
+                              </div>
+                            )}
+                            {latestVisit.vitals.temperature && (
+                              <div className="bg-white p-3 rounded-lg border border-sandstone/50 text-center">
+                                <p className="text-[7px] md:text-[8px] font-bold text-khaki uppercase mb-1">Temp</p>
+                                <p className="font-bold text-sm md:text-base text-teak">{latestVisit.vitals.temperature}°C</p>
+                              </div>
+                            )}
+                            {latestVisit.vitals.weight && (
+                              <div className="bg-white p-3 rounded-lg border border-sandstone/50 text-center">
+                                <p className="text-[7px] md:text-[8px] font-bold text-khaki uppercase mb-1">Weight</p>
+                                <p className="font-bold text-sm md:text-base text-teak">{latestVisit.vitals.weight} kg</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Medicine Details - Highlighted Box */}
+                      {latestVisit.medicines && Array.isArray(latestVisit.medicines) && latestVisit.medicines.filter(m => m.name || m.amount).length > 0 ? (
+                        <div className="p-4 md:p-6 bg-yellow-50 rounded-lg md:rounded-2xl border-2 border-yellow-200 mb-6">
+                          <h4 className="font-heading text-base md:text-lg text-teak mb-4 flex items-center gap-2">
+                            <Pill size={18} className="text-marigold flex-shrink-0" />
+                            <span className="text-xs md:text-sm">Medicine Details</span>
+                          </h4>
+                          <div className="space-y-3 md:space-y-4">
+                            {latestVisit.medicines.map((med, mIdx) => (
+                              (med.name || med.amount || med.time || med.total) && (
+                                <div key={mIdx} className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border-2 border-yellow-200 shadow-sm">
+                                  {/* Medicine Name Header */}
+                                  <div className="mb-3 pb-3 border-b border-yellow-100">
+                                    <p className="text-[7px] md:text-[8px] font-black text-marigold uppercase tracking-wider mb-1">💊 Medicine #{mIdx + 1}</p>
+                                    <p className="font-bold text-sm md:text-base text-teak">{med.name || 'N/A'}</p>
+                                  </div>
+
+                                  {/* Time, Dosage, Total Grid */}
+                                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-3">
+                                    {/* Time */}
+                                    {med.time && (
+                                      <div className="bg-orange-50 p-2.5 md:p-3 rounded-lg border border-orange-200">
+                                        <p className="text-[7px] md:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">🕐 Time</p>
+                                        <p className="font-bold text-xs md:text-sm text-teak">{med.time}</p>
+                                      </div>
+                                    )}
+
+                                    {/* Per Dose Amount */}
+                                    {med.amount && (
+                                      <div className="bg-blue-50 p-2.5 md:p-3 rounded-lg border border-blue-200">
+                                        <p className="text-[7px] md:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">Per Dose</p>
+                                        <p className="font-bold text-xs md:text-sm text-teak">{med.amount}</p>
+                                      </div>
+                                    )}
+
+                                    {/* Total Quantity */}
+                                    {med.total && (
+                                      <div className="bg-green-50 p-2.5 md:p-3 rounded-lg border border-green-200 col-span-2 md:col-span-1">
+                                        <p className="text-[7px] md:text-[8px] font-black text-khaki uppercase tracking-wider mb-1">📦 Total</p>
+                                        <p className="font-bold text-xs md:text-sm text-teak">{med.total}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Consultation Notes */}
+                      {latestVisit.notes && (
+                        <div className="mb-6 p-4 md:p-5 bg-parchment rounded-lg md:rounded-2xl border border-sandstone/50">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-2">📝 Notes</p>
+                          <p className="text-sm md:text-base text-teak">{latestVisit.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Medical Records */}
+                      {visitReports?.length > 0 && (
+                        <div className="mb-6 p-4 md:p-5 bg-white border border-sandstone rounded-lg md:rounded-2xl">
+                          <p className="text-[8px] md:text-[9px] font-black text-khaki uppercase tracking-wider md:tracking-widest mb-4">📄 Medical Records ({visitReports?.length || 0})</p>
                           <div className="space-y-2">
                             {visitReports.map((report, rIdx) => (
                               <div key={rIdx} className="flex gap-2">
-                                <button onClick={() => setPreviewFile(report)} className="flex-grow flex items-center justify-between p-4 bg-white border border-sandstone rounded-2xl hover:border-teak transition-all group/report">
-                                  <div className="flex items-center gap-3 overflow-hidden text-left">
-                                    <FileText size={16} className="text-marigold shrink-0" />
-                                    <span className="text-[11px] font-bold truncate group-hover/report:text-marigold">{report.title}</span>
-                                  </div>
-                                  <Eye size={14} className="text-sandstone" />
+                                <button onClick={() => setPreviewFile(report)} className="flex-grow flex items-center gap-2 p-3 bg-parchment hover:bg-marigold/10 border border-sandstone hover:border-marigold rounded-lg text-left transition-all group/report text-[10px] truncate">
+                                  <FileText size={14} className="text-marigold shrink-0" />
+                                  <span className="truncate font-bold group-hover/report:text-marigold">{report.title}</span>
                                 </button>
-                                <button onClick={() => setShareFile(report)} className="p-4 bg-parchment border border-sandstone rounded-2xl text-marigold hover:bg-marigold hover:text-white transition-all shadow-sm"><Share2 size={16} /></button>
+                                <button onClick={() => setShareFile(report)} className="p-3 bg-parchment hover:bg-marigold hover:text-white border border-sandstone hover:border-marigold rounded-lg text-marigold transition-all"><Share2 size={14} /></button>
                               </div>
                             ))}
                           </div>
-                        ) : <div className="p-4 border-2 border-dashed border-sandstone rounded-2xl text-center opacity-30 text-[10px] font-bold">No linked reports</div>}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })()}
+              </div>
             ) : (
               <div className="text-center py-20 bg-white rounded-[3rem] border border-dashed border-sandstone animate-in fade-in">
-                <p className="font-heading text-2xl text-khaki italic">No visit history found.</p>
+                <Activity size={40} className="text-marigold opacity-30 mx-auto mb-4" />
+                <p className="font-heading text-2xl text-khaki mb-2">No visit history yet</p>
+                <p className="text-sm text-khaki opacity-60">Your medical visits will appear here</p>
+              </div>
+            )}
+
+            {filteredHistory.length > 0 && (
+              <div className="pt-8 border-t border-sandstone flex items-center justify-between">
+                <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full border border-blue-200 shadow-sm">
+                  <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest">LIVE</span>
+                </div>
+                <p className="text-[8px] text-khaki opacity-60">Last updated: {new Date(lastVisitUpdate).toLocaleTimeString()}</p>
+                <p className="text-[8px] font-black text-marigold uppercase tracking-widest">{filteredHistory.length} Total Visits</p>
               </div>
             )}
           </div>
