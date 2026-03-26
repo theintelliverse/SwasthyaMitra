@@ -70,6 +70,7 @@ const DoctorDashboard = () => {
       const res = await axios.get(`${API_URL}/api/queue/my-scheduled`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('📅 Scheduled Appointments Fetched:', res.data.data);
       setScheduledAppointments(res.data.data);
     } catch (err) {
       console.error('Failed to fetch scheduled appointments', err);
