@@ -3,7 +3,6 @@ const Clinic = require('../models/Clinic');
 const MedicalRecord = require('../models/MedicalRecord');
 const User = require('../models/User');
 const Patient = require('../models/Patient');
-const sendWhatsApp = require('../utils/send_whatsapp');
 const twilio = require('twilio');
 const client = new twilio(
     process.env.TWILIO_ACCOUNT_SID,
@@ -107,10 +106,31 @@ exports.approvePatient = async (req, res) => {
             isApproved: true, status: 'Waiting', tokenNumber, isEmergency: !!isEmergency
         }, { new: true }).populate('clinicId', 'name');
 
-        // � Send WhatsApp notification to patient
-        const whatsappMessage = `👋 Hello ${entry.patientName}!\n\nYour appointment has been approved at ${entry.clinicId.name}.\n\n🎫 Token Number: ${tokenNumber}\n\nPlease arrive 10 minutes before your scheduled time.\n\nThank you!`;
+        // 📱 Send Simple SMS Notification (OTP-style)
+        const simpleMessage = `Appointment Confirmed! Token: ${tokenNumber} | Clinic: ${entry.clinicId.name} | Arrive 10 mins early. - SwasthyaMitra`;
 
-        await sendWhatsApp(entry.patientPhone, whatsappMessage);
+        try {
+            if (!entry.patientPhone) {
+                console.error("❌ SMS Error - No patient phone number in queue entry");
+                return;
+            }
+            if (!process.env.TWILIO_PHONE_NUMBER) {
+                console.error("❌ SMS Error - Missing TWILIO_PHONE_NUMBER env var");
+                return;
+            }
+            
+            const cleanPhone = entry.patientPhone.replace(/\D/g, '').slice(-10);
+            const formattedPhone = `+91${cleanPhone}`;
+            
+            const smsResult = await client.messages.create({
+                body: simpleMessage,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: formattedPhone
+            });
+            console.log(`✅ SMS Sent to ${formattedPhone} | SID: ${smsResult.sid}`);
+        } catch (smsError) {
+            console.error("❌ SMS Error - Phone:", entry.patientPhone, "Formatted:", `+91${entry.patientPhone?.replace(/\D/g, '').slice(-10)}`, "Error:", smsError.message, "Code:", smsError.code);
+        }
 
         // �📢 DEBUG LOG
         console.log(`📢 Emit: queueUpdate (Approval) to Room: ${clinicId}`);
@@ -120,7 +140,7 @@ exports.approvePatient = async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
-// 5️⃣ Start Consultation (Send WhatsApp notification)
+// 5️⃣ Start Consultation (Send SMS notification)
 exports.startConsultation = async (req, res) => {
     try {
         const entry = await Queue.findByIdAndUpdate(req.params.id, {
@@ -129,11 +149,32 @@ exports.startConsultation = async (req, res) => {
 
         if (!entry) return res.status(404).json({ message: "Patient not found" });
 
-        // 📲 Send WhatsApp notification that consultation is starting
+        // � Send Simple SMS Notification (Consultation Starting)
         const doctorName = entry.doctorId?.name || 'Doctor';
-        const whatsappMessage = `🩺 Your appointment is starting!\n\nDoctor: ${doctorName}\n\nPlease report to the consultation room immediately.\n\nThank you for your patience!`;
+        const simpleMessage = `Your appointment is starting with Dr. ${doctorName}. Please go to the consultation room. - SwasthyaMitra`;
 
-        await sendWhatsApp(entry.patientPhone, whatsappMessage);
+        try {
+            if (!entry.patientPhone) {
+                console.error("❌ SMS Error - No patient phone number");
+                return;
+            }
+            if (!process.env.TWILIO_PHONE_NUMBER) {
+                console.error("❌ SMS Error - Missing TWILIO_PHONE_NUMBER env var");
+                return;
+            }
+            
+            const cleanPhone = entry.patientPhone.replace(/\D/g, '').slice(-10);
+            const formattedPhone = `+91${cleanPhone}`;
+            
+            const smsResult = await client.messages.create({
+                body: simpleMessage,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: formattedPhone
+            });
+            console.log(`✅ SMS Sent to ${formattedPhone} | SID: ${smsResult.sid}`);
+        } catch (smsError) {
+            console.error("❌ SMS Error - Phone:", entry.patientPhone, "Formatted:", `+91${entry.patientPhone?.replace(/\D/g, '').slice(-10)}`, "Error:", smsError.message, "Code:", smsError.code);
+        }
 
         // 📢 DEBUG LOG
         console.log(`📢 Emit: queueUpdate (Start) to Room: ${entry.clinicId}`);
@@ -212,11 +253,32 @@ exports.completeVisit = async (req, res) => {
             visitDate: Date.now()
         });
 
-        // 📲 Send WhatsApp completion notification
+        // � Send Simple SMS Notification (Consultation Completed)
         const doctorName = queueEntry.doctorId?.name || 'Doctor';
-        const whatsappMessage = `✅ Your consultation with Dr. ${doctorName} has been completed!\n\nYour medical records have been saved securely.\n\n📋 You can view your health records anytime in your Health Locker.\n\nThank you for visiting us!\n\nGet well soon! 🙏`;
+        const completionMessage = `Consultation with Dr. ${doctorName} completed. Your records saved. View anytime in Health Locker. - SwasthyaMitra`;
 
-        await sendWhatsApp(queueEntry.patientPhone, whatsappMessage);
+        try {
+            if (!queueEntry.patientPhone) {
+                console.error("❌ SMS Error - No patient phone number");
+                return;
+            }
+            if (!process.env.TWILIO_PHONE_NUMBER) {
+                console.error("❌ SMS Error - Missing TWILIO_PHONE_NUMBER env var");
+                return;
+            }
+            
+            const cleanPhone = queueEntry.patientPhone.replace(/\D/g, '').slice(-10);
+            const formattedPhone = `+91${cleanPhone}`;
+            
+            const smsResult = await client.messages.create({
+                body: completionMessage,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: formattedPhone
+            });
+            console.log(`✅ SMS Sent to ${formattedPhone} | SID: ${smsResult.sid}`);
+        } catch (smsError) {
+            console.error("❌ SMS Error - Phone:", queueEntry.patientPhone, "Formatted:", `+91${queueEntry.patientPhone?.replace(/\D/g, '').slice(-10)}`, "Error:", smsError.message, "Code:", smsError.code);
+        }
 
         const clinicId = queueEntry.clinicId.toString();
         await Queue.findByIdAndDelete(id);

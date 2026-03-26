@@ -395,15 +395,15 @@ exports.bookAppointment = async (req, res) => {
 
         console.log(`✅ Found clinic: ${clinic.name}, doctor: Dr. ${doctor.name}`);
 
-        // Create queue entry for appointment
+        // Create queue entry for appointment REQUEST (pending receptionist approval)
         const queueEntry = await Queue.create({
             clinicId,
             doctorId,
             patientName: patient.name,
             patientPhone: patient.phone,
             visitType: 'Appointment',
-            status: 'Waiting',
-            isApproved: true,
+            status: 'Pending-Approval',
+            isApproved: false,
             isEmergency: false
         });
 
@@ -420,28 +420,34 @@ exports.bookAppointment = async (req, res) => {
 
         await patient.save();
 
-        // Send confirmation SMS
-        const formattedPhone = `+91${patient.phone}`;
+        // Send request submitted SMS (not confirmation - pending receptionist approval)
         try {
+            const cleanPhone = patient.phone.replace(/\D/g, '').slice(-10);
+            const formattedPhone = `+91${cleanPhone}`;
+            
+            if (!process.env.TWILIO_PHONE_NUMBER) {
+                throw new Error('Missing TWILIO_PHONE_NUMBER - Check .env file');
+            }
+            
             await client.messages.create({
-                body: `Your appointment is confirmed at ${clinic.name} with Dr. ${doctor.name}. Date: ${new Date(appointmentDate).toLocaleDateString()}. Token: ${queueEntry._id}`,
+                body: `Your appointment request has been submitted to ${clinic.name} with Dr. ${doctor.name}. Date: ${new Date(appointmentDate).toLocaleDateString()}. The receptionist will verify and confirm shortly. Request ID: ${queueEntry._id}`,
                 from: process.env.TWILIO_PHONE_NUMBER,
                 to: formattedPhone
             });
-            console.log(`📱 SMS sent to ${formattedPhone}`);
+            console.log(`✅ SMS Sent to ${formattedPhone}`);
         } catch (smsError) {
-            console.error("❌ SMS Error:", smsError.message);
+            console.error("❌ SMS Error - Patient Phone:", patient.phone, "Error:", smsError.message);
         }
 
         res.status(201).json({
             success: true,
-            message: "Appointment booked successfully",
+            message: "Appointment request submitted successfully. Receptionist will verify and confirm shortly.",
             data: {
                 appointmentId: queueEntry._id,
                 clinicName: clinic.name,
                 doctorName: doctor.name,
                 appointmentDate,
-                status: 'Scheduled'
+                status: 'Pending-Approval'
             }
         });
     } catch (error) {

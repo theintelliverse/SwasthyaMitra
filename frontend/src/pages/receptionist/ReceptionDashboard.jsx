@@ -353,11 +353,34 @@ const ReceptionDashboard = () => {
                     ) : (
                       pendingRequests.map((req) => (
                         <tr key={req._id} className="hover:bg-parchment/50 animate-in fade-in">
-                          <td className="px-10 py-8"><p className="font-bold text-lg text-teak">{req.patientName}</p><span className="text-[8px] font-black uppercase bg-teak text-white px-2 py-0.5 rounded">Pending Approval</span></td>
-                          <td className="px-10 py-8 text-xs text-khaki font-bold">{req.patientPhone}</td>
-                          <td className="px-10 py-8 text-center"><span className="text-[10px] font-black text-marigold uppercase tracking-widest">Awaiting Verification</span></td>
+                          <td className="px-10 py-8">
+                            <div>
+                              <p className="font-bold text-lg text-teak">{req.patientName}</p>
+                              <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${req.visitType === 'Appointment' ? 'bg-blue-100 text-blue-700' : 'bg-teak text-white'}`}>
+                                {req.visitType === 'Appointment' ? '📅 Appointment Request' : 'Walk-in Request'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-10 py-8 text-xs text-khaki font-bold">
+                            <div>
+                              <p>{req.patientPhone}</p>
+                              {req.visitType === 'Appointment' && req.appointmentDate && (
+                                <p className="text-[10px] text-marigold font-black mt-1">
+                                  📅 {new Date(req.appointmentDate).toLocaleDateString('en-IN')}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-10 py-8 text-center">
+                            <div>
+                              <span className="text-[10px] font-black text-marigold uppercase tracking-widest">Awaiting Verification</span>
+                              {req.doctorId?.name && (
+                                <p className="text-[9px] text-khaki mt-2">Dr. {req.doctorId.name}</p>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-10 py-8 text-right flex justify-end gap-3">
-                            <button disabled={isProcessing} onClick={() => handleApprove(req._id)} className="flex items-center gap-2 px-6 py-3 bg-marigold text-white rounded-2xl text-[9px] font-black uppercase shadow-lg hover:scale-105 transition-all disabled:opacity-50">{isProcessing ? <RefreshCw size={14} className="animate-spin" /> : <UserCheck size={14} />} Approve</button>
+                            <button disabled={isProcessing} onClick={() => handleApprove(req._id)} className="flex items-center gap-2 px-6 py-3 bg-marigold text-white rounded-2xl text-[9px] font-black uppercase shadow-lg hover:scale-105 transition-all disabled:opacity-50">{isProcessing ? <RefreshCw size={14} className="animate-spin" /> : <UserCheck size={14} />} Approve & Notify</button>
                             <button className="p-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 transition-all"><XCircle size={18} /></button>
                           </td>
                         </tr>

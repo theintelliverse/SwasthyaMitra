@@ -241,16 +241,18 @@ const BookAppointment = () => {
                 const selectedDoctor = getSelectedDoctor();
                 
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Appointment Booked Successfully! ✨',
+                    icon: 'info',
+                    title: 'Request Submitted! ✅',
                     html: `<div style="text-align: left;">
+                        <p><b>Appointment Request Submitted</b></p>
+                        <p style="color: #d4a574; font-weight: bold; margin: 10px 0;">Awaiting Receptionist Verification</p>
                         <p><b>Doctor:</b> Dr. ${selectedDoctor?.name || res.data.data.doctorName}</p>
                         <p><b>Clinic:</b> ${selectedClinic?.name || res.data.data.clinicName}</p>
                         <p><b>Date:</b> ${new Date(formData.appointmentDate).toLocaleDateString('en-IN')}</p>
                         <p><b>Time:</b> ${new Date(formData.appointmentDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p><b>Estimated Wait:</b> ${estimatedWaitTime || 'TBD'} minutes</p>
+                        <p style="margin-top: 15px; font-size: 12px; color: #888;">We'll send you an SMS confirmation once the receptionist verifies your appointment.</p>
                     </div>`,
-                    timer: 3000,
+                    timer: 4000,
                     showConfirmButton: false,
                     background: '#EEF6FA',
                     color: '#0F766E'
