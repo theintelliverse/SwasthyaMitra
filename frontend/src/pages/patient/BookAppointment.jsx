@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -8,6 +8,28 @@ import {
 } from 'lucide-react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const MAX_BOOKING_DAYS = 14;
+const QUICK_SLOT_DAYS_AHEAD = 1;
+const DEFAULT_WORKING_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const WEEKDAY_MAP = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+const toLocalDateTimeKey = (dateInput) => {
+    const d = new Date(dateInput);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+};
+
+const getCurrentLocalDate = () => toLocalDateTimeKey(new Date()).split('T')[0];
+const getCurrentLocalTime = () => toLocalDateTimeKey(new Date()).split('T')[1];
+const getMaxLocalDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + MAX_BOOKING_DAYS);
+    return toLocalDateTimeKey(d).split('T')[0];
+};
 
 const BookAppointment = () => {
     const navigate = useNavigate();
@@ -77,32 +99,143 @@ const BookAppointment = () => {
     const getSelectedClinic = () => clinics.find(c => c._id === formData.clinicId);
     const getSelectedDoctor = () => doctors.find(d => d._id === formData.doctorId);
 
+    const getClinicTimingConfig = useCallback(() => {
+        const selectedClinic = clinics.find(c => c._id === formData.clinicId) || {};
+        return {
+            openingTime: selectedClinic.openingTime || '09:00',
+            closingTime: selectedClinic.closingTime || '17:00',
+            breakStartTime: selectedClinic.breakStartTime || '12:00',
+            breakEndTime: selectedClinic.breakEndTime || '14:00',
+            slotDurationMinutes: Number(selectedClinic.slotDurationMinutes || 30),
+            workingDays: selectedClinic.workingDays?.length ? selectedClinic.workingDays : DEFAULT_WORKING_DAYS
+        };
+    }, [clinics, formData.clinicId]);
+
+    const validateAppointmentSlot = useCallback((dateTimeString) => {
+        if (!dateTimeString) return 'Please select a date and time';
+
+        const selectedDate = new Date(dateTimeString);
+        const now = new Date();
+        const horizon = new Date(now);
+        horizon.setDate(horizon.getDate() + MAX_BOOKING_DAYS);
+
+        if (selectedDate < now) return 'Please select current or future time only.';
+        if (selectedDate > horizon) return `Please select a slot within next ${MAX_BOOKING_DAYS} days.`;
+
+        const { openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays } = getClinicTimingConfig();
+        const selectedDay = WEEKDAY_MAP[selectedDate.getDay()];
+        if (!workingDays.includes(selectedDay)) return `Clinic is closed on ${selectedDay}.`;
+
+        const [openHour, openMinute] = openingTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closingTime.split(':').map(Number);
+        const [breakStartHour, breakStartMinute] = breakStartTime.split(':').map(Number);
+        const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
+
+        const open = new Date(selectedDate);
+        open.setHours(openHour, openMinute, 0, 0);
+        const close = new Date(selectedDate);
+        close.setHours(closeHour, closeMinute, 0, 0);
+        const breakStart = new Date(selectedDate);
+        breakStart.setHours(breakStartHour, breakStartMinute, 0, 0);
+        const breakEnd = new Date(selectedDate);
+        breakEnd.setHours(breakEndHour, breakEndMinute, 0, 0);
+
+        if (selectedDate < open || selectedDate >= close) return `Please select time between ${openingTime} and ${closingTime}.`;
+        if (selectedDate >= breakStart && selectedDate < breakEnd) return `Break time (${breakStartTime} - ${breakEndTime}) is unavailable.`;
+
+        const minutesFromMidnight = selectedDate.getHours() * 60 + selectedDate.getMinutes();
+        const openFromMidnight = openHour * 60 + openMinute;
+        if ((minutesFromMidnight - openFromMidnight) % slotDurationMinutes !== 0) {
+            return `Please select time in ${slotDurationMinutes}-minute interval.`;
+        }
+
+        return null;
+    }, [getClinicTimingConfig]);
+
+    const findNearestValidSlot = useCallback((dateTimeString) => {
+        const { openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays } = getClinicTimingConfig();
+
+        let probe = new Date(dateTimeString || new Date());
+        const now = new Date();
+        if (probe < now) probe = new Date(now);
+
+        probe.setSeconds(0, 0);
+        const remainder = probe.getMinutes() % slotDurationMinutes;
+        if (remainder !== 0) {
+            probe.setMinutes(probe.getMinutes() + (slotDurationMinutes - remainder));
+        }
+
+        const horizon = new Date(now);
+        horizon.setDate(horizon.getDate() + MAX_BOOKING_DAYS);
+
+        const [openHour, openMinute] = openingTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closingTime.split(':').map(Number);
+        const [breakStartHour, breakStartMinute] = breakStartTime.split(':').map(Number);
+        const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
+
+        while (probe <= horizon) {
+            const day = WEEKDAY_MAP[probe.getDay()];
+            if (!workingDays.includes(day)) {
+                probe.setDate(probe.getDate() + 1);
+                probe.setHours(openHour, openMinute, 0, 0);
+                continue;
+            }
+
+            const open = new Date(probe);
+            open.setHours(openHour, openMinute, 0, 0);
+            const close = new Date(probe);
+            close.setHours(closeHour, closeMinute, 0, 0);
+            const breakStart = new Date(probe);
+            breakStart.setHours(breakStartHour, breakStartMinute, 0, 0);
+            const breakEnd = new Date(probe);
+            breakEnd.setHours(breakEndHour, breakEndMinute, 0, 0);
+
+            if (probe < open) probe = new Date(open);
+            if (probe >= close) {
+                probe.setDate(probe.getDate() + 1);
+                probe.setHours(openHour, openMinute, 0, 0);
+                continue;
+            }
+
+            if (probe >= breakStart && probe < breakEnd) {
+                probe = new Date(breakEnd);
+            }
+
+            const key = toLocalDateTimeKey(probe);
+            if (!bookedSlots.includes(key) && !validateAppointmentSlot(key)) {
+                return key;
+            }
+
+            probe = new Date(probe.getTime() + slotDurationMinutes * 60000);
+        }
+
+        return null;
+    }, [bookedSlots, getClinicTimingConfig, validateAppointmentSlot]);
+
+    const step3SlotError = useMemo(() => {
+        if (step !== 3 || !formData.appointmentDate) return null;
+        if (bookedSlots.includes(toLocalDateTimeKey(formData.appointmentDate))) {
+            return 'This slot is already booked. Please choose another slot.';
+        }
+        return validateAppointmentSlot(formData.appointmentDate);
+    }, [step, formData.appointmentDate, bookedSlots, validateAppointmentSlot]);
+
     // Generate available time slots based on clinic settings
     const generateAvailableSlots = useCallback(() => {
         const today = new Date();
         const slots = [];
-        const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-        const selectedClinic = clinics.find(c => c._id === formData.clinicId);
-        const openingTime = selectedClinic?.openingTime || '09:00';
-        const closingTime = selectedClinic?.closingTime || '17:00';
-        const breakStartTime = selectedClinic?.breakStartTime || '12:00';
-        const breakEndTime = selectedClinic?.breakEndTime || '14:00';
-        const slotDurationMinutes = Number(selectedClinic?.slotDurationMinutes || 30);
-        const workingDays = selectedClinic?.workingDays?.length
-            ? selectedClinic.workingDays
-            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const { openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays } = getClinicTimingConfig();
 
         const [openHour, openMinute] = openingTime.split(':').map(Number);
         const [closeHour, closeMinute] = closingTime.split(':').map(Number);
         const [breakStartHour, breakStartMinute] = breakStartTime.split(':').map(Number);
         const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
         
-        for (let d = 1; d <= 14; d++) {
+        for (let d = 1; d <= QUICK_SLOT_DAYS_AHEAD; d++) {
             const date = new Date(today);
             date.setDate(date.getDate() + d);
             
-            const currentDay = weekdayMap[date.getDay()];
+            const currentDay = WEEKDAY_MAP[date.getDay()];
             if (!workingDays.includes(currentDay)) continue;
 
             const start = new Date(date);
@@ -121,7 +254,7 @@ const BookAppointment = () => {
                 // Skip break window
                 if (slot >= breakStart && slot < breakEnd) continue;
 
-                const slotKey = slot.toISOString().slice(0, 16);
+                const slotKey = toLocalDateTimeKey(slot);
                 // Hide already booked/filled slots from quick slots
                 if (bookedSlots.includes(slotKey)) continue;
 
@@ -129,7 +262,7 @@ const BookAppointment = () => {
             }
         }
         setAvailableSlots(slots);
-    }, [bookedSlots, clinics, formData.clinicId]);
+    }, [bookedSlots, getClinicTimingConfig]);
 
     // Fetch booked slots for the selected doctor
     const fetchBookedSlots = useCallback(async () => {
@@ -140,7 +273,7 @@ const BookAppointment = () => {
             
             const today = new Date().toISOString().split('T')[0];
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 14);
+            endDate.setDate(endDate.getDate() + MAX_BOOKING_DAYS);
             const endDateStr = endDate.toISOString().split('T')[0];
 
             const res = await axios.get(
@@ -150,12 +283,15 @@ const BookAppointment = () => {
 
             if (res.data.success) {
                 console.log(`✅ Found ${res.data.data.length} booked slots`);
-                const bookedTimeSlots = res.data.data.map(slot => slot.timeSlot);
+                const bookedTimeSlots = res.data.data.map(slot => toLocalDateTimeKey(slot.appointmentDate || slot.timeSlot));
                 setBookedSlots(bookedTimeSlots);
+                return bookedTimeSlots;
             }
+            return [];
         } catch (error) {
             console.error('Error fetching booked slots:', error.message);
             setBookedSlots([]);
+            return [];
         }
     }, [formData.clinicId, formData.doctorId]);
 
@@ -173,25 +309,55 @@ const BookAppointment = () => {
         }
     }, [formData.clinicId, formData.doctorId, bookedSlots, generateAvailableSlots]);
 
-    // Predict wait time based on appointment type and doctor
+    const bookingLoadMetrics = useMemo(() => {
+        if (!formData.appointmentDate) {
+            return { sameDayCount: 0, aheadCount: 0, nearbyCount: 0 };
+        }
+
+        const selected = new Date(formData.appointmentDate);
+        const sameDayKey = toLocalDateTimeKey(selected).split('T')[0];
+
+        const sameDay = bookedSlots
+            .map((key) => new Date(key))
+            .filter((d) => toLocalDateTimeKey(d).split('T')[0] === sameDayKey);
+
+        const aheadCount = sameDay.filter((d) => d < selected).length;
+        const nearbyCount = sameDay.filter((d) => Math.abs(d - selected) <= 60 * 60000).length;
+
+        return {
+            sameDayCount: sameDay.length,
+            aheadCount,
+            nearbyCount
+        };
+    }, [bookedSlots, formData.appointmentDate]);
+
+    // Predict wait time using actual booked load on selected day/time
     const predictWaitTime = useCallback(() => {
-        if (!formData.doctorId) return null;
-        
-        let baseTime = 20; // Base 20 minutes
-        
+        if (!formData.doctorId || !formData.appointmentDate) return null;
+
+        const selectedHour = new Date(formData.appointmentDate).getHours();
+        const { sameDayCount, aheadCount, nearbyCount } = bookingLoadMetrics;
+
+        let waitMinutes = 8 + aheadCount * 7 + nearbyCount * 3 + sameDayCount * 1;
+
         if (formData.appointmentType === 'followup') {
-            baseTime = baseTime * 0.75; // Followup 25% faster
+            waitMinutes *= 0.85;
         } else {
-            baseTime = baseTime * 1.25; // New patient 25% slower
+            waitMinutes *= 1.15;
         }
 
-        const hour = new Date(formData.appointmentDate).getHours();
-        if (hour >= 12 && hour < 14) {
-            baseTime = baseTime * 1.1; // Lunch hour slower
+        // Peak congestion windows
+        if ((selectedHour >= 10 && selectedHour <= 12) || (selectedHour >= 17 && selectedHour <= 19)) {
+            waitMinutes *= 1.2;
         }
 
-        return Math.round(baseTime);
-    }, [formData.doctorId, formData.appointmentType, formData.appointmentDate]);
+        const rounded = Math.round(waitMinutes / 5) * 5;
+        return Math.max(5, Math.min(180, rounded));
+    }, [bookingLoadMetrics, formData.doctorId, formData.appointmentDate, formData.appointmentType]);
+
+    useEffect(() => {
+        setEstimatedWaitTime(predictWaitTime());
+    }, [predictWaitTime]);
 
     const handleSelectClinic = (clinicId) => {
         try {
@@ -216,10 +382,8 @@ const BookAppointment = () => {
 
     const handleSelectSlot = (slot) => {
         try {
-            const isoString = slot.toISOString().slice(0, 16);
+            const isoString = toLocalDateTimeKey(slot);
             setFormData({ ...formData, appointmentDate: isoString });
-            const waitTime = predictWaitTime();
-            setEstimatedWaitTime(waitTime);
         } catch (error) {
             console.error('Error selecting slot:', error);
             Swal.fire('Error', 'Failed to select time slot', 'error');
@@ -237,9 +401,17 @@ const BookAppointment = () => {
             return;
         }
 
+        const slotValidationMessage = validateAppointmentSlot(formData.appointmentDate);
+        if (slotValidationMessage) {
+            setError(slotValidationMessage);
+            return;
+        }
+
+        const latestBooked = await fetchBookedSlots();
+
         // Check if selected slot is booked
-        const selectedSlotStr = formData.appointmentDate;
-        if (bookedSlots.includes(selectedSlotStr)) {
+        const selectedSlotStr = toLocalDateTimeKey(formData.appointmentDate);
+        if (latestBooked.includes(selectedSlotStr) || bookedSlots.includes(selectedSlotStr)) {
             setError('⚠️ This time slot has been booked by another patient. Please select a different time.');
             return;
         }
@@ -527,12 +699,15 @@ const BookAppointment = () => {
                                 <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest block mb-3">
                                     Select or Enter a Time Slot *
                                 </label>
+                                <p className="text-xs text-khaki mb-3">
+                                    Quick Slots shows only next-day available slots. Manual Entry supports up to {MAX_BOOKING_DAYS} days.
+                                </p>
 
-                                {/* Booked Slots Info */}
-                                {bookedSlots.length > 0 && (
+                                {/* Booked Slots Info (Manual mode only) */}
+                                {formData.slotMode === 'manual' && bookedSlots.length > 0 && (
                                     <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                                         <p className="text-xs text-orange-700 font-bold">⚠️ {bookedSlots.length} slot(s) already booked by other patients</p>
-                                        <p className="text-xs text-orange-600 mt-1">Please choose an available slot</p>
+                                        <p className="text-xs text-orange-600 mt-1">Please avoid these times in Manual Entry.</p>
                                     </div>
                                 )}
 
@@ -564,29 +739,28 @@ const BookAppointment = () => {
                                 {formData.slotMode !== 'manual' && (
                                     <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                                         {availableSlots.map((slot, idx) => {
-                                            const slotTimeStr = slot.toISOString().slice(0, 16);
-                                            const isBooked = bookedSlots.includes(slotTimeStr);
+                                            const slotTimeStr = toLocalDateTimeKey(slot);
                                             
                                             return (
                                                 <button
                                                     key={idx}
-                                                    onClick={() => !isBooked && handleSelectSlot(slot)}
-                                                    disabled={isBooked}
+                                                    onClick={() => handleSelectSlot(slot)}
                                                     className={`p-3 rounded-xl border-2 font-bold text-sm transition-all ${
-                                                        isBooked
-                                                            ? 'border-red-300 bg-red-50 text-red-500 cursor-not-allowed opacity-60'
-                                                            : formData.appointmentDate === slotTimeStr
+                                                        formData.appointmentDate === slotTimeStr
                                                             ? 'border-marigold bg-marigold text-white'
                                                             : 'border-sandstone bg-white text-teak hover:border-marigold'
                                                     }`}
-                                                    title={isBooked ? 'This slot is already booked' : ''}
                                                 >
                                                     <div className="text-xs">{slot.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</div>
                                                     <div>{slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
-                                                    {isBooked && <div className="text-xs mt-1">❌ Booked</div>}
                                                 </button>
                                             );
                                         })}
+                                        {availableSlots.length === 0 && (
+                                            <div className="col-span-3 text-center py-6 bg-parchment rounded-xl border border-sandstone text-khaki text-xs font-bold uppercase">
+                                                No empty slots for next day
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -600,15 +774,21 @@ const BookAppointment = () => {
                                                 value={formData.appointmentDate ? formData.appointmentDate.split('T')[0] : ''}
                                                 onChange={(e) => {
                                                     const date = e.target.value;
-                                                    const time = formData.appointmentDate ? formData.appointmentDate.split('T')[1] : '10:00';
+                                                    const selectedTime = formData.appointmentDate ? formData.appointmentDate.split('T')[1] : getCurrentLocalTime();
+                                                    const minTimeForDate = date === getCurrentLocalDate() ? getCurrentLocalTime() : '00:00';
+                                                    const time = selectedTime < minTimeForDate ? minTimeForDate : selectedTime;
                                                     if (date && time) {
-                                                        const dateTime = `${date}T${time}`;
+                                                        let dateTime = `${date}T${time}`;
+                                                        const invalidMsg = validateAppointmentSlot(dateTime) || (bookedSlots.includes(toLocalDateTimeKey(dateTime)) ? 'booked' : null);
+                                                        if (invalidMsg) {
+                                                            const nearest = findNearestValidSlot(dateTime);
+                                                            if (nearest) dateTime = nearest;
+                                                        }
                                                         setFormData({ ...formData, appointmentDate: dateTime });
-                                                        const waitTime = predictWaitTime();
-                                                        setEstimatedWaitTime(waitTime);
                                                     }
                                                 }}
-                                                min={new Date().toISOString().split('T')[0]}
+                                                min={getCurrentLocalDate()}
+                                                max={getMaxLocalDate()}
                                                 className="w-full px-4 py-3 bg-parchment border border-sandstone rounded-2xl focus:border-marigold outline-none text-teak font-bold"
                                             />
                                         </div>
@@ -616,33 +796,46 @@ const BookAppointment = () => {
                                             <label className="text-xs font-bold text-khaki block mb-2">Time *</label>
                                             <input
                                                 type="time"
-                                                value={formData.appointmentDate ? formData.appointmentDate.split('T')[1] : '10:00'}
+                                                value={formData.appointmentDate ? formData.appointmentDate.split('T')[1] : getCurrentLocalTime()}
                                                 onChange={(e) => {
                                                     const time = e.target.value;
-                                                    const date = formData.appointmentDate ? formData.appointmentDate.split('T')[0] : new Date().toISOString().split('T')[0];
+                                                    const date = formData.appointmentDate ? formData.appointmentDate.split('T')[0] : getCurrentLocalDate();
                                                     if (date && time) {
-                                                        const dateTime = `${date}T${time}`;
+                                                        let dateTime = `${date}T${time}`;
+                                                        const invalidMsg = validateAppointmentSlot(dateTime) || (bookedSlots.includes(toLocalDateTimeKey(dateTime)) ? 'booked' : null);
+                                                        if (invalidMsg) {
+                                                            const nearest = findNearestValidSlot(dateTime);
+                                                            if (nearest) dateTime = nearest;
+                                                        }
                                                         setFormData({ ...formData, appointmentDate: dateTime });
-                                                        const waitTime = predictWaitTime();
-                                                        setEstimatedWaitTime(waitTime);
                                                     }
                                                 }}
+                                                min={(formData.appointmentDate ? formData.appointmentDate.split('T')[0] : getCurrentLocalDate()) === getCurrentLocalDate() ? getCurrentLocalTime() : undefined}
+                                                step={getClinicTimingConfig().slotDurationMinutes * 60}
                                                 className="w-full px-4 py-3 bg-parchment border border-sandstone rounded-2xl focus:border-marigold outline-none text-teak font-bold"
                                             />
                                         </div>
 
                                         {/* Show warning if selected time is booked */}
-                                        {formData.appointmentDate && bookedSlots.includes(formData.appointmentDate) && (
+                                        {formData.appointmentDate && bookedSlots.includes(toLocalDateTimeKey(formData.appointmentDate)) && (
                                             <div className="bg-red-50 border border-red-300 rounded-lg p-3">
                                                 <p className="text-xs text-red-700 font-bold">❌ This time slot is already booked!</p>
                                                 <p className="text-xs text-red-600 mt-1">Please select a different time or use the Quick Slots to see available times.</p>
                                             </div>
                                         )}
 
+                                        {step3SlotError && (
+                                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+                                                <p className="text-xs text-amber-700 font-bold">⚠️ Slot auto-adjustment applied</p>
+                                                <p className="text-xs text-amber-600 mt-1">{step3SlotError}</p>
+                                            </div>
+                                        )}
+
                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                             <p className="text-xs text-blue-600 font-bold">💡 Tip: Clinic typically operates:</p>
-                                            <p className="text-xs text-blue-600 mt-1">Morning: 9:00 AM - 12:00 PM</p>
-                                            <p className="text-xs text-blue-600">Evening: 2:00 PM - 5:00 PM</p>
+                                            <p className="text-xs text-blue-600 mt-1">Hours: {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().closingTime}</p>
+                                            <p className="text-xs text-blue-600">Break: {getClinicTimingConfig().breakStartTime} - {getClinicTimingConfig().breakEndTime}</p>
+                                            <p className="text-xs text-blue-600">Working days: {getClinicTimingConfig().workingDays.join(', ')}</p>
                                         </div>
                                     </div>
                                 )}
@@ -653,6 +846,9 @@ const BookAppointment = () => {
                                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
                                     <p className="text-xs text-yellow-800 font-bold">⏱️ Estimated Wait Time</p>
                                     <p className="text-lg font-bold text-yellow-900">{estimatedWaitTime} minutes</p>
+                                    <p className="text-xs text-yellow-700 mt-1">
+                                        Based on {bookingLoadMetrics.sameDayCount} booking(s) on selected day and {bookingLoadMetrics.aheadCount} ahead of your chosen time.
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -666,7 +862,7 @@ const BookAppointment = () => {
                             </button>
                             <button
                                 onClick={() => setStep(4)}
-                                disabled={!formData.appointmentDate || !formData.reason}
+                                disabled={!formData.appointmentDate || !formData.reason || !!step3SlotError}
                                 className="py-3 bg-marigold text-white rounded-2xl font-bold text-sm uppercase hover:bg-saffron transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 Continue <ArrowRight size={16} />
