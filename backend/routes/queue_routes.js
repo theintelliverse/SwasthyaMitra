@@ -7,6 +7,8 @@ const {
     startConsultation,
     completeVisit,
     getDoctorQueue,
+    getConfirmedAppointments,
+    getNext7DaysAppointments,
     selfCheckIn,
     getPatientStatus,
     getMedicalHistory,
@@ -53,6 +55,10 @@ router.get('/live', authorize('receptionist', 'doctor', 'admin', 'lab'), getLive
 
 // Doctor
 router.get('/my-queue', authorize('doctor'), getDoctorQueue);
+// 📅 Confirmed appointments menu
+router.get('/confirmed', authorize('receptionist', 'doctor', 'admin'), getConfirmedAppointments);
+// 📅 Next 7 days appointments
+router.get('/scheduled/next-7-days', authorize('receptionist', 'doctor', 'admin'), getNext7DaysAppointments);
 
 // Status Management
 router.patch('/start/:id', authorize('receptionist', 'doctor'), startConsultation);

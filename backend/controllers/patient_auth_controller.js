@@ -402,6 +402,7 @@ exports.bookAppointment = async (req, res) => {
             patientName: patient.name,
             patientPhone: patient.phone,
             visitType: 'Appointment',
+            appointmentDate: new Date(appointmentDate), // Store the appointment date
             status: 'Pending-Approval',
             isApproved: false,
             isEmergency: false
