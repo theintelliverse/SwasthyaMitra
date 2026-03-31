@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     newPatients: 0
   });
   const [loading, setLoading] = useState(true);
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
 
   const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   // The public URL for sharing
   const publicDisplayUrl = `${window.location.origin}/display/${clinicCode}`;
 
-  const fetchLiveStats = async () => {
+  const fetchLiveStats = useCallback(async () => {
     try {
       // We fetch live queue to calculate stats
       const res = await axios.get(`${API_URL}/api/queue/live`, {
@@ -53,11 +53,11 @@ const AdminDashboard = () => {
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length
       });
       setLoading(false);
-    } catch (err) {
+    } catch (_err) {
       console.error("Failed to sync admin stats");
       setLoading(false);
     }
-  };
+  }, [token]);
 
   // 🔌 WebSocket Lifecycle - Initialize Socket
   useEffect(() => {
@@ -71,42 +71,44 @@ const AdminDashboard = () => {
         reconnectionAttempts: 5
       });
 
-      setSocket(newSocket);
+      socketRef.current = newSocket;
 
       return () => {
-        if (newSocket) {
-          newSocket.disconnect();
+        if (socketRef.current) {
+          socketRef.current.disconnect();
         }
       };
-    } catch (err) {
-      console.error('Failed to initialize socket:', err);
+    } catch (_err) {
+      console.error('Failed to initialize socket');
     }
   }, []);
 
   // 🔌 WebSocket Events - Listen for updates
   useEffect(() => {
-    if (!socket || !clinicId) return;
+    if (!socketRef.current || !clinicId) return;
 
     try {
-      socket.emit('joinClinic', clinicId);
-      socket.on('queueUpdate', fetchLiveStats);
-      socket.on('doctorStatusChanged', fetchLiveStats);
-      socket.on('staffListUpdated', fetchLiveStats);
+      socketRef.current.emit('joinClinic', clinicId);
+      socketRef.current.on('queueUpdate', fetchLiveStats);
+      socketRef.current.on('doctorStatusChanged', fetchLiveStats);
+      socketRef.current.on('staffListUpdated', fetchLiveStats);
 
       return () => {
-        socket.off('queueUpdate', fetchLiveStats);
-        socket.off('doctorStatusChanged', fetchLiveStats);
-        socket.off('staffListUpdated', fetchLiveStats);
+        if (socketRef.current) {
+          socketRef.current.off('queueUpdate', fetchLiveStats);
+          socketRef.current.off('doctorStatusChanged', fetchLiveStats);
+          socketRef.current.off('staffListUpdated', fetchLiveStats);
+        }
       };
-    } catch (err) {
-      console.error('Failed to set up socket events:', err);
+    } catch (_err) {
+      console.error('Failed to set up socket events');
     }
-  }, [socket, clinicId]);
+  }, [clinicId, fetchLiveStats]);
 
   // 🔄 Fetch Initial Stats
   useEffect(() => {
     fetchLiveStats();
-  }, [token]);
+  }, [fetchLiveStats]);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -116,7 +118,7 @@ const AdminDashboard = () => {
           text: `View the live consultation queue for ${clinicName}`,
           url: publicDisplayUrl,
         });
-      } catch (err) { console.log("Share cancelled"); }
+      } catch (_err) { console.log("Share cancelled"); }
     } else {
       navigator.clipboard.writeText(publicDisplayUrl);
       setCopied(true);
