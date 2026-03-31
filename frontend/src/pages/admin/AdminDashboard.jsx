@@ -11,8 +11,6 @@ import {
   ArrowUpRight, ShieldCheck, Activity, Tv, Share2, Copy, Check, RefreshCw, FileSpreadsheet
 } from 'lucide-react';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-// Initialize socket
-const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -24,6 +22,7 @@ const AdminDashboard = () => {
     newPatients: 0
   });
   const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState(null);
 
   const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
@@ -60,25 +59,54 @@ const AdminDashboard = () => {
     }
   };
 
-  // 🔌 WebSocket Lifecycle
+  // 🔌 WebSocket Lifecycle - Initialize Socket
   useEffect(() => {
-    fetchLiveStats();
+    if (!SOCKET_URL) return;
 
-    if (clinicId) {
+    try {
+      const newSocket = io(SOCKET_URL, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5
+      });
+
+      setSocket(newSocket);
+
+      return () => {
+        if (newSocket) {
+          newSocket.disconnect();
+        }
+      };
+    } catch (err) {
+      console.error('Failed to initialize socket:', err);
+    }
+  }, []);
+
+  // 🔌 WebSocket Events - Listen for updates
+  useEffect(() => {
+    if (!socket || !clinicId) return;
+
+    try {
       socket.emit('joinClinic', clinicId);
-
-      // 📢 Listen for any queue or staff changes to refresh stats
       socket.on('queueUpdate', fetchLiveStats);
       socket.on('doctorStatusChanged', fetchLiveStats);
       socket.on('staffListUpdated', fetchLiveStats);
-    }
 
-    return () => {
-      socket.off('queueUpdate');
-      socket.off('doctorStatusChanged');
-      socket.off('staffListUpdated');
-    };
-  }, [token, clinicId]);
+      return () => {
+        socket.off('queueUpdate', fetchLiveStats);
+        socket.off('doctorStatusChanged', fetchLiveStats);
+        socket.off('staffListUpdated', fetchLiveStats);
+      };
+    } catch (err) {
+      console.error('Failed to set up socket events:', err);
+    }
+  }, [socket, clinicId]);
+
+  // 🔄 Fetch Initial Stats
+  useEffect(() => {
+    fetchLiveStats();
+  }, [token]);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -118,7 +146,7 @@ const AdminDashboard = () => {
       title: 'Clinical Reports',
       desc: 'Download clinical data, staff logs, and visit summaries.',
       icon: <FileSpreadsheet size={32} color="#0F766E" />,
-      link: '/Admin/reports',
+      link: '/admin/reports',
       bgColor: 'bg-teak/10'
     },
     {
