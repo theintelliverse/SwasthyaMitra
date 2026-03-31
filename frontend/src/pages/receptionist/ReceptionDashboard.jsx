@@ -154,11 +154,11 @@ const ReceptionDashboard = () => {
 
         console.log('✅ Vitals saved successfully:', res.data);
 
-        Swal.fire({ 
-          icon: 'success', 
-          title: 'Vitals Synced', 
+        Swal.fire({
+          icon: 'success',
+          title: 'Vitals Synced',
           text: 'Patient vitals have been updated successfully',
-          timer: 1500, 
+          timer: 1500,
           showConfirmButton: false,
           background: '#EEF6FA'
         });
@@ -171,7 +171,7 @@ const ReceptionDashboard = () => {
         });
 
         const errorMsg = err.response?.data?.message || err.message || 'Failed to update vitals';
-        
+
         Swal.fire({
           icon: 'error',
           title: 'Failed to Update Vitals',
@@ -248,116 +248,112 @@ const ReceptionDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-parchment font-body text-teak">
+    <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
       <Sidebar role="receptionist" />
-      <div className="flex-grow flex flex-col h-screen overflow-hidden">
-        <nav className="bg-white border-b border-sandstone px-8 py-4 flex justify-between items-center shadow-sm z-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teak rounded-xl flex items-center justify-center text-white shadow-lg"><LayoutDashboard size={20} /></div>
-            <h1 className="font-heading text-xl">Reception Command</h1>
+      <div className="flex-grow flex flex-col min-h-screen overflow-hidden">
+        <nav className="bg-white border-b border-sandstone px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-sm z-20">
+          <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
+            <div className="w-9 md:w-10 h-9 md:h-10 bg-teak rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg flex-shrink-0"><LayoutDashboard size={18} /></div>
+            <h1 className="font-heading text-base md:text-xl">Reception</h1>
           </div>
-          <div className="flex bg-parchment p-1 rounded-2xl border border-sandstone">
-            <button onClick={() => setActiveTab('live')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'live' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>Active Hub</button>
-            <button onClick={() => setActiveTab('pending')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'pending' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
+          <div className="flex bg-parchment p-1 rounded-xl md:rounded-2xl border border-sandstone w-full sm:w-auto overflow-x-auto">
+            <button onClick={() => setActiveTab('live')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex-shrink-0 ${activeTab === 'live' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>Active</button>
+            <button onClick={() => setActiveTab('pending')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'pending' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
               Requests
-              {pendingRequests.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[9px] border-2 border-white animate-bounce">{pendingRequests.length}</span>}
+              {pendingRequests.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[7px] md:text-[9px] border-2 border-white animate-bounce">{pendingRequests.length}</span>}
             </button>
-            <button onClick={() => setActiveTab('scheduled')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'scheduled' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
-              📅 Scheduled
-              {scheduledAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[9px] border-2 border-white">{scheduledAppointments.length}</span>}
+            <button onClick={() => setActiveTab('scheduled')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'scheduled' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
+              📅 Next
+              {scheduledAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[7px] md:text-[9px] border-2 border-white">{scheduledAppointments.length}</span>}
             </button>
           </div>
         </nav>
 
-        <main className="p-6 lg:p-8 grid lg:grid-cols-4 gap-8 flex-grow overflow-y-auto">
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-sandstone p-6 rounded-[2.5rem] shadow-sm">
-              <h2 className="font-heading text-lg mb-6 flex items-center gap-2"><Stethoscope size={18} className="text-marigold" /> Doctor Status</h2>
-              <div className="space-y-4">
+        <main className="px-4 md:px-6 lg:px-8 py-4 md:py-6 grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 flex-grow overflow-y-auto">
+          <div className="lg:col-span-1 space-y-4 md:space-y-6">
+            <div className="bg-white border border-sandstone p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-sm">
+              <h2 className="font-heading text-base md:text-lg mb-3 md:mb-6 flex items-center gap-2"><Stethoscope size={16} className="text-marigold flex-shrink-0" /> <span className="truncate">Doctor Status</span></h2>
+              <div className="space-y-3 md:space-y-4 max-h-96 overflow-y-auto">
                 {doctors.map(doc => {
                   const status = getDoctorLiveStatus(doc._id);
                   return (
-                    <div key={doc._id} className="p-4 rounded-3xl border border-sandstone bg-parchment group hover:border-marigold transition-all">
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="font-bold text-sm">Dr. {doc.name}</p>
-                        <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase flex items-center gap-1 ${status.bg} ${status.color}`}>{status.icon} {status.label}</span>
+                    <div key={doc._id} className="p-3 md:p-4 rounded-2xl md:rounded-3xl border border-sandstone bg-parchment group hover:border-marigold transition-all">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <p className="font-bold text-xs md:text-sm truncate">Dr. {doc.name}</p>
+                        <span className={`px-2 py-1 rounded-lg text-[7px] md:text-[8px] font-black uppercase flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${status.bg} ${status.color}`}>{status.icon} <span className="hidden md:inline">{status.label}</span></span>
                       </div>
-                      <p className="text-[10px] text-khaki font-medium italic">{doc.specialization}</p>
+                      <p className="text-[8px] md:text-[10px] text-khaki font-medium italic truncate">{doc.specialization}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className={`p-8 rounded-[3rem] shadow-xl transition-all duration-500 ${formData.isEmergency ? 'bg-red-600 ring-4 ring-red-200' : 'bg-teak'}`}>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-heading text-xl text-white">{formData.isEmergency ? 'Emergency Entry' : 'Walk-in Entry'}</h3>
-                {formData.isEmergency && <Siren size={24} className="text-white animate-bounce" />}
+            <div className={`p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl lg:rounded-[3rem] shadow-xl transition-all duration-500 ${formData.isEmergency ? 'bg-red-600 ring-4 ring-red-200' : 'bg-teak'}`}>
+              <div className="flex justify-between items-center gap-2 mb-3 md:mb-6">
+                <h3 className="font-heading text-base md:text-xl text-white truncate">{formData.isEmergency ? '🚨 Emergency' : 'Walk-in Entry'}</h3>
+                {formData.isEmergency && <Siren size={20} className="text-white animate-bounce flex-shrink-0" />}
               </div>
-              <form onSubmit={handleManualSubmit} className="space-y-4">
-                <input type="text" required placeholder="Patient Name" className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white outline-none focus:border-marigold placeholder:text-white/40" value={formData.patientName} onChange={(e) => setFormData({ ...formData, patientName: e.target.value })} />
-                <input type="tel" required placeholder="Phone Number" className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white outline-none focus:border-marigold placeholder:text-white/40" value={formData.patientPhone} onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })} />
-                <select required className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white outline-none focus:border-marigold" value={formData.doctorId} onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}>
+              <form onSubmit={handleManualSubmit} className="space-y-2 md:space-y-4">
+                <input type="text" required placeholder="Patient Name" className="w-full bg-white/10 border border-white/10 rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm text-white outline-none focus:border-marigold placeholder:text-white/40" value={formData.patientName} onChange={(e) => setFormData({ ...formData, patientName: e.target.value })} />
+                <input type="tel" required placeholder="Phone" className="w-full bg-white/10 border border-white/10 rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm text-white outline-none focus:border-marigold placeholder:text-white/40" value={formData.patientPhone} onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })} />
+                <select required className="w-full bg-white/10 border border-white/10 rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm text-white outline-none focus:border-marigold" value={formData.doctorId} onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}>
                   <option value="" className="text-black">Assign Doctor</option>
-                  {doctors.map(d => <option key={d._id} value={d._id} className="text-black">Dr. {d.name} {!d.isAvailable ? '(On Break)' : ''}</option>)}
+                  {doctors.map(d => <option key={d._id} value={d._id} className="text-black">Dr. {d.name} {!d.isAvailable ? '(Break)' : ''}</option>)}
                 </select>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/10">
-                  <span className="text-[10px] font-black uppercase text-white tracking-widest">Mark Emergency?</span>
-                  <button type="button" onClick={() => setFormData({ ...formData, isEmergency: !formData.isEmergency })} className={`w-12 h-6 rounded-full relative transition-all ${formData.isEmergency ? 'bg-red-500' : 'bg-white/20'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isEmergency ? 'left-7' : 'left-1'}`}></div></button>
+                <div className="flex items-center justify-between p-2 md:p-3 bg-white/5 rounded-xl md:rounded-2xl border border-white/10">
+                  <span className="text-[8px] md:text-[10px] font-black uppercase text-white tracking-widest truncate">Emergency?</span>
+                  <button type="button" onClick={() => setFormData({ ...formData, isEmergency: !formData.isEmergency })} className={`w-10 md:w-12 h-5 md:h-6 rounded-full relative transition-all flex-shrink-0 ${formData.isEmergency ? 'bg-red-500' : 'bg-white/20'}`}><div className={`absolute top-0.5 md:top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isEmergency ? 'left-5 md:left-7' : 'left-0.5 md:left-1'}`}></div></button>
                 </div>
-                <button disabled={isProcessing} className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all ${formData.isEmergency ? 'bg-white text-red-600' : 'bg-marigold text-white'} disabled:opacity-50`}>{isProcessing ? 'Processing...' : formData.isEmergency ? '🚨 Process Immediate' : 'Generate Token'}</button>
+                <button disabled={isProcessing} className={`w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all ${formData.isEmergency ? 'bg-white text-red-600' : 'bg-marigold text-white'} disabled:opacity-50`}>{isProcessing ? 'Processing...' : formData.isEmergency ? '🚨 Process' : 'Token'}</button>
               </form>
             </div>
           </div>
 
-          <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white border border-sandstone rounded-[3.5rem] overflow-hidden shadow-sm flex flex-col h-full">
-              <div className="px-10 py-8 border-b border-sandstone flex flex-col md:flex-row justify-between md:items-center gap-4 bg-parchment/30">
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-heading text-2xl text-teak">{activeTab === 'live' ? 'Live Flow' : activeTab === 'pending' ? 'External Requests' : 'Next 7 Days Appointments'}</h3>
+          <div className="lg:col-span-3 space-y-3 md:space-y-6">
+            <div className="bg-white border border-sandstone rounded-2xl md:rounded-3xl lg:rounded-[3.5rem] overflow-hidden shadow-sm flex flex-col h-full min-h-96">
+              <div className="px-4 md:px-6 lg:px-10 py-4 md:py-6 lg:py-8 border-b border-sandstone flex flex-col gap-3 md:gap-0 md:flex-row justify-between md:items-center bg-parchment/30">
+                <div className="flex items-center justify-between gap-2 md:gap-4">
+                  <h3 className="font-heading text-base md:text-2xl text-teak truncate">{activeTab === 'live' ? 'Live' : activeTab === 'pending' ? 'Requests' : 'Next 7 Days'}</h3>
                   {activeTab === 'live' && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-[8px] font-black text-green-600 uppercase tracking-widest">LIVE</span>
-                    </div>
-                  )}
-                  {activeTab === 'scheduled' && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
-                      <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest">📅 Upcoming</span>
+                    <div className="flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-green-50 rounded-full border border-green-200 flex-shrink-0">
+                      <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-[7px] md:text-[8px] font-black text-green-600 uppercase tracking-widest">LIVE</span>
                     </div>
                   )}
                 </div>
-                <div className="relative">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
-                  <input type="text" placeholder="Search patients..." className="pl-11 pr-4 py-3 bg-white border border-sandstone rounded-2xl text-xs outline-none focus:border-marigold w-full md:w-64" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <div className="relative w-full md:w-64">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-khaki flex-shrink-0" />
+                  <input type="text" placeholder="Search..." className="pl-9 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 bg-white border border-sandstone rounded-lg md:rounded-2xl text-[8px] md:text-xs outline-none focus:border-marigold w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-parchment border-b border-sandstone text-[9px] font-black uppercase tracking-[0.2em] text-khaki">
+              <div className="overflow-x-auto flex-grow">
+                <table className="w-full text-left text-[8px] md:text-xs">
+                  <thead className="bg-parchment border-b border-sandstone text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em] text-khaki sticky top-0">
                     <tr>
-                      <th className="px-10 py-5">TOKEN</th>
-                      <th className="px-10 py-5">PATIENT INFO</th>
-                      <th className="px-10 py-5 text-center">CURRENT STATUS</th>
-                      <th className="px-10 py-5 text-right">OPERATIONS</th>
+                      <th className="px-3 md:px-10 py-3 md:py-5">Token</th>
+                      <th className="px-3 md:px-10 py-3 md:py-5 hidden md:table-cell">Patient</th>
+                      <th className="px-3 md:px-10 py-3 md:py-5 text-center hidden lg:table-cell">Status</th>
+                      <th className="px-3 md:px-10 py-3 md:py-5 text-right">Ops</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#AFC4D8]/30">
                     {activeTab === 'live' ? (
                       queue.filter(p => p.patientName.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => a.isEmergency === b.isEmergency ? 0 : a.isEmergency ? -1 : 1).map((p) => (
                         <tr key={p._id} className={`${p.isEmergency ? 'bg-red-50/50' : ''} hover:bg-parchment/50 transition-colors animate-in duration-300`}>
-                          <td className="px-10 py-6">
-                            <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center border shadow-sm ${p.isEmergency ? 'border-red-600 bg-red-600 text-white' : 'border-sandstone bg-white'}`}><span className={`text-[8px] font-black uppercase ${p.isEmergency ? 'text-white' : 'text-khaki'}`}>TK</span><span className="font-heading text-xl">{p.tokenNumber}</span></div>
+                          <td className="px-3 md:px-10 py-3 md:py-6">
+                            <div className={`w-10 md:w-14 h-10 md:h-14 rounded-lg md:rounded-2xl flex flex-col items-center justify-center border shadow-sm text-[7px] md:text-[8px] ${p.isEmergency ? 'border-red-600 bg-red-600 text-white' : 'border-sandstone bg-white'}`}><span className={`font-black uppercase ${p.isEmergency ? 'text-white' : 'text-khaki'}`}>TK</span><span className="font-heading text-lg md:text-xl">{p.tokenNumber}</span></div>
                           </td>
-                          <td className="px-10 py-6">
-                            <p className={`font-bold ${p.isEmergency ? 'text-red-700' : 'text-teak'}`}>{p.patientName}</p>
-                            <p className="text-[10px] text-khaki font-bold">Assigned: Dr. {p.doctorId?.name}</p>
-                            {p.isEmergency && <span className="text-[8px] font-black text-red-600 animate-pulse block mt-1 uppercase tracking-tighter">🚨 High Priority</span>}
+                          <td className="px-3 md:px-10 py-3 md:py-6 hidden md:table-cell">
+                            <div>
+                              <p className={`font-bold text-xs md:text-sm truncate ${p.isEmergency ? 'text-red-700' : 'text-teak'}`}>{p.patientName}</p>
+                              <p className="text-[8px] md:text-[10px] text-khaki font-bold truncate">Dr. {p.doctorId?.name}</p>
+                            </div>
                           </td>
-                          <td className="px-10 py-6 text-center"><span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-parchment text-khaki border-sandstone'}`}>{p.status.replace('-', ' ')}</span></td>
-                          <td className="px-10 py-6 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button onClick={() => handleAddVitals(p.patientPhone)} className="p-3 bg-white border border-sandstone rounded-xl text-khaki hover:text-marigold transition-all shadow-sm"><Activity size={16} /></button>
-                              <button onClick={() => handleCopyTracker(p._id)} className="p-3 bg-teak rounded-xl text-white hover:bg-marigold transition-all shadow-lg"><UserCheck size={16} /></button>
+                          <td className="px-3 md:px-10 py-3 md:py-6 text-center hidden lg:table-cell"><span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-parchment text-khaki border-sandstone'}`}>{p.status === 'In-Consultation' ? 'Active' : p.status}</span></td>
+                          <td className="px-3 md:px-10 py-3 md:py-6 text-right">
+                            <div className="flex justify-end gap-1 md:gap-2">
+                              <button onClick={() => handleAddVitals(p.patientPhone)} className="p-1.5 md:p-3 bg-white border border-sandstone rounded-lg md:rounded-xl text-khaki hover:text-marigold transition-all shadow-sm flex-shrink-0" title="Add Vitals"><Activity size={14} /></button>
+                              <button onClick={() => handleCopyTracker(p._id)} className="p-1.5 md:p-3 bg-teak rounded-lg md:rounded-xl text-white hover:bg-marigold transition-all shadow-lg flex-shrink-0" title="Copy Link"><UserCheck size={14} /></button>
                             </div>
                           </td>
                         </tr>
@@ -365,64 +361,49 @@ const ReceptionDashboard = () => {
                     ) : activeTab === 'pending' ? (
                       pendingRequests.map((req) => (
                         <tr key={req._id} className="hover:bg-parchment/50 animate-in fade-in">
-                          <td className="px-10 py-8">
-                            <div>
-                              <p className="font-bold text-lg text-teak">{req.patientName}</p>
-                              <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${req.visitType === 'Appointment' ? 'bg-blue-100 text-blue-700' : 'bg-teak text-white'}`}>
-                                {req.visitType === 'Appointment' ? '📅 Appointment Request' : 'Walk-in Request'}
-                              </span>
-                            </div>
+                          <td className="px-3 md:px-10 py-4 md:py-8">
+                            <p className="font-bold text-xs md:text-lg text-teak truncate">{req.patientName}</p>
+                            <span className={`text-[7px] md:text-[8px] font-black uppercase px-2 py-0.5 rounded inline-block mt-1 ${req.visitType === 'Appointment' ? 'bg-blue-100 text-blue-700' : 'bg-teak text-white'}`}>
+                              {req.visitType === 'Appointment' ? '📅' : 'Walk-in'}
+                            </span>
                           </td>
-                          <td className="px-10 py-8 text-xs text-khaki font-bold">
-                            <div>
-                              <p>{req.patientPhone}</p>
-                              {req.visitType === 'Appointment' && req.appointmentDate && (
-                                <p className="text-[10px] text-marigold font-black mt-1">
-                                  📅 {new Date(req.appointmentDate).toLocaleDateString('en-IN')}
-                                </p>
-                              )}
-                            </div>
+                          <td className="px-3 md:px-10 py-4 md:py-8 text-[8px] md:text-xs text-khaki font-bold hidden md:table-cell">
+                            <p className="truncate">{req.patientPhone}</p>
+                            {req.visitType === 'Appointment' && req.appointmentDate && (
+                              <p className="text-[7px] md:text-[10px] text-marigold font-black mt-1">
+                                {new Date(req.appointmentDate).toLocaleDateString('en-IN')}
+                              </p>
+                            )}
                           </td>
-                          <td className="px-10 py-8 text-center">
-                            <div>
-                              <span className="text-[10px] font-black text-marigold uppercase tracking-widest">Awaiting Verification</span>
-                              {req.doctorId?.name && (
-                                <p className="text-[9px] text-khaki mt-2">Dr. {req.doctorId.name}</p>
-                              )}
-                            </div>
+                          <td className="px-3 md:px-10 py-4 md:py-8 text-center hidden lg:table-cell">
+                            <span className="text-[7px] md:text-[10px] font-black text-marigold uppercase tracking-widest block">Verify</span>
                           </td>
-                          <td className="px-10 py-8 text-right flex justify-end gap-3">
-                            <button disabled={isProcessing} onClick={() => handleApprove(req._id)} className="flex items-center gap-2 px-6 py-3 bg-marigold text-white rounded-2xl text-[9px] font-black uppercase shadow-lg hover:scale-105 transition-all disabled:opacity-50">{isProcessing ? <RefreshCw size={14} className="animate-spin" /> : <UserCheck size={14} />} Approve & Notify</button>
-                            <button className="p-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 transition-all"><XCircle size={18} /></button>
+                          <td className="px-3 md:px-10 py-4 md:py-8 text-right flex justify-end gap-1 md:gap-3">
+                            <button disabled={isProcessing} onClick={() => handleApprove(req._id)} className="flex items-center gap-1 md:gap-2 px-2 md:px-6 py-2 md:py-3 bg-marigold text-white rounded-lg md:rounded-2xl text-[7px] md:text-[9px] font-black uppercase shadow-lg hover:scale-105 transition-all disabled:opacity-50 flex-shrink-0 whitespace-nowrap">{isProcessing ? <RefreshCw size={12} className="animate-spin" /> : <UserCheck size={12} />} <span className="hidden md:inline">Approve</span></button>
                           </td>
                         </tr>
                       ))
                     ) : (
                       scheduledAppointments.filter(apt => apt.patientName.toLowerCase().includes(searchTerm.toLowerCase())).map((apt) => (
                         <tr key={apt._id} className="hover:bg-blue-50/30 transition-colors animate-in">
-                          <td className="px-10 py-6">
-                            <div className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center border border-blue-200 shadow-sm bg-blue-50">
-                              <span className="text-[8px] font-black uppercase text-blue-600">📅</span>
-                              <span className="font-heading text-sm text-blue-600">{apt.appointmentDate ? new Date(apt.appointmentDate).getDate() : '-'}</span>
+                          <td className="px-3 md:px-10 py-3 md:py-6">
+                            <div className="w-10 md:w-14 h-10 md:h-14 rounded-lg md:rounded-2xl flex flex-col items-center justify-center border border-blue-200 shadow-sm bg-blue-50 text-[8px] md:text-base">
+                              <span className="font-heading text-blue-600">{apt.appointmentDate ? new Date(apt.appointmentDate).getDate() : '-'}</span>
                             </div>
                           </td>
-                          <td className="px-10 py-6">
-                            <p className="font-bold text-teak">{apt.patientName}</p>
-                            <p className="text-[10px] text-khaki font-bold">{apt.patientPhone}</p>
+                          <td className="px-3 md:px-10 py-3 md:py-6 hidden md:table-cell">
+                            <p className="font-bold text-xs md:text-sm text-teak truncate">{apt.patientName}</p>
+                            <p className="text-[8px] md:text-[10px] text-khaki font-bold">{apt.patientPhone}</p>
                           </td>
-                          <td className="px-10 py-6">
-                            <div>
-                              <p className="text-sm font-bold text-teak">Dr. {apt.doctorId?.name}</p>
-                              <p className="text-[10px] text-khaki">{apt.doctorId?.specialization}</p>
-                              <p className="text-[9px] text-blue-600 font-black mt-2 uppercase">📅 {apt.appointmentDate ? new Date(apt.appointmentDate).toLocaleDateString('en-IN') : 'N/A'}</p>
-                            </div>
+                          <td className="px-3 md:px-10 py-3 md:py-6 hidden lg:table-cell">
+                            <p className="text-xs md:text-sm font-bold text-teak truncate">Dr. {apt.doctorId?.name}</p>
+                            <p className="text-[8px] md:text-[10px] text-blue-600 font-black mt-1 uppercase">{apt.appointmentDate ? new Date(apt.appointmentDate).toLocaleDateString('en-IN') : 'N/A'}</p>
                           </td>
-                          <td className="px-10 py-6 text-center">
-                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${apt.status === 'Waiting' ? 'bg-blue-100 text-blue-700 border-blue-200' : apt.status === 'Completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
-                              {apt.status.replace('-', ' ')}
+                          <td className="px-3 md:px-10 py-3 md:py-6 text-center">
+                            <span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${apt.status === 'Waiting' ? 'bg-blue-100 text-blue-700 border-blue-200' : apt.status === 'Completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
+                              {apt.status}
                             </span>
                           </td>
-                          <td className="px-10 py-6 text-right">-</td>
                         </tr>
                       ))
                     )}
@@ -430,8 +411,8 @@ const ReceptionDashboard = () => {
                 </table>
               </div>
               {activeTab === 'live' && (
-                <div className="px-10 py-4 border-t border-sandstone bg-parchment/20 text-center">
-                  <p className="text-[8px] text-khaki opacity-60">Last updated: {new Date(lastQueueUpdate).toLocaleTimeString()}</p>
+                <div className="px-4 md:px-10 py-2 md:py-4 border-t border-sandstone bg-parchment/20 text-center text-[8px] md:text-xs text-khaki opacity-60">
+                  Last updated: {new Date(lastQueueUpdate).toLocaleTimeString()}
                 </div>
               )}
             </div>
