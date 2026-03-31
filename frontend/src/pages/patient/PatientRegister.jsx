@@ -61,7 +61,7 @@ const PatientRegister = () => {
         } catch (err) {
             const isDuplicate = err.response?.data?.isDuplicate;
             const errorMessage = err.response?.data?.message || 'Failed to send OTP';
-            
+
             if (isDuplicate) {
                 // Handle duplicate phone number
                 Swal.fire({
@@ -231,7 +231,7 @@ const PatientRegister = () => {
                     </div>
                     <h1 className="text-2xl font-heading text-teak">Create Account</h1>
                     <p className="text-khaki text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                        Join SwasthyaMitra
+                        Join Appointory
                     </p>
                     <div className="mt-4 text-[9px] text-khaki font-bold tracking-widest">
                         Step {step} of 5
@@ -435,7 +435,7 @@ const PatientRegister = () => {
                             type="submit"
                             className="w-full py-5 bg-marigold text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl hover:bg-saffron transition-all"
                         >
-                            Review & Continue → 
+                            Review & Continue →
                         </button>
                         <button
                             type="button"
