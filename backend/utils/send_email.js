@@ -196,7 +196,7 @@ const sendStaffCredentials = async (email, password, name, role, clinicName) => 
                     <!-- Footer -->
                     <div style="background: linear-gradient(135deg, ${THEME.teak} 0%, ${THEME.saffron} 100%); color: ${THEME.parchment}; padding: 20px; text-align: center; border-radius: 0 0 12px 12px; font-size: 12px;">
                         <p style="margin: 0 0 5px 0;">
-                            <strong>SwasthyaMitra</strong> - Healthcare Management System
+                            <strong>Appointory</strong> - Healthcare Management System
                         </p>
                         <p style="margin: 0; color: ${THEME.sandstone};">
                             Clinic: ${clinicName}
