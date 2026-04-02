@@ -35,11 +35,14 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
 
     // Safely get current document
     const currentDoc = documents?.[currentIndex];
+    const isPdfDocument =
+        (currentDoc?.fileType || '').toLowerCase().includes('pdf') ||
+        (currentDoc?.fileUrl || '').toLowerCase().includes('.pdf');
 
     // Effect to update image URL when document changes
     useEffect(() => {
         if (!currentDoc) return;
-        
+
         console.log('📄 Report changed:', {
             title: currentDoc.title,
             fileUrl: currentDoc.fileUrl,
@@ -56,7 +59,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
             console.warn('⏱️ Image loading timeout after 60 seconds - marking as error');
             setLoading(false);
             setError(true);
-            
+
             Swal.fire({
                 icon: 'warning',
                 title: '⏱️ Loading Timeout',
@@ -113,10 +116,13 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
     };
 
     const handleDownload = () => {
-        if (currentDoc.fileUrl) {
+        if (currentDoc?.fileUrl) {
+            const isPdf =
+                (currentDoc.fileType || '').toLowerCase().includes('pdf') ||
+                currentDoc.fileUrl.toLowerCase().includes('.pdf');
             const a = document.createElement('a');
             a.href = currentDoc.fileUrl;
-            a.download = `${currentDoc.title || 'report'}.jpg`;
+            a.download = `${currentDoc.title || 'report'}.${isPdf ? 'pdf' : 'jpg'}`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -184,7 +190,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
             let res;
             try {
                 res = await axios.delete(`${API_URL}/api/auth/patient/remove-document/${documentId}`, {
-                    headers: { 
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
@@ -197,7 +203,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                 res = await axios.delete(
                     `${API_URL}/api/auth/patient/remove-document/${documentId}?phone=${patientPhone}`,
                     {
-                        headers: { 
+                        headers: {
                             Authorization: `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         }
@@ -245,7 +251,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
             });
 
             let errorMsg = err.message || 'Failed to remove the report.';
-            
+
             // Check if it's an API response error
             if (err.response?.data?.message) {
                 errorMsg = err.response.data.message;
@@ -365,7 +371,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                                     <div className="absolute inset-0 border-4 border-marigold border-t-transparent rounded-full animate-spin" style={{ animationDuration: '2s' }}></div>
                                     <div className="absolute inset-2 border-2 border-marigold/30 border-r-marigold rounded-full animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}></div>
                                 </div>
-                                
+
                                 <div className="text-center">
                                     <p className="text-white font-heading text-2xl mb-2">Loading Report</p>
                                     <p className="text-white/60 text-sm leading-relaxed">Fetching your {currentDoc.title || 'diagnostic report'} from secure storage...</p>
@@ -404,7 +410,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                                 <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500/20 rounded-full mx-auto border-2 border-red-500/30">
                                     <AlertCircle size={48} className="text-red-400" />
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-2xl font-heading mb-2">Report Unavailable</p>
                                     <p className="text-sm text-white/70 leading-relaxed">
@@ -447,30 +453,39 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                         </div>
                     )}
 
-                    {!error && (
-                        <img
-                            key={currentDoc._id}
-                            src={imageUrl}
-                            alt={currentDoc.title}
-                            style={{ 
-                                transform: `scale(${zoom / 100})`,
-                                maxWidth: '100%',
-                                maxHeight: '100%',
-                                width: 'auto',
-                                height: 'auto'
-                            }}
-                            className="object-contain transition-transform cursor-zoom-in animate-in fade-in duration-500"
-                            onLoad={handleImageLoad}
-                            onError={handleImageError}
-                            crossOrigin="anonymous"
-                            loading="lazy"
-                        />
+                    {!error && imageUrl && (
+                        isPdfDocument ? (
+                            <iframe
+                                key={currentDoc._id}
+                                src={imageUrl}
+                                title={currentDoc.title || 'Diagnostic Report PDF'}
+                                className="w-full h-full rounded-lg bg-white"
+                                onLoad={handleImageLoad}
+                            />
+                        ) : (
+                            <img
+                                key={currentDoc._id}
+                                src={imageUrl}
+                                alt={currentDoc.title}
+                                style={{
+                                    transform: `scale(${zoom / 100})`,
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    width: 'auto',
+                                    height: 'auto'
+                                }}
+                                className="object-contain transition-transform cursor-zoom-in animate-in fade-in duration-500"
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                                loading="lazy"
+                            />
+                        )
                     )}
                 </div>
 
                 {/* --- Enhanced Controls Bar --- */}
                 <div className="bg-gradient-to-r from-teak to-teak/95 px-6 py-5 flex flex-wrap items-center justify-between gap-6 backdrop-blur-sm border-t border-white/10 shadow-lg">
-                    
+
                     {/* Left Section: Zoom Controls */}
                     <div className="flex items-center gap-3 bg-white/10 px-4 py-2.5 rounded-xl border border-white/20">
                         <button
