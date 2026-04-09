@@ -9,15 +9,6 @@
   --color-saffron: #1A4F8A;
   --color-sandstone: #AFC4D8;
 
-  --font-heading: "Asimovian", sans-serif;
-  --font-body: "Montserrat", sans-serif;
-}
-
-/* Custom fonts */
-@font-face {
-  font-family: "Asimovian";
-  src: url("/fonts/asimovian.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+  --font-heading: "Montserrat", "Trebuchet MS", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
 }
