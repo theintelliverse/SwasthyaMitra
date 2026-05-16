@@ -7,6 +7,9 @@ const cors = require('cors');
 const http = require('http'); // 🔑 Required for WebSockets
 const { Server } = require('socket.io'); // 🔑 Required for WebSockets
 require('dotenv').config();
+
+// 🔑 Connect to MongoDB early so models never buffer-timeout
+const mongoose = require('./config/mongoose_connection');
 const {
     securityHeaders,
     globalApiLimiter,
@@ -246,12 +249,31 @@ app.get('/api/health', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 if (!isVercel && require.main === module) {
-    // 🔑 IMPORTANT: Listen using 'server', not 'app'
-    server.listen(PORT, () => {
-        if (!isProduction) {
-            console.log(`🚀 Server & WebSockets running on port ${PORT}`);
+    // 🔑 Wait for MongoDB to be ready before accepting connections
+    const startServer = async () => {
+        try {
+            // Ensure the mongoose connection promise resolves before listening
+            if (mongoose.connection.readyState !== 1) {
+                await new Promise((resolve, reject) => {
+                    mongoose.connection.once('open', resolve);
+                    mongoose.connection.once('error', reject);
+                    // Fallback: start anyway after 12s even if still connecting
+                    setTimeout(resolve, 12000);
+                });
+            }
+        } catch (err) {
+            console.error('⚠️  MongoDB did not connect before server start:', err.message);
         }
-    });
+
+        // 🔑 IMPORTANT: Listen using 'server', not 'app'
+        server.listen(PORT, () => {
+            if (!isProduction) {
+                console.log(`🚀 Server & WebSockets running on port ${PORT}`);
+            }
+        });
+    };
+
+    startServer();
 }
 
 module.exports = app;
