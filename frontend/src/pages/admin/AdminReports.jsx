@@ -1,42 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { 
     Download, FileSpreadsheet, ArrowLeft, Loader2, 
-    Users, BriefcaseMedical, Search, Eye, Table as TableIcon, RefreshCcw, ShieldCheck 
+    Users, BriefcaseMedical, Search, Eye, Table as TableIcon, RefreshCcw, ShieldCheck,
+    Clock, LogIn, LogOut, Timer, CalendarSearch, Database
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
+
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 const AdminReports = () => {
     const navigate = useNavigate();
     
     // States
-    const [view, setView] = useState('medical'); // 'medical' or 'staff'
-    const [data, setData] = useState({ medicalRecords: [], staffList: [] });
+    const [view, setView] = useState('medical'); // 'medical', 'staff', or 'sessions'
+    const [data, setData] = useState({ medicalRecords: [], staffList: [], sessions: [], staffStats: [] });
     const [searchTerm, setSearchTerm] = useState("");
     const [dates, setDates] = useState({ start: '', end: '' });
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
-        fetchPreviewData();
+        // Fetch Today's stats by default for the summary widget
+        const todayStr = new Date().toISOString().split('T')[0];
+        fetchInitialStats(todayStr);
     }, []);
 
+    const fetchInitialStats = async (date) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_URL}/api/staff/admin/preview-data?startDate=${date}&endDate=${date}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setData({ 
+                medicalRecords: res.data.medicalRecords || [], 
+                staffList: res.data.staffList || [],
+                sessions: res.data.sessions || [],
+                staffStats: res.data.staffStats || []
+            });
+        } catch (err) { console.error("Initial stats failed", err); }
+    };
+
     const fetchPreviewData = async (silent = false) => {
+        if (!dates.start || !dates.end) return alert("Please select both Start and End dates.");
+        
         if (!silent) setLoading(true);
         else setIsSyncing(true);
 
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get(`${API_URL}/api/staff/admin/preview-data`, {
+            const res = await axios.get(`${API_URL}/api/staff/admin/preview-data?startDate=${dates.start}&endDate=${dates.end}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Access nested data structure correctly
+            
             setData({ 
                 medicalRecords: res.data.medicalRecords || [], 
-                staffList: res.data.staffList || [] 
+                staffList: res.data.staffList || [],
+                sessions: res.data.sessions || [],
+                staffStats: res.data.staffStats || []
             });
+            setHasSearched(true);
         } catch (err) {
             console.error("Preview fetch failed", err);
         } finally {
@@ -72,147 +98,245 @@ const AdminReports = () => {
         }
     };
 
-    // Filter Logic for Preview
-    const filteredData = (view === 'medical' ? data.medicalRecords : data.staffList).filter(item => {
+    // Filter Logic
+    const filteredData = useMemo(() => {
         const query = searchTerm.toLowerCase();
         if (view === 'medical') {
-            return item.patientName?.toLowerCase().includes(query) || item.patientPhone?.includes(query);
+            return data.medicalRecords.filter(item => 
+                item.patientName?.toLowerCase().includes(query) || 
+                item.patientPhone?.includes(query)
+            );
+        } else if (view === 'staff') {
+            return data.staffList.filter(item => 
+                item.name?.toLowerCase().includes(query) || 
+                item.role?.toLowerCase().includes(query)
+            );
+        } else {
+            return data.sessions.filter(item => 
+                item.staffId?.name?.toLowerCase().includes(query) ||
+                item.staffId?.role?.toLowerCase().includes(query)
+            );
         }
-        return item.name?.toLowerCase().includes(query) || item.role?.toLowerCase().includes(query);
-    });
+    }, [view, data, searchTerm]);
 
-    if (loading) return (
-        <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4">
-            <RefreshCcw size={40} className="text-marigold animate-spin" />
-            <p className="font-heading text-teak text-xl">Loading Clinical Intelligence...</p>
-        </div>
-    );
+    const getAvgWorkTime = (staffId) => {
+        const stats = data.staffStats.find(s => s._id === staffId);
+        if (!stats) return "N/A";
+        const mins = Math.round(stats.avgMinutes);
+        if (mins < 60) return `${mins}m`;
+        return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+    };
 
     return (
-        <div className="flex min-h-screen bg-parchment text-teak font-body">
+        <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
             <Sidebar role="admin" />
             
-            <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar">
+            <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
                 {/* Header Section */}
-                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-4xl font-heading text-teak">Clinic Intelligence</h1>
-                            {isSyncing && <div className="w-2 h-2 bg-marigold rounded-full animate-ping"></div>}
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                                Analytics Hub
+                            </span>
+                            {isSyncing && <div className="w-2 h-2 bg-teal-500 rounded-full animate-ping"></div>}
                         </div>
-                        <p className="text-khaki text-sm font-medium italic">Comprehensive audit logs and performance data export.</p>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Clinic Intelligence</h1>
+                        <p className="text-slate-400 font-bold text-sm mt-1">Audit logs, personnel performance, and operational data.</p>
                     </div>
 
-                    <div className="flex bg-white border border-sandstone p-1.5 rounded-2xl shadow-sm">
-                        <TabBtn active={view === 'medical'} onClick={() => setView('medical')} icon={<BriefcaseMedical size={14} />} label="Medical Logs" />
-                        <TabBtn active={view === 'staff'} onClick={() => setView('staff')} icon={<Users size={14} />} label="Staff Roster" />
+                    <div className="flex bg-white border border-slate-100 p-1.5 rounded-2xl shadow-sm">
+                        <TabBtn active={view === 'medical'} onClick={() => setView('medical')} icon={<BriefcaseMedical size={14} />} label="Medical" />
+                        <TabBtn active={view === 'staff'} onClick={() => setView('staff')} icon={<Users size={14} />} label="Staff" />
+                        <TabBtn active={view === 'sessions'} onClick={() => setView('sessions')} icon={<Clock size={14} />} label="Sessions" />
                     </div>
                 </header>
 
                 <div className="grid lg:grid-cols-3 gap-10">
                     {/* Left Panel: Controls */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm sticky top-0">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-heading text-xl">Export Portal</h3>
-                                <ShieldCheck size={20} className="text-marigold opacity-30" />
+                    <div className="lg:col-span-1 space-y-8">
+                        <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="font-black text-xl text-slate-900">Intelligence Portal</h3>
+                                <div className="p-2 bg-slate-50 rounded-xl text-slate-400"><FileSpreadsheet size={20} /></div>
                             </div>
                             
-                            <div className="space-y-5 mb-10">
+                            <div className="space-y-6 mb-10">
                                 <DateInput label="Start Date" onChange={(e) => setDates({...dates, start: e.target.value})} />
                                 <DateInput label="End Date" onChange={(e) => setDates({...dates, end: e.target.value})} />
                             </div>
 
-                            <button 
-                                onClick={handleDownload}
-                                disabled={isDownloading}
-                                className="w-full bg-teak text-parchment py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-marigold transition-all shadow-xl disabled:opacity-50 active:scale-95"
-                            >
-                                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-                                {isDownloading ? 'Building CSV...' : 'Download Full CSV'}
-                            </button>
+                            <div className="space-y-4">
+                                <button 
+                                    onClick={() => fetchPreviewData()}
+                                    disabled={loading || !dates.start || !dates.end}
+                                    className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-slate-800 transition-all disabled:opacity-30 active:scale-95"
+                                >
+                                    {loading ? <Loader2 size={18} className="animate-spin" /> : <CalendarSearch size={18} />}
+                                    {loading ? 'Accessing...' : 'Review Intelligence'}
+                                </button>
+
+                                <button 
+                                    onClick={handleDownload}
+                                    disabled={isDownloading || !hasSearched}
+                                    className="w-full bg-teal-600 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 disabled:opacity-30 active:scale-95"
+                                >
+                                    {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                                    {isDownloading ? 'Generating...' : 'Export CSV Report'}
+                                </button>
+                            </div>
                             
-                            <div className="mt-8 p-6 bg-parchment border border-dashed border-sandstone rounded-3xl">
-                                <p className="text-[10px] font-bold text-khaki leading-relaxed">
-                                    Exports include patient demographics, doctor notes, and consultation duration.
+                            <div className="mt-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                                <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
+                                    Define a date range to unlock medical logs, staff productivity metrics, and duty cycles.
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Summary Widget */}
+                        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative group">
+                            <div className="relative z-10">
+                                <h4 className="text-lg font-black mb-1">Operational Health</h4>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Total Logs Processed</p>
+                                <div className="text-4xl font-black text-teal-500 mb-2">
+                                    {data.medicalRecords.length + data.sessions.length}+
+                                </div>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                    {hasSearched ? `Range: ${dates.start} to ${dates.end}` : "Today's Clinical Activity"}
+                                </p>
+                            </div>
+                            <ShieldCheck size={120} className="absolute -bottom-10 -right-10 text-white/5 group-hover:rotate-12 transition-transform duration-500" />
                         </div>
                     </div>
 
                     {/* Right Panel: Data Preview */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white border border-sandstone rounded-[3.5rem] shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+                        <div className="bg-white border border-slate-100 rounded-[3rem] shadow-sm overflow-hidden flex flex-col min-h-[700px]">
                             {/* Search & Refresh Bar */}
-                            <div className="p-8 border-b border-sandstone flex flex-col md:flex-row justify-between items-center gap-4 bg-parchment/30">
+                            <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
                                 <div className="relative w-full md:w-80">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" size={16} />
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                     <input 
                                         type="text" 
-                                        placeholder={`Search ${view}...`}
-                                        className="w-full pl-11 pr-4 py-3 bg-white border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold"
+                                        placeholder={`Filter ${view} records...`}
+                                        className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-100 rounded-2xl outline-none focus:border-teal-500 text-sm font-bold shadow-sm"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
+                                        disabled={!hasSearched}
                                     />
                                 </div>
-                                <button onClick={() => fetchPreviewData(true)} className="p-3 bg-white border border-sandstone rounded-xl text-khaki hover:text-marigold transition-all">
-                                    <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : ''} />
+                                <button 
+                                    onClick={() => fetchPreviewData(true)} 
+                                    disabled={!hasSearched}
+                                    className="p-3.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 disabled:opacity-30"
+                                >
+                                    <RefreshCcw size={18} className={isSyncing ? 'animate-spin text-teal-500' : ''} />
                                 </button>
                             </div>
                             
-                            <div className="flex-grow overflow-auto p-6 custom-scrollbar">
-                                <table className="w-full text-left border-separate border-spacing-y-3">
-                                    <thead className="sticky top-0 bg-white z-10">
-                                        <tr className="text-[10px] font-black uppercase tracking-widest text-khaki">
-                                            {view === 'medical' ? (
-                                                <>
-                                                    <th className="px-6 py-4">Patient Case</th>
-                                                    <th className="px-6 py-4">Clinical Staff</th>
-                                                    <th className="px-6 py-4 text-right">Visit Timestamp</th>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <th className="px-6 py-4">Staff Member</th>
-                                                    <th className="px-6 py-4">Access Level</th>
-                                                    <th className="px-6 py-4 text-right">System Status</th>
-                                                </>
+                            <div className="flex-grow overflow-auto p-8 custom-scrollbar relative">
+                                {!hasSearched ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
+                                        <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
+                                            <Database size={40} className="text-slate-200" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Clinical Vault Locked</h3>
+                                        <p className="text-slate-400 font-bold text-sm max-w-xs mx-auto">
+                                            Please select a <b>Start Date</b> and <b>End Date</b> in the Intelligence Portal to retrieve clinical records.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <table className="w-full text-left border-separate border-spacing-y-4">
+                                        <thead className="sticky top-0 bg-white z-10">
+                                            <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                                {view === 'medical' ? (
+                                                    <>
+                                                        <th className="px-6 py-4">Patient Case</th>
+                                                        <th className="px-6 py-4">Clinician</th>
+                                                        <th className="px-6 py-4 text-right">Timestamp</th>
+                                                    </>
+                                                ) : view === 'staff' ? (
+                                                    <>
+                                                        <th className="px-6 py-4">Team Member</th>
+                                                        <th className="px-6 py-4">Avg. Duty</th>
+                                                        <th className="px-6 py-4 text-right">Status</th>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <th className="px-6 py-4">Professional</th>
+                                                        <th className="px-6 py-4 text-center">Login / Logout</th>
+                                                        <th className="px-6 py-4 text-right">Duration</th>
+                                                    </>
+                                                )}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredData.map((item) => (
+                                                <tr key={item._id} className="group hover:scale-[1.005] transition-all duration-300">
+                                                    <td className="px-6 py-6 bg-slate-50/50 rounded-l-[2rem] border-y border-l border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xs font-black text-slate-400 border border-slate-100 uppercase group-hover:text-teal-600 transition-colors">
+                                                                {(item.patientName || item.name || item.staffId?.name || '??').substring(0, 2)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-black text-sm text-slate-900">
+                                                                    {item.patientName || item.name || item.staffId?.name}
+                                                                </p>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                    {item.patientPhone || item.role || item.staffId?.role}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                                        {view === 'medical' ? (
+                                                            <span className="text-xs font-black text-teal-600">Dr. {item.doctorId?.name}</span>
+                                                        ) : view === 'staff' ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <Timer size={14} className="text-slate-300" />
+                                                                <span className="text-xs font-black text-slate-700">{getAvgWorkTime(item._id)}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex flex-col gap-1 items-center">
+                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600 bg-white px-3 py-1 rounded-lg border border-slate-100">
+                                                                    <LogIn size={10} className="text-green-500" />
+                                                                    {new Date(item.loginTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                                </div>
+                                                                {item.logoutTime && (
+                                                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                                                                        <LogOut size={10} className="text-rose-400" />
+                                                                        {new Date(item.logoutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-6 bg-slate-50/50 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30 text-right">
+                                                        {view === 'medical' ? (
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(item.visitDate).toLocaleDateString()}</span>
+                                                        ) : view === 'staff' ? (
+                                                            <div className={`w-2.5 h-2.5 rounded-full inline-block ${item.isActive !== false ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`}></div>
+                                                        ) : (
+                                                            <span className="text-xs font-black text-teal-600">
+                                                                {item.sessionDurationMinutes ? `${item.sessionDurationMinutes}m` : '--'}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {filteredData.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="3" className="text-center py-32">
+                                                        <div className="flex flex-col items-center opacity-20">
+                                                            <ShieldCheck size={48} className="mb-4" />
+                                                            <p className="text-xs font-black uppercase tracking-widest">Vault Empty</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                             )}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredData.map((item) => (
-                                            <tr key={item._id} className="group hover:scale-[1.005] transition-all cursor-default">
-                                                <td className="px-6 py-5 bg-white rounded-l-3xl border-y border-l border-sandstone group-hover:border-marigold">
-                                                    <p className="font-bold text-sm text-teak">{item.patientName || item.name}</p>
-                                                    <p className="text-[10px] font-medium text-khaki">{item.patientPhone || item.email}</p>
-                                                </td>
-                                                <td className="px-6 py-5 bg-white border-y border-sandstone group-hover:border-marigold">
-                                                    {view === 'medical' ? (
-                                                        <span className="text-xs font-bold text-teak">Dr. {item.doctorId?.name}</span>
-                                                    ) : (
-                                                        <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-full border ${item.role === 'doctor' ? 'bg-marigold/10 border-marigold text-marigold' : 'bg-teak/5 border-teak/20 text-teak'}`}>
-                                                            {item.role}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-5 bg-white rounded-r-3xl border-y border-r border-sandstone group-hover:border-marigold text-right">
-                                                    {view === 'medical' ? (
-                                                        <span className="text-[10px] font-black text-marigold tracking-widest">{new Date(item.visitDate).toLocaleDateString()}</span>
-                                                    ) : (
-                                                        <div className={`w-2 h-2 rounded-full inline-block ${item.isActive ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-400'}`}></div>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {filteredData.length === 0 && (
-                                            <tr>
-                                                <td colSpan="3" className="text-center py-20 text-khaki italic font-medium opacity-50">
-                                                    No matching records found in the vault.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -222,22 +346,22 @@ const AdminReports = () => {
     );
 };
 
-// Sub-components for cleaner code
+// UI Components
 const TabBtn = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick}
-        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${active ? 'bg-marigold text-white shadow-md' : 'text-khaki hover:bg-parchment'}`}
+        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${active ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
     >
         {icon} {label}
     </button>
 );
 
 const DateInput = ({ label, onChange }) => (
-    <div>
-        <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2 block mb-2">{label}</label>
+    <div className="group">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-3 block mb-2 group-focus-within:text-teal-600 transition-colors">{label}</label>
         <input 
             type="date" 
-            className="w-full bg-parchment border border-sandstone p-4 rounded-2xl outline-none focus:border-marigold text-sm font-bold transition-colors"
+            className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-teal-500 focus:bg-white text-sm font-bold transition-all shadow-sm"
             onChange={onChange}
         />
     </div>

@@ -2,218 +2,273 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Phone, User, Stethoscope, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react';
+import { 
+    Phone, User, Stethoscope, ShieldCheck, ArrowRight, 
+    RefreshCw, Activity, CheckCircle, MapPin, Search
+} from 'lucide-react';
+
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 const PatientCheckIn = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const clinicCode = searchParams.get('code') || '';
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const clinicCode = searchParams.get('code') || '';
 
-  const [doctors, setDoctors] = useState([]);
-  const [clinicName, setClinicName] = useState('Clinic');
-  const [loading, setLoading] = useState(true);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
+    const [doctors, setDoctors] = useState([]);
+    const [clinicName, setClinicName] = useState('Clinic');
+    const [loading, setLoading] = useState(true);
+    const [otpSent, setOtpSent] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    patientName: '',
-    patientPhone: '',
-    doctorId: ''
-  });
+    const [formData, setFormData] = useState({
+        patientName: '',
+        patientPhone: '',
+        doctorId: ''
+    });
 
-  useEffect(() => {
-    const fetchClinicDoctors = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
-        setDoctors(res.data.doctors);
-        setClinicName(res.data.clinicName);
-        setLoading(false);
-      } catch (err) {
-        console.error("Could not load doctors");
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchClinicDoctors = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
+                setDoctors(res.data.doctors);
+                setClinicName(res.data.clinicName);
+                setLoading(false);
+            } catch (err) {
+                console.error("Could not load doctors");
+                setLoading(false);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Clinic Not Found',
+                    text: 'Invalid clinic code or network error.',
+                    confirmButtonColor: '#0D9488'
+                });
+            }
+        };
+        if (clinicCode) fetchClinicDoctors();
+        else {
+            setLoading(false);
+            // If no code, maybe show a search or error
+        }
+    }, [clinicCode]);
+
+    const handleSendOTP = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
+                phone: formData.patientPhone
+            });
+            setOtpSent(true);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Verification Code Sent',
+                showConfirmButton: false,
+                timer: 3000,
+                background: '#F8FAFC'
+            });
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Dispatch Failed',
+                text: 'Could not send OTP. Please verify your phone number.',
+                confirmButtonColor: '#0D9488'
+            });
+        } finally {
+            setSubmitting(false);
+        }
     };
-    if (clinicCode) fetchClinicDoctors();
-  }, [clinicCode]);
 
-  // --- Step 1: Send OTP ---
-  const handleSendOTP = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/api/auth/patient/send-otp`, {
-        phone: formData.patientPhone
-      });
-      setOtpSent(true);
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'info',
-        title: 'OTP Sent successfully',
-        text: 'Check your server console for the code.',
-        showConfirmButton: false,
-        timer: 4000,
-        background: '#EEF6FA'
-      });
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Dispatch Failed',
-        text: 'Failed to send OTP. Please check the phone number.',
-        confirmButtonColor: '#0F766E'
-      });
-    }
-  };
+    const handleVerifyAndCheckin = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            // 1. Verify OTP
+            await axios.post(`${API_URL}/api/auth/patient/verify-otp`, {
+                phone: formData.patientPhone,
+                otp
+            });
 
-  // --- Step 2: Verify OTP & Request Check-in ---
-  const handleVerifyAndCheckin = async (e) => {
-    e.preventDefault();
-    try {
-      // 1. Verify OTP first
-      await axios.post(`${API_URL}/api/auth/patient/verify-otp`, {
-        phone: formData.patientPhone,
-        otp
-      });
+            // 2. Submit Check-in
+            const res = await axios.post(`${API_URL}/api/queue/public/checkin`, {
+                patientName: formData.patientName,
+                patientPhone: formData.patientPhone,
+                doctorId: formData.doctorId,
+                clinicCode: clinicCode.toUpperCase()
+            });
 
-      // 2. Submit the Gatekeeper Check-in Request
-      const res = await axios.post(`${API_URL}/api/queue/public/checkin`, {
-        patientName: formData.patientName,
-        patientPhone: formData.patientPhone,
-        doctorId: formData.doctorId,
-        clinicCode: clinicCode.toUpperCase()
-      });
+            if (res.data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Check-in Successful! 🎉',
+                    text: 'The receptionist has been notified. Please watch the display screen.',
+                    confirmButtonColor: '#0D9488',
+                    background: '#F8FAFC'
+                }).then(() => {
+                    navigate(`/patient/status?id=${res.data.id}`);
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Check-in Failed',
+                text: err.response?.data?.message || 'Invalid code or system error.',
+                confirmButtonColor: '#0D9488'
+            });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
-      if (res.data.success) {
-        Swal.fire({
-          title: 'Request Sent!',
-          text: 'The receptionist has been notified. Please wait for approval.',
-          icon: 'success',
-          confirmButtonColor: '#1F6FB2',
-          background: '#EEF6FA'
-        }).then(() => {
-          navigate(`/patient/status?id=${res.data.id}`);
-        });
-      }
-    } catch (err) {
-      console.error("Check-in Error:", err.response);
-      Swal.fire({
-        icon: 'error',
-        title: 'Verification Failed',
-        text: err.response?.data?.message || 'Invalid code or check-in error.',
-        confirmButtonColor: '#0F766E'
-      });
-    }
-  };
-
-  if (loading) return (
-    <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4">
-      <RefreshCw size={32} className="text-marigold animate-spin" />
-      <p className="font-heading text-xl text-teak">Syncing with {clinicName}...</p>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-parchment font-body text-teak flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl p-10 border border-sandstone relative overflow-hidden">
-
-        {/* Decorative Morning Glow */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-marigold/5 rounded-full -mr-16 -mt-16"></div>
-
-        <header className="text-center mb-10">
-          <div className="w-16 h-16 bg-marigold rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-marigold/20">
-            <ShieldCheck size={32} className="text-white" />
-          </div>
-          <h1 className="text-3xl font-heading text-teak">{clinicName}</h1>
-          <p className="text-khaki text-[10px] font-black uppercase tracking-[0.3em] mt-2">Verified Self Check-in</p>
-        </header>
-
-        {!otpSent ? (
-          <form onSubmit={handleSendOTP} className="space-y-6">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">Full Name</label>
-              <div className="relative">
-                <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" />
-                <input
-                  type="text" required placeholder="Dr. Patient Name"
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all placeholder:font-normal"
-                  onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">Mobile Number</label>
-              <div className="relative">
-                <Phone size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" />
-                <input
-                  type="tel" required placeholder="91XXXXXXXXXX"
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak transition-all placeholder:font-normal"
-                  onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1 relative">
-              <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">Consulting Specialist</label>
-              <div className="relative">
-                <Stethoscope size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki z-10" />
-                <select
-                  required
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak appearance-none cursor-pointer relative z-0"
-                  onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
-                >
-                  <option value="">Choose Specialist</option>
-                  {doctors.map(doc => (
-                    <option key={doc._id} value={doc._id}>
-                      Dr. {doc.name} ({doc.specialization})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" className="w-full py-5 bg-marigold text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-teak transition-all active:scale-95 flex items-center justify-center gap-3">
-              Send OTP <ArrowRight size={18} />
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyAndCheckin} className="space-y-8 animate-in slide-in-from-right duration-500">
-            <div className="text-center">
-              <p className="text-sm text-teak font-bold">Verify Security Code</p>
-              <p className="text-[11px] text-khaki mt-1">Sent to <b>{formData.patientPhone}</b></p>
-            </div>
-
-            <input
-              type="text" required maxLength="6" placeholder="0 0 0 0 0 0"
-              className="w-full text-center text-4xl tracking-[0.4em] py-8 bg-parchment border-2 border-marigold/20 rounded-[2.5rem] outline-none focus:border-marigold font-heading text-teak shadow-inner"
-              value={otp} onChange={(e) => setOtp(e.target.value)}
-            />
-
-            <div className="flex flex-col gap-4">
-              <button type="submit" className="w-full py-5 bg-teak text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-marigold transition-all">
-                Confirm & Request Entry
-              </button>
-              <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-black uppercase text-khaki tracking-[0.2em] hover:text-teak transition-all">
-                ← Edit Information
-              </button>
-            </div>
-          </form>
-        )}
-
-        <div className="mt-12 pt-8 border-t border-sandstone text-center">
-          <button
-            onClick={() => navigate('/patient/login')}
-            className="text-[10px] font-black uppercase tracking-widest text-teak hover:text-marigold transition-colors"
-          >
-            Access Health Locker →
-          </button>
+    if (loading) return (
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4 font-body">
+            <RefreshCw size={32} className="text-teal-600 animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Clinical Network...</p>
         </div>
-      </div>
+    );
 
-      <p className="mt-8 text-[9px] font-black uppercase tracking-[0.4em] text-khaki opacity-50">
-        Powered by Appointory Clinical Network
-      </p>
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
+            <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">
+                
+                {/* Left Panel - Clinic Info */}
+                <div className="w-full md:w-5/12 bg-slate-900 p-10 text-white flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12"><Activity size={120} /></div>
+                    <div className="relative z-10">
+                        <div className="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-teal-500/20">
+                            <MapPin size={24} className="text-white" />
+                        </div>
+                        <h2 className="text-2xl font-black tracking-tight leading-tight mb-2">{clinicName}</h2>
+                        <div className="flex items-center gap-2 mb-6">
+                            <span className="px-2 py-0.5 bg-white/10 rounded text-[9px] font-black uppercase tracking-widest text-teal-400 border border-white/10">
+                                {clinicCode}
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Facility</span>
+                        </div>
+                        <p className="text-slate-400 text-xs font-bold leading-relaxed uppercase tracking-wider">Welcome to our self-service check-in portal. Please provide your details to join the queue.</p>
+                    </div>
+
+                    <div className="relative z-10 mt-12 md:mt-0">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-teal-400">Live Queue Active</span>
+                            </div>
+                            <p className="text-[8px] font-bold text-slate-500 leading-relaxed uppercase tracking-tighter">Your position in the queue will be updated in real-time on the clinic displays.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Panel - Form */}
+                <div className="w-full md:w-7/12 p-10 md:p-12">
+                    <header className="mb-10">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                                {otpSent ? 'Verification' : 'Self Check-in'}
+                            </span>
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                            {otpSent ? "Verify Identity" : "Check-in Details"}
+                        </h3>
+                    </header>
+
+                    {!otpSent ? (
+                        <form onSubmit={handleSendOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
+                                <div className="relative group">
+                                    <User size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+                                    <input
+                                        type="text" required placeholder="Enter your name"
+                                        className="w-full pl-16 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
+                                <div className="relative group">
+                                    <Phone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+                                    <input
+                                        type="tel" required placeholder="10-digit number"
+                                        className="w-full pl-16 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Specialist</label>
+                                <div className="relative group">
+                                    <Stethoscope size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors z-10" />
+                                    <select
+                                        required
+                                        className="w-full pl-16 pr-10 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer relative z-0 transition-all shadow-sm"
+                                        onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
+                                    >
+                                        <option value="">Choose Doctor</option>
+                                        {doctors.map(doc => (
+                                            <option key={doc._id} value={doc._id}>
+                                                Dr. {doc.name} ({doc.specialization})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button 
+                                type="submit" disabled={submitting}
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {submitting ? <RefreshCw className="animate-spin" size={18} /> : <>Generate Secure OTP <ArrowRight size={18} /></>}
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleVerifyAndCheckin} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100 text-center">
+                                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest">Sent Verification to</p>
+                                <p className="text-sm font-black text-slate-900">{formData.patientPhone}</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
+                                <input
+                                    type="text" required maxLength="6" placeholder="000000"
+                                    className="w-full py-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 font-black text-center text-3xl tracking-[0.3em] text-slate-900 shadow-inner"
+                                    value={otp} onChange={(e) => setOtp(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <button 
+                                    type="submit" disabled={submitting}
+                                    className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {submitting ? <RefreshCw className="animate-spin" size={18} /> : <>Confirm & Request Entry <CheckCircle size={18} /></>}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setOtpSent(false)} 
+                                    className="w-full text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors"
+                                >
+                                    ← Edit Check-in Info
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    <div className="mt-12 text-center pt-8 border-t border-slate-50">
+                        <button onClick={() => navigate('/patient/login')} className="text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors flex items-center justify-center gap-2 mx-auto">
+                            Already have an account? <span className="text-teal-600">Login</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default PatientCheckIn;

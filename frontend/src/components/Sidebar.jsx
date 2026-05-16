@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   LayoutDashboard,
   Users,
@@ -12,41 +13,96 @@ import {
   ShieldCheck,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  TestTubes,
+  FileCheck,
+  Calendar,
+  MessageSquare,
+  LifeBuoy,
+  HelpCircle,
+  FileText,
+  Layout
 } from 'lucide-react';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const Sidebar = ({ role }) => {
-  const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(true);
-  const clinicName = localStorage.getItem('clinicName') || 'Appointory Hub';
-  const userName = localStorage.getItem('userName') || 'User';
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+const Sidebar = ({ role = 'lab' }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [analysisMode, setAnalysisMode] = useState(false);
+  const navigate = useNavigate();
+
+  // Safely get user info from localStorage
+  const getSafeStorageItem = (key, fallback) => {
+    try {
+      return localStorage.getItem(key) || fallback;
+    } catch (e) {
+      console.warn(`Storage access failed for ${key}`, e);
+      return fallback;
+    }
   };
 
-  // --- 🛠️ DYNAMIC ROLE-BASED NAVIGATION ---
-  const menuItems = {
-    admin: [
-      { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
-      { name: 'Staff Management', path: '/admin/staff-management', icon: <Users size={20} /> },
-      { name: 'Clinic Analytics', path: '/admin/analytics', icon: <Activity size={20} /> },
-      { name: 'Medical History', path: '/admin/history', icon: <ClipboardList size={20} /> },
-      { name: 'Clinic Settings', path: '/admin/settings', icon: <Settings size={20} /> },
-    ],
-    doctor: [
-      { name: 'Patient Queue', path: '/doctor/dashboard', icon: <Activity size={20} /> },
-      { name: 'Health Locker', path: '/doctor/locker-search', icon: <ShieldCheck size={20} /> },
-      { name: 'Clinic Records', path: '/doctor/records', icon: <ClipboardList size={20} /> },
-    ],
-    receptionist: [
-      { name: 'Reception Hub', path: '/receptionist/dashboard', icon: <Users size={20} /> },
-      { name: 'Add Patient', path: '/receptionist/add', icon: <Activity size={20} /> },
-    ],
-    lab: [
-      { name: 'Diagnostics Hub', path: '/lab/dashboard', icon: <Beaker size={20} /> },
-    ]
+  const clinicName = getSafeStorageItem('clinicName', 'Appointory Hub');
+  const userName = getSafeStorageItem('userName', 'Healthcare Professional');
+  const userRole = role || getSafeStorageItem('role', 'staff');
+
+  const menuItems = useMemo(() => {
+    const config = {
+      admin: [
+        { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Staff Management', path: '/admin/staff-management', icon: <Users size={20} /> },
+        { name: 'Clinic Settings', path: '/admin/settings', icon: <Settings size={20} /> },
+        { name: 'Reports', path: '/admin/reports', icon: <Settings size={20} /> },
+        { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
+      ],
+      doctor: [
+        { name: 'Dashboard', path: '/doctor/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Appointments', path: '/doctor/appointments', icon: <Calendar size={20} /> },
+        { name: 'Patients', path: '/doctor/patients', icon: <Users size={20} /> },
+        { name: 'Prescriptions', path: '/doctor/prescriptions', icon: <FileText size={20} /> },
+        { name: 'Templates', path: '/doctor/templates', icon: <Layout size={20} /> },
+        { name: 'Reports', path: '/doctor/reports', icon: <ClipboardList size={20} /> },
+        { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
+      ],
+      receptionist: [
+        { name: 'Reception Hub', path: '/receptionist/dashboard', icon: <Users size={20} /> },
+        { name: 'Add Patient', path: '/receptionist/add', icon: <Activity size={20} /> },
+      ],
+      lab: [
+        { name: 'Dashboard', path: '/lab/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Test Requests', path: '/lab/requests', icon: <ClipboardList size={20} /> },
+        { name: 'Samples', path: '/lab/samples', icon: <TestTubes size={20} /> },
+        { name: 'Reports', path: '/lab/reports', icon: <FileCheck size={20} /> },
+        { name: 'Analytics', path: '/lab/analytics', icon: <Activity size={20} /> },
+        { name: 'Settings', path: '/lab/settings', icon: <Settings size={20} /> },
+      ],
+      patient: [
+        { name: 'Health Hub', path: '/patient/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Health Locker', path: '/patient/locker', icon: <ShieldCheck size={20} /> },
+        { name: 'Book Slot', path: '/patient/book-appointment', icon: <Calendar size={20} /> },
+        { name: 'My Profile', path: '/profile', icon: <UserCircle size={20} /> },
+      ]
+    };
+    // Normalize role key to lowercase to match config
+    const normalizedRole = (userRole || 'staff').toLowerCase();
+    return config[normalizedRole] || config.lab || [];
+  }, [userRole]);
+
+  const handleLogout = async () => {
+    try {
+      const sessionId = localStorage.getItem('sessionId');
+      const token = localStorage.getItem('token');
+
+      if (sessionId && token) {
+        await axios.post(`${API_URL}/api/auth/logout`, { sessionId }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (err) {
+      console.error("Logout tracking failed", err);
+    } finally {
+      localStorage.clear();
+      navigate('/login');
+    }
   };
 
   return (
@@ -54,15 +110,15 @@ const Sidebar = ({ role }) => {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed bottom-8 right-8 z-50 w-14 h-14 bg-marigold text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all active:scale-95"
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 bg-teal-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Mobile Overlay */}
+      {/* Backdrop */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/30 z-30"
+          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30 transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -71,91 +127,105 @@ const Sidebar = ({ role }) => {
       <aside
         className={`
           fixed lg:sticky top-0 left-0 h-screen z-40
-          w-64 bg-gradient-to-b from-white to-parchment/30 border-r border-sandstone flex flex-col
-          transform transition-transform duration-300 ease-in-out
+          w-72 bg-white border-r border-gray-100 flex flex-col
+          transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          lg:translate-x-0 overflow-y-auto
+          shadow-2xl lg:shadow-none
         `}
       >
-        {/* --- Clinic Branding --- */}
-        <div className="flex-shrink-0 p-6 border-b border-sandstone/30">
+        {/* Logo Section */}
+        <div className="p-8">
           <div
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => {
-              navigate(`/${role}/dashboard`);
-              setIsOpen(false);
-            }}
+            onClick={() => navigate(`/${userRole}/dashboard`)}
+            className="flex items-center gap-4 group cursor-pointer"
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-marigold to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-marigold/30 group-hover:shadow-xl transition-all">
-              <span className="text-white font-heading font-bold text-xl">A</span>
+            <div className="w-12 h-12 bg-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/20 group-hover:rotate-6 transition-all duration-300">
+              <ShieldCheck size={26} className="text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-heading text-lg leading-tight text-teak text-nowrap">Appointory</h2>
-              <p className="text-[9px] font-black uppercase tracking-widest text-khaki truncate">{clinicName}</p>
+            <div>
+              <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1">
+                {clinicName.split(' ')[0]}<span className="text-teal-600">.</span>
+              </h1>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Healthcare OS</p>
             </div>
           </div>
         </div>
 
-        {/* --- Navigation Links --- */}
-        <nav className="flex-grow px-3 py-6 space-y-1">
-          <p className="text-[9px] font-black uppercase text-khaki mb-4 px-4 tracking-[0.2em] opacity-60">Menu</p>
-          {menuItems[role]?.map((item) => (
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto py-4 custom-scrollbar">
+          {menuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
-              onClick={() => setIsOpen(false)}
               className={({ isActive }) => `
-                flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200
-                group relative overflow-hidden
+                flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold text-sm transition-all duration-200 group
                 ${isActive
-                  ? 'bg-gradient-to-r from-marigold/20 to-orange-50 text-marigold border-l-4 border-marigold shadow-sm'
-                  : 'text-khaki hover:bg-parchment/60 hover:text-teak hover:translate-x-1'}
+                  ? 'bg-teal-50 text-teal-600 shadow-sm shadow-teal-100/50'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
               `}
+              onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
             >
-              <span className="flex items-center gap-3">
-                <span className="transition-transform group-hover:scale-110">{item.icon}</span>
-                <span className="truncate">{item.name}</span>
-              </span>
-              <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className={`transition-transform group-hover:scale-110 duration-200`}>
+                {item.icon}
+              </div>
+              <span className="flex-1">{item.name}</span>
+              {item.name === 'Dashboard' && (
+                <div className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
+              )}
+              <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
             </NavLink>
           ))}
         </nav>
 
-        {/* --- Bottom Profile Section --- */}
-        <div className="flex-shrink-0 p-4 border-t border-sandstone/30 bg-gradient-to-b from-transparent to-parchment/40 space-y-3">
-          <div className="px-3 py-3 mb-1 flex items-center gap-3 bg-white border border-sandstone/20 rounded-xl hover:border-sandstone/40 transition-all hover:shadow-sm">
-            <div className="w-10 h-10 bg-gradient-to-br from-teak to-orange-700 rounded-lg flex items-center justify-center text-white text-[11px] font-black flex-shrink-0 shadow-md">
-              {userName.charAt(0).toUpperCase()}
+        {/* User Card & Logout */}
+        <div className="p-6 border-t border-gray-50 bg-gray-50/30">
+          <div 
+            onClick={() => navigate('/profile')}
+            className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm mb-4 cursor-pointer hover:border-teal-500 hover:shadow-md transition-all group/card"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-100 group-hover/card:bg-teal-600 group-hover/card:text-white transition-colors">
+                {userName.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-0.5">
+                  {userRole === 'doctor' ? 'Doctor' : userRole === 'lab' ? 'Laboratory' : userRole === 'patient' ? 'Patient' : userRole}
+                </p>
+                <p className="text-sm font-black text-gray-900 truncate tracking-tight leading-tight group-hover/card:text-teal-600 transition-colors">
+                  {(() => {
+                    const name = userName;
+                    if (userRole === 'doctor') {
+                      return name.toLowerCase().startsWith('dr') ? name : `Dr. ${name}`;
+                    }
+                    return name;
+                  })()}
+                </p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">
+                  {userRole === 'doctor' ? 'Chief Physician' : userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Wellness Member' : 'Staff Member'}
+                </p>
+              </div>
             </div>
-            <div className="overflow-hidden flex-1 min-w-0">
-              <p className="text-[10px] font-black text-teak truncate uppercase">{userName}</p>
-              <p className="text-[8px] font-bold text-khaki uppercase tracking-tighter capitalize">{role}</p>
+
+            <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 group-hover/card:bg-teal-50 transition-colors">
+              <div className="flex items-center gap-2">
+                <Activity size={14} className="text-teal-600" />
+                <span className="text-[10px] font-bold text-gray-500">Live Sync</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[9px] font-black text-green-600 uppercase">Online</span>
+              </div>
             </div>
           </div>
 
-          <NavLink
-            to="/profile"
-            onClick={() => setIsOpen(false)}
-            className={({ isActive }) => `
-              flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all
-              ${isActive
-                ? 'bg-gradient-to-r from-marigold to-orange-500 text-white shadow-md hover:shadow-lg'
-                : 'text-khaki hover:bg-parchment/60 hover:text-teak'}
-            `}
-          >
-            <UserCircle size={18} />
-            <span className="text-xs">Account</span>
-          </NavLink>
-
           <button
-            onClick={() => {
-              handleLogout();
-              setIsOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs text-red-500 bg-red-50/50 hover:bg-red-100 hover:text-red-700 transition-all active:scale-95 border border-red-100"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-xs text-red-500 hover:bg-red-50 transition-all active:scale-95 border border-transparent hover:border-red-100 group"
           >
-            <LogOut size={18} />
-            <span>Sign Out</span>
+            <div className="p-2 rounded-xl bg-red-50 group-hover:bg-red-100 transition-colors">
+              <LogOut size={16} />
+            </div>
+            <span className="flex-1 text-left uppercase tracking-widest">Sign Out</span>
           </button>
         </div>
       </aside>

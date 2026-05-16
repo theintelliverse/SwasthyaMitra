@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
-/* Theme tokens */
+/* Theme tokens – Appointory green healthcare style */
 @theme {
-  --color-parchment: #EEF6FA;
-  --color-teak: #0F766E;
-  --color-khaki: #3FA28C;
-  --color-marigold: #1F6FB2;
-  --color-saffron: #1A4F8A;
-  --color-sandstone: #AFC4D8;
+  --color-parchment: #F7FAF9;
+  --color-teak: #1A3C34;
+  --color-khaki: #5C7C74;
+  --color-marigold: #2D9B6F;
+  --color-saffron: #1F7A56;
+  --color-sandstone: #D4E4DF;
+  --color-accent: #E8F5F0;
 
   --font-heading: "Montserrat", "Trebuchet MS", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;

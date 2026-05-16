@@ -6,7 +6,7 @@ import { io } from 'socket.io-client'; // 🔑 Added Socket Client
 import { SOCKET_URL } from '../../config/runtime'; // Importing runtime socket URL
 import {
   Archive, RefreshCw, UserPlus, Search, Users,
-  ShieldCheck, Activity, UserCheck, History, AlertCircle
+  ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -102,15 +102,15 @@ const AdminStaffManagement = () => {
     } finally { setIsSubmitting(false); }
   };
 
-  const handleArchive = async (id, name) => {
+  const handleRemove = async (id, name) => {
     Swal.fire({
-      title: 'Archive Member?',
-      text: `Access for ${name} will be revoked, but historical records will be preserved for audits.`,
+      title: 'Remove Personnel?',
+      text: `Are you sure you want to remove ${name}? This will revoke their clinical access immediately. Historical data will remain available in logs.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#0F766E',
+      confirmButtonColor: '#ef4444',
       cancelButtonColor: '#AFC4D8',
-      confirmButtonText: 'Confirm Archive',
+      confirmButtonText: 'Yes, Remove Staff',
       background: '#EEF6FA'
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -118,7 +118,7 @@ const AdminStaffManagement = () => {
           await axios.delete(`${API_URL}/api/staff/delete/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          Swal.fire('Archived!', 'Staff access has been restricted.', 'success');
+          Swal.fire('Removed!', 'Staff access has been revoked.', 'success');
           // fetchStaff() is now handled by socket
         } catch (err) {
           Swal.fire('Error', 'Action failed.', 'error');
@@ -239,11 +239,11 @@ const AdminStaffManagement = () => {
                     <span className="text-[9px] font-bold text-khaki truncate max-w-[120px]">{member.email}</span>
                     <div className="flex gap-1">
                       {activeView === 'active' && (
-                        <button onClick={() => handleArchive(member._id, member.name)} className="p-2.5 text-khaki hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-                          <Archive size={16} />
+                        <button onClick={() => handleRemove(member._id, member.name)} className="p-2.5 text-khaki hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Remove Staff">
+                          <Trash2 size={16} />
                         </button>
                       )}
-                      <button className="p-2.5 text-khaki hover:text-marigold hover:bg-parchment rounded-xl transition-all">
+                      <button className="p-2.5 text-khaki hover:text-marigold hover:bg-parchment rounded-xl transition-all" title="View History">
                         <History size={16} />
                       </button>
                     </div>

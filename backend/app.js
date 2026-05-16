@@ -35,6 +35,7 @@ const staffRoutes = require('./routes/staff_routes');
 const queueRoutes = require('./routes/queue_routes');
 const clinicroutes = require('./routes/clinic_routes');
 const callRoutes = require('./routes/call_routes');
+const labRoutes = require('./routes/lab_routes');
 
 const app = express();
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
@@ -183,6 +184,11 @@ if (!isVercel) {
 }
 
 // Middlewares
+app.use((req, res, next) => {
+    console.log(`📡 [${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 app.set('trust proxy', 1);
 app.use(securityHeaders);
 app.use(cors(corsOptions));
@@ -230,19 +236,20 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/queue', queueRoutes);
 app.use('/api/clinic', clinicroutes);
 app.use('/api/call', callRoutes);
+app.use('/api/lab', labRoutes);
 
 // Health Check
 app.get('/', (req, res) => {
     res.send('Appointory Backend is running...');
 });
 
-app.get('/api/health', (req, res) => {
-    res.status(200).json({
-        success: true,
-        environment: process.env.NODE_ENV || 'development',
-        serverless: isVercel,
-        socketEnabled: !isVercel,
-        timestamp: new Date().toISOString()
+// Error Handler
+app.use((err, req, res, next) => {
+    console.error('❌ GLOBAL ERROR:', err.message);
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal Server Error'
     });
 });
 

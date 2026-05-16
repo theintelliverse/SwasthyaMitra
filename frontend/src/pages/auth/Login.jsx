@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-// 🛠️ Fixed the icon imports here
-import { ShieldCheck, Mail, LockKeyhole, Hash, RefreshCw, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Mail, LockKeyhole, Hash, RefreshCw, ArrowRight, Activity, AlertCircle, X, Wifi, WifiOff } from 'lucide-react';
 import Footer from '../../components/Footer';
+
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 const Login = () => {
   const [formData, setFormData] = useState({
     clinicCode: '',
@@ -13,25 +14,36 @@ const Login = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [loginError, setLoginError] = useState(null); // { message, type: 'credentials' | 'network' | 'server' }
   const navigate = useNavigate();
+
+  const clearError = () => setLoginError(null);
+
+  const handleInputChange = (field, value) => {
+    if (loginError) clearError();
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
 
     try {
+      console.log('📡 Attempting login with:', { ...formData, password: '***' });
       const response = await axios.post(`${API_URL}/api/auth/login`, formData);
 
       if (response.data.success) {
-        const { token, user } = response.data;
+        const { token, user, sessionId } = response.data;
 
         // 🔑 CORE AUTH DATA
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userName', user.name);
+        localStorage.setItem('sessionId', sessionId);
 
         // 🏥 CLINIC DATA (Crucial for WebSockets)
-        // This ensures localStorage.getItem('clinicId') will no longer be null
         localStorage.setItem('clinicId', user.clinicId);
         localStorage.setItem('clinicName', user.clinicName || 'Our Clinic');
         localStorage.setItem('clinicCode', formData.clinicCode.toUpperCase());
@@ -42,8 +54,11 @@ const Login = () => {
           text: `Accessing ${user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard...`,
           timer: 1500,
           showConfirmButton: false,
-          background: '#EEF6FA',
-          color: '#0F766E',
+          background: '#FFFFFF',
+          color: '#1A3C34',
+          customClass: {
+            popup: 'rounded-[2rem] border border-sandstone'
+          }
         });
 
         setTimeout(() => {
@@ -57,117 +72,223 @@ const Login = () => {
         }, 1500);
       }
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Login Failed',
-        text: error.response?.data?.message || 'Invalid credentials.',
-        confirmButtonColor: '#1F6FB2',
-        background: '#EEF6FA',
-      });
+      console.error('❌ Login error:', error);
+      const status = error.response?.status;
+      const serverMessage = error.response?.data?.message;
+
+      if (!error.response) {
+        // Network error — server unreachable
+        setLoginError({
+          type: 'network',
+          message: 'Cannot reach the server. Check your connection or ensure the backend is running.'
+        });
+      } else if (status === 401 || status === 403) {
+        setLoginError({
+          type: 'credentials',
+          message: serverMessage || 'Invalid email, clinic code, or password. Please try again.'
+        });
+      } else if (status === 429) {
+        setLoginError({
+          type: 'server',
+          message: 'Too many login attempts. Please wait a moment before trying again.'
+        });
+      } else {
+        setLoginError({
+          type: 'server',
+          message: serverMessage || 'Something went wrong on our end. Please try again shortly.'
+        });
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
-      <div className="flex-grow flex flex-col justify-center items-center px-6 py-12">
+    <div className="min-h-screen bg-parchment font-body text-teak flex flex-col relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-marigold/5 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-saffron/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-        <div className="flex items-center gap-4 mb-12 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="w-12 h-12 bg-marigold rounded-2xl flex items-center justify-center shadow-xl shadow-marigold/20 group-hover:scale-110 transition-transform duration-300">
-            <span className="text-white font-heading text-3xl">A</span>
+      <div className="flex-grow flex flex-col justify-center items-center px-6 py-12 relative z-10">
+
+        {/* Brand Header */}
+        <div
+          className="flex items-center gap-4 mb-10 cursor-pointer group transition-all duration-500 hover:opacity-80"
+          onClick={() => navigate('/')}
+        >
+          <div className="w-14 h-14 bg-gradient-to-br from-marigold to-saffron rounded-2xl flex items-center justify-center shadow-2xl shadow-marigold/30 group-hover:rotate-[10deg] transition-all duration-500">
+            <Activity className="text-white" size={32} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="font-heading text-2xl tracking-tight leading-none">Appointory</h1>
-            <p className="text-[8px] font-black uppercase tracking-[0.3em] text-khaki mt-1">Provider Portal</p>
+            <h1 className="font-heading text-3xl font-bold tracking-tight leading-none text-teak">Appointory</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-khaki mt-1.5 opacity-70">Healthcare Clinical OS</p>
           </div>
         </div>
 
-        <div className="w-full max-w-md bg-white border border-sandstone/50 p-8 sm:p-12 rounded-[3.5rem] shadow-2xl shadow-teak/5 relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-marigold/5 rounded-full"></div>
+        {/* Login Card */}
+        <div className="w-full max-w-md">
+          <div className="bg-white/70 backdrop-blur-xl border border-white p-8 sm:p-12 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(26,60,52,0.08)] relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-marigold/20 via-marigold to-marigold/20"></div>
 
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-heading mb-2 text-teak">Clinic Portal</h2>
-            <p className="text-sm text-khaki font-medium italic">Authenticate to access your facility dashboard</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-khaki ml-4">Clinic Identification Code</label>
-              <div className="relative">
-                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" size={16} />
-                <input
-                  type="text" required placeholder="e.g. CITY01"
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone/60 rounded-2xl focus:outline-none focus:border-marigold transition-all font-bold placeholder:text-khaki/30 uppercase"
-                  value={formData.clinicCode}
-                  onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
-                />
-              </div>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-heading font-bold mb-2 text-teak">Clinic Portal</h2>
+              <p className="text-sm text-khaki font-medium">Authenticate to access your facility dashboard</p>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-khaki ml-4">Authorized Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" size={16} />
-                <input
-                  type="email" required placeholder="name@clinic.com"
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone/60 rounded-2xl focus:outline-none focus:border-marigold transition-all font-medium placeholder:text-khaki/30"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-khaki ml-4">Secure Password</label>
-              <div className="relative">
-                <LockKeyhole className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki" size={16} />
-                <input
-                  type="password" required placeholder="••••••••"
-                  className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone/60 rounded-2xl focus:outline-none focus:border-marigold transition-all font-medium"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <button
-                type="submit" disabled={loading}
-                className="w-full py-5 bg-marigold text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-marigold/20 hover:bg-saffron transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            {/* Inline Error Banner */}
+            {loginError && (
+              <div
+                className={`mb-6 flex items-start gap-4 p-5 rounded-2xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
+                  loginError.type === 'network'
+                    ? 'bg-orange-50 border-orange-200 text-orange-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                }`}
               >
-                {loading ? <RefreshCw className="animate-spin" size={20} /> : <>Sign In <ArrowRight size={20} /></>}
-              </button>
+                <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${
+                  loginError.type === 'network' ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'
+                }`}>
+                  {loginError.type === 'network'
+                    ? <WifiOff size={18} />
+                    : <AlertCircle size={18} />}
+                </div>
+                <div className="flex-grow min-w-0">
+                  <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-70">
+                    {loginError.type === 'network' ? 'Connection Error' :
+                     loginError.type === 'credentials' ? 'Authentication Failed' : 'Server Error'}
+                  </p>
+                  <p className="text-sm font-medium leading-relaxed">{loginError.message}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearError}
+                  className="shrink-0 p-1.5 rounded-lg hover:bg-black/5 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Clinic Code */}
+              <div className="space-y-2 group/field">
+                <label className={`text-[10px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/60'}`}>
+                  Clinic Identification Code
+                </label>
+                <div className={`relative transition-all duration-300 transform ${focusedField === 'clinicCode' ? 'scale-[1.02]' : ''}`}>
+                  <Hash className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/40'}`} size={18} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. CITY01"
+                    autoComplete="off"
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${
+                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    }`}
+                    value={formData.clinicCode}
+                    onFocus={() => setFocusedField('clinicCode')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={(e) => handleInputChange('clinicCode', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2 group/field">
+                <label className={`text-[10px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'email' ? 'text-marigold' : 'text-khaki/60'}`}>
+                  Authorized Email Address
+                </label>
+                <div className={`relative transition-all duration-300 transform ${focusedField === 'email' ? 'scale-[1.02]' : ''}`}>
+                  <Mail className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === 'email' ? 'text-marigold' : 'text-khaki/40'}`} size={18} />
+                  <input
+                    type="email"
+                    required
+                    placeholder="name@clinic.com"
+                    autoComplete="email"
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium placeholder:text-khaki/30 text-teak ${
+                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    }`}
+                    value={formData.email}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2 group/field">
+                <div className="flex justify-between items-end px-4">
+                  <label className={`text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${focusedField === 'password' ? 'text-marigold' : 'text-khaki/60'}`}>
+                    Secure Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="text-[10px] text-khaki/60 hover:text-marigold font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Forgot?
+                  </button>
+                </div>
+                <div className={`relative transition-all duration-300 transform ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
+                  <LockKeyhole className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === 'password' ? 'text-marigold' : 'text-khaki/40'}`} size={18} />
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium text-teak ${
+                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    }`}
+                    value={formData.password}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-5 bg-gradient-to-r from-marigold to-saffron text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl shadow-marigold/20 hover:shadow-marigold/40 transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+                >
+                  {loading ? (
+                    <RefreshCw className="animate-spin" size={20} />
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" size={20} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-12 text-center pt-8 border-t border-sandstone/30">
+              <p className="text-xs text-khaki font-medium">
+                New facility?{' '}
+                <button
+                  onClick={() => navigate('/register-clinic')}
+                  className="text-marigold font-bold hover:text-teak transition-colors underline-offset-4"
+                >
+                  Create an account
+                </button>
+              </p>
             </div>
+          </div>
 
-            <div className="text-center pt-4">
-              <button
-                type="button"
-                onClick={() => navigate('/forgot-password')}
-                className="text-xs text-khaki hover:text-marigold font-bold uppercase tracking-widest transition-colors"
-              >
-                Forgot Password?
-              </button>
+          <div className="mt-10 flex items-center justify-center gap-6 opacity-40">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-marigold" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-teak">HIPAA Compliant</span>
             </div>
-          </form>
-
-          <div className="mt-12 text-center">
-            <p className="text-xs text-khaki font-medium">
-              First time here?{' '}
-              <button onClick={() => navigate('/register-clinic')} className="text-marigold font-bold hover:underline underline-offset-4">
-                Register your facility
-              </button>
-            </p>
+            <div className="w-1.5 h-1.5 bg-sandstone rounded-full"></div>
+            <div className="flex items-center gap-1.5">
+              <Activity size={14} className="text-marigold" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-teak">24/7 Monitoring</span>
+            </div>
           </div>
-        </div>
-
-        <div className="mt-10 flex items-center gap-4 opacity-40">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck size={12} />
-            <span className="text-[9px] font-black uppercase tracking-widest text-teak">End-to-End Encrypted</span>
-          </div>
-          <div className="w-1 h-1 bg-teak rounded-full"></div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-teak">Secure Cloud Sync</span>
         </div>
       </div>
       <Footer />

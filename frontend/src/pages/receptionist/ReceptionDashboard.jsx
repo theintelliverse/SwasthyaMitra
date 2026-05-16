@@ -7,10 +7,11 @@ import { SOCKET_URL } from '../../config/runtime';
 import {
   User, Phone, Stethoscope, AlertCircle, Clipboard,
   Beaker, Activity, UserCheck, XCircle, Coffee,
-  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link
+  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link, ArrowLeft
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
+import { useLocation } from 'react-router-dom';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -247,12 +248,23 @@ const ReceptionDashboard = () => {
     return { label: 'Available', color: 'text-green-600', bg: 'bg-green-50', icon: <CheckCircle2 size={14} /> };
   };
 
+  const location = useLocation();
+  const fromAdmin = new URLSearchParams(location.search).get('fromAdmin') === 'true';
+
   return (
     <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
       <Sidebar role="receptionist" />
       <div className="flex-grow flex flex-col min-h-screen overflow-hidden">
         <nav className="bg-white border-b border-sandstone px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-sm z-20">
           <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
+            {fromAdmin && (
+              <button 
+                onClick={() => navigate('/admin/dashboard')}
+                className="mr-2 p-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase tracking-widest border border-teal-100"
+              >
+                <ArrowLeft size={16} /> <span className="hidden sm:inline">Back to Admin</span>
+              </button>
+            )}
             <div className="w-9 md:w-10 h-9 md:h-10 bg-teak rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg flex-shrink-0"><LayoutDashboard size={18} /></div>
             <h1 className="font-heading text-base md:text-xl">Reception</h1>
           </div>

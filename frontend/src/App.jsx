@@ -11,8 +11,17 @@ const Unauthorized = lazy(() => import('./pages/auth/Unauthorized'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const ClinicAnalytics = lazy(() => import('./pages/admin/ClinicAnalytics'));
 const DoctorDashboard = lazy(() => import('./pages/doctor/DoctorDashboard'));
+const DoctorAppointments = lazy(() => import('./pages/doctor/Appointments'));
+const DoctorPrescriptions = lazy(() => import('./pages/doctor/Prescriptions'));
+const DoctorReports = lazy(() => import('./pages/doctor/Reports'));
+const DoctorTemplates = lazy(() => import('./pages/doctor/Templates'));
 const ReceptionDashboard = lazy(() => import('./pages/receptionist/ReceptionDashboard'));
 const LabDashboard = lazy(() => import('./pages/lab/LabDashboard'));
+const LabTestRequests = lazy(() => import('./pages/lab/TestRequests'));
+const LabSamples = lazy(() => import('./pages/lab/Samples'));
+const LabReports = lazy(() => import('./pages/lab/Reports'));
+const LabAnalytics = lazy(() => import('./pages/lab/Analytics'));
+const LabSettings = lazy(() => import('./pages/lab/Settings'));
 const ClinicSettings = lazy(() => import('./pages/admin/ClinicSettings'));
 const ProfilePage = lazy(() => import('./pages/shared/ProfilePage'));
 const ClinicTVDisplay = lazy(() => import('./pages/shared/ClinicTVDisplay'));
@@ -91,7 +100,39 @@ const App = () => {
               }
             />
             <Route
-              path="/Patient/HealthLocker"
+              path="/doctor/appointments"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorAppointments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/prescriptions"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorPrescriptions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/reports"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/templates"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorTemplates />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/locker"
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
                   <HealthLocker />
@@ -119,7 +160,7 @@ const App = () => {
               }
             />
             <Route
-              path="/Admin/reports"
+              path="/admin/reports"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminReports />
@@ -133,6 +174,46 @@ const App = () => {
               element={
                 <ProtectedRoute allowedRoles={['lab']}>
                   <LabDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/requests"
+              element={
+                <ProtectedRoute allowedRoles={['lab']}>
+                  <LabTestRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/samples"
+              element={
+                <ProtectedRoute allowedRoles={['lab']}>
+                  <LabSamples />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/reports"
+              element={
+                <ProtectedRoute allowedRoles={['lab']}>
+                  <LabReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/analytics"
+              element={
+                <ProtectedRoute allowedRoles={['lab']}>
+                  <LabAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/settings"
+              element={
+                <ProtectedRoute allowedRoles={['lab']}>
+                  <LabSettings />
                 </ProtectedRoute>
               }
             />
@@ -151,7 +232,7 @@ const App = () => {
             <Route
               path="/profile"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'doctor', 'receptionist', 'lab']}>
+                <ProtectedRoute allowedRoles={['admin', 'doctor', 'receptionist', 'lab', 'patient']}>
                   <ProfilePage />
                 </ProtectedRoute>
               }
