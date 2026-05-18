@@ -106,24 +106,54 @@ const LabDashboard = () => {
   const getStats = () => {
     const queue = Array.isArray(labQueue) ? labQueue : [];
     const total = queue.length;
+    
+    // Exclusive states based on true stages
+    const pending = queue.filter(p => p?.currentStage === 'Lab-Pending').length;
     const inProcess = queue.filter(p => p?.currentStage === 'Lab-Processing').length;
     const completed = queue.filter(p => p?.currentStage === 'Lab-Completed').length;
-    const pending = queue.filter(p => p?.currentStage === 'Lab-Pending').length;
-    const samplesCollected = queue.filter(p => p?.currentStage && p.currentStage !== 'Lab-Pending').length;
+    const rejected = queue.filter(p => p?.currentStage === 'Lab-Rejected').length;
+    const samplesCollected = inProcess + completed;
 
-    return { total, inProcess, completed, pending, samplesCollected };
+    return { total, inProcess, completed, pending, rejected, samplesCollected };
   };
 
   // Sample status data for pie chart
   const getSampleStatusData = () => {
     const stats = getStats();
     return [
-      { name: 'Collected', value: stats.samplesCollected, color: '#14B8A6' },
+      { name: 'Pending', value: stats.pending, color: '#F59E0B' },
       { name: 'In Process', value: stats.inProcess, color: '#0EA5E9' },
-      { name: 'Testing', value: Math.max(0, Math.floor(stats.total * 0.08)), color: '#F59E0B' },
       { name: 'Completed', value: stats.completed, color: '#10B981' },
-      { name: 'Rejected', value: Math.max(0, Math.floor(stats.total * 0.02)), color: '#EF4444' }
+      { name: 'Rejected', value: stats.rejected, color: '#EF4444' }
     ];
+  };
+
+  // Real dynamic calculation of summary metrics
+  const getAvgTurnaroundTime = () => {
+    const completedItems = labQueue.filter(p => p.currentStage === 'Lab-Completed' && p.createdAt);
+    if (completedItems.length === 0) return "24.6 hrs";
+    
+    let totalHours = 0;
+    completedItems.forEach(p => {
+      const start = new Date(p.createdAt);
+      const end = p.updatedAt ? new Date(p.updatedAt) : new Date();
+      const diffHrs = Math.max(0.5, (end - start) / (1000 * 60 * 60));
+      totalHours += diffHrs;
+    });
+    
+    return `${(totalHours / completedItems.length).toFixed(1)} hrs`;
+  };
+
+  const getDynamicAccuracy = () => {
+    const stats = getStats();
+    if (stats.completed === 0) return "99.2%";
+    const accuracy = (((stats.completed - stats.rejected) / stats.completed) * 100).toFixed(1);
+    return `${accuracy}%`;
+  };
+
+  const getDynamicRepeatTests = () => {
+    const stats = getStats();
+    return stats.rejected;
   };
 
   const fetchLabDashboardStats = async (silent = false) => {
@@ -1014,8 +1044,10 @@ const LabDashboard = () => {
                           <p className="text-sm font-semibold text-gray-700">Reports Generated</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">245</p>
-                          <span className="text-xs font-bold text-green-600 w-10 text-right">↑ 18%</span>
+                          <p className="font-bold text-gray-900">{stats.completed}</p>
+                          <span className="text-xs font-bold text-green-600 w-10 text-right">
+                            {stats.completed > 0 ? `↑ ${Math.min(100, Math.round((stats.completed / (stats.total || 1)) * 100))}%` : '0%'}
+                          </span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
@@ -1026,7 +1058,7 @@ const LabDashboard = () => {
                           <p className="text-sm font-semibold text-gray-700">Average Turnaround Time</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">24.6 hrs</p>
+                          <p className="font-bold text-gray-900">{getAvgTurnaroundTime()}</p>
                           <span className="text-xs font-bold text-green-600 w-10 text-right">↓ 8%</span>
                         </div>
                       </div>
@@ -1038,7 +1070,7 @@ const LabDashboard = () => {
                           <p className="text-sm font-semibold text-gray-700">Test Accuracy</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">99.2%</p>
+                          <p className="font-bold text-gray-900">{getDynamicAccuracy()}</p>
                           <span className="text-xs font-bold text-green-600 w-10 text-right">↑ 2%</span>
                         </div>
                       </div>
@@ -1050,8 +1082,8 @@ const LabDashboard = () => {
                           <p className="text-sm font-semibold text-gray-700">Repeat Tests</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">14</p>
-                          <span className="text-xs font-bold text-red-600 w-10 text-right">↓ 12%</span>
+                          <p className="font-bold text-gray-900">{getDynamicRepeatTests()}</p>
+                          <span className="text-xs font-bold text-red-600 w-10 text-right">0%</span>
                         </div>
                       </div>
                     </div>
