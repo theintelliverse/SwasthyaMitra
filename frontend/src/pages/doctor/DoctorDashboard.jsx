@@ -864,6 +864,15 @@ const DoctorDashboard = () => {
                             key={patient._id} 
                             onClick={() => {
                               if (patient.status === 'Waiting') {
+                                if (patient.currentStage === 'Lab-Pending') {
+                                  Swal.fire({
+                                    icon: 'info',
+                                    title: 'Lab Report Pending',
+                                    text: 'This patient is currently undergoing tests at the Laboratory. Please wait for lab completion.',
+                                    confirmButtonColor: '#0d9488'
+                                  });
+                                  return;
+                                }
                                 handleStartConsultation(patient);
                               } else if (patient.status === 'In-Consultation') {
                                 setActivePatient(patient);
@@ -894,26 +903,42 @@ const DoctorDashboard = () => {
                             </td>
                             <td className="py-1.5 px-2.5">
                               <div className="flex items-center gap-1.5">
-                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600' :
-                                  patient.status === 'Waiting' ? 'bg-orange-50 text-orange-600' :
-                                    patient.status === 'Completed' ? 'bg-blue-50 text-blue-600' :
-                                      'bg-gray-50 text-gray-400'
-                                  }`}>
-                                  {patient.status}
+                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                                  patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600 border border-green-100' :
+                                  patient.currentStage === 'Lab-Pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                                  patient.currentStage === 'Lab-Completed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' :
+                                  patient.status === 'Waiting' ? 'bg-orange-50 text-orange-600 border border-orange-100' :
+                                  patient.status === 'Completed' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                                  'bg-gray-50 text-gray-400'
+                                }`}>
+                                  {patient.currentStage === 'Lab-Pending' ? 'At Lab' :
+                                   patient.currentStage === 'Lab-Completed' ? 'Lab Done' :
+                                   patient.status}
                                 </span>
                               </div>
                             </td>
                             <td className="py-1.5 px-2.5 text-right pr-3 rounded-r-xl">
                               {patient.status === 'Waiting' ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStartConsultation(patient);
-                                  }}
-                                  className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 inline-flex"
-                                >
-                                  Start
-                                </button>
+                                patient.currentStage === 'Lab-Pending' ? (
+                                  <button
+                                    disabled
+                                    className="px-3.5 py-1.5 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[9px] font-black uppercase tracking-widest cursor-not-allowed inline-flex"
+                                  >
+                                    At Lab
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStartConsultation(patient);
+                                    }}
+                                    className={`px-3.5 py-1.5 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 inline-flex ${
+                                      patient.currentStage === 'Lab-Completed' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-teal-600 hover:bg-teal-700'
+                                    }`}
+                                  >
+                                    {patient.currentStage === 'Lab-Completed' ? 'Start (Lab Done)' : 'Start'}
+                                  </button>
+                                )
                               ) : patient.status === 'In-Consultation' ? (
                                 <button
                                   onClick={(e) => {

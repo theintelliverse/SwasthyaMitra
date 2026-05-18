@@ -409,7 +409,20 @@ const LabDashboard = () => {
   };
 
   const handleFileUpload = async (patientPhone, queueId, file) => {
-    if (!file) return;
+    if (!file) {
+      // Dynamic System File Selector
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'application/pdf,image/*';
+      fileInput.onchange = (e) => {
+        const selected = e.target.files[0];
+        if (selected) {
+          handleFileUpload(patientPhone, queueId, selected);
+        }
+      };
+      fileInput.click();
+      return;
+    }
 
     // 🔍 Pre-upload validation
     if (file.size > 5 * 1024 * 1024) { // 5MB Limit
@@ -764,13 +777,19 @@ const LabDashboard = () => {
                                   <p>22 May 2025</p>
                                   <p>{new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                 </td>
-                                <td className="px-6 py-4 text-center flex justify-center items-center h-full pt-6">
-                                  <button
-                                    className="text-gray-400 hover:text-teal-600 transition-colors"
-                                    onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                  >
-                                    <Eye size={16} />
-                                  </button>
+                                <td className="px-6 py-4 text-center">
+                                  {request.currentStage === 'Lab-Completed' ? (
+                                    <span className="text-xs font-bold text-gray-400">Published</span>
+                                  ) : (
+                                    <button
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm"
+                                      onClick={() => handleFileUpload(request.patientPhone, request._id)}
+                                      title="Upload Diagnostic Report"
+                                    >
+                                      <Upload size={14} />
+                                      <span>Upload Report</span>
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
                             ))
@@ -827,13 +846,17 @@ const LabDashboard = () => {
                               <span className="text-[10px] text-gray-400">
                                 {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
-                              <button
-                                onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                className="flex items-center gap-1 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95"
-                              >
-                                <Eye size={12} />
-                                Actions
-                              </button>
+                              {request.currentStage === 'Lab-Completed' ? (
+                                <span className="text-[10px] font-bold text-gray-400">Published</span>
+                              ) : (
+                                <button
+                                  onClick={() => handleFileUpload(request.patientPhone, request._id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95"
+                                >
+                                  <Upload size={12} />
+                                  <span>Upload Report</span>
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))
