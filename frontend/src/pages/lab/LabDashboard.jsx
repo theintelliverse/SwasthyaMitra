@@ -105,7 +105,7 @@ const LabDashboard = () => {
     title: 'Diagnostic Lab Report',
     findings: '',
     notes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
-    doctorName: localStorage.getItem('defaultDoctorName') || 'Dr. Swasthya Mitra, MBBS, MD'
+    doctorName: localStorage.getItem('defaultDoctorName') || 'Laboratory'
   });
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalPatient, setUploadModalPatient] = useState(null);
@@ -119,7 +119,7 @@ const LabDashboard = () => {
   const getStats = () => {
     const queue = Array.isArray(labQueue) ? labQueue : [];
     const total = queue.length;
-    
+
     // Exclusive states based on true stages
     const pending = queue.filter(p => p?.currentStage === 'Lab-Pending').length;
     const inProcess = queue.filter(p => p?.currentStage === 'Lab-Processing').length;
@@ -145,7 +145,7 @@ const LabDashboard = () => {
   const getAvgTurnaroundTime = () => {
     const completedItems = labQueue.filter(p => p.currentStage === 'Lab-Completed' && p.createdAt);
     if (completedItems.length === 0) return "24.6 hrs";
-    
+
     let totalHours = 0;
     completedItems.forEach(p => {
       const start = new Date(p.createdAt);
@@ -153,7 +153,7 @@ const LabDashboard = () => {
       const diffHrs = Math.max(0.5, (end - start) / (1000 * 60 * 60));
       totalHours += diffHrs;
     });
-    
+
     return `${(totalHours / completedItems.length).toFixed(1)} hrs`;
   };
 
@@ -458,10 +458,10 @@ const LabDashboard = () => {
   const handleDailySummary = () => {
     const queue = Array.isArray(labQueue) ? labQueue : [];
     const todayStr = new Date().toDateString();
-    
+
     // Filter to only items created TODAY
     const dailyQueue = queue.filter(p => p.createdAt && new Date(p.createdAt).toDateString() === todayStr);
-    
+
     const total = dailyQueue.length;
     const pending = dailyQueue.filter(p => p?.currentStage === 'Lab-Pending').length;
     const inProcess = dailyQueue.filter(p => p?.currentStage === 'Lab-Processing').length;
@@ -517,7 +517,7 @@ const LabDashboard = () => {
       // Professional Header
       doc.setFillColor(primaryColor);
       doc.rect(0, 0, 210, 40, 'F');
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
@@ -539,7 +539,7 @@ const LabDashboard = () => {
       doc.text(`Patient Name: ${activeDigitalPatient.patientName}`, 20, 70);
       doc.text(`Phone Number: ${activeDigitalPatient.patientPhone}`, 20, 78);
       doc.text(`Referred Tests: ${activeDigitalPatient.requiredTest || 'CBC, RBS'}`, 20, 86);
-      
+
       doc.text(`Date of Visit: ${new Date(activeDigitalPatient.createdAt).toLocaleDateString()}`, 130, 70);
       doc.text(`Report ID: SMP-${activeDigitalPatient._id.slice(-8).toUpperCase()}`, 130, 78);
 
@@ -551,7 +551,7 @@ const LabDashboard = () => {
 
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      
+
       const findingsLines = doc.splitTextToSize(digitalReportForm.findings, 170);
       doc.text(findingsLines, 20, 118);
 
@@ -583,7 +583,7 @@ const LabDashboard = () => {
 
       // Convert jsPDF output to Blob
       const pdfBlob = doc.output('blob');
-      
+
       // Create a File object from the blob
       const pdfFile = new File([pdfBlob], `digital_report_${activeDigitalPatient.patientName.replace(/\s+/g, '_')}.pdf`, {
         type: 'application/pdf'
@@ -591,10 +591,10 @@ const LabDashboard = () => {
 
       // Call our robust handleFileUpload method to sync it to Cloudinary & Locker!
       await handleFileUpload(activeDigitalPatient.patientPhone, activeDigitalPatient._id, pdfFile);
-      
+
       // Close the modal
       setShowDigitalReportModal(false);
-      
+
       // Reset form
       setDigitalReportForm({
         title: 'Diagnostic Lab Report',
@@ -623,9 +623,9 @@ const LabDashboard = () => {
   const handleUploadModalFileSelect = (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     const filesArray = Array.from(files);
-    
+
     // Validate file sizes
     for (const file of filesArray) {
       if (file.size > 5 * 1024 * 1024) { // 5MB Limit
@@ -633,7 +633,7 @@ const LabDashboard = () => {
         return;
       }
     }
-    
+
     const newFiles = filesArray.map(file => ({
       id: Math.random().toString(36).substring(2, 9),
       file,
@@ -642,7 +642,7 @@ const LabDashboard = () => {
       previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
       isPdf: file.type === 'application/pdf'
     }));
-    
+
     setSelectedUploadFiles(prev => [...prev, ...newFiles]);
   };
 
@@ -660,7 +660,7 @@ const LabDashboard = () => {
     if (selectedUploadFiles.length === 0) {
       return Swal.fire('No Files Added', 'Please add at least one report file or photo to upload.', 'warning');
     }
-    
+
     const files = selectedUploadFiles.map(f => f.file);
     setShowUploadModal(false);
     await handleFileUpload(uploadModalPatient.patientPhone, uploadModalPatient.queueId, files);
@@ -1001,31 +1001,27 @@ const LabDashboard = () => {
                                     </div>
                                   </td>
                                   <td className="px-3 py-6.5 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
-                                      request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                       request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
-                                      'bg-amber-50 text-amber-700 border border-amber-200'
-                                    }`}>
+                                        'bg-amber-50 text-amber-700 border border-amber-200'
+                                      }`}>
                                       <span className="relative flex h-1.5 w-1.5">
-                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-400' :
+                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-400' :
                                           request.currentStage === 'Lab-Processing' ? 'bg-sky-400' :
-                                          'bg-amber-400'
-                                        }`}></span>
-                                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
-                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
+                                            'bg-amber-400'
+                                          }`}></span>
+                                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
                                           request.currentStage === 'Lab-Processing' ? 'bg-sky-500' :
-                                          'bg-amber-500'
-                                        }`}></span>
+                                            'bg-amber-500'
+                                          }`}></span>
                                       </span>
                                       {request.currentStage === 'Lab-Completed' ? 'Completed' :
                                         request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                                     </span>
                                   </td>
                                   <td className="px-3 py-6.5 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
-                                      request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
-                                    }`}>
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
+                                      }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
                                       {request.isEmergency ? 'Emergency' : 'Standard'}
                                     </span>
@@ -1102,7 +1098,7 @@ const LabDashboard = () => {
                                   request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                               </span>
                             </div>
-                            
+
                             <div className="flex justify-between items-center text-xs text-gray-600">
                               <div>
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Tests</span>
@@ -1814,7 +1810,7 @@ const LabDashboard = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {selectedUploadFiles.map((fileItem) => (
                         <div key={fileItem.id} className="relative rounded-xl border border-gray-200/80 overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-3 shadow-sm hover:shadow hover:border-teal-200 transition-all group h-32">
-                          
+
                           {/* Remove X Button */}
                           <button
                             onClick={(e) => {
@@ -1867,11 +1863,10 @@ const LabDashboard = () => {
                 <button
                   onClick={handleConfirmUpload}
                   disabled={selectedUploadFiles.length === 0}
-                  className={`flex-1 py-2.5 rounded-xl font-bold transition-all shadow-lg text-sm flex items-center justify-center gap-2 ${
-                    selectedUploadFiles.length === 0
-                      ? 'bg-gray-250 text-gray-400 cursor-not-allowed shadow-none'
-                      : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20'
-                  }`}
+                  className={`flex-1 py-2.5 rounded-xl font-bold transition-all shadow-lg text-sm flex items-center justify-center gap-2 ${selectedUploadFiles.length === 0
+                    ? 'bg-gray-250 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20'
+                    }`}
                 >
                   <FileCheck size={16} />
                   <span>Publish to Locker</span>
