@@ -940,29 +940,29 @@ const LabDashboard = () => {
 
                     {/* Table (Desktop View Only) */}
                     <div className="hidden md:block overflow-x-auto bg-white border border-gray-200/80 rounded-2xl shadow-xl shadow-teal-900/[0.02]">
-                      <table className="w-full text-sm border-collapse min-w-[850px]">
+                      <table className="w-full text-sm border-collapse min-w-[720px]">
                         <thead>
                           <tr className="border-b border-gray-200 bg-gray-50/75 backdrop-blur-sm">
-                            <th className="w-[8%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
-                            <th className="w-[24%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
-                            <th className="w-[15%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
-                            <th className="w-[12%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="w-[12%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th className="w-[13%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
-                            <th className="w-[16%] px-4 py-3.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="w-[8%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
+                            <th className="w-[24%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
+                            <th className="w-[15%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
+                            <th className="w-[12%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="w-[12%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th className="w-[13%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
+                            <th className="w-[16%] px-3 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100/80">
                           {loading ? (
                             <tr>
-                              <td colSpan="7" className="px-4 py-10 text-center text-gray-500">
+                              <td colSpan="7" className="px-3 py-12 text-center text-gray-500">
                                 <Beaker className="mx-auto mb-3 text-teal-500 animate-spin" size={32} />
                                 <p className="font-semibold text-gray-700">Loading requests...</p>
                               </td>
                             </tr>
                           ) : paginatedQueue.length === 0 ? (
                             <tr>
-                              <td colSpan="7" className="px-4 py-10 text-center text-gray-500">
+                              <td colSpan="7" className="px-3 py-12 text-center text-gray-500">
                                 <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
                                 <p className="font-semibold text-gray-700">No test requests found</p>
                                 <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
@@ -975,12 +975,12 @@ const LabDashboard = () => {
                                 : 'PT';
                               return (
                                 <tr key={request._id} className="hover:bg-gradient-to-r hover:from-teal-50/[0.04] hover:to-indigo-50/[0.04] transition-all duration-300 group">
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
                                       TRF-{request.tokenNumber || '00'}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <div className="flex items-center gap-2.5">
                                       <div className="w-8.5 h-8.5 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[11px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
                                         {initials}
@@ -994,13 +994,13 @@ const LabDashboard = () => {
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <div className="flex items-center gap-1 bg-teal-50/30 border border-teal-100/50 text-teal-800 px-2 py-1 rounded-lg w-fit shadow-sm">
                                       <Beaker size={11} className="text-teal-600" />
                                       <span className="font-bold text-[11px]">{request.requiredTest || 'Routine Diagnosis'}</span>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
                                       request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                       request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
@@ -1022,7 +1022,7 @@ const LabDashboard = () => {
                                         request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
                                       request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
                                     }`}>
@@ -1030,7 +1030,7 @@ const LabDashboard = () => {
                                       {request.isEmergency ? 'Emergency' : 'Standard'}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-4 align-middle">
+                                  <td className="px-3 py-6.5 align-middle">
                                     <div className="flex flex-col">
                                       <span className="text-gray-900 font-bold text-xs">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                       <span className="text-[10px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
@@ -1039,15 +1039,15 @@ const LabDashboard = () => {
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-4 align-middle text-center">
+                                  <td className="px-3 py-6.5 align-middle text-center">
                                     {request.currentStage === 'Lab-Completed' ? (
                                       <span className="inline-flex items-center gap-1 text-xs font-extrabold text-gray-400 py-1">
                                         <FileCheck size={14} className="text-gray-400" /> Published
                                       </span>
                                     ) : (
-                                      <div className="flex items-center justify-center gap-1.5">
+                                      <div className="flex flex-col items-center justify-center gap-1.5 w-full max-w-[125px] mx-auto">
                                         <button
-                                          className="inline-flex items-center gap-1 px-2 py-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
                                           onClick={() => handleFileUpload(request.patientPhone, request._id)}
                                           title="Upload Clinical Files"
                                         >
@@ -1055,7 +1055,7 @@ const LabDashboard = () => {
                                           <span>Upload Report</span>
                                         </button>
                                         <button
-                                          className="inline-flex items-center gap-1 px-2 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
