@@ -48,26 +48,26 @@ const Samples = () => {
       <Sidebar role="lab" />
       <div className="flex-grow flex flex-col min-h-screen">
         <main className="px-4 md:px-8 py-6 flex-grow max-w-7xl mx-auto w-full space-y-6">
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">Recent Samples (All Time)</h1>
-              <p className="text-gray-600 flex items-center gap-2">
+              <p className="text-gray-600 flex items-center gap-2 text-sm">
                 <TestTubes size={16} className="text-teal-500" />
                 Track and manage all collected specimens
               </p>
             </div>
-            <div className="flex gap-3">
-               <div className="relative">
+            <div className="flex gap-2 w-full sm:w-auto">
+               <div className="relative flex-grow sm:flex-grow-0">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                  <input
                    type="text"
                    placeholder="Search samples..."
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm w-64 shadow-sm"
+                   className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm w-full sm:w-64 shadow-sm"
                  />
                </div>
-               <button onClick={fetchSamples} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+               <button onClick={fetchSamples} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors shrink-0">
                  Refresh
                </button>
             </div>

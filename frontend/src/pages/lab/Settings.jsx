@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, User, Building, Clock, Phone } from 'lucide-react';
+import { Settings as SettingsIcon, Save, User, Building, Clock, Phone, LogOut } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import axios from 'axios';
@@ -89,6 +89,27 @@ const Settings = () => {
     }
   };
 
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Sign Out?',
+      text: "Are you sure you want to securely exit the portal?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#14B8A6',
+      cancelButtonColor: '#f43f5e',
+      confirmButtonText: 'Yes, Sign Out',
+      background: '#FFFFFF',
+      customClass: {
+        popup: 'rounded-[2rem] border border-gray-100'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.clear();
+        window.location.href = '/login';
+      }
+    });
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
       <Sidebar role="lab" />
@@ -102,14 +123,23 @@ const Settings = () => {
                 Configure your laboratory preferences
               </p>
             </div>
-            <button 
-              onClick={handleSave}
-              disabled={saving || loading}
-              className="flex items-center gap-2 px-6 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-sm hover:bg-teal-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={18} />}
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-6 py-2 bg-red-50 text-red-600 border border-red-100 font-bold rounded-lg shadow-sm hover:bg-red-100 hover:border-red-200 transition-colors"
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+              <button 
+                onClick={handleSave}
+                disabled={saving || loading}
+                className="flex items-center gap-2 px-6 py-2 bg-teal-600 text-white font-bold rounded-lg shadow-sm hover:bg-teal-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={18} />}
+                {saving ? 'Saving...' : <span className="hidden sm:inline">Save Changes</span>}
+              </button>
+            </div>
           </div>
 
           {loading ? (

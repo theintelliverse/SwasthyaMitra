@@ -16,6 +16,7 @@ const DoctorPrescriptions = lazy(() => import('./pages/doctor/Prescriptions'));
 const DoctorReports = lazy(() => import('./pages/doctor/Reports'));
 const DoctorTemplates = lazy(() => import('./pages/doctor/Templates'));
 const ReceptionDashboard = lazy(() => import('./pages/receptionist/ReceptionDashboard'));
+const AddPatient = lazy(() => import('./pages/receptionist/AddPatient'));
 const LabDashboard = lazy(() => import('./pages/lab/LabDashboard'));
 const LabTestRequests = lazy(() => import('./pages/lab/TestRequests'));
 const LabSamples = lazy(() => import('./pages/lab/Samples'));
@@ -224,6 +225,14 @@ const App = () => {
               element={
                 <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
                   <ReceptionDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/receptionist/add"
+              element={
+                <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
+                  <AddPatient />
                 </ProtectedRoute>
               }
             />

@@ -6,7 +6,7 @@ import { io } from 'socket.io-client'; // 🔑 Added Socket Client
 import { SOCKET_URL } from '../../config/runtime'; // Importing runtime socket URL
 import {
   Archive, RefreshCw, UserPlus, Search, Users,
-  ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2
+  ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2, Key
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -127,6 +127,56 @@ const AdminStaffManagement = () => {
     });
   };
 
+  const handleUpdateCredentials = async (staffId, staffName) => {
+    const { value: newPassword } = await Swal.fire({
+      title: 'Update Password',
+      text: `Set a new access password for ${staffName}`,
+      input: 'password',
+      inputPlaceholder: 'Enter new password (min 6 characters)',
+      showCancelButton: true,
+      confirmButtonColor: '#0F766E',
+      cancelButtonColor: '#AFC4D8',
+      confirmButtonText: 'Update Password',
+      background: '#EEF6FA',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Password cannot be empty!';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters!';
+        }
+      }
+    });
+
+    if (newPassword) {
+      try {
+        const res = await axios.post(`${API_URL}/api/staff/resend-credentials`, {
+          staffId,
+          newTemporaryPassword: newPassword
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Credentials Updated',
+            text: `Password for ${staffName} updated successfully!`,
+            confirmButtonColor: '#0F766E',
+            background: '#EEF6FA'
+          });
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Action Failed',
+          text: err.response?.data?.message || 'Error updating staff password.',
+          confirmButtonColor: '#EF4444'
+        });
+      }
+    }
+  };
+
   const filteredStaff = staffList.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.role.toLowerCase().includes(searchTerm.toLowerCase());
@@ -139,7 +189,7 @@ const AdminStaffManagement = () => {
       <Sidebar role="admin" />
 
       <div className="flex-grow flex flex-col h-screen overflow-y-auto">
-        <main className="p-8 lg:p-12 max-w-7xl mx-auto w-full flex-grow">
+        <main className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full flex-grow">
 
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div>
@@ -157,15 +207,23 @@ const AdminStaffManagement = () => {
             </button>
           </header>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            <StatBox icon={<Users size={16} />} label="Total Registered" val={staffList.length} />
-            <StatBox icon={<UserCheck size={16} />} label="Currently Live" val={staffList.filter(s => s.isActive !== false).length} />
-            <StatBox icon={<Activity size={16} />} label="Doctors" val={staffList.filter(s => s.role === 'doctor' && s.isActive !== false).length} />
-            <StatBox icon={<ShieldCheck size={16} />} label="Auth Status" val="Secure" />
+          <div className="flex md:grid overflow-x-auto hide-scrollbar gap-3 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-4 mb-8 md:mb-12">
+            <div className="snap-start shrink-0 min-w-[38%] md:w-auto">
+              <StatBox icon={<Users size={16} />} label="Total Registered" val={staffList.length} />
+            </div>
+            <div className="snap-start shrink-0 min-w-[38%] md:w-auto">
+              <StatBox icon={<UserCheck size={16} />} label="Currently Live" val={staffList.filter(s => s.isActive !== false).length} />
+            </div>
+            <div className="snap-start shrink-0 min-w-[38%] md:w-auto">
+              <StatBox icon={<Activity size={16} />} label="Doctors" val={staffList.filter(s => s.role === 'doctor' && s.isActive !== false).length} />
+            </div>
+            <div className="snap-start shrink-0 min-w-[38%] md:w-auto pr-4 md:pr-0">
+              <StatBox icon={<ShieldCheck size={16} />} label="Auth Status" val="Secure" />
+            </div>
           </div>
 
           {showAddForm && (
-            <div className="bg-white border border-sandstone p-10 rounded-[3rem] shadow-2xl mb-12 animate-in fade-in slide-in-from-top-4">
+            <div className="bg-white border border-sandstone p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-2xl mb-12 animate-in fade-in slide-in-from-top-4">
               <h2 className="font-heading text-2xl mb-8">Clinical Credentialing</h2>
               <form onSubmit={handleAddStaff} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <InputGroup label="Full Name" type="text" placeholder="Dr. Sameer Khan" onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
@@ -207,7 +265,7 @@ const AdminStaffManagement = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-10">
             {loading ? (
               <div className="col-span-full py-20 text-center animate-pulse opacity-40">
                 <RefreshCw className="mx-auto mb-4 animate-spin" size={40} />
@@ -215,7 +273,7 @@ const AdminStaffManagement = () => {
               </div>
             ) : filteredStaff.length > 0 ? (
               filteredStaff.map((member) => (
-                <div key={member._id} className={`bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm group relative transition-all hover:border-marigold ${activeView === 'archived' ? 'grayscale opacity-80' : ''}`}>
+                <div key={member._id} className={`bg-white border border-sandstone p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-sm group relative transition-all hover:border-marigold ${activeView === 'archived' ? 'grayscale opacity-80' : ''}`}>
                   <div className="flex justify-between items-start mb-6">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-parchment border border-sandstone">
                       {member.role === 'doctor' ? '🩺' : member.role === 'lab' ? '🔬' : '👤'}
@@ -239,9 +297,14 @@ const AdminStaffManagement = () => {
                     <span className="text-[9px] font-bold text-khaki truncate max-w-[120px]">{member.email}</span>
                     <div className="flex gap-1">
                       {activeView === 'active' && (
-                        <button onClick={() => handleRemove(member._id, member.name)} className="p-2.5 text-khaki hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Remove Staff">
-                          <Trash2 size={16} />
-                        </button>
+                        <>
+                          <button onClick={() => handleUpdateCredentials(member._id, member.name)} className="p-2.5 text-khaki hover:text-marigold hover:bg-parchment rounded-xl transition-all" title="Change Password / Credentials">
+                            <Key size={16} />
+                          </button>
+                          <button onClick={() => handleRemove(member._id, member.name)} className="p-2.5 text-khaki hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Remove Staff">
+                            <Trash2 size={16} />
+                          </button>
+                        </>
                       )}
                       <button className="p-2.5 text-khaki hover:text-marigold hover:bg-parchment rounded-xl transition-all" title="View History">
                         <History size={16} />
@@ -266,13 +329,13 @@ const AdminStaffManagement = () => {
 
 // StatBox and InputGroup components remain unchanged...
 const StatBox = ({ icon, label, val }) => (
-  <div className="bg-white border border-sandstone p-5 rounded-2xl flex items-center gap-4">
-    <div className="w-10 h-10 bg-parchment rounded-xl flex items-center justify-center text-marigold shadow-sm">
+  <div className="bg-white border border-sandstone p-4 rounded-xl flex items-center gap-3 shrink-0 snap-start min-w-[145px] md:w-auto h-[64px] md:h-auto">
+    <div className="w-8 h-8 md:w-10 md:h-10 bg-parchment rounded-lg flex items-center justify-center text-marigold shadow-sm shrink-0">
       {icon}
     </div>
-    <div>
-      <p className="text-[8px] font-black uppercase tracking-widest text-khaki">{label}</p>
-      <p className="text-xl font-heading text-teak">{val}</p>
+    <div className="min-w-0">
+      <p className="text-[8px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
+      <p className="text-base md:text-xl font-heading text-teak leading-none mt-0.5">{val}</p>
     </div>
   </div>
 );

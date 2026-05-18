@@ -27,6 +27,7 @@ const AdminDashboard = () => {
     satisfaction: 98
   });
   const [recentStaffActivity, setRecentStaffActivity] = useState([]);
+  const [queueList, setQueueList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const socketRef = useRef(null);
@@ -61,6 +62,7 @@ const AdminDashboard = () => {
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length
       }));
       
+      setQueueList(queueData);
       setRecentStaffActivity(staffData.slice(0, 5));
       setLoading(false);
     } catch (err) {
@@ -118,14 +120,29 @@ const AdminDashboard = () => {
     }
   };
 
+  // Dynamically calculate traffic from real-time patient queue data
   const chartData = [
-    { name: '8 AM', visits: 4 },
-    { name: '10 AM', visits: 12 },
-    { name: '12 PM', visits: 25 },
-    { name: '2 PM', visits: 18 },
-    { name: '4 PM', visits: 32 },
-    { name: '6 PM', visits: 28 },
+    { name: '8 AM', visits: 0 },
+    { name: '10 AM', visits: 0 },
+    { name: '12 PM', visits: 0 },
+    { name: '2 PM', visits: 0 },
+    { name: '4 PM', visits: 0 },
+    { name: '6 PM', visits: 0 },
   ];
+
+  queueList.forEach(patient => {
+    try {
+      const hour = new Date(patient.createdAt).getHours();
+      if (hour >= 8 && hour < 10) chartData[0].visits++;
+      else if (hour >= 10 && hour < 12) chartData[1].visits++;
+      else if (hour >= 12 && hour < 14) chartData[2].visits++;
+      else if (hour >= 14 && hour < 16) chartData[3].visits++;
+      else if (hour >= 16 && hour < 18) chartData[4].visits++;
+      else if (hour >= 18) chartData[5].visits++;
+    } catch (e) {
+      console.error("Error parsing patient hour: ", e);
+    }
+  });
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
@@ -176,50 +193,58 @@ const AdminDashboard = () => {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Primary Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard 
-                  title="Total Daily Visits"
-                  value={stats.todayVisits}
-                  change="+12.5%"
-                  icon={<div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Users size={24} /></div>}
-                  color="indigo"
-                />
-                <MetricCard 
-                  title="Average Wait Time"
-                  value={`${stats.avgWait} mins`}
-                  change="-2 mins"
-                  icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Clock size={24} /></div>}
-                  color="teal"
-                />
-                <MetricCard 
-                  title="Clinical Revenue"
-                  value={`₹${stats.todayVisits * 500}`}
-                  change="+18%"
-                  icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
-                  color="emerald"
-                />
-                <MetricCard 
-                  title="Active Duty Doctors"
-                  value={stats.activeDoctors}
-                  change="Live"
-                  icon={<div className="p-3 bg-rose-50 text-rose-600 rounded-2xl"><ShieldCheck size={24} /></div>}
-                  color="rose"
-                />
+              <div className="flex md:grid overflow-x-auto hide-scrollbar gap-4 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-2">
+                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+                  <MetricCard 
+                    title="Total Daily Visits"
+                    value={stats.todayVisits}
+                    change="+12.5%"
+                    icon={<div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Users size={24} /></div>}
+                    color="indigo"
+                  />
+                </div>
+                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+                  <MetricCard 
+                    title="Average Wait Time"
+                    value={`${stats.avgWait} mins`}
+                    change="-2 mins"
+                    icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Clock size={24} /></div>}
+                    color="teal"
+                  />
+                </div>
+                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+                  <MetricCard 
+                    title="Clinical Revenue"
+                    value={`₹${stats.todayVisits * 500}`}
+                    change="+18%"
+                    icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
+                    color="emerald"
+                  />
+                </div>
+                <div className="snap-start shrink-0 min-w-[19%] md:w-auto pr-4 md:pr-0">
+                  <MetricCard 
+                    title="Active Duty Doctors"
+                    value={stats.activeDoctors}
+                    change="Live"
+                    icon={<div className="p-3 bg-rose-50 text-rose-600 rounded-2xl"><ShieldCheck size={24} /></div>}
+                    color="rose"
+                  />
+                </div>
               </div>
 
               {/* Patient Traffic Area Chart */}
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                 <div className="flex justify-between items-center mb-8">
+              <div className="bg-white p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                 <div className="flex justify-between items-center mb-6">
                     <div>
-                       <h3 className="text-xl font-black text-slate-900">Patient Traffic Density</h3>
-                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time walk-in frequency</p>
+                       <h3 className="text-lg md:text-xl font-black text-slate-900">Patient Traffic Density</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time walk-in frequency</p>
                     </div>
                     <div className="flex gap-2">
                        <button className="px-3 py-1 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase">Today</button>
                        <button className="px-3 py-1 text-slate-400 rounded-lg text-[10px] font-black uppercase">Week</button>
                     </div>
                  </div>
-                 <div className="h-[280px] w-full">
+                 <div className="h-[220px] md:h-[280px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                        <AreaChart data={chartData}>
                           <defs>
@@ -229,8 +254,8 @@ const AdminDashboard = () => {
                              </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold', fill: '#94A3B8'}} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold', fill: '#94A3B8'}} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 'bold', fill: '#94A3B8'}} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 'bold', fill: '#94A3B8'}} />
                           <Tooltip 
                              contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold'}}
                           />
@@ -239,84 +264,82 @@ const AdminDashboard = () => {
                     </ResponsiveContainer>
                  </div>
               </div>
-            </div>
-
-            {/* Right Section: Quick Actions & Staff Duty */}
+            </div>            {/* Right Section: Quick Actions & Staff Duty */}
             <div className="lg:col-span-1 space-y-8">
               
               {/* Quick Action Grid */}
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center justify-between">
+              <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <h3 className="text-lg md:text-xl font-black text-slate-900 mb-6 flex items-center justify-between">
                   Operations
                   <Layout size={18} className="text-slate-200" />
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
                    <button 
                      onClick={() => navigate('/admin/staff-management')}
-                     className="p-5 bg-indigo-50/50 rounded-[2rem] border border-indigo-100/50 group hover:bg-indigo-600 transition-all duration-300"
+                     className="p-4 md:p-5 bg-indigo-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-indigo-100/50 group hover:bg-indigo-600 transition-all duration-300"
                    >
-                      <UserPlus size={24} className="text-indigo-600 group-hover:text-white transition-colors mb-3" />
-                      <p className="text-[10px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest">Add Staff</p>
+                      <UserPlus size={20} className="text-indigo-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
+                      <p className="text-[9px] md:text-[10px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest leading-none">Add Staff</p>
                    </button>
                    <button 
                      onClick={() => navigate('/admin/reports')}
-                     className="p-5 bg-teal-50/50 rounded-[2rem] border border-teal-100/50 group hover:bg-teal-600 transition-all duration-300"
+                     className="p-4 md:p-5 bg-teal-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-teal-100/50 group hover:bg-teal-600 transition-all duration-300"
                    >
-                      <FileSpreadsheet size={24} className="text-teal-600 group-hover:text-white transition-colors mb-3" />
-                      <p className="text-[10px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest">Reports</p>
+                      <FileSpreadsheet size={20} className="text-teal-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
+                      <p className="text-[9px] md:text-[10px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Reports</p>
                    </button>
                    <button 
                      onClick={() => navigate('/receptionist/dashboard?fromAdmin=true')}
-                     className="p-5 bg-rose-50/50 rounded-[2rem] border border-rose-100/50 group hover:bg-rose-600 transition-all duration-300"
+                     className="p-4 md:p-5 bg-rose-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-rose-100/50 group hover:bg-rose-600 transition-all duration-300"
                    >
-                      <Layout size={24} className="text-rose-600 group-hover:text-white transition-colors mb-3" />
-                      <p className="text-[10px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest">Front Desk</p>
+                      <Layout size={20} className="text-rose-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
+                      <p className="text-[9px] md:text-[10px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest leading-none">Front Desk</p>
                    </button>
                    <button 
                      onClick={() => window.open(publicDisplayUrl, '_blank')}
-                     className="p-5 bg-sky-50/50 rounded-[2rem] border border-sky-100/50 group hover:bg-sky-600 transition-all duration-300"
+                     className="p-4 md:p-5 bg-sky-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-sky-100/50 group hover:bg-sky-600 transition-all duration-300"
                    >
-                      <Tv size={24} className="text-sky-600 group-hover:text-white transition-colors mb-3" />
-                      <p className="text-[10px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest">Live TV</p>
+                      <Tv size={20} className="text-sky-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
+                      <p className="text-[9px] md:text-[10px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
                    </button>
-                </div>
+                 </div>
               </div>
 
               {/* Staff Status Tracker */}
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+              <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="flex justify-between items-center mb-6">
-                   <h3 className="text-xl font-black text-slate-900">Staff Duty Roster</h3>
+                   <h3 className="text-lg md:text-xl font-black text-slate-900">Staff Duty Roster</h3>
                    <button onClick={() => navigate('/admin/staff-management')} className="text-[9px] font-black text-teal-600 uppercase tracking-widest hover:underline">Manage</button>
                 </div>
-                <div className="space-y-5">
+                <div className="space-y-4 md:space-y-5">
                    {recentStaffActivity.map((staff, idx) => (
                      <div key={idx} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center font-bold text-xs uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                           <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-50 text-slate-400 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                               {staff.name.substring(0, 2)}
                            </div>
                            <div>
-                              <p className="text-sm font-black text-slate-900 leading-none mb-1">{staff.name}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{staff.role}</p>
+                              <p className="text-xs md:text-sm font-black text-slate-900 leading-none mb-1">{staff.name}</p>
+                              <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">{staff.role}</p>
                            </div>
                         </div>
                         <div className={`w-2 h-2 rounded-full ${staff.isAvailable ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`} />
                      </div>
                    ))}
                    {recentStaffActivity.length === 0 && (
-                     <div className="text-center py-8">
-                        <AlertCircle size={32} className="mx-auto text-slate-100 mb-2" />
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
+                     <div className="text-center py-6">
+                        <AlertCircle size={28} className="mx-auto text-slate-100 mb-2" />
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
                      </div>
                    )}
                 </div>
               </div>
 
               {/* System Health Info */}
-              <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white relative overflow-hidden">
+              <div className="bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
                  <div className="relative z-10">
-                    <h4 className="text-lg font-black mb-1">System Health</h4>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Global Sync Status</p>
+                    <h4 className="text-base md:text-lg font-black mb-1">System Health</h4>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Global Sync Status</p>
                     <div className="flex items-center gap-4">
                        <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
                           <div className="h-full bg-teal-500 rounded-full w-[98.8%]" />
@@ -335,22 +358,31 @@ const AdminDashboard = () => {
   );
 };
 
-const MetricCard = ({ title, value, change, icon, color }) => (
-  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-    <div className="flex justify-between items-start mb-6">
-      {icon}
-      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-        change === 'Live' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-slate-50 text-slate-400'
-      }`}>
-        {change}
-      </span>
+const MetricCard = ({ title, value, change, icon, color }) => {
+  const shortTitle = title
+    .replace('Total Daily Visits', 'Visits')
+    .replace('Average Wait Time', 'Wait Time')
+    .replace('Clinical Revenue', 'Revenue')
+    .replace('Active Duty Doctors', 'Doctors');
+
+  return (
+    <div className="bg-white p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-300 shrink-0 snap-start w-[170px] md:w-auto h-[120px] md:h-auto flex flex-col justify-between">
+      <div className="flex justify-between items-start">
+        <div className="scale-75 md:scale-100 origin-top-left">{icon}</div>
+        <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${
+          change === 'Live' ? 'bg-green-50 text-green-600 border border-green-100 animate-pulse' : 'bg-slate-50 text-slate-400'
+        }`}>
+          {change}
+        </span>
+      </div>
+      <div>
+        <p className="md:hidden text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{shortTitle}</p>
+        <p className="hidden md:block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-none">{value}</h3>
+      </div>
+      <div className={`absolute bottom-0 right-0 w-24 h-24 bg-${color}-50/30 rounded-tl-[4rem] -mr-8 -mb-8 group-hover:scale-110 transition-transform hidden md:block`} />
     </div>
-    <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
-    </div>
-    <div className={`absolute bottom-0 right-0 w-24 h-24 bg-${color}-50/30 rounded-tl-[4rem] -mr-8 -mb-8 group-hover:scale-110 transition-transform`} />
-  </div>
-);
+  );
+};
 
 export default AdminDashboard;

@@ -7,6 +7,35 @@ import axios from 'axios';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
+// Analytics Metric Card Component
+const AnalyticsMetricCard = ({ title, value, icon, color }) => {
+  const colorMap = {
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    purple: 'bg-purple-50 text-purple-600',
+    amber: 'bg-amber-50 text-amber-600',
+  };
+
+  const shortTitle = title
+    .replace('Avg Processing Time', 'Avg Time')
+    .replace('Success Rate', 'Success')
+    .replace('Total Patients', 'Patients')
+    .replace('Pending Reviews', 'Pending');
+
+  return (
+    <div className="bg-white p-2 md:p-6 rounded-xl md:rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col items-center md:items-start text-center md:text-left h-24 md:h-auto justify-center min-w-[70px]">
+      <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full mb-1 md:mb-4 gap-1 md:gap-0">
+        <h3 className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
+        <div className={`p-1.5 md:p-3 rounded-lg md:rounded-2xl shrink-0 ${colorMap[color]} group-hover:scale-110 transition-transform`}>
+          {icon}
+        </div>
+      </div>
+      <h3 className="md:hidden text-[8px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
+      <p className="text-sm md:text-3xl font-black text-gray-900 mb-0 md:mb-1">{value}</p>
+    </div>
+  );
+};
+
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
@@ -54,23 +83,19 @@ const Analytics = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: 'Avg Processing Time', value: loading ? '...' : data.avgProcessingTime, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Success Rate', value: loading ? '...' : data.successRate, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
-              { label: 'Total Patients', value: loading ? '...' : data.totalPatients, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-              { label: 'Pending Reviews', value: loading ? '...' : data.pendingReviews, icon: Activity, color: 'text-amber-600', bg: 'bg-amber-50' },
-            ].map((stat, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`w-10 h-10 ${stat.bg} ${stat.color} rounded-lg flex items-center justify-center`}>
-                    <stat.icon size={20} />
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-                <p className="text-sm text-gray-500 font-medium">{stat.label}</p>
-              </div>
-            ))}
+          <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 md:gap-4 mb-6 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-4">
+            <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+              <AnalyticsMetricCard title="Avg Processing Time" value={loading ? '...' : data.avgProcessingTime} icon={<Clock size={16} className="md:w-5 md:h-5" />} color="blue" />
+            </div>
+            <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+              <AnalyticsMetricCard title="Success Rate" value={loading ? '...' : data.successRate} icon={<TrendingUp size={16} className="md:w-5 md:h-5" />} color="green" />
+            </div>
+            <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+              <AnalyticsMetricCard title="Total Patients" value={loading ? '...' : data.totalPatients} icon={<Users size={16} className="md:w-5 md:h-5" />} color="purple" />
+            </div>
+            <div className="snap-start shrink-0 min-w-[21%] md:w-auto pr-4 md:pr-0">
+              <AnalyticsMetricCard title="Pending Reviews" value={loading ? '...' : data.pendingReviews} icon={<Activity size={16} className="md:w-5 md:h-5" />} color="amber" />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

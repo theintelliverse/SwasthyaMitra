@@ -37,6 +37,7 @@ const ReceptionDashboard = () => {
 
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
+  const userRole = localStorage.getItem('role');
 
   const fetchDashboardData = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -250,6 +251,7 @@ const ReceptionDashboard = () => {
 
   const location = useLocation();
   const fromAdmin = new URLSearchParams(location.search).get('fromAdmin') === 'true';
+  const showBackButton = fromAdmin || userRole === 'admin';
 
   return (
     <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
@@ -257,7 +259,7 @@ const ReceptionDashboard = () => {
       <div className="flex-grow flex flex-col min-h-screen overflow-hidden">
         <nav className="bg-white border-b border-sandstone px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-sm z-20">
           <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
-            {fromAdmin && (
+            {showBackButton && (
               <button 
                 onClick={() => navigate('/admin/dashboard')}
                 className="mr-2 p-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase tracking-widest border border-teal-100"
@@ -285,14 +287,15 @@ const ReceptionDashboard = () => {
           <div className="lg:col-span-1 space-y-4 md:space-y-6">
             <div className="bg-white border border-sandstone p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-sm">
               <h2 className="font-heading text-base md:text-lg mb-3 md:mb-6 flex items-center gap-2"><Stethoscope size={16} className="text-marigold flex-shrink-0" /> <span className="truncate">Doctor Status</span></h2>
-              <div className="space-y-3 md:space-y-4 max-h-96 overflow-y-auto">
+              {/* Responsive container: swipable horizontal carousel on mobile/tablet, vertical list on desktop */}
+              <div className="flex overflow-x-auto gap-3 pb-2 md:pb-0 snap-x snap-mandatory hide-scrollbar lg:flex-col lg:overflow-y-auto lg:max-h-96 lg:space-y-3">
                 {doctors.map(doc => {
                   const status = getDoctorLiveStatus(doc._id);
                   return (
-                    <div key={doc._id} className="p-3 md:p-4 rounded-2xl md:rounded-3xl border border-sandstone bg-parchment group hover:border-marigold transition-all">
+                    <div key={doc._id} className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-sandstone bg-parchment group hover:border-marigold transition-all min-w-[200px] sm:min-w-[240px] shrink-0 snap-start lg:min-w-0 lg:shrink">
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <p className="font-bold text-xs md:text-sm truncate">Dr. {doc.name}</p>
-                        <span className={`px-2 py-1 rounded-lg text-[7px] md:text-[8px] font-black uppercase flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${status.bg} ${status.color}`}>{status.icon} <span className="hidden md:inline">{status.label}</span></span>
+                        <span className={`px-2 py-0.5 rounded text-[7px] md:text-[8px] font-black uppercase flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${status.bg} ${status.color}`}>{status.icon} <span>{status.label}</span></span>
                       </div>
                       <p className="text-[8px] md:text-[10px] text-khaki font-medium italic truncate">{doc.specialization}</p>
                     </div>

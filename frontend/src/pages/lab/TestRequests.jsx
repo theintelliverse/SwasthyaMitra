@@ -44,26 +44,26 @@ const TestRequests = () => {
       <Sidebar role="lab" />
       <div className="flex-grow flex flex-col min-h-screen">
         <main className="px-4 md:px-8 py-6 flex-grow max-w-7xl mx-auto w-full space-y-6">
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">Test Requests (All Time)</h1>
-              <p className="text-gray-600 flex items-center gap-2">
+              <p className="text-gray-600 flex items-center gap-2 text-sm">
                 <ClipboardList size={16} className="text-teal-500" />
                 Comprehensive history of all diagnostic requests
               </p>
             </div>
-            <div className="flex gap-3">
-               <div className="relative">
+            <div className="flex gap-2 w-full sm:w-auto">
+               <div className="relative flex-grow sm:flex-grow-0">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                  <input
                    type="text"
                    placeholder="Search requests..."
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm w-64 shadow-sm"
+                   className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm w-full sm:w-64 shadow-sm"
                  />
                </div>
-               <button onClick={fetchRequests} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+               <button onClick={fetchRequests} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors shrink-0">
                  Refresh
                </button>
             </div>
@@ -81,52 +81,96 @@ const TestRequests = () => {
                 <p className="text-gray-500">Try adjusting your search or check back later.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Required Test</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredRequests.map((req) => (
-                      <tr key={req._id} className="hover:bg-gray-50/80 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="font-semibold text-gray-900">{req.patientName}</div>
-                          <div className="text-xs text-gray-500">{req.patientPhone}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                            {req.requiredTest || 'General Diagnostic'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {new Date(req.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className={`flex items-center gap-2 text-xs font-bold ${
-                            req.currentStage === 'Lab-Completed' ? 'text-green-600' : 
-                            req.currentStage === 'Lab-Pending' ? 'text-blue-600' : 'text-amber-600'
-                          }`}>
-                            {req.currentStage === 'Lab-Completed' ? <CheckCircle size={14} /> : 
-                             req.currentStage === 'Lab-Pending' ? <Clock size={14} /> : <AlertCircle size={14} />}
-                            {req.currentStage}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
-                            <Eye size={18} />
-                          </button>
-                        </td>
+              <>
+                {/* Desktop View Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Required Test</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredRequests.map((req) => (
+                        <tr key={req._id} className="hover:bg-gray-50/80 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-gray-900">{req.patientName}</div>
+                            <div className="text-xs text-gray-500">{req.patientPhone}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                              {req.requiredTest || 'General Diagnostic'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(req.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className={`flex items-center gap-2 text-xs font-bold ${
+                              req.currentStage === 'Lab-Completed' ? 'text-green-600' : 
+                              req.currentStage === 'Lab-Pending' ? 'text-blue-600' : 'text-amber-600'
+                            }`}>
+                              {req.currentStage === 'Lab-Completed' ? <CheckCircle size={14} /> : 
+                               req.currentStage === 'Lab-Pending' ? <Clock size={14} /> : <AlertCircle size={14} />}
+                              {req.currentStage}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
+                              <Eye size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View Cards */}
+                <div className="md:hidden divide-y divide-gray-100">
+                  {filteredRequests.map((req) => (
+                    <div key={req._id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="text-sm font-bold text-gray-900">{req.patientName}</h4>
+                          <span className="text-xs text-gray-500">{req.patientPhone}</span>
+                        </div>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          req.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-700 border border-green-100' : 
+                          req.currentStage === 'Lab-Pending' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 
+                          'bg-amber-50 text-amber-700 border border-amber-100'
+                        }`}>
+                          {req.currentStage === 'Lab-Completed' ? <CheckCircle size={10} /> : 
+                           req.currentStage === 'Lab-Pending' ? <Clock size={10} /> : <AlertCircle size={10} />}
+                          {req.currentStage.replace('Lab-', '')}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs text-gray-600">
+                        <div>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Required Test</span>
+                          <span className="font-semibold text-gray-800">{req.requiredTest || 'General Diagnostic'}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Requested Date</span>
+                          <span className="font-semibold text-gray-800">{new Date(req.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-2 border-t border-gray-50">
+                        <button className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95">
+                          <Eye size={12} />
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </main>

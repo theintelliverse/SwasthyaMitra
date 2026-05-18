@@ -41,12 +41,16 @@ const Login = () => {
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userName', user.name);
+        if (user.specialization) localStorage.setItem('specialization', user.specialization);
+        if (user.education) localStorage.setItem('education', user.education);
         localStorage.setItem('sessionId', sessionId);
 
         // 🏥 CLINIC DATA (Crucial for WebSockets)
         localStorage.setItem('clinicId', user.clinicId);
         localStorage.setItem('clinicName', user.clinicName || 'Our Clinic');
         localStorage.setItem('clinicCode', formData.clinicCode.toUpperCase());
+        if (user.clinicLocation) localStorage.setItem('clinicLocation', user.clinicLocation);
+        if (user.clinicContact) localStorage.setItem('clinicContact', user.clinicContact);
 
         Swal.fire({
           icon: 'success',
@@ -138,15 +142,13 @@ const Login = () => {
             {/* Inline Error Banner */}
             {loginError && (
               <div
-                className={`mb-6 flex items-start gap-4 p-5 rounded-2xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
-                  loginError.type === 'network'
+                className={`mb-6 flex items-start gap-4 p-5 rounded-2xl border animate-in fade-in slide-in-from-top-2 duration-300 ${loginError.type === 'network'
                     ? 'bg-orange-50 border-orange-200 text-orange-800'
                     : 'bg-red-50 border-red-200 text-red-800'
-                }`}
+                  }`}
               >
-                <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${
-                  loginError.type === 'network' ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'
-                }`}>
+                <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${loginError.type === 'network' ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'
+                  }`}>
                   {loginError.type === 'network'
                     ? <WifiOff size={18} />
                     : <AlertCircle size={18} />}
@@ -154,7 +156,7 @@ const Login = () => {
                 <div className="flex-grow min-w-0">
                   <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-70">
                     {loginError.type === 'network' ? 'Connection Error' :
-                     loginError.type === 'credentials' ? 'Authentication Failed' : 'Server Error'}
+                      loginError.type === 'credentials' ? 'Authentication Failed' : 'Server Error'}
                   </p>
                   <p className="text-sm font-medium leading-relaxed">{loginError.message}</p>
                 </div>
@@ -181,9 +183,8 @@ const Login = () => {
                     required
                     placeholder="e.g. CITY01"
                     autoComplete="off"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${
-                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
-                    }`}
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                      }`}
                     value={formData.clinicCode}
                     onFocus={() => setFocusedField('clinicCode')}
                     onBlur={() => setFocusedField(null)}
@@ -204,9 +205,8 @@ const Login = () => {
                     required
                     placeholder="name@clinic.com"
                     autoComplete="email"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium placeholder:text-khaki/30 text-teak ${
-                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
-                    }`}
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium placeholder:text-khaki/30 text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                      }`}
                     value={formData.email}
                     onFocus={() => setFocusedField('email')}
                     onBlur={() => setFocusedField(null)}
@@ -236,10 +236,9 @@ const Login = () => {
                     required
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium text-teak ${
-                      loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
-                    }`}
-                    value={formData.password}
+                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                      }`}
+                    lik value={formData.password}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
                     onChange={(e) => handleInputChange('password', e.target.value)}

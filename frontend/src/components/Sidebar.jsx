@@ -44,20 +44,22 @@ const Sidebar = ({ role = 'lab' }) => {
   const clinicName = getSafeStorageItem('clinicName', 'Appointory Hub');
   const userName = getSafeStorageItem('userName', 'Healthcare Professional');
   const userRole = role || getSafeStorageItem('role', 'staff');
+  const userSpecialization = getSafeStorageItem('specialization', '');
+  const userEducation = getSafeStorageItem('education', '');
 
   const menuItems = useMemo(() => {
     const config = {
       admin: [
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Staff Management', path: '/admin/staff-management', icon: <Users size={20} /> },
+        { name: 'Front Desk', path: '/receptionist/dashboard?fromAdmin=true', icon: <Layout size={20} /> },
         { name: 'Clinic Settings', path: '/admin/settings', icon: <Settings size={20} /> },
-        { name: 'Reports', path: '/admin/reports', icon: <Settings size={20} /> },
+        { name: 'Reports', path: '/admin/reports', icon: <ClipboardList size={20} /> },
         { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
       ],
       doctor: [
         { name: 'Dashboard', path: '/doctor/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Appointments', path: '/doctor/appointments', icon: <Calendar size={20} /> },
-        { name: 'Patients', path: '/doctor/patients', icon: <Users size={20} /> },
         { name: 'Prescriptions', path: '/doctor/prescriptions', icon: <FileText size={20} /> },
         { name: 'Templates', path: '/doctor/templates', icon: <Layout size={20} /> },
         { name: 'Reports', path: '/doctor/reports', icon: <ClipboardList size={20} /> },
@@ -107,32 +109,8 @@ const Sidebar = ({ role = 'lab' }) => {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-3 bg-teal-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all"
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30 transition-opacity"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Container */}
-      <aside
-        className={`
-          fixed lg:sticky top-0 left-0 h-screen z-40
-          w-72 bg-white border-r border-gray-100 flex flex-col
-          transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          shadow-2xl lg:shadow-none
-        `}
-      >
+      {/* Desktop Sidebar (Hidden on Mobile) */}
+      <aside className="hidden lg:flex sticky top-0 left-0 h-screen z-40 w-72 bg-white border-r border-gray-100 flex-col shadow-none">
         {/* Logo Section */}
         <div className="p-8">
           <div
@@ -163,7 +141,6 @@ const Sidebar = ({ role = 'lab' }) => {
                   ? 'bg-teal-50 text-teal-600 shadow-sm shadow-teal-100/50'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
               `}
-              onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
             >
               <div className={`transition-transform group-hover:scale-110 duration-200`}>
                 {item.icon}
@@ -179,7 +156,7 @@ const Sidebar = ({ role = 'lab' }) => {
 
         {/* User Card & Logout */}
         <div className="p-6 border-t border-gray-50 bg-gray-50/30">
-          <div 
+          <div
             onClick={() => navigate('/profile')}
             className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm mb-4 cursor-pointer hover:border-teal-500 hover:shadow-md transition-all group/card"
           >
@@ -200,8 +177,10 @@ const Sidebar = ({ role = 'lab' }) => {
                     return name;
                   })()}
                 </p>
-                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">
-                  {userRole === 'doctor' ? 'Chief Physician' : userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Wellness Member' : 'Staff Member'}
+                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5 truncate">
+                  {userRole === 'doctor' 
+                    ? (userEducation || userSpecialization || 'Chief Physician')
+                    : (userSpecialization || (userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Wellness Member' : 'Staff Member'))}
                 </p>
               </div>
             </div>
@@ -218,17 +197,33 @@ const Sidebar = ({ role = 'lab' }) => {
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-xs text-red-500 hover:bg-red-50 transition-all active:scale-95 border border-transparent hover:border-red-100 group"
-          >
-            <div className="p-2 rounded-xl bg-red-50 group-hover:bg-red-100 transition-colors">
-              <LogOut size={16} />
-            </div>
-            <span className="flex-1 text-left uppercase tracking-widest">Sign Out</span>
-          </button>
         </div>
       </aside>
+
+      {/* Mobile Bottom Navigation (Hidden on Desktop) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex items-center justify-around z-[100] px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => `
+              flex flex-col items-center justify-center min-w-[4rem] p-1.5 rounded-2xl transition-all duration-200
+              ${isActive ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'}
+            `}
+          >
+            {({ isActive }) => (
+              <>
+                <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-teal-50 scale-110' : ''}`}>
+                  {item.icon}
+                </div>
+                <span className={`text-[8px] font-black mt-1 uppercase tracking-widest truncate w-full text-center ${isActive ? 'text-teal-600' : 'text-gray-400'}`}>
+                  {item.name.split(' ')[0]}
+                </span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
     </>
   );
 };

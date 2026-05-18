@@ -4,21 +4,21 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
-import { 
-  Activity, 
-  Calendar, 
-  Users, 
-  FileText, 
-  ClipboardList, 
-  Clock, 
-  ChevronDown, 
-  Bell, 
-  Search, 
-  Plus, 
+import {
+  Activity,
+  Calendar,
+  Users,
+  FileText,
+  ClipboardList,
+  Clock,
+  ChevronDown,
+  Bell,
+  Search,
+  Plus,
   X,
-  UserPlus, 
-  FlaskConical, 
-  Layout, 
+  UserPlus,
+  FlaskConical,
+  Layout,
   MoreHorizontal,
   Coffee,
   Play,
@@ -37,7 +37,7 @@ const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const QuickActionTile = ({ icon, label, color, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
     className="flex flex-col items-center justify-center gap-3 p-4 rounded-[1.5rem] bg-white border border-gray-50 hover:border-teal-100 hover:shadow-xl hover:shadow-teal-100/30 hover:-translate-y-1 transition-all group aspect-square shadow-sm"
   >
@@ -57,24 +57,32 @@ const MetricCard = ({ title, value, change, icon, color }) => {
     purple: 'bg-purple-50 text-purple-600',
     orange: 'bg-orange-50 text-orange-600'
   };
-  
+
+  // Ultra short titles for mobile 1x4
+  const shortTitle = title
+    .replace('Scheduled Appointments', 'Appts')
+    .replace('In Consultation', 'Consult')
+    .replace('Avg. Wait Time', 'Wait')
+    .replace('Pending Follow Ups', 'Follows');
+
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</h3>
-        <div className={`p-3 rounded-2xl ${colorMap[color] || 'bg-gray-50 text-gray-600'} group-hover:scale-110 transition-transform`}>
-           {icon}
+    <div className="bg-white p-2 md:p-6 rounded-xl md:rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col items-center md:items-start text-center md:text-left h-24 md:h-auto justify-center">
+      <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full mb-1 md:mb-4 gap-1 md:gap-0">
+        <h3 className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
+        <div className={`p-1.5 md:p-3 rounded-lg md:rounded-2xl shrink-0 ${colorMap[color] || 'bg-gray-50 text-gray-600'} group-hover:scale-110 transition-transform`}>
+          {icon}
         </div>
       </div>
-      <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+      <h3 className="md:hidden text-[8px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
+      <p className="text-sm md:text-3xl font-black text-gray-900 mb-0 md:mb-1">{value}</p>
       {change && (
-        <div className="flex items-center gap-1">
-           <TrendingUp size={12} className={change.startsWith('+') ? 'text-green-500' : 'text-red-500'} />
-           <span className={`text-[10px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</span>
-           <span className="text-[10px] text-gray-400 font-medium">from yesterday</span>
+        <div className="hidden md:flex items-center gap-1 mt-1">
+          <TrendingUp size={12} className={change.startsWith('+') ? 'text-green-500' : 'text-red-500'} />
+          <span className={`text-[10px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</span>
+          <span className="text-[10px] text-gray-400 hidden sm:inline">from yesterday</span>
         </div>
       )}
-      {!change && <p className="text-[10px] text-gray-400 font-medium">Currently active</p>}
+      {!change && <p className="hidden md:block text-[10px] text-gray-400 mt-1">Currently active</p>}
     </div>
   );
 };
@@ -110,6 +118,7 @@ const DoctorDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [workStartTime] = useState(new Date());
   const [elapsedWorkTime, setElapsedWorkTime] = useState("0h 0m");
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const [notes, setNotes] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
@@ -135,10 +144,10 @@ const DoctorDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const filteredQueue = queue.filter(p => {
-    const matchesSearch = p.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         p.tokenNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = p.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.tokenNumber?.toLowerCase().includes(searchTerm.toLowerCase());
     if (!matchesSearch) return false;
-    
+
     if (activeTab === 'All') return true;
     if (activeTab === 'Waiting') return p.status === 'Waiting';
     if (activeTab === 'In') return p.status === 'In-Consultation';
@@ -161,7 +170,7 @@ const DoctorDashboard = () => {
         });
         setQueue(res.data.data.queue || []);
         setReminders(res.data.data.reminders || []);
-        
+
         const queueData = res.data.data.queue || [];
         const inConsultationPatient = queueData.find(p => p.status === 'In-Consultation');
         if (inConsultationPatient) {
@@ -196,7 +205,7 @@ const DoctorDashboard = () => {
     }
 
     const interval = setInterval(() => fetchDashboardData(false), 30000);
-    
+
     const timerInterval = setInterval(() => {
       const diff = new Date().getTime() - workStartTime.getTime();
       const hours = Math.floor(diff / 3600000);
@@ -335,7 +344,7 @@ const DoctorDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
       <Sidebar role="doctor" />
-      
+
       <div className="flex-grow flex flex-col min-h-screen overflow-hidden">
         <nav className="bg-white px-8 py-5 flex justify-between items-center sticky top-0 z-30 border-b border-gray-100">
           <div>
@@ -345,30 +354,30 @@ const DoctorDashboard = () => {
                 return name.toLowerCase().startsWith('dr') ? name : `Dr. ${name}`;
               })()} 👋
             </h1>
-            <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">
+            <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">
               Here's what's happening in your clinic today.
             </p>
           </div>
 
           <div className="flex items-center gap-6">
-            <div 
+            <div
               onClick={() => Swal.fire({
                 title: localStorage.getItem('clinicName') || 'Health Plus Clinic',
-                text: 'Location: Main Street, New Delhi | Contact: +91 98765 43210',
+                text: `Location: ${localStorage.getItem('clinicLocation') || 'Main Street, New Delhi'} | Contact: ${localStorage.getItem('clinicContact') || '+91 98765 43210'}`,
                 icon: 'info',
                 confirmButtonColor: '#0d9488'
               })}
               className="hidden lg:flex items-center gap-3 px-5 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all group"
             >
               <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600">
-                 <FlaskConical size={18} />
+                <FlaskConical size={18} />
               </div>
               <span className="text-sm font-bold text-gray-700">{localStorage.getItem('clinicName') || 'Health Plus Clinic'}</span>
               <ChevronDown size={16} className="text-gray-400" />
             </div>
 
             <div className="flex items-center gap-4 border-l border-gray-100 pl-6 relative">
-              <button 
+              <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 transition-all relative"
               >
@@ -399,15 +408,15 @@ const DoctorDashboard = () => {
                   <button onClick={() => navigate('/doctor/appointments')} className="w-full mt-6 py-3 bg-gray-50 rounded-xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-gray-100 transition-all">View All Reminders</button>
                 </div>
               )}
-              
-              <div 
+
+              <div
                 onClick={() => navigate('/profile')}
                 className="flex items-center gap-3 pl-2 cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all group"
               >
                 {localStorage.getItem('userImage') ? (
-                  <img 
-                    src={localStorage.getItem('userImage')} 
-                    alt="Doctor" 
+                  <img
+                    src={localStorage.getItem('userImage')}
+                    alt="Doctor"
                     className="w-12 h-12 rounded-2xl border-2 border-white shadow-sm object-cover"
                   />
                 ) : (
@@ -435,171 +444,171 @@ const DoctorDashboard = () => {
         <main className="flex-grow p-8 overflow-y-auto max-w-7xl mx-auto w-full">
           {isConsultationMode ? (
             <div className="space-y-6">
-               <div className="flex justify-between items-center">
-                  <button onClick={() => setIsConsultationMode(false)} className="flex items-center gap-2 text-sm font-bold text-teal-600 hover:text-teal-700">
-                    <ArrowRight className="rotate-180" size={16} /> Back to Dashboard
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-bold uppercase tracking-wider">In Consultation</span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-sm font-bold text-gray-600">Start Time: {new Date(activePatient.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              <div className="flex justify-between items-center">
+                <button onClick={() => setIsConsultationMode(false)} className="flex items-center gap-2 text-sm font-bold text-teal-600 hover:text-teal-700">
+                  <ArrowRight className="rotate-180" size={16} /> Back to Dashboard
+                </button>
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-bold uppercase tracking-wider">In Consultation</span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-sm font-bold text-gray-600">Start Time: {new Date(activePatient.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4">
+                      <button onClick={() => setShowProfile(true)} className="text-gray-400 hover:text-teal-600 transition-colors"><Layout size={20} /></button>
+                    </div>
+                    <div className="w-20 h-20 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-3xl font-bold mb-6">
+                      {activePatient.patientName.charAt(0)}
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-1">{activePatient.patientName}</h2>
+                    <p className="text-gray-500 mb-6 flex items-center gap-2">Patient ID: <span className="font-semibold text-teal-600">#{activePatient.tokenNumber}</span></p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-2xl">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Blood Pressure</p>
+                        <p className="font-bold text-gray-900">{patientData?.vitals?.[0]?.bloodPressure || '120/80'}</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-2xl">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Temperature</p>
+                        <p className="font-bold text-gray-900">{patientData?.vitals?.[0]?.temperature || '98.6'}°F</p>
+                      </div>
+                    </div>
                   </div>
-               </div>
 
-               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                 <div className="lg:col-span-1 space-y-6">
-                   <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 p-4">
-                       <button onClick={() => setShowProfile(true)} className="text-gray-400 hover:text-teal-600 transition-colors"><Layout size={20} /></button>
-                     </div>
-                     <div className="w-20 h-20 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-3xl font-bold mb-6">
-                        {activePatient.patientName.charAt(0)}
-                     </div>
-                     <h2 className="text-2xl font-bold text-gray-900 mb-1">{activePatient.patientName}</h2>
-                     <p className="text-gray-500 mb-6 flex items-center gap-2">Patient ID: <span className="font-semibold text-teal-600">#{activePatient.tokenNumber}</span></p>
-                     
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Blood Pressure</p>
-                          <p className="font-bold text-gray-900">{patientData?.vitals?.[0]?.bloodPressure || '120/80'}</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Temperature</p>
-                          <p className="font-bold text-gray-900">{patientData?.vitals?.[0]?.temperature || '98.6'}°F</p>
-                        </div>
-                     </div>
-                   </div>
+                  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center justify-between">
+                      Quick Actions
+                      <MoreHorizontal size={18} className="text-gray-400" />
+                    </h3>
+                    <div className="space-y-3">
+                      <button onClick={() => navigate('/doctor/reports')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
+                        <FlaskConical size={18} /> Order Lab Test
+                      </button>
+                      <button className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
+                        <History size={18} /> Medical History
+                      </button>
+                      <button onClick={() => navigate('/doctor/appointments')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
+                        <Calendar size={18} /> Schedule Follow-up
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                      <h3 className="font-bold text-gray-900 mb-4 flex items-center justify-between">
-                        Quick Actions
-                        <MoreHorizontal size={18} className="text-gray-400" />
-                      </h3>
+                <div className="lg:col-span-2 space-y-6">
+                  <form onSubmit={handleCompleteVisit} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-3">Diagnosis</label>
+                      <textarea
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        placeholder="What did you observe?"
+                        className="w-full h-32 bg-gray-50 border-transparent rounded-2xl p-4 outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all text-gray-800"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label className="text-sm font-bold text-gray-700">Prescribed Medicines</label>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowTemplatesModal(true)}
+                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <Layout size={14} /> Use Template
+                          </button>
+                          <button type="button" onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                            <Plus size={14} /> Add Medicine
+                          </button>
+                        </div>
+                      </div>
                       <div className="space-y-3">
-                         <button onClick={() => navigate('/doctor/reports')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
-                           <FlaskConical size={18} /> Order Lab Test
-                         </button>
-                         <button className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
-                           <History size={18} /> Medical History
-                         </button>
-                         <button onClick={() => navigate('/doctor/appointments')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
-                           <Calendar size={18} /> Schedule Follow-up
-                         </button>
-                      </div>
-                   </div>
-                 </div>
-
-                 <div className="lg:col-span-2 space-y-6">
-                    <form onSubmit={handleCompleteVisit} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-3">Diagnosis</label>
-                        <textarea 
-                          value={diagnosis}
-                          onChange={(e) => setDiagnosis(e.target.value)}
-                          placeholder="What did you observe?"
-                          className="w-full h-32 bg-gray-50 border-transparent rounded-2xl p-4 outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all text-gray-800"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-4">
-                          <label className="text-sm font-bold text-gray-700">Prescribed Medicines</label>
-                          <div className="flex items-center gap-3">
-                            <button 
-                              type="button" 
-                              onClick={() => setShowTemplatesModal(true)} 
-                              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
-                            >
-                              <Layout size={14} /> Use Template
-                            </button>
-                            <button type="button" onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
-                              <Plus size={14} /> Add Medicine
+                        {medicines.map((m, idx) => (
+                          <div key={idx} className="flex gap-3 items-start group">
+                            <input
+                              type="text"
+                              placeholder="Medicine name"
+                              value={m.name}
+                              onChange={(e) => {
+                                const updated = [...medicines];
+                                updated[idx].name = e.target.value;
+                                setMedicines(updated);
+                              }}
+                              className="flex-1 bg-gray-50 border-transparent rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Dosage (e.g. 500mg)"
+                              value={m.amount}
+                              onChange={(e) => {
+                                const updated = [...medicines];
+                                updated[idx].amount = e.target.value;
+                                setMedicines(updated);
+                              }}
+                              className="w-40 bg-gray-50 border-transparent rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all"
+                            />
+                            <button type="button" onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} className="p-3 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                              <X size={18} />
                             </button>
                           </div>
-                        </div>
-                        <div className="space-y-3">
-                          {medicines.map((m, idx) => (
-                            <div key={idx} className="flex gap-3 items-start group">
-                              <input 
-                                type="text"
-                                placeholder="Medicine name"
-                                value={m.name}
-                                onChange={(e) => {
-                                  const updated = [...medicines];
-                                  updated[idx].name = e.target.value;
-                                  setMedicines(updated);
-                                }}
-                                className="flex-1 bg-gray-50 border-transparent rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all"
-                              />
-                              <input 
-                                type="text"
-                                placeholder="Dosage (e.g. 500mg)"
-                                value={m.amount}
-                                onChange={(e) => {
-                                  const updated = [...medicines];
-                                  updated[idx].amount = e.target.value;
-                                  setMedicines(updated);
-                                }}
-                                className="w-40 bg-gray-50 border-transparent rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-teal-100 focus:bg-white transition-all"
-                              />
-                              <button type="button" onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} className="p-3 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                <X size={18} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                        ))}
                       </div>
+                    </div>
 
-                      <div className="pt-6 border-t border-gray-50 flex gap-4">
-                        <button 
-                          type="submit"
-                          disabled={isProcessing}
-                          className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20 disabled:opacity-50"
-                        >
-                          {isProcessing ? 'Saving...' : 'Complete Consultation'}
-                        </button>
-                        <button type="button" onClick={() => setIsConsultationMode(false)} className="px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition-all">
-                          Save as Draft
-                        </button>
-                      </div>
-                    </form>
-                 </div>
-               </div>
+                    <div className="pt-6 border-t border-gray-50 flex gap-4">
+                      <button
+                        type="submit"
+                        disabled={isProcessing}
+                        className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20 disabled:opacity-50"
+                      >
+                        {isProcessing ? 'Saving...' : 'Complete Consultation'}
+                      </button>
+                      <button type="button" onClick={() => setIsConsultationMode(false)} className="px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition-all">
+                        Save as Draft
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="space-y-8">
               {/* Metrics Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard 
-                  title="Scheduled Appointments" 
-                  value={stats.scheduled} 
-                  icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Calendar size={24} /></div>} 
-                  color="teal" 
+              <div className="grid grid-cols-4 gap-2 md:gap-6">
+                <MetricCard
+                  title="Scheduled Appointments"
+                  value={stats.scheduled}
+                  icon={<Calendar className="w-4 h-4 md:w-6 md:h-6" />}
+                  color="teal"
                 />
-                <MetricCard 
-                  title="In Consultation" 
-                  value={stats.inConsultation} 
-                  icon={<div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Stethoscope size={24} /></div>} 
-                  color="blue" 
+                <MetricCard
+                  title="In Consultation"
+                  value={stats.inConsultation}
+                  icon={<Stethoscope className="w-4 h-4 md:w-6 md:h-6" />}
+                  color="blue"
                 />
-                <MetricCard 
-                  title="Avg. Wait Time" 
-                  value={stats.avgWaitTime} 
-                  icon={<div className="p-3 bg-purple-50 text-purple-600 rounded-2xl"><Clock size={24} /></div>} 
-                  color="purple" 
+                <MetricCard
+                  title="Avg. Wait Time"
+                  value={stats.avgWaitTime}
+                  icon={<Clock className="w-4 h-4 md:w-6 md:h-6" />}
+                  color="purple"
                 />
-                <MetricCard 
-                  title="Pending Follow Ups" 
-                  value={stats.pendingFollowUps} 
-                  icon={<div className="p-3 bg-orange-50 text-orange-600 rounded-2xl"><Calendar size={24} /></div>} 
-                  color="orange" 
+                <MetricCard
+                  title="Pending Follow Ups"
+                  value={stats.pendingFollowUps}
+                  icon={<Calendar className="w-4 h-4 md:w-6 md:h-6" />}
+                  color="orange"
                 />
               </div>
 
-              {/* Main Content Grid - 3 Column Layout from Image */}
+              {/* Main Content Grid - 2 Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Left: Queue Table (Span 6) */}
-                <div className="lg:col-span-6 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                {/* Left: Queue Table (Span 8) */}
+                <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
                   <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white sticky top-0 z-10">
                     <div className="flex items-center gap-3">
                       <h2 className="text-xl font-bold text-gray-900 tracking-tight">Today's Clinic Queue</h2>
@@ -612,7 +621,7 @@ const DoctorDashboard = () => {
                       View Full Schedule
                     </button>
                   </div>
-                  
+
                   <div className="p-8 pb-0">
                     <div className="flex gap-8 border-b border-gray-100">
                       {[
@@ -621,14 +630,13 @@ const DoctorDashboard = () => {
                         { id: 'In', label: 'In Consultation', count: queue.filter(p => p.status === 'In-Consultation').length },
                         { id: 'Completed', label: 'Completed', count: queue.filter(p => p.status === 'Completed').length }
                       ].map((tab) => (
-                        <button 
-                          key={tab.id} 
+                        <button
+                          key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`pb-4 text-sm font-bold transition-all relative flex items-center gap-2 ${
-                            (activeTab === tab.id) 
-                              ? 'text-teal-600' 
-                              : 'text-gray-400 hover:text-gray-600'
-                          }`}
+                          className={`pb-4 text-sm font-bold transition-all relative flex items-center gap-2 ${(activeTab === tab.id)
+                            ? 'text-teal-600'
+                            : 'text-gray-400 hover:text-gray-600'
+                            }`}
                         >
                           {tab.label}
                           <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -669,40 +677,40 @@ const DoctorDashboard = () => {
                             </td>
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600' :
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600' :
                                   patient.status === 'Waiting' ? 'bg-orange-50 text-orange-600' :
-                                  patient.status === 'Completed' ? 'bg-blue-50 text-blue-600' :
-                                  'bg-gray-50 text-gray-400'
-                                }`}>
+                                    patient.status === 'Completed' ? 'bg-blue-50 text-blue-600' :
+                                      'bg-gray-50 text-gray-400'
+                                  }`}>
                                   {patient.status}
                                 </span>
                               </div>
                             </td>
                             <td className="py-4 px-4 text-right pr-6 rounded-r-2xl">
-                                <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">
-                                  {patient.status === 'In-Consultation' ? '10 mins Elapsed' : 'Wait Time: 5m'}
-                                </span>
+                              <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">
+                                {patient.status === 'In-Consultation' ? '10 mins Elapsed' : 'Wait Time: 5m'}
+                              </span>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  
+
                   <div className="p-6 border-t border-gray-50 flex justify-between items-center bg-gray-50/30">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{queue.length} Patients in queue</span>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Clinic ends at: 02:00 PM</span>
                   </div>
                 </div>
 
-                {/* Center Column: Break & Quick Actions (Span 3) */}
-                <div className="lg:col-span-3 space-y-8">
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden flex flex-col items-start h-[300px]">
+                {/* Right Column: Break & Reminders (Span 4) */}
+                <div className="lg:col-span-4 space-y-8 flex flex-col">
+                  {/* Take a Break */}
+                  <div className="hidden lg:flex bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden flex-col items-start min-h-[250px]">
                     <div className="relative z-10">
                       <h3 className="text-xl font-bold text-gray-900 mb-1">Take a Break ☕</h3>
                       <p className="text-xs font-medium text-gray-400 mb-6 leading-relaxed">Short breaks improve focus and patient care.</p>
-                      <button 
+                      <button
                         onClick={handleToggleBreak}
                         className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-teal-600/20 hover:bg-teal-700 transition-all"
                       >
@@ -711,62 +719,49 @@ const DoctorDashboard = () => {
                       <p className="mt-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">You've been working for {elapsedWorkTime}</p>
                     </div>
                     <div className="absolute bottom-4 right-4 w-32 h-32 opacity-30">
-                       <img src="https://img.icons8.com/color/160/sofa.png" alt="break" className="w-full h-full object-contain" />
+                      <img src="https://img.icons8.com/color/160/sofa.png" alt="break" className="w-full h-full object-contain" />
                     </div>
                   </div>
 
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Quick Actions</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                       <QuickActionTile icon={<Plus size={20} />} label="New Appointment" color="bg-green-50 text-green-600" onClick={() => setShowAppointmentModal(true)} />
-                       <QuickActionTile icon={<UserPlus size={20} />} label="Add Patient" color="bg-teal-50 text-teal-600" onClick={() => setShowPatientModal(true)} />
-                       <QuickActionTile icon={<Search size={20} />} label="Patient Search" color="bg-blue-50 text-blue-600" onClick={() => navigate('/doctor/locker-search')} />
-                       <QuickActionTile icon={<div className="text-lg font-bold">Rx</div>} label="Add Prescription" color="bg-purple-50 text-purple-600" onClick={() => navigate('/doctor/prescriptions')} />
-                       <QuickActionTile icon={<FlaskConical size={20} />} label="Order Lab Test" color="bg-orange-50 text-orange-600" onClick={() => navigate('/doctor/reports')} />
-                       <QuickActionTile icon={<Layout size={20} />} label="Templates" color="bg-indigo-50 text-indigo-600" onClick={() => setShowTemplatesModal(true)} />
+                  {/* Reminders */}
+                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col flex-grow">
+                    <div className="flex justify-between items-center mb-8">
+                      <h3 className="text-lg font-bold text-gray-900">Reminders</h3>
+                      <button onClick={() => navigate('/doctor/appointments')} className="text-xs font-bold text-teal-600">View All</button>
                     </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Reminders (Span 3) */}
-                <div className="lg:col-span-3 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col h-full">
-                  <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-lg font-bold text-gray-900">Reminders</h3>
-                    <button onClick={() => navigate('/doctor/appointments')} className="text-xs font-bold text-teal-600">View All</button>
-                  </div>
-                  <div className="space-y-6 flex-grow">
-                     {reminders.map((rem) => (
-                       <div key={rem._id} className="flex items-center gap-4 p-5 rounded-[2rem] bg-white border border-gray-50 hover:border-teal-100 transition-all shadow-sm">
-                          <div className={`p-4 rounded-2xl ${
-                            rem.type === 'lab' ? 'bg-red-50 text-red-500' :
+                    <div className="space-y-6 flex-grow">
+                      {reminders.map((rem) => (
+                        <div key={rem._id} className="flex items-center gap-4 p-5 rounded-[2rem] bg-white border border-gray-50 hover:border-teal-100 transition-all shadow-sm">
+                          <div className={`p-4 rounded-2xl ${rem.type === 'lab' ? 'bg-red-50 text-red-500' :
                             rem.type === 'followup' ? 'bg-orange-50 text-orange-500' :
-                            rem.type === 'prescription' ? 'bg-purple-50 text-purple-500' :
-                            'bg-blue-50 text-blue-500'
-                          }`}>
-                             {rem.type === 'lab' ? <FlaskConical size={20} /> : 
-                              rem.type === 'followup' ? <Calendar size={20} /> : 
-                              rem.type === 'prescription' ? <FileText size={20} /> : 
-                              <Bell size={20} />}
+                              rem.type === 'prescription' ? 'bg-purple-50 text-purple-500' :
+                                'bg-blue-50 text-blue-500'
+                            }`}>
+                            {rem.type === 'lab' ? <FlaskConical size={20} /> :
+                              rem.type === 'followup' ? <Calendar size={20} /> :
+                                rem.type === 'prescription' ? <FileText size={20} /> :
+                                  <Bell size={20} />}
                           </div>
                           <div className="min-w-0">
-                             <p className="text-xs font-black text-gray-900 leading-tight mb-1">{rem.title}</p>
-                             <p className="text-[10px] font-bold text-gray-400">{rem.patientName}</p>
-                             <p className="text-[9px] font-black text-gray-300 uppercase mt-2 tracking-widest">
-                               {rem.time ? new Date(rem.time).toLocaleDateString() : 'Today'}
-                             </p>
+                            <p className="text-xs font-black text-gray-900 leading-tight mb-1">{rem.title}</p>
+                            <p className="text-[10px] font-bold text-gray-400">{rem.patientName}</p>
+                            <p className="text-[9px] font-black text-gray-300 uppercase mt-2 tracking-widest">
+                              {rem.time ? new Date(rem.time).toLocaleDateString() : 'Today'}
+                            </p>
                           </div>
-                       </div>
-                     ))}
-                     {reminders.length === 0 && (
-                       <div className="py-20 text-center bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
+                        </div>
+                      ))}
+                      {reminders.length === 0 && (
+                        <div className="py-20 text-center bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
                           <Bell className="mx-auto text-gray-200 mb-4" size={32} />
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No reminders</p>
-                       </div>
-                     )}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={() => navigate('/doctor/appointments')} className="mt-8 py-4 w-full text-[10px] font-black text-teal-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-teal-50 rounded-2xl transition-all border border-transparent hover:border-teal-100">
+                      View All Reminders <ArrowRight size={14} />
+                    </button>
                   </div>
-                  <button onClick={() => navigate('/doctor/appointments')} className="mt-8 py-4 w-full text-[10px] font-black text-teal-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-teal-50 rounded-2xl transition-all border border-transparent hover:border-teal-100">
-                     View All Reminders <ArrowRight size={14} />
-                  </button>
                 </div>
               </div>
 
@@ -778,29 +773,27 @@ const DoctorDashboard = () => {
                     View Calendar
                   </button>
                 </div>
-                
+
                 <div className="flex gap-12 overflow-x-auto pb-4 scrollbar-hide">
                   {queue.filter(app => app.visitType === 'Appointment').map((app, idx) => (
                     <div key={app._id} className="flex-shrink-0 flex items-start gap-4 relative min-w-[200px]">
                       {idx !== queue.filter(a => a.visitType === 'Appointment').length - 1 && (
                         <div className="absolute left-[10px] top-[24px] w-[calc(100%+48px)] h-[2px] bg-gray-100 -z-10"></div>
                       )}
-                      <div className={`w-[22px] h-[22px] rounded-full border-4 border-white shadow-md z-10 mt-0.5 ${
-                        app.status === 'In-Consultation' ? 'bg-green-500' :
+                      <div className={`w-[22px] h-[22px] rounded-full border-4 border-white shadow-md z-10 mt-0.5 ${app.status === 'In-Consultation' ? 'bg-green-500' :
                         app.status === 'Waiting' ? 'bg-orange-500' :
-                        'bg-blue-500'
-                      }`}></div>
+                          'bg-blue-500'
+                        }`}></div>
                       <div>
                         <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-1">
                           {new Date(app.appointmentDate || app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         <p className="text-sm font-bold text-gray-900 leading-tight">{app.patientName}</p>
                         <p className="text-[10px] font-medium text-gray-400 mb-3">{app.reason || 'General Consultation'}</p>
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                          app.status === 'In-Consultation' ? 'bg-green-50 text-green-600' :
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${app.status === 'In-Consultation' ? 'bg-green-50 text-green-600' :
                           app.status === 'Waiting' ? 'bg-orange-50 text-orange-600' :
-                          'bg-blue-50 text-blue-600'
-                        }`}>
+                            'bg-blue-50 text-blue-600'
+                          }`}>
                           {app.status}
                         </span>
                       </div>
@@ -812,7 +805,46 @@ const DoctorDashboard = () => {
             </div>
           )}
         </main>
-        
+
+        {/* Floating Quick Actions Button */}
+        <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[90]">
+          {showQuickActions && (
+            <div className="absolute bottom-20 right-0 bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 w-[calc(100vw-2rem)] sm:w-[320px] max-w-[320px] animate-in slide-in-from-bottom-4 fade-in duration-300">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
+                <button onClick={() => setShowQuickActions(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <QuickActionTile icon={<Plus size={20} />} label="New Appointment" color="bg-green-50 text-green-600" onClick={() => { setShowAppointmentModal(true); setShowQuickActions(false); }} />
+                <QuickActionTile icon={<UserPlus size={20} />} label="Add Patient" color="bg-teal-50 text-teal-600" onClick={() => { setShowPatientModal(true); setShowQuickActions(false); }} />
+                <QuickActionTile icon={<Search size={20} />} label="Patient Search" color="bg-blue-50 text-blue-600" onClick={() => { navigate('/doctor/locker-search'); setShowQuickActions(false); }} />
+                <QuickActionTile icon={<div className="text-lg font-bold">Rx</div>} label="Add Prescription" color="bg-purple-50 text-purple-600" onClick={() => { navigate('/doctor/prescriptions'); setShowQuickActions(false); }} />
+                <QuickActionTile icon={<FlaskConical size={20} />} label="Order Lab Test" color="bg-orange-50 text-orange-600" onClick={() => { navigate('/doctor/reports'); setShowQuickActions(false); }} />
+                <QuickActionTile icon={<Layout size={20} />} label="Templates" color="bg-indigo-50 text-indigo-600" onClick={() => { setShowTemplatesModal(true); setShowQuickActions(false); }} />
+                
+                {/* Take a Break (Mobile Quick Action) */}
+                <div className="lg:hidden col-span-2 mt-2">
+                  <button 
+                    onClick={() => { handleToggleBreak(); setShowQuickActions(false); }}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl bg-amber-50 text-amber-600 font-bold hover:bg-amber-100 transition-all active:scale-95 border border-amber-100"
+                  >
+                    <Coffee size={20} />
+                    {isOnBreak ? 'Resume Work' : 'Take a Break ☕'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => setShowQuickActions(!showQuickActions)}
+            className="w-14 h-14 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 hover:bg-teal-700 hover:scale-105 transition-all focus:outline-none ml-auto"
+          >
+            {showQuickActions ? <X size={24} /> : <Plus size={24} />}
+          </button>
+        </div>
+
         {showAppointmentModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
@@ -825,32 +857,32 @@ const DoctorDashboard = () => {
               <form onSubmit={handleCreateAppointment} className="space-y-6">
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Patient Name</label>
-                  <input 
+                  <input
                     required
-                    type="text" 
+                    type="text"
                     className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                     placeholder="e.g. John Doe"
                     value={newAppointment.patientName}
-                    onChange={(e) => setNewAppointment({...newAppointment, patientName: e.target.value})}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, patientName: e.target.value })}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
-                  <input 
+                  <input
                     required
-                    type="tel" 
+                    type="tel"
                     className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                     placeholder="10-digit number"
                     value={newAppointment.patientPhone}
-                    onChange={(e) => setNewAppointment({...newAppointment, patientPhone: e.target.value})}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, patientPhone: e.target.value })}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Visit Type</label>
-                  <select 
+                  <select
                     className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                     value={newAppointment.visitType}
-                    onChange={(e) => setNewAppointment({...newAppointment, visitType: e.target.value})}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, visitType: e.target.value })}
                   >
                     <option value="Appointment">Scheduled Appointment</option>
                     <option value="Walk-in">Walk-in Visit</option>
@@ -880,7 +912,7 @@ const DoctorDashboard = () => {
 
               <div className="relative mb-6">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
+                <input
                   type="text"
                   placeholder="Search templates (e.g. Fever)..."
                   value={templateSearch}
@@ -896,7 +928,7 @@ const DoctorDashboard = () => {
                       <h4 className="text-base font-black text-slate-900">{template.name}</h4>
                       <div className="flex items-center gap-2">
                         {isConsultationMode && (
-                          <button 
+                          <button
                             onClick={() => {
                               setDiagnosis(template.name);
                               // Convert drugs string to medicines array
@@ -923,7 +955,7 @@ const DoctorDashboard = () => {
                           </button>
                         )}
                         <button className="p-2 text-slate-300 hover:text-indigo-600 transition-colors"><FileText size={16} /></button>
-                        <button 
+                        <button
                           onClick={() => setTemplates(templates.filter(t => t.id !== template.id))}
                           className="p-2 text-slate-300 hover:text-red-500 transition-colors"
                         >
@@ -949,7 +981,7 @@ const DoctorDashboard = () => {
                 )}
               </div>
 
-              <button 
+              <button
                 onClick={() => {
                   Swal.fire({
                     title: 'New Template',
@@ -993,21 +1025,21 @@ const DoctorDashboard = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                       placeholder="Full name"
                       value={newPatient.name}
-                      onChange={(e) => setNewPatient({...newPatient, name: e.target.value})}
+                      onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Gender</label>
-                    <select 
+                    <select
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                       value={newPatient.gender}
-                      onChange={(e) => setNewPatient({...newPatient, gender: e.target.value})}
+                      onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
                     >
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
@@ -1016,25 +1048,25 @@ const DoctorDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Age</label>
-                    <input 
+                    <input
                       required
-                      type="number" 
+                      type="number"
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                       placeholder="Age"
                       value={newPatient.age}
-                      onChange={(e) => setNewPatient({...newPatient, age: e.target.value})}
+                      onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
-                  <input 
+                  <input
                     required
-                    type="tel" 
+                    type="tel"
                     className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                     placeholder="10-digit number"
                     value={newPatient.phone}
-                    onChange={(e) => setNewPatient({...newPatient, phone: e.target.value})}
+                    onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
                   />
                 </div>
                 <button type="submit" className="w-full py-5 bg-teal-600 text-white rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-teal-100 hover:bg-teal-700 hover:shadow-teal-200 transition-all active:scale-95">
