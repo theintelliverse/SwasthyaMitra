@@ -107,6 +107,9 @@ const LabDashboard = () => {
     notes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
     doctorName: localStorage.getItem('defaultDoctorName') || 'Dr. Swasthya Mitra, MBBS, MD'
   });
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadModalPatient, setUploadModalPatient] = useState(null);
+  const [selectedUploadFiles, setSelectedUploadFiles] = useState([]);
   const itemsPerPage = 8;
 
   const token = localStorage.getItem('token');
@@ -606,20 +609,74 @@ const LabDashboard = () => {
     }
   };
 
+  const handleOpenUploadModal = (request) => {
+    setUploadModalPatient({
+      patientPhone: request.patientPhone,
+      queueId: request._id || request.queueId,
+      patientName: request.patientName || 'Valued Patient',
+      requiredTest: request.requiredTest || 'Routine Diagnosis'
+    });
+    setSelectedUploadFiles([]);
+    setShowUploadModal(true);
+  };
+
+  const handleUploadModalFileSelect = (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const filesArray = Array.from(files);
+    
+    // Validate file sizes
+    for (const file of filesArray) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB Limit
+        Swal.fire('File Too Large', `Please upload files smaller than 5MB. "${file.name}" exceeds this limit.`, 'warning');
+        return;
+      }
+    }
+    
+    const newFiles = filesArray.map(file => ({
+      id: Math.random().toString(36).substring(2, 9),
+      file,
+      name: file.name,
+      size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+      previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+      isPdf: file.type === 'application/pdf'
+    }));
+    
+    setSelectedUploadFiles(prev => [...prev, ...newFiles]);
+  };
+
+  const handleRemoveSelectedFile = (id) => {
+    setSelectedUploadFiles(prev => {
+      const target = prev.find(f => f.id === id);
+      if (target && target.previewUrl) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter(f => f.id !== id);
+    });
+  };
+
+  const handleConfirmUpload = async () => {
+    if (selectedUploadFiles.length === 0) {
+      return Swal.fire('No Files Added', 'Please add at least one report file or photo to upload.', 'warning');
+    }
+    
+    const files = selectedUploadFiles.map(f => f.file);
+    setShowUploadModal(false);
+    await handleFileUpload(uploadModalPatient.patientPhone, uploadModalPatient.queueId, files);
+    setSelectedUploadFiles([]);
+    setUploadModalPatient(null);
+  };
+
   const handleFileUpload = async (patientPhone, queueId, files) => {
     if (!files) {
-      // Dynamic System File Selector with MULTIPLE files support
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.multiple = true;
-      fileInput.accept = 'application/pdf,image/*';
-      fileInput.onchange = (e) => {
-        const selected = e.target.files;
-        if (selected && selected.length > 0) {
-          handleFileUpload(patientPhone, queueId, selected);
-        }
-      };
-      fileInput.click();
+      const request = (labQueue || []).find(p => p._id === queueId || p.patientPhone === patientPhone) || {};
+      handleOpenUploadModal({
+        patientPhone: patientPhone,
+        _id: queueId,
+        patientName: request.patientName || 'Valued Patient',
+        requiredTest: request.requiredTest || 'Routine Diagnosis'
+      });
       return;
     }
 
@@ -1664,6 +1721,160 @@ const LabDashboard = () => {
                 >
                   <FileCheck size={16} />
                   <span>Publish & Sync Locker</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Interactive Multi-Image Upload Panel Modal */}
+        {showUploadModal && uploadModalPatient && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in animate-duration-200">
+            <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
+              {/* Header */}
+              <div className="px-6 py-4 bg-teal-600 text-white flex justify-between items-center shrink-0">
+                <div>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <Upload size={22} className="animate-pulse" />
+                    Upload Diagnostic Reports
+                  </h3>
+                  <p className="text-xs text-teal-100 mt-0.5">Select multiple report photos or PDF files to publish</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setSelectedUploadFiles([]);
+                  }}
+                  className="p-1.5 rounded-full hover:bg-teal-700 transition-colors text-white"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-grow">
+                {/* Patient Summary Card */}
+                <div className="bg-teal-50/50 rounded-xl p-4 border border-teal-100/50 grid grid-cols-2 gap-4 text-xs font-semibold">
+                  <div>
+                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Patient Name</span>
+                    <span className="font-extrabold text-sm text-gray-800">{uploadModalPatient.patientName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Phone / Locker Link</span>
+                    <span className="font-extrabold text-sm text-gray-800">{uploadModalPatient.patientPhone}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Referred Tests</span>
+                    <span className="font-extrabold text-sm text-teal-700">{uploadModalPatient.requiredTest}</span>
+                  </div>
+                </div>
+
+                {/* Interactive Drag & Drop Area */}
+                <div
+                  className="border-2 border-dashed border-teal-200 hover:border-teal-400 bg-teal-50/[0.04] hover:bg-teal-50/[0.12] transition-all rounded-2xl p-6 text-center cursor-pointer flex flex-col items-center justify-center gap-2 group"
+                  onClick={() => document.getElementById('modal-file-input').click()}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const files = e.dataTransfer.files;
+                    if (files && files.length > 0) {
+                      handleUploadModalFileSelect({ target: { files } });
+                    }
+                  }}
+                >
+                  <input
+                    id="modal-file-input"
+                    type="file"
+                    multiple
+                    accept="application/pdf,image/*"
+                    className="hidden"
+                    onChange={handleUploadModalFileSelect}
+                  />
+                  <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+                    <Upload size={22} className="group-hover:animate-bounce" />
+                  </div>
+                  <p className="text-sm font-bold text-gray-700">Drag & drop files here, or <span className="text-teal-600 underline">browse</span></p>
+                  <p className="text-[10px] text-gray-400 font-semibold">Supports Multiple Images (PNG, JPG) or PDFs (Up to 5MB each)</p>
+                </div>
+
+                {/* Selected Files Preview Grid */}
+                <div>
+                  <h4 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">
+                    Selected Pages / Files ({selectedUploadFiles.length})
+                  </h4>
+
+                  {selectedUploadFiles.length === 0 ? (
+                    <div className="border border-gray-150 rounded-2xl p-8 text-center text-gray-400 bg-gray-50/50">
+                      <FileCheck size={28} className="mx-auto mb-2 text-gray-300" />
+                      <p className="text-xs font-semibold">No files added yet.</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Add test result photos or prescription files to preview here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {selectedUploadFiles.map((fileItem) => (
+                        <div key={fileItem.id} className="relative rounded-xl border border-gray-200/80 overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-3 shadow-sm hover:shadow hover:border-teal-200 transition-all group h-32">
+                          
+                          {/* Remove X Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveSelectedFile(fileItem.id);
+                            }}
+                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-md transition-all active:scale-90 scale-95 z-10"
+                            title="Remove file"
+                          >
+                            <X size={10} strokeWidth={3} />
+                          </button>
+
+                          {/* Preview Content */}
+                          {fileItem.isPdf ? (
+                            <div className="flex-grow flex flex-col items-center justify-center text-rose-500">
+                              <span className="text-[9px] font-extrabold uppercase bg-rose-50 border border-rose-100 text-rose-600 px-1.5 py-0.5 rounded mb-1 font-mono">PDF</span>
+                              <FileCheck size={24} className="text-rose-500 shrink-0" />
+                            </div>
+                          ) : (
+                            <div className="flex-grow flex items-center justify-center overflow-hidden rounded-lg w-full h-16 bg-white border border-gray-100">
+                              <img src={fileItem.previewUrl} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            </div>
+                          )}
+
+                          {/* File Details */}
+                          <p className="text-[10px] font-bold text-gray-700 mt-2 truncate w-full text-center" title={fileItem.name}>
+                            {fileItem.name}
+                          </p>
+                          <p className="text-[9px] font-medium text-gray-400">
+                            {fileItem.size}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-4 shrink-0">
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setSelectedUploadFiles([]);
+                  }}
+                  className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmUpload}
+                  disabled={selectedUploadFiles.length === 0}
+                  className={`flex-1 py-2.5 rounded-xl font-bold transition-all shadow-lg text-sm flex items-center justify-center gap-2 ${
+                    selectedUploadFiles.length === 0
+                      ? 'bg-gray-250 text-gray-400 cursor-not-allowed shadow-none'
+                      : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20'
+                  }`}
+                >
+                  <FileCheck size={16} />
+                  <span>Publish to Locker</span>
                 </button>
               </div>
             </div>
