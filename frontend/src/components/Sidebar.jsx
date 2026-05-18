@@ -21,7 +21,10 @@ import {
   LifeBuoy,
   HelpCircle,
   FileText,
-  Layout
+  Layout,
+  FolderHeart,
+  Plus,
+  Bell
 } from 'lucide-react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -29,6 +32,7 @@ const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const Sidebar = ({ role = 'lab' }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [analysisMode, setAnalysisMode] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
   const navigate = useNavigate();
 
   // Safely get user info from localStorage
@@ -224,8 +228,78 @@ const Sidebar = ({ role = 'lab' }) => {
           </NavLink>
         ))}
       </nav>
+
+      {/* 🌟 Mobile Floating Quick Action Panel for Patients */}
+      {userRole.toLowerCase() === 'patient' && showQuickActions && (
+        <div className="fixed bottom-36 right-6 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(13,148,136,0.3)] border border-slate-100 p-6 w-[calc(100vw-3rem)] sm:w-[320px] max-w-[320px] z-[110] animate-in slide-in-from-bottom-5 duration-300 lg:hidden">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h3 className="text-base font-black text-slate-900 tracking-tight">Quick Actions</h3>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Patient Wellness Tools</p>
+            </div>
+            <button onClick={() => setShowQuickActions(false)} className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <QuickActionTile 
+              icon={<Calendar size={20} />} 
+              label="Book Slot" 
+              color="bg-teal-50 text-teal-600 border-teal-100/50" 
+              onClick={() => { navigate('/patient/book-appointment'); setShowQuickActions(false); }} 
+            />
+            <QuickActionTile 
+              icon={<FolderHeart size={20} />} 
+              label="Digital Locker" 
+              color="bg-blue-50 text-blue-600 border-blue-100/50" 
+              onClick={() => { navigate('/patient/locker'); setShowQuickActions(false); }} 
+            />
+            <QuickActionTile 
+              icon={<FileText size={20} />} 
+              label="Health History" 
+              color="bg-orange-50 text-orange-600 border-orange-100/50" 
+              onClick={() => { navigate('/patient/locker'); setShowQuickActions(false); }} 
+            />
+            <QuickActionTile 
+              icon={<UserCircle size={20} />} 
+              label="My Profile" 
+              color="bg-rose-50 text-rose-600 border-rose-100/50" 
+              onClick={() => { navigate('/profile'); setShowQuickActions(false); }} 
+            />
+
+            <a 
+              href="tel:+919876543210" 
+              className="col-span-2 mt-2 w-full flex items-center justify-center gap-2.5 px-4 py-4 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 text-center"
+            >
+              <Bell size={14} className="animate-bounce" />
+              Emergency Support
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action Button (FAB) Trigger */}
+      {userRole.toLowerCase() === 'patient' && (
+        <button
+          onClick={() => setShowQuickActions(!showQuickActions)}
+          className="fixed bottom-20 right-6 lg:hidden z-[100] bg-gradient-to-r from-teal-600 to-indigo-600 text-white w-14 h-14 rounded-full shadow-[0_10px_25px_rgba(13,148,136,0.4)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-teal-500/20"
+        >
+          {showQuickActions ? <X size={24} /> : <Plus size={24} />}
+        </button>
+      )}
     </>
   );
 };
+
+const QuickActionTile = ({ icon, label, color, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-2 transition-all hover:scale-[1.03] active:scale-95 cursor-pointer ${color}`}
+  >
+    <div className="p-2 rounded-lg bg-white/80 shadow-sm">{icon}</div>
+    <span className="text-[9px] font-black uppercase tracking-wider leading-tight">{label}</span>
+  </button>
+);
 
 export default Sidebar;

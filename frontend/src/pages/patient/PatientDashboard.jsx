@@ -187,10 +187,10 @@ const PatientDashboard = () => {
               </h3>
               
               <div className="grid grid-cols-2 gap-4">
-                <VitalCard icon={<Zap size={14} />} label="Pulse" val={patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--'} unit="bpm" color="teal" />
-                <VitalCard icon={<Thermometer size={14} />} label="Temp" val={patientData?.visitHistory?.[0]?.vitals?.temperature || '--'} unit="°C" color="orange" />
-                <VitalCard icon={<Weight size={14} />} label="Weight" val={patientData?.visitHistory?.[0]?.vitals?.weight || '--'} unit="kg" color="blue" />
-                <VitalCard icon={<Droplets size={14} />} label="BP" val={patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--'} unit="mmHg" color="rose" />
+                <VitalCard icon={<Zap size={14} />} label="Pulse" val={patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--'} unit="bpm" color="teal" />
+                <VitalCard icon={<Thermometer size={14} />} label="Temp" val={patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--'} unit="°C" color="orange" />
+                <VitalCard icon={<Weight size={14} />} label="Weight" val={patientData?.vitals?.[0]?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--'} unit="kg" color="blue" />
+                <VitalCard icon={<Droplets size={14} />} label="BP" val={patientData?.vitals?.[0]?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--'} unit="mmHg" color="rose" />
               </div>
 
               <div className="mt-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
@@ -415,6 +415,7 @@ const PatientDashboard = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

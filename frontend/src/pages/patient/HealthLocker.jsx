@@ -131,7 +131,7 @@ const HealthLocker = () => {
         </div>
 
         {/* --- Navigation Tabs --- */}
-        <div className="flex bg-white border border-slate-100 p-1.5 rounded-2xl shadow-sm mb-10 overflow-x-auto no-scrollbar">
+        <div className="flex bg-white border border-slate-100 p-1.5 rounded-2xl shadow-sm mb-6 md:mb-10 overflow-x-auto hide-scrollbar whitespace-nowrap snap-x snap-mandatory shrink-0 w-full">
           <TabBtn active={activeTab === 'vitals'} onClick={() => setActiveTab('vitals')} icon={<Heart size={14} />} label="Vitals" />
           <TabBtn active={activeTab === 'medicine'} onClick={() => setActiveTab('medicine')} icon={<Pill size={14} />} label="Prescriptions" />
           <TabBtn active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon={<FileText size={14} />} label="Records" />
@@ -141,56 +141,91 @@ const HealthLocker = () => {
         {/* --- Dynamic Content --- */}
         <div className="animate-in fade-in duration-500">
           {activeTab === 'vitals' && (
-            <div className="space-y-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="space-y-6 md:space-y-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                 <VitalCard icon={<Droplets size={16} />} label="BP" val={latestVitals?.bloodPressure || '--'} unit="mmHg" color="rose" />
                 <VitalCard icon={<Zap size={16} />} label="Pulse" val={latestVitals?.pulseRate || '--'} unit="bpm" color="teal" />
                 <VitalCard icon={<Weight size={16} />} label="Weight" val={latestVitals?.weight || '--'} unit="kg" color="blue" />
                 <VitalCard icon={<TrendingUp size={16} />} label="BMI" val={latestVitals?.bmi ? latestVitals.bmi.toFixed(1) : '--'} unit="Score" color="indigo" />
               </div>
 
-              <div className="bg-white border border-slate-100 rounded-[3rem] shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                  <h3 className="font-black text-xl text-slate-900 tracking-tight">Vitals Historical Logs</h3>
-                  <div className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 shadow-sm"><Activity size={20} /></div>
+              <div className="bg-white border border-slate-100 rounded-2xl md:rounded-[3rem] shadow-sm overflow-hidden">
+                <div className="p-5 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                  <h3 className="font-black text-base md:text-xl text-slate-900 tracking-tight">Vitals Historical Logs</h3>
+                  <div className="p-2 bg-white border border-slate-100 rounded-xl text-slate-400 shadow-sm"><Activity size={18} /></div>
                 </div>
-                <div className="p-8 overflow-x-auto">
+                <div className="p-4 md:p-8">
                   {data.vitals?.length > 0 ? (
-                    <table className="w-full text-left border-separate border-spacing-y-4">
-                      <thead>
-                        <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                          <th className="px-6 py-4">Captured Date</th>
-                          <th className="px-6 py-4">Blood Pressure</th>
-                          <th className="px-6 py-4">Pulse Rate</th>
-                          <th className="px-6 py-4">Temperature</th>
-                          <th className="px-6 py-4 text-right">Weight / BMI</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <>
+                      {/* Desktop View Table */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left border-separate border-spacing-y-4">
+                          <thead>
+                            <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                              <th className="px-6 py-4">Captured Date</th>
+                              <th className="px-6 py-4">Blood Pressure</th>
+                              <th className="px-6 py-4">Pulse Rate</th>
+                              <th className="px-6 py-4">Temperature</th>
+                              <th className="px-6 py-4 text-right">Weight / BMI</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.vitals.map((vital, i) => (
+                              <tr key={i} className="group hover:scale-[1.005] transition-all duration-300">
+                                <td className="px-6 py-6 bg-slate-50/50 rounded-l-[2rem] border-y border-l border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                  <span className="text-xs font-black text-slate-900">{new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                </td>
+                                <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                  <span className="text-xs font-bold text-slate-600">{vital.bloodPressure || '--'}</span>
+                                </td>
+                                <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                  <span className="text-xs font-bold text-slate-600">{vital.pulseRate || '--'} bpm</span>
+                                </td>
+                                <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
+                                  <span className="text-xs font-bold text-slate-600">{vital.temperature || '--'} °C</span>
+                                </td>
+                                <td className="px-6 py-6 bg-slate-50/50 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30 text-right">
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-black text-teal-600">{vital.weight ? `${vital.weight} kg` : '--'}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile View Stacked List */}
+                      <div className="block md:hidden space-y-3">
                         {data.vitals.map((vital, i) => (
-                          <tr key={i} className="group hover:scale-[1.005] transition-all duration-300">
-                            <td className="px-6 py-6 bg-slate-50/50 rounded-l-[2rem] border-y border-l border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                              <span className="text-xs font-black text-slate-900">{new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                            </td>
-                            <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                              <span className="text-xs font-bold text-slate-600">{vital.bloodPressure || '--'}</span>
-                            </td>
-                            <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                              <span className="text-xs font-bold text-slate-600">{vital.pulseRate || '--'} bpm</span>
-                            </td>
-                            <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                              <span className="text-xs font-bold text-slate-600">{vital.temperature || '--'} °C</span>
-                            </td>
-                            <td className="px-6 py-6 bg-slate-50/50 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30 text-right">
-                              <div className="flex flex-col">
-                                <span className="text-xs font-black text-teal-600">{vital.weight ? `${vital.weight} kg` : '--'}</span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}</span>
+                          <div key={i} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50 space-y-3">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                              <span className="text-xs font-black text-slate-950">
+                                {new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </span>
+                              <span className="text-[9px] font-black text-teal-600 uppercase bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+                                BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                              <div className="bg-white p-2 rounded-lg border border-slate-100/30">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">BP</p>
+                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.bloodPressure || '--'}</p>
                               </div>
-                            </td>
-                          </tr>
+                              <div className="bg-white p-2 rounded-lg border border-slate-100/30">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Pulse</p>
+                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.pulseRate ? `${vital.pulseRate} bpm` : '--'}</p>
+                              </div>
+                              <div className="bg-white p-2 rounded-lg border border-slate-100/30">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Weight</p>
+                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.weight ? `${vital.weight} kg` : '--'}</p>
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </>
                   ) : <EmptyState message="No vitals records found." />}
                 </div>
               </div>
@@ -198,56 +233,56 @@ const HealthLocker = () => {
           )}
 
           {activeTab === 'medicine' && (
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               {data.medicalHistory?.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                   {data.medicalHistory.map((record, i) => (
-                    <div key={i} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm hover:border-teal-500/50 transition-all group">
-                      <div className="flex justify-between items-start mb-8">
+                    <div key={i} className="bg-white p-5 md:p-8 rounded-2xl md:rounded-[3rem] border border-slate-100 shadow-sm hover:border-teal-500/50 transition-all group">
+                      <div className="flex justify-between items-start mb-4 md:mb-8">
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-teal-100">
                               Prescription
                             </span>
                           </div>
-                          <h4 className="text-xl font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
+                          <h4 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{record.clinicName}</p>
                         </div>
-                        <div className="p-4 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-teal-600 group-hover:bg-teal-50 transition-all">
-                          <Calendar size={24} />
+                        <div className="p-3 md:p-4 bg-slate-50 rounded-xl md:rounded-2xl text-slate-400 group-hover:text-teal-600 group-hover:bg-teal-50 transition-all">
+                          <Calendar size={20} />
                         </div>
                       </div>
 
-                      <div className="p-6 bg-slate-900 rounded-[2rem] text-white mb-8">
+                      <div className="p-4 md:p-6 bg-slate-900 rounded-xl md:rounded-[2rem] text-white mb-4 md:mb-8">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-white/10 rounded-xl text-teal-400"><Pill size={18} /></div>
+                          <div className="p-2 bg-white/10 rounded-xl text-teal-400"><Pill size={16} /></div>
                           <span className="text-[10px] font-black uppercase tracking-widest text-teal-200">Medicine Course</span>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-3 md:space-y-4">
                           {record.medicines?.map((med, idx) => (
-                            <div key={idx} className="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
+                            <div key={idx} className="flex justify-between items-center py-2 md:py-3 border-b border-white/5 last:border-0">
                               <div>
-                                <p className="font-black text-sm">{med.name}</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">{med.time}</p>
+                                <p className="font-black text-xs md:text-sm">{med.name}</p>
+                                <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase">{med.time}</p>
                               </div>
                               <div className="text-right">
-                                <p className="font-black text-teal-400 text-sm">{med.amount}</p>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase">Total: {med.total}</p>
+                                <p className="font-black text-teal-400 text-xs md:text-sm">{med.amount}</p>
+                                <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase">Total: {med.total}</p>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="space-y-3 md:space-y-4">
+                        <div className="p-4 md:p-5 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100">
                           <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnosis</p>
-                          <p className="text-sm font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'N/A'}</p>
+                          <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'N/A'}</p>
                         </div>
                         {record.notes && (
-                          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                          <div className="p-4 md:p-5 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100">
                             <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-1">Instructions</p>
-                            <p className="text-sm font-bold text-slate-700 leading-relaxed italic">"{record.notes}"</p>
+                            <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed italic">"{record.notes}"</p>
                           </div>
                         )}
                       </div>
@@ -259,14 +294,15 @@ const HealthLocker = () => {
           )}
 
           {activeTab === 'reports' && (
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               {data.documents?.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                   {data.documents.map((doc, i) => (
-                    <div key={i} className="bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm hover:border-teal-500/50 hover:shadow-xl transition-all group flex flex-col">
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                          <FileText size={28} />
+                    <div key={i} className="bg-white border border-slate-100 p-5 md:p-8 rounded-2xl md:rounded-[3rem] shadow-sm hover:border-teal-500/50 hover:shadow-xl transition-all group flex flex-col">
+                      <div className="flex justify-between items-start mb-4 md:mb-6">
+                        <div className="w-10 h-10 md:w-14 md:h-14 bg-teal-50 rounded-xl md:rounded-2xl flex items-center justify-center text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                          <FileText size={20} className="md:hidden" />
+                          <FileText size={28} className="hidden md:block" />
                         </div>
                         <div className="text-right">
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
@@ -275,14 +311,14 @@ const HealthLocker = () => {
                         </div>
                       </div>
 
-                      <h4 className="text-xl font-black text-slate-900 tracking-tight mb-2 group-hover:text-teal-600 transition-colors">{doc.title}</h4>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8">
+                      <h4 className="text-base md:text-xl font-black text-slate-900 tracking-tight mb-1 md:mb-2 group-hover:text-teal-600 transition-colors">{doc.title}</h4>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 md:mb-8">
                         {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </p>
 
                       {/* Image Preview if applicable */}
                       {doc.fileUrl && (
-                        <div className="mb-8 rounded-2xl overflow-hidden border border-slate-100 h-40 bg-slate-50 flex items-center justify-center relative group/img">
+                        <div className="mb-4 md:mb-8 rounded-2xl overflow-hidden border border-slate-100 h-32 md:h-40 bg-slate-50 flex items-center justify-center relative group/img">
                           <img 
                             src={doc.fileUrl} 
                             alt={doc.title} 
@@ -290,7 +326,7 @@ const HealthLocker = () => {
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                           <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                            <Eye size={32} className="text-white" />
+                            <Eye size={24} className="text-white" />
                           </div>
                         </div>
                       )}
@@ -298,17 +334,17 @@ const HealthLocker = () => {
                       <div className="mt-auto flex gap-3">
                         <button 
                           onClick={() => setSelectedReportIndex(i)}
-                          className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
+                          className="flex-1 py-3 md:py-4 bg-slate-900 text-white rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
-                          <Eye size={16} /> Open
+                          <Eye size={14} /> Open
                         </button>
                         <a 
                           href={doc.fileUrl} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="p-4 bg-teal-50 text-teal-600 rounded-2xl border border-teal-100 hover:bg-teal-600 hover:text-white transition-all active:scale-95"
+                          className="p-3 md:p-4 bg-teal-50 text-teal-600 rounded-xl md:rounded-2xl border border-teal-100 hover:bg-teal-600 hover:text-white transition-all active:scale-95"
                         >
-                          <Download size={18} />
+                          <Download size={14} />
                         </a>
                       </div>
                     </div>
@@ -319,42 +355,45 @@ const HealthLocker = () => {
           )}
 
           {activeTab === 'history' && (
-            <div className="space-y-10">
+            <div className="space-y-6 md:space-y-10">
               {data.medicalHistory?.length > 0 ? (
-                <div className="relative space-y-10">
+                <div className="relative space-y-6 md:space-y-10">
                   <div className="absolute left-[39px] top-4 bottom-4 w-px bg-slate-100 hidden md:block" />
                   {data.medicalHistory.map((record, i) => (
-                    <div key={i} className="group relative flex gap-10 items-start">
+                    <div key={i} className="group relative flex gap-4 md:gap-10 items-start">
                       <div className="hidden md:flex flex-col items-center">
                         <div className="w-20 h-20 bg-white border border-slate-100 rounded-[2rem] flex flex-col items-center justify-center shadow-sm group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                          <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">{new Date(record.date).toLocaleDateString('en-IN', { month: 'short' })}</span>
-                          <span className="text-2xl font-black leading-none">{new Date(record.date).getDate()}</span>
+                          <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">{new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { month: 'short' })}</span>
+                          <span className="text-2xl font-black leading-none">{new Date(record.date || record.visitDate).getDate()}</span>
                         </div>
                       </div>
 
-                      <div className="flex-grow bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-teal-100 transition-all duration-300">
-                        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+                      <div className="flex-grow bg-white p-5 md:p-10 rounded-2xl md:rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-teal-100 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4 md:mb-8">
                           <div>
                             <div className="flex items-center gap-3 mb-2">
                               <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-teal-100">Consultation Session</span>
+                              <span className="md:hidden px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-[8px] font-bold">
+                                {new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                              </span>
                             </div>
-                            <h4 className="text-2xl font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
-                            <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">{record.clinicName}</p>
+                            <h4 className="text-lg md:text-2xl font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
+                            <p className="text-xs md:text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">{record.clinicName}</p>
                           </div>
-                          <div className="flex items-center gap-3 text-teal-600 bg-teal-50 px-5 py-3 rounded-2xl border border-teal-100">
-                            <Activity size={18} />
-                            <span className="text-xs font-black uppercase tracking-widest">History Log Verified</span>
+                          <div className="flex items-center gap-2 text-teal-600 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100">
+                            <Activity size={14} />
+                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">Verified</span>
                           </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
-                          <div className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
-                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-3">Diagnostic Analysis</p>
-                            <p className="text-sm font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'General follow-up consultation'}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                          <div className="p-4 md:p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1.5 md:mb-3">Diagnostic Analysis</p>
+                            <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'General follow-up consultation'}</p>
                           </div>
-                          <div className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
-                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-3">Reported Symptoms</p>
-                            <p className="text-sm font-bold text-slate-700 leading-relaxed italic">"{record.symptoms || 'None reported'}"</p>
+                          <div className="p-4 md:p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1.5 md:mb-3">Reported Symptoms</p>
+                            <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed italic">"{record.symptoms || 'None reported'}"</p>
                           </div>
                         </div>
                       </div>
@@ -383,7 +422,7 @@ const HealthLocker = () => {
 const TabBtn = ({ active, onClick, icon, label }) => (
   <button 
     onClick={onClick}
-    className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${active ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+    className={`px-4 md:px-8 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 shrink-0 snap-start ${active ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
   >
     {icon} {label}
   </button>
@@ -399,14 +438,14 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
   };
   
   return (
-    <div className={`p-6 rounded-[2rem] border ${colors[color]} shadow-sm transition-all hover:scale-105 duration-300`}>
-      <div className="flex items-center gap-2 mb-4">
-        <div className={`p-2 rounded-xl bg-white/50 shadow-sm`}>{icon}</div>
-        <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+    <div className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border ${colors[color]} shadow-sm transition-all hover:scale-[1.03] duration-300`}>
+      <div className="flex items-center gap-2 mb-2 md:mb-4">
+        <div className={`p-2 rounded-lg md:rounded-xl bg-white/50 shadow-sm`}>{icon}</div>
+        <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest">{label}</span>
       </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-3xl font-black tracking-tighter">{val}</span>
-        <span className="text-[10px] font-bold opacity-60 uppercase">{unit}</span>
+      <div className="flex items-baseline gap-0.5 md:gap-1">
+        <span className="text-xl md:text-3xl font-black tracking-tighter">{val}</span>
+        <span className="text-[8px] md:text-[10px] font-bold opacity-60 uppercase">{unit}</span>
       </div>
     </div>
   );
