@@ -93,10 +93,20 @@ const LabDashboard = () => {
     primaryColor: '#14B8A6',
     headerFontSize: 24,
     bodyFontSize: 12,
-    reportType: 'Daily'
+    reportType: 'Daily',
+    defaultNotes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
+    defaultDoctorName: localStorage.getItem('defaultDoctorName') || 'Dr. Swasthya Mitra, MBBS, MD'
   });
   const [newTestForm, setNewTestForm] = useState({ patientName: '', patientPhone: '', testType: '' });
   const [addSampleForm, setAddSampleForm] = useState({ patientId: '', sampleType: '', collectionTime: '' });
+  const [showDigitalReportModal, setShowDigitalReportModal] = useState(false);
+  const [activeDigitalPatient, setActiveDigitalPatient] = useState(null);
+  const [digitalReportForm, setDigitalReportForm] = useState({
+    title: 'Diagnostic Lab Report',
+    findings: '',
+    notes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
+    doctorName: localStorage.getItem('defaultDoctorName') || 'Dr. Swasthya Mitra, MBBS, MD'
+  });
   const itemsPerPage = 8;
 
   const token = localStorage.getItem('token');
@@ -382,6 +392,20 @@ const LabDashboard = () => {
     Swal.fire('Success', `${reportType} PDF report generated`, 'success');
   };
 
+  const handleSaveReportConfig = () => {
+    localStorage.setItem('defaultNotes', reportConfig.defaultNotes || '');
+    localStorage.setItem('defaultDoctorName', reportConfig.defaultDoctorName || '');
+    localStorage.setItem('clinicName', reportConfig.labName || '');
+    setShowReportConfigModal(false);
+    Swal.fire({
+      icon: 'success',
+      title: 'Settings Saved',
+      text: 'Default digital report settings updated successfully.',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  };
+
   const handleDownloadReport = (report) => {
     const doc = new jsPDF();
     const primaryColor = reportConfig.primaryColor;
@@ -429,24 +453,169 @@ const LabDashboard = () => {
   };
 
   const handleDailySummary = () => {
-    const stats = getStats();
+    const queue = Array.isArray(labQueue) ? labQueue : [];
+    const todayStr = new Date().toDateString();
+    
+    // Filter to only items created TODAY
+    const dailyQueue = queue.filter(p => p.createdAt && new Date(p.createdAt).toDateString() === todayStr);
+    
+    const total = dailyQueue.length;
+    const pending = dailyQueue.filter(p => p?.currentStage === 'Lab-Pending').length;
+    const inProcess = dailyQueue.filter(p => p?.currentStage === 'Lab-Processing').length;
+    const completed = dailyQueue.filter(p => p?.currentStage === 'Lab-Completed').length;
+    const rejected = dailyQueue.filter(p => p?.currentStage === 'Lab-Rejected').length;
+    const samplesCollected = inProcess + completed;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
     Swal.fire({
       title: 'Daily Lab Summary',
-      html: `<div style="text-align: left; font-size: 14px;"><p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p><p><strong>Total Requests:</strong> <span style="color: #0284c7;">${stats.total}</span></p><p><strong>Samples Collected:</strong> <span style="color: #14B8A6;">${stats.samplesCollected}</span></p><p><strong>In Process:</strong> <span style="color: #f59e0b;">${stats.inProcess}</span></p><p><strong>Completed:</strong> <span style="color: #10b981;">${stats.completed}</span></p><p><strong>Pending:</strong> <span style="color: #ef4444;">${stats.pending}</span></p><hr /><p><strong>Completion Rate:</strong> ${stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</p></div>`,
+      html: `
+        <div style="text-align: left; font-size: 14.5px; font-family: sans-serif; line-height: 1.6; padding: 4px;">
+          <p style="margin-bottom: 8px;"><strong>Date:</strong> ${new Date().toLocaleDateString('en-US')}</p>
+          <div style="border-top: 1px solid #e5e7eb; margin: 10px 0; padding-top: 10px;">
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Total Requests:</strong></span> <span style="color: #0ea5e9; font-weight: bold;">${total}</span></p>
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Samples Collected:</strong></span> <span style="color: #0f9488; font-weight: bold;">${samplesCollected}</span></p>
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>In Process:</strong></span> <span style="color: #f59e0b; font-weight: bold;">${inProcess}</span></p>
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Completed:</strong></span> <span style="color: #10b981; font-weight: bold;">${completed}</span></p>
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Pending:</strong></span> <span style="color: #ef4444; font-weight: bold;">${pending}</span></p>
+          </div>
+          <div style="border-top: 1px solid #e5e7eb; margin: 10px 0; padding-top: 10px; display: flex; justify-content: space-between;">
+            <span><strong>Completion Rate:</strong></span>
+            <span style="font-weight: 800; color: #0f9488;">${completionRate}%</span>
+          </div>
+        </div>
+      `,
       icon: 'info',
-      confirmButtonColor: '#14B8A6'
+      confirmButtonColor: '#14B8A6',
+      confirmButtonText: 'Understood'
     });
   };
 
-  const handleFileUpload = async (patientPhone, queueId, file) => {
-    if (!file) {
-      // Dynamic System File Selector
+  const handleOpenDigitalReportModal = (request) => {
+    setActiveDigitalPatient(request);
+    setDigitalReportForm({
+      title: 'Diagnostic Lab Report',
+      findings: '',
+      notes: reportConfig.defaultNotes || 'Results are within reference intervals. Clinically correlate if needed.',
+      doctorName: reportConfig.defaultDoctorName || 'Dr. Swasthya Mitra, MBBS, MD'
+    });
+    setShowDigitalReportModal(true);
+  };
+
+  const handlePublishDigitalReport = async () => {
+    if (!digitalReportForm.findings.trim()) {
+      return Swal.fire('Error', 'Please enter some test findings/results.', 'warning');
+    }
+
+    try {
+      const doc = new jsPDF();
+      const primaryColor = reportConfig.primaryColor || '#0f9488';
+
+      // Professional Header
+      doc.setFillColor(primaryColor);
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text(reportConfig.labName || 'SWASTHYAMITRA PATHOLOGY LAB', 20, 25);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 35);
+
+      // Patient Information
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text('PATIENT DIAGNOSTIC REPORT', 20, 55);
+      doc.line(20, 58, 190, 58);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Patient Name: ${activeDigitalPatient.patientName}`, 20, 70);
+      doc.text(`Phone Number: ${activeDigitalPatient.patientPhone}`, 20, 78);
+      doc.text(`Referred Tests: ${activeDigitalPatient.requiredTest || 'CBC, RBS'}`, 20, 86);
+      
+      doc.text(`Date of Visit: ${new Date(activeDigitalPatient.createdAt).toLocaleDateString()}`, 130, 70);
+      doc.text(`Report ID: SMP-${activeDigitalPatient._id.slice(-8).toUpperCase()}`, 130, 78);
+
+      // Findings Section
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text('TEST RESULTS & OBSERVATIONS', 20, 105);
+      doc.line(20, 108, 190, 108);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      
+      const findingsLines = doc.splitTextToSize(digitalReportForm.findings, 170);
+      doc.text(findingsLines, 20, 118);
+
+      // Pathologist Notes Section
+      const startNotesY = 118 + (findingsLines.length * 7) + 15;
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text('CLINICAL NOTES & INTERPRETATION', 20, startNotesY);
+      doc.line(20, startNotesY + 3, 190, startNotesY + 3);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      const notesLines = doc.splitTextToSize(digitalReportForm.notes, 170);
+      doc.text(notesLines, 20, startNotesY + 12);
+
+      // Sign-off Section
+      const startSignY = startNotesY + 12 + (notesLines.length * 7) + 25;
+      doc.line(130, startSignY, 190, startSignY);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text('AUTHORIZED SIGNATORY', 130, startSignY + 8);
+      doc.setFont("helvetica", "normal");
+      doc.text(digitalReportForm.doctorName, 130, startSignY + 14);
+
+      // Dynamic Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text('This is a digitally generated secure report verified by SwasthyaMitra health network.', 20, 280);
+
+      // Convert jsPDF output to Blob
+      const pdfBlob = doc.output('blob');
+      
+      // Create a File object from the blob
+      const pdfFile = new File([pdfBlob], `digital_report_${activeDigitalPatient.patientName.replace(/\s+/g, '_')}.pdf`, {
+        type: 'application/pdf'
+      });
+
+      // Call our robust handleFileUpload method to sync it to Cloudinary & Locker!
+      await handleFileUpload(activeDigitalPatient.patientPhone, activeDigitalPatient._id, pdfFile);
+      
+      // Close the modal
+      setShowDigitalReportModal(false);
+      
+      // Reset form
+      setDigitalReportForm({
+        title: 'Diagnostic Lab Report',
+        findings: '',
+        notes: 'Results are within reference intervals. Clinically correlate if needed.',
+        doctorName: 'Dr. Swasthya Mitra, MBBS, MD'
+      });
+
+    } catch (err) {
+      console.error("Failed to generate digital report:", err);
+      Swal.fire('Error', 'Failed to generate digital report PDF.', 'error');
+    }
+  };
+
+  const handleFileUpload = async (patientPhone, queueId, files) => {
+    if (!files) {
+      // Dynamic System File Selector with MULTIPLE files support
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
+      fileInput.multiple = true;
       fileInput.accept = 'application/pdf,image/*';
       fileInput.onchange = (e) => {
-        const selected = e.target.files[0];
-        if (selected) {
+        const selected = e.target.files;
+        if (selected && selected.length > 0) {
           handleFileUpload(patientPhone, queueId, selected);
         }
       };
@@ -454,29 +623,35 @@ const LabDashboard = () => {
       return;
     }
 
+    // Convert Single File or FileList into an Array of Files
+    const filesArray = files.length !== undefined ? Array.from(files) : [files];
+
     // 🔍 Pre-upload validation
-    if (file.size > 5 * 1024 * 1024) { // 5MB Limit
-      return Swal.fire('File Too Large', 'Please upload a file smaller than 5MB', 'warning');
+    for (const file of filesArray) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB Limit
+        return Swal.fire('File Too Large', `Please upload files smaller than 5MB. "${file.name}" exceeds this limit.`, 'warning');
+      }
     }
 
     const cleanPhone = patientPhone.replace(/\D/g, '').slice(-10);
 
     const formData = new FormData();
-    // 🔑 IMPORTANT: Ensure this key ('file') matches upload.single('file') in your backend route
-    formData.append('file', file);
+    // Append all selected files to the same key 'file' as expected by multer.array('file')
+    filesArray.forEach((file) => {
+      formData.append('file', file);
+    });
     formData.append('title', 'Diagnostic Report');
-    formData.append('fileType', file.type.includes('pdf') ? 'PDF' : 'Image');
 
     Swal.fire({
       title: 'Syncing to Locker...',
-      html: '<p style="font-size: 12px; color: #14B8A6;">Encrypting and notifying doctor...</p>',
+      html: `<p style="font-size: 12px; color: #14B8A6;">Encrypting and publishing ${filesArray.length} report(s)...</p>`,
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
       background: '#EEF6FA'
     });
 
     try {
-      console.log(`📤 Sending upload request for ${cleanPhone}...`);
+      console.log(`📤 Sending upload request for ${filesArray.length} files to ${cleanPhone}...`);
       const res = await axios.post(`${API_URL}/api/lab/upload/${cleanPhone}/${queueId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -488,7 +663,7 @@ const LabDashboard = () => {
         Swal.fire({
           icon: 'success',
           title: 'Results Published',
-          text: 'Patient locker updated successfully.',
+          text: `${filesArray.length} reports successfully published to patient locker.`,
           timer: 2000,
           showConfirmButton: false,
           background: '#EEF6FA'
@@ -503,7 +678,7 @@ const LabDashboard = () => {
       Swal.fire({
         icon: 'error',
         title: 'Sync Failed',
-        text: err.response?.data?.message || 'Check your connection or file format.',
+        text: err.response?.data?.message || 'Check your connection or file formats.',
         confirmButtonColor: '#14B8A6',
         background: '#EEF6FA'
       });
@@ -652,85 +827,41 @@ const LabDashboard = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 {/* --- LEFT COLUMN --- */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* Quick Actions Desktop */}
-                  <div className="hidden lg:block bg-white p-6 rounded-xl border border-gray-200">
-                    <h2 className="text-lg font-bold text-gray-900 mb-6">Quick Actions</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                      <button
-                        onClick={() => setShowNewTestModal(true)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <Plus size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">New Test Request</span>
-                      </button>
-                      <button
-                        onClick={() => setShowAddSampleModal(true)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <TestTubes size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Add New Sample</span>
-                      </button>
-                      <button
-                        onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); }}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <BarChart3 size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Generate Report</span>
-                      </button>
-                      <button
-                        onClick={() => setShowSampleCollectionModal(true)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <Upload size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Upload Report</span>
-                      </button>
-                      <button
-                        onClick={() => fetchLabDashboardStats(false)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <RefreshCw size={20} className={isSyncing ? 'animate-spin' : ''} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Check Status</span>
-                      </button>
-                      <button
-                        onClick={handleDailySummary}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <TrendingUp size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Daily Summary</span>
-                      </button>
-                      <button
-                        onClick={() => setShowSampleCollectionModal(true)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
-                      >
-                        <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
-                          <Eye size={20} />
-                        </div>
-                        <span className="text-xs text-center leading-tight">Sample Collection</span>
-                      </button>
-                    </div>
-                  </div>
 
                   {/* Test Requests Table */}
                   <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                      <h2 className="text-lg font-bold text-gray-900">Test Requests</h2>
-                      <button onClick={() => navigate('/lab/requests')} className="text-teal-600 text-sm font-semibold hover:text-teal-700">View All</button>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 border-b border-gray-200 bg-white">
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <Activity size={18} className="text-teal-600 animate-pulse" />
+                          Test Requests Queue
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-0.5 font-medium">Manage patient diagnostics, collections and digital reports</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-64 hidden sm:block">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                          <input
+                            type="text"
+                            placeholder="Search patient, phone, test..."
+                            className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:bg-white text-xs w-full transition-all font-semibold shadow-inner"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => fetchLabDashboardStats(true)}
+                          className="p-1.5 hover:bg-teal-50 rounded-lg text-teal-600 hover:text-teal-700 transition-all active:scale-90 border border-teal-100"
+                          title="Refresh Queue"
+                        >
+                          <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
+                        </button>
+                        <button onClick={() => navigate('/lab/requests')} className="text-teal-600 text-xs font-bold hover:underline">View All</button>
+                      </div>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex items-center justify-between border-b border-gray-200 px-6">
+                    <div className="flex items-center justify-between border-b border-gray-200 px-6 bg-gray-50/50">
                       <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory -mb-px">
                         {['All', 'In Process', 'Pending', 'Completed', 'Cancelled'].map((tab) => (
                           <button
@@ -751,74 +882,107 @@ const LabDashboard = () => {
                     </div>
 
                     {/* Table (Desktop View Only) */}
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="w-full text-sm">
+                    <div className="hidden md:block overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm">
+                      <table className="w-full text-sm border-collapse">
                         <thead>
-                          <tr className="border-b border-gray-200 bg-white">
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Request ID</th>
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Patient Name</th>
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Tests</th>
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Status</th>
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Priority</th>
-                            <th className="px-6 py-3 text-left font-bold text-gray-700">Requested On</th>
-                            <th className="px-6 py-3 text-center font-bold text-gray-700">Actions</th>
+                          <tr className="border-b border-gray-200 bg-gray-50/75">
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
+                            <th className="px-6 py-3.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-gray-100">
                           {loading ? (
                             <tr>
-                              <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                                <Beaker className="mx-auto mb-2 text-gray-400 animate-pulse" size={32} />
-                                <p>Loading requests...</p>
+                              <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                                <Beaker className="mx-auto mb-3 text-teal-500 animate-spin" size={32} />
+                                <p className="font-semibold text-gray-700">Loading requests...</p>
                               </td>
                             </tr>
                           ) : paginatedQueue.length === 0 ? (
                             <tr>
-                              <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                                <FileCheck className="mx-auto mb-2 text-gray-400" size={32} />
-                                <p>No test requests found</p>
+                              <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                                <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
+                                <p className="font-semibold text-gray-700">No test requests found</p>
+                                <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
                               </td>
                             </tr>
                           ) : (
                             paginatedQueue.map((request) => (
-                              <tr key={request._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 text-teal-600 font-bold">TRF-2025-{request.tokenNumber}</td>
+                              <tr key={request._id} className="hover:bg-teal-50/10 transition-colors group">
                                 <td className="px-6 py-4">
-                                  <p className="text-gray-900 font-bold">{request.patientName}</p>
-                                  <p className="text-xs text-gray-500">{request._id.slice(-6).toUpperCase()}</p>
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
+                                    TRF-{request.tokenNumber || '00'}
+                                  </span>
                                 </td>
-                                <td className="px-6 py-4 text-gray-700">{request.requiredTest || 'CBC, RBS, Lipid Profile'}</td>
                                 <td className="px-6 py-4">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${request.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-600' :
-                                    request.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600' :
-                                      'bg-orange-50 text-orange-600'
-                                    }`}>
+                                  <p className="text-gray-900 font-bold group-hover:text-teal-700 transition-colors">{request.patientName}</p>
+                                  <p className="text-xs text-gray-400 font-medium mt-0.5">{request.patientPhone}</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-gray-700 font-semibold text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200/50 block w-fit">
+                                    {request.requiredTest || 'Routine Diagnosis'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                                    request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                    request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-100 animate-pulse' :
+                                    'bg-amber-50 text-amber-700 border border-amber-100'
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                      request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
+                                      request.currentStage === 'Lab-Processing' ? 'bg-sky-500 animate-ping' :
+                                      'bg-amber-500'
+                                    }`}></span>
                                     {request.currentStage === 'Lab-Completed' ? 'Completed' :
                                       request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 flex items-center gap-2">
-                                  <div className={`w-2 h-2 rounded-full ${request.isEmergency ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                                  <span className={`text-xs font-semibold text-gray-700`}>
-                                    {request.isEmergency ? 'High' : 'Low'}
+                                <td className="px-6 py-4">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                                    request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-slate-50 text-slate-600 border border-slate-100'
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                    {request.isEmergency ? 'Emergency' : 'Standard'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-gray-600 text-xs">
-                                  <p>22 May 2025</p>
-                                  <p>{new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                <td className="px-6 py-4">
+                                  <p className="text-gray-900 font-semibold text-xs">
+                                    {new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                                    {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                   {request.currentStage === 'Lab-Completed' ? (
-                                    <span className="text-xs font-bold text-gray-400">Published</span>
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-gray-400 py-1.5">
+                                      <FileCheck size={14} className="text-gray-400" /> Published
+                                    </span>
                                   ) : (
-                                    <button
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm"
-                                      onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                      title="Upload Diagnostic Report"
-                                    >
-                                      <Upload size={14} />
-                                      <span>Upload Report</span>
-                                    </button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm border border-teal-100/50"
+                                        onClick={() => handleFileUpload(request.patientPhone, request._id)}
+                                        title="Upload Clinical Files"
+                                      >
+                                        <Upload size={13} />
+                                        <span>Upload File(s)</span>
+                                      </button>
+                                      <button
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm border border-indigo-100"
+                                        onClick={() => handleOpenDigitalReportModal(request)}
+                                        title="Enter report details digitally"
+                                      >
+                                        <FileCheck size={13} />
+                                        <span>Fill Digital</span>
+                                      </button>
+                                    </div>
                                   )}
                                 </td>
                               </tr>
@@ -879,13 +1043,25 @@ const LabDashboard = () => {
                               {request.currentStage === 'Lab-Completed' ? (
                                 <span className="text-[10px] font-bold text-gray-400">Published</span>
                               ) : (
-                                <button
-                                  onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95"
-                                >
-                                  <Upload size={12} />
-                                  <span>Upload Report</span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleFileUpload(request.patientPhone, request._id)}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95"
+                                  >
+                                    <Upload size={12} />
+                                    <span>Upload</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setActiveDigitalPatient(request);
+                                      setShowDigitalReportModal(true);
+                                    }}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all active:scale-95 border border-indigo-100"
+                                  >
+                                    <FileCheck size={12} />
+                                    <span>Fill Digital</span>
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1251,9 +1427,12 @@ const LabDashboard = () => {
 
         {/* Report Customization Modal */}
         {showReportConfigModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-xl">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Customize PDF Report</h3>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-gray-100 overflow-y-auto max-h-[90vh]">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2 border-b pb-3">
+                <TestTubes size={20} className="text-teal-600" />
+                Lab Settings & Report Customization
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Lab Name</label>
@@ -1261,80 +1440,234 @@ const LabDashboard = () => {
                     type="text"
                     value={reportConfig.labName}
                     onChange={(e) => setReportConfig({ ...reportConfig, labName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 font-semibold"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Primary Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={reportConfig.primaryColor}
-                      onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
-                      className="h-10 w-20 border border-gray-300 rounded-lg cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={reportConfig.primaryColor}
-                      onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
-                    />
-                  </div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Default Pathologist (Doctor Signatory)</label>
+                  <input
+                    type="text"
+                    value={reportConfig.defaultDoctorName || ''}
+                    onChange={(e) => setReportConfig({ ...reportConfig, defaultDoctorName: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-sm font-semibold"
+                    placeholder="e.g. Dr. Swasthya Mitra, MBBS, MD"
+                  />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Default Clinical Interpretation (Notes)</label>
+                  <textarea
+                    value={reportConfig.defaultNotes || ''}
+                    onChange={(e) => setReportConfig({ ...reportConfig, defaultNotes: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-sm"
+                    rows={2}
+                    placeholder="Default notes that will prepopulate digital reports..."
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Header Font Size</label>
-                    <input
-                      type="number"
-                      value={reportConfig.headerFontSize}
-                      onChange={(e) => setReportConfig({ ...reportConfig, headerFontSize: parseInt(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
-                    />
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Primary Theme Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={reportConfig.primaryColor}
+                        onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
+                        className="h-10 w-12 border border-gray-300 rounded-lg cursor-pointer shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={reportConfig.primaryColor}
+                        onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Header Size</label>
+                      <input
+                        type="number"
+                        value={reportConfig.headerFontSize}
+                        onChange={(e) => setReportConfig({ ...reportConfig, headerFontSize: parseInt(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Body Size</label>
+                      <input
+                        type="number"
+                        value={reportConfig.bodyFontSize}
+                        onChange={(e) => setReportConfig({ ...reportConfig, bodyFontSize: parseInt(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-8">
+                <button
+                  onClick={handleSaveReportConfig}
+                  className="w-full py-2.5 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-600/10 flex items-center justify-center gap-2"
+                >
+                  Save Settings & Defaults
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowReportConfigModal(false)}
+                    className="flex-1 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGenerateReport}
+                    className="flex-1 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-lg font-bold hover:bg-indigo-100 transition-colors text-xs flex items-center justify-center gap-1"
+                  >
+                    Generate Daily PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Digital Report Builder Modal */}
+        {showDigitalReportModal && activeDigitalPatient && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
+              {/* Header */}
+              <div className="px-6 py-4 bg-teal-600 text-white flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <FileCheck size={22} />
+                    Fill Digital Lab Report
+                  </h3>
+                  <p className="text-xs text-teal-100 mt-0.5">Digitally type test values and observations</p>
+                </div>
+                <button
+                  onClick={() => setShowDigitalReportModal(false)}
+                  className="p-1 rounded-full hover:bg-teal-700 transition-colors text-white"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-grow">
+                {/* Patient Summary Card */}
+                <div className="bg-teal-50/50 rounded-xl p-4 border border-teal-100/50 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-xs text-gray-500 font-semibold block">PATIENT NAME</span>
+                    <span className="font-bold text-gray-800">{activeDigitalPatient.patientName}</span>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Body Font Size</label>
+                    <span className="text-xs text-gray-500 font-semibold block">PHONE NUMBER</span>
+                    <span className="font-bold text-gray-800">{activeDigitalPatient.patientPhone}</span>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <span className="text-xs text-gray-500 font-semibold block">REFERRED TESTS</span>
+                    <span className="font-bold text-teal-700">{activeDigitalPatient.requiredTest || 'CBC, RBS, Urinalysis'}</span>
+                  </div>
+                </div>
+
+                {/* Form Inputs */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1">Report Title / Heading</label>
                     <input
-                      type="number"
-                      value={reportConfig.bodyFontSize}
-                      onChange={(e) => setReportConfig({ ...reportConfig, bodyFontSize: parseInt(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
+                      type="text"
+                      value={digitalReportForm.title}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, title: e.target.value })}
+                      placeholder="e.g. Complete Blood Count (CBC) Report"
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1">
+                      Test Results & Observations (Findings)
+                    </label>
+                    <textarea
+                      value={digitalReportForm.findings}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, findings: e.target.value })}
+                      rows={6}
+                      placeholder={`Type detailed observations, values or parameters. Example:
+- Hemoglobin (Hb): 14.5 g/dL (Ref: 13.0 - 17.0)
+- Total WBC Count: 7,500 /cumm (Ref: 4,000 - 11,000)
+- Platelet Count: 2.8 Lakhs /cumm (Ref: 1.5 - 4.5)`}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1">Clinical Notes / Pathologist Interpretation</label>
+                    <input
+                      type="text"
+                      value={digitalReportForm.notes}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, notes: e.target.value })}
+                      placeholder="e.g. Parameters are within healthy limits."
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:bg-white transition-all text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1">Authorized Pathologist / Signatory</label>
+                    <input
+                      type="text"
+                      value={digitalReportForm.doctorName}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, doctorName: e.target.value })}
+                      placeholder="Name and Qualifications"
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:bg-white transition-all text-sm"
                     />
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3 mt-8">
+
+              {/* Actions Footer */}
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-4">
                 <button
-                  onClick={() => setShowReportConfigModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setShowDigitalReportModal(false)}
+                  className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleGenerateReport}
-                  className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors"
+                  onClick={handlePublishDigitalReport}
+                  className="flex-1 py-2.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 text-sm flex items-center justify-center gap-2"
                 >
-                  Generate PDF
+                  <FileCheck size={16} />
+                  <span>Publish & Sync Locker</span>
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Floating Action Button (Mobile Only) */}
-        <div className="lg:hidden fixed bottom-24 right-4 z-50 flex flex-col items-end gap-3">
-          <div className={`transition-all duration-300 transform origin-bottom-right ${showQuickActions ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
-            <div className="bg-white/90 backdrop-blur-xl p-4 rounded-[2rem] shadow-2xl border border-gray-100 grid grid-cols-2 gap-3 mb-2 w-[calc(100vw-2rem)] max-w-sm">
-              <QuickActionTile icon={<Plus size={20} />} label="New Test" color="bg-teal-50 text-teal-600" onClick={() => { setShowNewTestModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<TestTubes size={20} />} label="Add Sample" color="bg-blue-50 text-blue-600" onClick={() => { setShowAddSampleModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<BarChart3 size={20} />} label="Reports" color="bg-orange-50 text-orange-600" onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<Upload size={20} />} label="Upload" color="bg-purple-50 text-purple-600" onClick={() => { setShowSampleCollectionModal(true); setShowQuickActions(false); }} />
+        {/* Floating Action Button (PC & Mobile) */}
+        <div className="fixed bottom-24 lg:bottom-8 right-4 lg:right-8 z-50 flex flex-col items-end gap-3">
+          <div className={`transition-all duration-300 transform origin-bottom-right ${showQuickActions ? 'scale-100 opacity-100 animate-fade-in' : 'scale-0 opacity-0 pointer-events-none'}`}>
+            <div className="bg-white/95 backdrop-blur-xl p-5 rounded-[2rem] shadow-2xl border border-gray-150 grid grid-cols-2 gap-4 mb-2 w-[calc(100vw-2rem)] max-w-sm">
+              <div className="col-span-2 border-b pb-2 mb-1 flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Quick Actions</span>
+                <span className="text-[10px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full">Interactive Panel</span>
+              </div>
+              <QuickActionTile icon={<Plus size={20} />} label="New Test" color="bg-teal-50 text-teal-600 hover:bg-teal-100" onClick={() => { setShowNewTestModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<TestTubes size={20} />} label="Add Sample" color="bg-blue-50 text-blue-600 hover:bg-blue-100" onClick={() => { setShowAddSampleModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<BarChart3 size={20} />} label="PDF Customizer" color="bg-orange-50 text-orange-600 hover:bg-orange-100" onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<Upload size={20} />} label="Upload File" color="bg-purple-50 text-purple-600 hover:bg-purple-100" onClick={() => { setShowSampleCollectionModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<TrendingUp size={20} />} label="Daily Summary" color="bg-emerald-50 text-emerald-600 hover:bg-emerald-100" onClick={() => { handleDailySummary(); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<RefreshCw size={20} />} label="Sync Stats" color="bg-indigo-50 text-indigo-600 hover:bg-indigo-100" onClick={() => { fetchLabDashboardStats(false); setShowQuickActions(false); }} />
             </div>
           </div>
           <button
             onClick={() => setShowQuickActions(!showQuickActions)}
-            className="w-16 h-16 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 hover:bg-teal-700 hover:scale-105 active:scale-95 transition-all z-50 border-4 border-white"
+            className="w-16 h-16 bg-teal-600 hover:bg-teal-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 hover:scale-105 active:scale-95 transition-all z-50 border-4 border-white group"
+            title="Open Quick Actions panel"
           >
-            {showQuickActions ? <X size={28} /> : <Plus size={28} />}
+            {showQuickActions ? <X size={28} className="transform rotate-0 transition-transform duration-300" /> : <Plus size={28} className="transform rotate-90 transition-transform duration-300 group-hover:rotate-180" />}
           </button>
         </div>
 
