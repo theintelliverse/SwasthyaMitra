@@ -199,7 +199,7 @@ const LabDashboard = () => {
     if (!newTestForm.patientName || !newTestForm.patientPhone) {
       return Swal.fire('Invalid Input', 'Please enter patient name and phone', 'warning');
     }
-    
+
     try {
       const res = await axios.post(`${API_URL}/api/queue/create`, {
         patientName: newTestForm.patientName,
@@ -211,7 +211,7 @@ const LabDashboard = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (res.data.success) {
         Swal.fire('Success', 'New test request created', 'success');
         setNewTestForm({ patientName: '', patientPhone: '', testType: '' });
@@ -227,14 +227,14 @@ const LabDashboard = () => {
     if (!addSampleForm.patientId || !addSampleForm.sampleType) {
       return Swal.fire('Invalid Input', 'Please select patient and sample type', 'warning');
     }
-    
+
     try {
       const res = await axios.put(`${API_URL}/api/queue/${addSampleForm.patientId}`, {
         currentStage: 'Lab-Processing'
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (res.data.success) {
         Swal.fire('Success', `${addSampleForm.sampleType} sample added`, 'success');
         setAddSampleForm({ patientId: '', sampleType: '', collectionTime: '' });
@@ -250,23 +250,23 @@ const LabDashboard = () => {
     const doc = new jsPDF();
     const stats = getStats();
     const { labName, primaryColor, headerFontSize, bodyFontSize, reportType } = reportConfig;
-    
+
     // Header
     doc.setFillColor(primaryColor);
     doc.rect(0, 0, 210, 40, 'F');
-    
+
     doc.setTextColor('#FFFFFF');
     doc.setFontSize(headerFontSize);
     doc.text(labName, 20, 25);
-    
+
     doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 35);
-    
+
     // Content
     doc.setTextColor('#333333');
     doc.setFontSize(headerFontSize - 4);
     doc.text(`Lab Summary Report - ${reportType}`, 20, 60);
-    
+
     doc.setFontSize(bodyFontSize);
     const tableData = [
       ['Metric', 'Value'],
@@ -277,7 +277,7 @@ const LabDashboard = () => {
       ['Pending', stats.pending.toString()],
       ['Completion Rate', `${stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%`]
     ];
-    
+
     autoTable(doc, {
       startY: 70,
       head: [tableData[0]],
@@ -286,7 +286,7 @@ const LabDashboard = () => {
       headStyles: { fillColor: primaryColor, fontSize: bodyFontSize + 2 },
       bodyStyles: { fontSize: bodyFontSize }
     });
-    
+
     doc.save(`lab-report-${reportType}-${new Date().getTime()}.pdf`);
     setShowReportConfigModal(false);
     Swal.fire('Success', `${reportType} PDF report generated`, 'success');
@@ -295,32 +295,32 @@ const LabDashboard = () => {
   const handleDownloadReport = (report) => {
     const doc = new jsPDF();
     const primaryColor = reportConfig.primaryColor;
-    
+
     // Header
     doc.setFillColor(primaryColor);
     doc.rect(0, 0, 210, 40, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.text(reportConfig.labName, 20, 25);
-    
+
     // Patient Info
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
     doc.text('PATIENT REPORT', 20, 55);
     doc.line(20, 58, 190, 58);
-    
+
     doc.setFontSize(10);
     doc.text(`Patient Name: ${report.patientName}`, 20, 70);
     doc.text(`Phone: ${report.patientPhone}`, 20, 75);
     doc.text(`Date: ${new Date(report.createdAt).toLocaleDateString()}`, 140, 70);
     doc.text(`Report ID: ${report._id.slice(-8).toUpperCase()}`, 140, 75);
-    
+
     // Results Table
     const tableData = [
       ['Test Description', 'Result / Notes'],
       [report.requiredTest || 'Diagnostic Test', report.diagnosis || report.notes || 'Results pending review']
     ];
-    
+
     autoTable(doc, {
       startY: 90,
       head: [tableData[0]],
@@ -328,12 +328,12 @@ const LabDashboard = () => {
       theme: 'striped',
       headStyles: { fillColor: primaryColor }
     });
-    
+
     // Footer
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text('This is a computer-generated report and does not require a physical signature.', 20, 280);
-    
+
     doc.save(`report-${report.patientName.replace(/\s+/g, '-')}-${report._id.slice(-4)}.pdf`);
     Swal.fire('Success', 'Report downloaded successfully', 'success');
   };
@@ -601,7 +601,7 @@ const LabDashboard = () => {
                         <span className="text-xs text-center leading-tight">Add New Sample</span>
                       </button>
                       <button
-                        onClick={() => { setReportConfig({...reportConfig, reportType: 'Daily'}); setShowReportConfigModal(true); }}
+                        onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); }}
                         className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-gray-50 border border-transparent hover:border-teal-100 transition-all text-gray-700 hover:text-teal-600 font-semibold text-sm group"
                       >
                         <div className="w-12 h-12 bg-white border border-gray-200 group-hover:border-teal-200 rounded-lg flex items-center justify-center text-teal-600 shadow-sm transition-all group-hover:shadow text-teal-600">
@@ -872,7 +872,7 @@ const LabDashboard = () => {
                             <span className="text-gray-700 font-medium">{item.name}</span>
                           </div>
                           <span className="font-bold text-gray-900">
-                            {item.value} 
+                            {item.value}
                             <span className="text-gray-400 font-normal ml-1">
                               ({stats.total > 0 ? Math.round((item.value / stats.total) * 100) : 0}%)
                             </span>
@@ -941,50 +941,6 @@ const LabDashboard = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Recent Reports */}
-                  <div className="bg-white rounded-xl border border-gray-200">
-                    <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                      <h2 className="text-lg font-bold text-gray-900">Recent Reports</h2>
-                      <button onClick={() => navigate('/lab/reports')} className="text-teal-600 text-sm font-semibold hover:text-teal-700">View All</button>
-                    </div>
-                    <div className="p-2">
-                      {recentReports.length > 0 ? (
-                        recentReports.map((report) => (
-                          <div key={report._id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors rounded-lg group border-b border-gray-50 last:border-0">
-                            <div className="flex items-center gap-3 flex-1">
-                              <div className="w-8 h-8 bg-red-50 text-red-500 rounded flex items-center justify-center flex-shrink-0">
-                                <FileCheck size={16} />
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">{report.patientName}</p>
-                                <p className="text-xs text-gray-500 font-medium">{report.requiredTest || 'Lipid Profile'}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <p className="text-xs text-gray-500 font-medium hidden md:block">
-                                {new Date(report.createdAt).toLocaleDateString()} at {new Date(report.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                              <button 
-                                onClick={() => handleDownloadReport(report)}
-                                className="text-gray-400 group-hover:text-teal-600 transition-colors"
-                              >
-                                <Download size={16} />
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="py-12 text-center text-gray-400">
-                           <FileCheck className="mx-auto mb-2 opacity-20" size={32} />
-                           <p className="text-xs font-bold uppercase tracking-widest">No recent reports found</p>
-                        </div>
-                      )}
-                      <div className="p-4 text-center border-t border-gray-100">
-                        <button onClick={() => navigate('/lab/reports')} className="text-teal-600 text-xs font-semibold hover:text-teal-700">+ 15 more reports</button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </>
@@ -1002,7 +958,7 @@ const LabDashboard = () => {
                   <input
                     type="text"
                     value={newTestForm.patientName}
-                    onChange={(e) => setNewTestForm({...newTestForm, patientName: e.target.value})}
+                    onChange={(e) => setNewTestForm({ ...newTestForm, patientName: e.target.value })}
                     placeholder="Enter patient name"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
@@ -1012,7 +968,7 @@ const LabDashboard = () => {
                   <input
                     type="tel"
                     value={newTestForm.patientPhone}
-                    onChange={(e) => setNewTestForm({...newTestForm, patientPhone: e.target.value})}
+                    onChange={(e) => setNewTestForm({ ...newTestForm, patientPhone: e.target.value })}
                     placeholder="Enter phone number"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
@@ -1021,7 +977,7 @@ const LabDashboard = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Test Type</label>
                   <select
                     value={newTestForm.testType}
-                    onChange={(e) => setNewTestForm({...newTestForm, testType: e.target.value})}
+                    onChange={(e) => setNewTestForm({ ...newTestForm, testType: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   >
                     <option value="">Select Test Type</option>
@@ -1034,7 +990,7 @@ const LabDashboard = () => {
               </div>
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => {setShowNewTestModal(false); setNewTestForm({ patientName: '', patientPhone: '', testType: '' });}}
+                  onClick={() => { setShowNewTestModal(false); setNewTestForm({ patientName: '', patientPhone: '', testType: '' }); }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
@@ -1060,7 +1016,7 @@ const LabDashboard = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Select Patient</label>
                   <select
                     value={addSampleForm.patientId}
-                    onChange={(e) => setAddSampleForm({...addSampleForm, patientId: e.target.value})}
+                    onChange={(e) => setAddSampleForm({ ...addSampleForm, patientId: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   >
                     <option value="">-- Select Patient --</option>
@@ -1075,7 +1031,7 @@ const LabDashboard = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Sample Type</label>
                   <select
                     value={addSampleForm.sampleType}
-                    onChange={(e) => setAddSampleForm({...addSampleForm, sampleType: e.target.value})}
+                    onChange={(e) => setAddSampleForm({ ...addSampleForm, sampleType: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   >
                     <option value="">Select Sample Type</option>
@@ -1088,7 +1044,7 @@ const LabDashboard = () => {
               </div>
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => {setShowAddSampleModal(false); setAddSampleForm({ patientId: '', sampleType: '', collectionTime: '' });}}
+                  onClick={() => { setShowAddSampleModal(false); setAddSampleForm({ patientId: '', sampleType: '', collectionTime: '' }); }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
@@ -1157,7 +1113,7 @@ const LabDashboard = () => {
                   <input
                     type="text"
                     value={reportConfig.labName}
-                    onChange={(e) => setReportConfig({...reportConfig, labName: e.target.value})}
+                    onChange={(e) => setReportConfig({ ...reportConfig, labName: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
                   />
                 </div>
@@ -1167,13 +1123,13 @@ const LabDashboard = () => {
                     <input
                       type="color"
                       value={reportConfig.primaryColor}
-                      onChange={(e) => setReportConfig({...reportConfig, primaryColor: e.target.value})}
+                      onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
                       className="h-10 w-20 border border-gray-300 rounded-lg cursor-pointer"
                     />
                     <input
                       type="text"
                       value={reportConfig.primaryColor}
-                      onChange={(e) => setReportConfig({...reportConfig, primaryColor: e.target.value})}
+                      onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
                     />
                   </div>
@@ -1184,7 +1140,7 @@ const LabDashboard = () => {
                     <input
                       type="number"
                       value={reportConfig.headerFontSize}
-                      onChange={(e) => setReportConfig({...reportConfig, headerFontSize: parseInt(e.target.value)})}
+                      onChange={(e) => setReportConfig({ ...reportConfig, headerFontSize: parseInt(e.target.value) })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
                     />
                   </div>
@@ -1193,7 +1149,7 @@ const LabDashboard = () => {
                     <input
                       type="number"
                       value={reportConfig.bodyFontSize}
-                      onChange={(e) => setReportConfig({...reportConfig, bodyFontSize: parseInt(e.target.value)})}
+                      onChange={(e) => setReportConfig({ ...reportConfig, bodyFontSize: parseInt(e.target.value) })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500"
                     />
                   </div>

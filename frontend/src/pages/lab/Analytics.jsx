@@ -8,22 +8,38 @@ import axios from 'axios';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const Analytics = () => {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
-    monthlyStats: [
-      { name: 'Jan', tests: 40, completed: 35 },
-      { name: 'Feb', tests: 45, completed: 40 },
-      { name: 'Mar', tests: 60, completed: 55 },
-      { name: 'Apr', tests: 55, completed: 50 },
-      { name: 'May', tests: 75, completed: 70 },
-      { name: 'Jun', tests: 90, completed: 85 },
-    ],
-    testDistribution: [
-      { name: 'Blood', value: 45 },
-      { name: 'Urine', value: 25 },
-      { name: 'COVID-19', value: 20 },
-      { name: 'Other', value: 10 },
-    ]
+    avgProcessingTime: 'N/A',
+    successRate: '0%',
+    totalPatients: 0,
+    pendingReviews: 0,
+    monthlyStats: []
   });
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/lab/analytics`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.success) {
+          setData(response.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch lab analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
@@ -40,10 +56,10 @@ const Analytics = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { label: 'Avg Processing Time', value: '4.2 hrs', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Success Rate', value: '98.5%', icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
-              { label: 'Total Patients', value: '1,284', icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-              { label: 'Pending Reviews', value: '12', icon: Activity, color: 'text-amber-600', bg: 'bg-amber-50' },
+              { label: 'Avg Processing Time', value: loading ? '...' : data.avgProcessingTime, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { label: 'Success Rate', value: loading ? '...' : data.successRate, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+              { label: 'Total Patients', value: loading ? '...' : data.totalPatients, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+              { label: 'Pending Reviews', value: loading ? '...' : data.pendingReviews, icon: Activity, color: 'text-amber-600', bg: 'bg-amber-50' },
             ].map((stat, i) => (
               <div key={i} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
