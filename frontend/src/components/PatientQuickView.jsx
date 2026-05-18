@@ -18,6 +18,40 @@ const PatientQuickView = ({ phone, onClose }) => {
   const [selectedReportIndex, setSelectedReportIndex] = useState(null);
   const token = localStorage.getItem('token');
 
+  const [bp, setBp] = useState("");
+  const [pulse, setPulse] = useState("");
+  const [weight, setWeight] = useState("");
+  const [bmi, setBmi] = useState("");
+
+  useEffect(() => {
+    if (patientData) {
+      const latest = patientData.vitals?.[0] || {};
+      const latestComplete = patientData.vitals?.find(v => v.weight && v.bmi) || latest;
+      setBp(latest.bloodPressure || "");
+      setPulse(latest.pulseRate || "");
+      setWeight(latestComplete.weight || "");
+      setBmi(latestComplete.bmi || "");
+    }
+  }, [patientData]);
+
+  const handleSaveVitals = async (field, value) => {
+    try {
+      const payload = {
+        vitals: {
+          bloodPressure: field === 'bloodPressure' ? value : bp,
+          pulseRate: field === 'pulseRate' ? value : pulse,
+          weight: field === 'weight' ? (value ? Number(value) : undefined) : (weight ? Number(weight) : undefined),
+          bmi: field === 'bmi' ? (value ? Number(value) : undefined) : (bmi ? Number(bmi) : undefined)
+        }
+      };
+      await axios.patch(`${API_URL}/api/staff/update-patient-vitals/${phone}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error("Autosave vitals error:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchFullProfile = async () => {
       try {
@@ -76,10 +110,39 @@ const PatientQuickView = ({ phone, onClose }) => {
 
             {/* --- Vitals Summary Row --- */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <SummaryCard label="Latest BP" val={patientData.vitals[0]?.bloodPressure || '--'} unit="mmHg" icon={<Activity size={14} />} />
-              <SummaryCard label="Pulse" val={patientData.vitals[0]?.pulseRate || '--'} unit="bpm" icon={<Activity size={14} />} />
-              <SummaryCard label="Weight" val={latestCompleteVital?.weight || '--'} unit="kg" icon={<Weight size={14} />} />
-              <SummaryCard label="BMI" val={latestCompleteVital?.bmi || '--'} unit="Score" icon={<Activity size={14} />} color="text-marigold" />
+              <SummaryCard 
+                label="Latest BP" 
+                val={bp} 
+                onChange={(e) => setBp(e.target.value)}
+                onBlur={(e) => handleSaveVitals('bloodPressure', e.target.value)}
+                unit="mmHg" 
+                icon={<Activity size={14} />} 
+              />
+              <SummaryCard 
+                label="Pulse" 
+                val={pulse} 
+                onChange={(e) => setPulse(e.target.value)}
+                onBlur={(e) => handleSaveVitals('pulseRate', e.target.value)}
+                unit="bpm" 
+                icon={<Activity size={14} />} 
+              />
+              <SummaryCard 
+                label="Weight" 
+                val={weight} 
+                onChange={(e) => setWeight(e.target.value)}
+                onBlur={(e) => handleSaveVitals('weight', e.target.value)}
+                unit="kg" 
+                icon={<Weight size={14} />} 
+              />
+              <SummaryCard 
+                label="BMI" 
+                val={bmi} 
+                onChange={(e) => setBmi(e.target.value)}
+                onBlur={(e) => handleSaveVitals('bmi', e.target.value)}
+                unit="Score" 
+                icon={<Activity size={14} />} 
+                color="text-marigold" 
+              />
             </div>
 
             {/* --- Reports Section --- */}
@@ -206,13 +269,23 @@ const PatientQuickView = ({ phone, onClose }) => {
 };
 
 // Internal Helper Component
-const SummaryCard = ({ label, val, unit, icon, color = "text-teak" }) => (
-  <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl border border-sandstone shadow-sm">
-    <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-      <div className="text-marigold opacity-50">{icon}</div>
-      <p className="text-[8px] font-black uppercase tracking-widest text-khaki">{label}</p>
+const SummaryCard = ({ label, val, onChange, onBlur, unit, icon, color = "text-teak" }) => (
+  <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-sandstone shadow-sm flex flex-col justify-between h-full">
+    <div className="flex items-center gap-1.5 mb-1.5">
+      <div className="text-marigold opacity-50 shrink-0">{icon}</div>
+      <p className="text-[8px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
     </div>
-    <p className={`text-sm md:text-xl font-heading ${color}`}>{val} <span className="text-[8px] md:text-[9px] font-bold text-khaki">{unit}</span></p>
+    <div className="flex items-center gap-1 bg-parchment/30 rounded-xl px-2 py-1.5 border border-transparent focus-within:border-marigold focus-within:bg-white transition-all">
+      <input
+        type="text"
+        value={val}
+        onChange={onChange}
+        onBlur={onBlur}
+        className={`w-full bg-transparent outline-none border-none text-xs md:text-sm font-bold ${color}`}
+        placeholder="--"
+      />
+      <span className="text-[8px] font-black text-khaki uppercase shrink-0">{unit}</span>
+    </div>
   </div>
 );
 

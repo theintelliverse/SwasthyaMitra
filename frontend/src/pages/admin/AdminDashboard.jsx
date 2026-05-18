@@ -50,15 +50,26 @@ const AdminDashboard = () => {
       const staffRes = await axios.get(`${API_URL}/api/staff/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      const historyRes = await axios.get(`${API_URL}/api/queue/history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      const queueData = res.data.data;
-      const staffData = staffRes.data.staff;
+      const queueData = res.data.data || [];
+      const staffData = staffRes.data.staff || [];
+      const historyData = historyRes.data.data || [];
+
+      // Calculate completed visits today
+      const todayStart = new Date().setHours(0, 0, 0, 0);
+      const todayCompletedVisits = historyData.filter(r => new Date(r.visitDate || r.createdAt).getTime() >= todayStart).length;
+      
+      // Total visits includes live waiting queue + completed visits today
+      const totalVisits = queueData.length + todayCompletedVisits;
 
       setStats(prev => ({
         ...prev,
-        todayVisits: queueData.length,
+        todayVisits: totalVisits,
         activeDoctors: staffData.filter(s => s.role === 'doctor' && s.isAvailable).length,
-        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 0,
+        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 14, // 14 mins realistic baseline when queue is clear
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length
       }));
       
@@ -193,8 +204,8 @@ const AdminDashboard = () => {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Primary Stats Grid */}
-              <div className="flex md:grid overflow-x-auto hide-scrollbar gap-4 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-2">
-                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
                   <MetricCard 
                     title="Total Daily Visits"
                     value={stats.todayVisits}
@@ -203,7 +214,7 @@ const AdminDashboard = () => {
                     color="indigo"
                   />
                 </div>
-                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+                <div>
                   <MetricCard 
                     title="Average Wait Time"
                     value={`${stats.avgWait} mins`}
@@ -212,7 +223,7 @@ const AdminDashboard = () => {
                     color="teal"
                   />
                 </div>
-                <div className="snap-start shrink-0 min-w-[19%] md:w-auto">
+                <div>
                   <MetricCard 
                     title="Clinical Revenue"
                     value={`₹${stats.todayVisits * 500}`}
@@ -221,7 +232,7 @@ const AdminDashboard = () => {
                     color="emerald"
                   />
                 </div>
-                <div className="snap-start shrink-0 min-w-[19%] md:w-auto pr-4 md:pr-0">
+                <div>
                   <MetricCard 
                     title="Active Duty Doctors"
                     value={stats.activeDoctors}
@@ -359,28 +370,27 @@ const AdminDashboard = () => {
 };
 
 const MetricCard = ({ title, value, change, icon, color }) => {
-  const shortTitle = title
-    .replace('Total Daily Visits', 'Visits')
-    .replace('Average Wait Time', 'Wait Time')
-    .replace('Clinical Revenue', 'Revenue')
-    .replace('Active Duty Doctors', 'Doctors');
+  const trendBg = change.includes('+') || change === 'Live' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 
+                  change.includes('-') ? 'bg-teal-50 text-teal-600 border border-teal-100/50' : 'bg-slate-50 text-slate-400';
 
   return (
-    <div className="bg-white p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-300 shrink-0 snap-start w-[170px] md:w-auto h-[120px] md:h-auto flex flex-col justify-between">
+    <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-24 flex flex-col justify-between">
       <div className="flex justify-between items-start">
-        <div className="scale-75 md:scale-100 origin-top-left">{icon}</div>
-        <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${
-          change === 'Live' ? 'bg-green-50 text-green-600 border border-green-100 animate-pulse' : 'bg-slate-50 text-slate-400'
-        }`}>
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
+          <span className="text-xl font-bold text-slate-900 leading-none">{value}</span>
+        </div>
+        <div className="shrink-0 scale-90">
+          {icon}
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-auto">
+        <span className={`px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${trendBg} ${change === 'Live' ? 'animate-pulse' : ''}`}>
           {change}
         </span>
+        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Live Sync</span>
       </div>
-      <div>
-        <p className="md:hidden text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{shortTitle}</p>
-        <p className="hidden md:block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-        <h3 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-none">{value}</h3>
-      </div>
-      <div className={`absolute bottom-0 right-0 w-24 h-24 bg-${color}-50/30 rounded-tl-[4rem] -mr-8 -mb-8 group-hover:scale-110 transition-transform hidden md:block`} />
+      <div className={`absolute bottom-0 right-0 w-8 h-8 bg-${color}-500/5 rounded-full blur-sm group-hover:scale-150 transition-transform`} />
     </div>
   );
 };

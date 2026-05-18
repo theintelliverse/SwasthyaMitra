@@ -25,6 +25,16 @@ const Prescriptions = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal states for creating a new prescription
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [diagnosis, setDiagnosis] = useState('');
+  const [notes, setNotes] = useState('');
+  const [medicines, setMedicines] = useState([{ name: '', time: '', amount: '', total: '' }]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
@@ -35,8 +45,6 @@ const Prescriptions = () => {
   const fetchPrescriptions = async () => {
     setLoading(true);
     try {
-      // Fetch prescriptions for this doctor
-      // For now, we'll fetch from the locker history or a dedicated endpoint if available
       const res = await axios.get(`${API_URL}/api/staff/all-prescriptions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -48,6 +56,47 @@ const Prescriptions = () => {
       setPrescriptions([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setPatientName('');
+    setPatientPhone('');
+    setDiagnosis('');
+    setNotes('');
+    setMedicines([{ name: '', time: '', amount: '', total: '' }]);
+    setShowCreateModal(false);
+  };
+
+  const handleCreatePrescription = async (e) => {
+    e.preventDefault();
+    if (!patientName.trim() || !patientPhone.trim()) {
+      Swal.fire('Error', 'Patient Name and Phone are required.', 'error');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await axios.post(`${API_URL}/api/staff/create-prescription`, {
+        patientName,
+        patientPhone,
+        diagnosis,
+        notes,
+        medicines: medicines.filter(m => m.name.trim() !== '')
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        Swal.fire('Success', 'Prescription created successfully!', 'success');
+        resetForm();
+        fetchPrescriptions();
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', err.response?.data?.message || 'Failed to create prescription', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -74,7 +123,7 @@ const Prescriptions = () => {
                 Review and manage your clinical prescriptions and medication orders
               </p>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
               <div className="relative flex-grow md:flex-grow-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <input
@@ -90,6 +139,12 @@ const Prescriptions = () => {
                 className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+              </button>
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20 whitespace-nowrap"
+              >
+                <Plus size={16} /> Create New
               </button>
             </div>
           </div>
@@ -110,7 +165,7 @@ const Prescriptions = () => {
                 <h3 className="text-xl font-bold text-slate-900 mb-2">No Prescriptions Yet</h3>
                 <p className="text-slate-500 max-w-xs mx-auto">History of issued prescriptions will be listed here for quick access and reprinting.</p>
                 <button 
-                  onClick={() => navigate('/doctor/dashboard')}
+                  onClick={() => setShowCreateModal(true)}
                   className="mt-8 px-8 py-3 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
                 >
                   Create New Prescription
@@ -119,37 +174,53 @@ const Prescriptions = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  {filteredPrescriptions.map((p) => (
-                    <div key={p._id} className="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm hover:shadow-xl transition-all group">
-                       <div className="flex justify-between items-start mb-6">
-                          <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400">
-                             <FileText size={24} />
+                    <div key={p._id} className="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+                       <div>
+                          <div className="flex justify-between items-start mb-6">
+                             <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-teal-600">
+                                <FileText size={24} />
+                             </div>
+                             <div className="flex gap-2">
+                                <button onClick={() => {
+                                  // Simple alert or pdf trigger could be placed here, for now print directly
+                                  window.print();
+                                }} className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-teal-600 hover:bg-teal-50 transition-all">
+                                   <Printer size={16} />
+                                </button>
+                             </div>
                           </div>
-                          <div className="flex gap-2">
-                             <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-teal-600 hover:bg-teal-50 transition-all">
-                                <Download size={16} />
-                             </button>
-                             <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-teal-600 hover:bg-teal-50 transition-all">
-                                <Printer size={16} />
-                             </button>
+                          
+                          <div className="mb-6">
+                             <h4 className="text-lg font-black text-slate-900 mb-1">{p.patientName || 'Unknown Patient'}</h4>
+                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{p.patientPhone || 'No Phone'}</p>
                           </div>
-                       </div>
-                       
-                       <div className="mb-6">
-                          <h4 className="text-lg font-black text-slate-900 mb-1">{p.patientName || 'Unknown Patient'}</h4>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{p.patientPhone || 'No Phone'}</p>
-                       </div>
 
-                       <div className="flex items-center justify-between text-xs font-bold py-3 px-4 bg-slate-50 rounded-xl border border-slate-100 mb-6">
-                          <div className="flex items-center gap-2 text-slate-600">
-                             <Calendar size={14} className="text-teal-500" />
-                             {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'N/A'}
+                          <div className="flex items-center justify-between text-xs font-bold py-3 px-4 bg-slate-50 rounded-xl border border-slate-100 mb-6">
+                             <div className="flex items-center gap-2 text-slate-600">
+                                <Calendar size={14} className="text-teal-500" />
+                                {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'N/A'}
+                             </div>
+                             <div className="flex items-center gap-2 text-slate-600">
+                                <Clock size={14} className="text-teal-500" />
+                                {p.createdAt ? new Date(p.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                             </div>
                           </div>
-                          <div className="flex items-center gap-2 text-slate-600">
-                             <Clock size={14} className="text-teal-500" />
-                             {p.createdAt ? new Date(p.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
-                          </div>
-                       </div>
 
+                          {p.medicines && p.medicines.length > 0 && (
+                            <div className="mb-6 space-y-2">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medicines</p>
+                              <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50 space-y-1.5">
+                                {p.medicines.map((m, idx) => (
+                                  <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-700">
+                                    <span>{m.name}</span>
+                                    <span className="text-[10px] bg-white border border-slate-100 px-2 py-0.5 rounded-lg text-teal-600">{m.amount} | {m.time}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                       </div>
+ 
                        <button 
                         onClick={() => navigate(`/doctor/records?phone=${p.patientPhone}`)}
                         className="w-full py-3.5 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -165,6 +236,155 @@ const Prescriptions = () => {
         </main>
         <Footer />
       </div>
+
+      {/* Create Prescription Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <Plus size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">Create Prescription</h2>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Issue new clinical medication order</p>
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={resetForm}
+                  className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
+                >
+                  <Plus className="rotate-45" size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreatePrescription} className="space-y-6">
+                {/* Patient Profile info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Patient Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={patientName}
+                      onChange={(e) => setPatientName(e.target.value)}
+                      className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-4 py-3 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Patient Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. 9876543210"
+                      value={patientPhone}
+                      onChange={(e) => setPatientPhone(e.target.value)}
+                      className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-4 py-3 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                {/* Diagnosis and Notes */}
+                <div>
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Diagnosis / Observational Notes</label>
+                  <textarea
+                    placeholder="What is the patient experiencing?"
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    className="w-full h-24 bg-slate-50 border-2 border-transparent rounded-2xl p-4 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                  />
+                </div>
+
+                {/* Prescribed Medicines */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">Prescribed Medicines</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])} 
+                      className="text-xs font-black text-teal-600 hover:text-teal-700 flex items-center gap-1 uppercase tracking-widest"
+                    >
+                      <Plus size={14} /> Add Medicine
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                    {medicines.map((m, idx) => (
+                      <div key={idx} className="flex gap-2.5 items-center group">
+                        <input
+                          type="text"
+                          required
+                          placeholder="Medicine name"
+                          value={m.name}
+                          onChange={(e) => {
+                            const updated = [...medicines];
+                            updated[idx].name = e.target.value;
+                            setMedicines(updated);
+                          }}
+                          className="flex-grow bg-slate-50 border-2 border-transparent rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Dosage (e.g. 500mg)"
+                          value={m.amount}
+                          onChange={(e) => {
+                            const updated = [...medicines];
+                            updated[idx].amount = e.target.value;
+                            setMedicines(updated);
+                          }}
+                          className="w-32 bg-slate-50 border-2 border-transparent rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Timing (e.g. 1-0-1)"
+                          value={m.time}
+                          onChange={(e) => {
+                            const updated = [...medicines];
+                            updated[idx].time = e.target.value;
+                            setMedicines(updated);
+                          }}
+                          className="w-32 bg-slate-50 border-2 border-transparent rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                        />
+                        {medicines.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} 
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <Plus className="rotate-45" size={18} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-4 border-t border-slate-50 flex gap-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20 disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Saving...' : 'Issue Prescription'}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={resetForm} 
+                    className="px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

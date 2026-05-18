@@ -52,10 +52,44 @@ const Appointments = () => {
     }
   };
 
+  const handleStartSession = async (appointmentId) => {
+    try {
+      Swal.fire({
+        title: 'Starting Session...',
+        text: 'Notifying patient and entering cabin mode.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      const res = await axios.patch(`${API_URL}/api/queue/start/${appointmentId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Session Started!',
+          text: 'The patient has been notified. Entering consultation mode.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        setTimeout(() => {
+          navigate('/doctor/dashboard');
+        }, 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', err.response?.data?.message || 'Failed to start session.', 'error');
+    }
+  };
+
   const filteredAppointments = (appointments || []).filter(app => {
     if (!app) return false;
     const name = app.patientName || 'Unknown Patient';
     const phone = app.patientPhone || '';
+
     
     const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          phone.includes(searchTerm);
@@ -190,12 +224,28 @@ const Appointments = () => {
                     </div>
 
                     <div className="flex gap-3 pt-4 border-t border-slate-50">
-                      <button 
-                        onClick={() => navigate('/doctor/dashboard')}
-                        className="flex-1 py-3 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
-                      >
-                        Start Session
-                      </button>
+                      {app.status === 'Completed' ? (
+                        <button 
+                          disabled
+                          className="flex-1 py-3 bg-slate-100 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest cursor-not-allowed"
+                        >
+                          Completed
+                        </button>
+                      ) : app.status === 'In-Consultation' ? (
+                        <button 
+                          onClick={() => navigate('/doctor/dashboard')}
+                          className="flex-1 py-3 bg-orange-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-600/20"
+                        >
+                          Resume Session
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleStartSession(app._id)}
+                          className="flex-1 py-3 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
+                        >
+                          Start Session
+                        </button>
+                      )}
                       <button className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-100 transition-all active:scale-95">
                         <MoreHorizontal size={18} />
                       </button>

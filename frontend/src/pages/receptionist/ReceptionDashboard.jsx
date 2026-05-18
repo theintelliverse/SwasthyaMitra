@@ -212,6 +212,33 @@ const ReceptionDashboard = () => {
     });
   };
 
+  // --- 🛠️ OPERATION: START CONSULTATION SESSION ---
+  const handleStartSession = async (queueId) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const res = await axios.patch(`${API_URL}/api/queue/start/${queueId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Session Started',
+          text: 'The patient consultation has been officially started.',
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#EEF6FA'
+        });
+        await fetchDashboardData(true);
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', err.response?.data?.message || 'Failed to start session', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleManualSubmit = async (e) => {
     e.preventDefault();
     if (isProcessing) return;
@@ -367,6 +394,15 @@ const ReceptionDashboard = () => {
                           <td className="px-3 md:px-10 py-3 md:py-6 text-center hidden lg:table-cell"><span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-parchment text-khaki border-sandstone'}`}>{p.status === 'In-Consultation' ? 'Active' : p.status}</span></td>
                           <td className="px-3 md:px-10 py-3 md:py-6 text-right">
                             <div className="flex justify-end gap-1 md:gap-2">
+                              {p.status === 'Waiting' && (
+                                <button 
+                                  onClick={() => handleStartSession(p._id)} 
+                                  className="p-1.5 md:p-3 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-100 rounded-lg md:rounded-xl transition-all shadow-sm flex-shrink-0 flex items-center justify-center" 
+                                  title="Start Session"
+                                >
+                                  <Stethoscope size={14} />
+                                </button>
+                              )}
                               <button onClick={() => handleAddVitals(p.patientPhone)} className="p-1.5 md:p-3 bg-white border border-sandstone rounded-lg md:rounded-xl text-khaki hover:text-marigold transition-all shadow-sm flex-shrink-0" title="Add Vitals"><Activity size={14} /></button>
                               <button onClick={() => handleCopyTracker(p._id)} className="p-1.5 md:p-3 bg-teak rounded-lg md:rounded-xl text-white hover:bg-marigold transition-all shadow-lg flex-shrink-0" title="Copy Link"><UserCheck size={14} /></button>
                             </div>
