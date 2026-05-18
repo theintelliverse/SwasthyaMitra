@@ -882,111 +882,135 @@ const LabDashboard = () => {
                     </div>
 
                     {/* Table (Desktop View Only) */}
-                    <div className="hidden md:block overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm">
-                      <table className="w-full text-sm border-collapse">
+                    <div className="hidden md:block overflow-x-auto bg-white border border-gray-200/80 rounded-2xl shadow-xl shadow-teal-900/[0.02]">
+                      <table className="w-full text-sm border-collapse min-w-[850px]">
                         <thead>
-                          <tr className="border-b border-gray-200 bg-gray-50/75">
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
-                            <th className="px-6 py-3.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                          <tr className="border-b border-gray-200 bg-gray-50/75 backdrop-blur-sm">
+                            <th className="w-[8%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
+                            <th className="w-[24%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
+                            <th className="w-[15%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
+                            <th className="w-[12%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="w-[12%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th className="w-[13%] px-4 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
+                            <th className="w-[16%] px-4 py-3.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-100/80">
                           {loading ? (
                             <tr>
-                              <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                              <td colSpan="7" className="px-4 py-10 text-center text-gray-500">
                                 <Beaker className="mx-auto mb-3 text-teal-500 animate-spin" size={32} />
                                 <p className="font-semibold text-gray-700">Loading requests...</p>
                               </td>
                             </tr>
                           ) : paginatedQueue.length === 0 ? (
                             <tr>
-                              <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                              <td colSpan="7" className="px-4 py-10 text-center text-gray-500">
                                 <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
                                 <p className="font-semibold text-gray-700">No test requests found</p>
                                 <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
                               </td>
                             </tr>
                           ) : (
-                            paginatedQueue.map((request) => (
-                              <tr key={request._id} className="hover:bg-teal-50/10 transition-colors group">
-                                <td className="px-6 py-4">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
-                                    TRF-{request.tokenNumber || '00'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <p className="text-gray-900 font-bold group-hover:text-teal-700 transition-colors">{request.patientName}</p>
-                                  <p className="text-xs text-gray-400 font-medium mt-0.5">{request.patientPhone}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className="text-gray-700 font-semibold text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200/50 block w-fit">
-                                    {request.requiredTest || 'Routine Diagnosis'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                                    request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                    request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-100 animate-pulse' :
-                                    'bg-amber-50 text-amber-700 border border-amber-100'
-                                  }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${
-                                      request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
-                                      request.currentStage === 'Lab-Processing' ? 'bg-sky-500 animate-ping' :
-                                      'bg-amber-500'
-                                    }`}></span>
-                                    {request.currentStage === 'Lab-Completed' ? 'Completed' :
-                                      request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                                    request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-slate-50 text-slate-600 border border-slate-100'
-                                  }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                    {request.isEmergency ? 'Emergency' : 'Standard'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <p className="text-gray-900 font-semibold text-xs">
-                                    {new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                  </p>
-                                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                                    {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </p>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                  {request.currentStage === 'Lab-Completed' ? (
-                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-gray-400 py-1.5">
-                                      <FileCheck size={14} className="text-gray-400" /> Published
+                            paginatedQueue.map((request) => {
+                              const initials = request.patientName
+                                ? request.patientName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                                : 'PT';
+                              return (
+                                <tr key={request._id} className="hover:bg-gradient-to-r hover:from-teal-50/[0.04] hover:to-indigo-50/[0.04] transition-all duration-300 group">
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
+                                      TRF-{request.tokenNumber || '00'}
                                     </span>
-                                  ) : (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <button
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm border border-teal-100/50"
-                                        onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                        title="Upload Clinical Files"
-                                      >
-                                        <Upload size={13} />
-                                        <span>Upload File(s)</span>
-                                      </button>
-                                      <button
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm border border-indigo-100"
-                                        onClick={() => handleOpenDigitalReportModal(request)}
-                                        title="Enter report details digitally"
-                                      >
-                                        <FileCheck size={13} />
-                                        <span>Fill Digital</span>
-                                      </button>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="flex items-center gap-2.5">
+                                      <div className="w-8.5 h-8.5 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[11px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
+                                        {initials}
+                                      </div>
+                                      <div>
+                                        <p className="text-gray-900 font-extrabold text-[13px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
+                                        <p className="text-[11px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                          <Smartphone size={10} className="text-gray-300 animate-pulse" />
+                                          {request.patientPhone}
+                                        </p>
+                                      </div>
                                     </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="flex items-center gap-1 bg-teal-50/30 border border-teal-100/50 text-teal-800 px-2 py-1 rounded-lg w-fit shadow-sm">
+                                      <Beaker size={11} className="text-teal-600" />
+                                      <span className="font-bold text-[11px]">{request.requiredTest || 'Routine Diagnosis'}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
+                                      request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                      request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
+                                      'bg-amber-50 text-amber-700 border border-amber-200'
+                                    }`}>
+                                      <span className="relative flex h-1.5 w-1.5">
+                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-400' :
+                                          request.currentStage === 'Lab-Processing' ? 'bg-sky-400' :
+                                          'bg-amber-400'
+                                        }`}></span>
+                                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
+                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
+                                          request.currentStage === 'Lab-Processing' ? 'bg-sky-500' :
+                                          'bg-amber-500'
+                                        }`}></span>
+                                      </span>
+                                      {request.currentStage === 'Lab-Completed' ? 'Completed' :
+                                        request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
+                                      request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
+                                    }`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
+                                      {request.isEmergency ? 'Emergency' : 'Standard'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-900 font-bold text-xs">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                      <span className="text-[10px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                        <Clock size={10} className="text-gray-300" />
+                                        {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 align-middle text-center">
+                                    {request.currentStage === 'Lab-Completed' ? (
+                                      <span className="inline-flex items-center gap-1 text-xs font-extrabold text-gray-400 py-1">
+                                        <FileCheck size={14} className="text-gray-400" /> Published
+                                      </span>
+                                    ) : (
+                                      <div className="flex items-center justify-center gap-1.5">
+                                        <button
+                                          className="inline-flex items-center gap-1 px-2 py-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          onClick={() => handleFileUpload(request.patientPhone, request._id)}
+                                          title="Upload Clinical Files"
+                                        >
+                                          <Upload size={12} />
+                                          <span>Upload Report</span>
+                                        </button>
+                                        <button
+                                          className="inline-flex items-center gap-1 px-2 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          onClick={() => handleOpenDigitalReportModal(request)}
+                                          title="Enter report details digitally"
+                                        >
+                                          <FileCheck size={12} />
+                                          <span>Fill Digital</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })
                           )}
                         </tbody>
                       </table>
