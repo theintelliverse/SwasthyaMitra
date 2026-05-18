@@ -338,6 +338,53 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handleReferToLab = async () => {
+    const { value: testName } = await Swal.fire({
+      title: 'Refer Patient to Lab',
+      input: 'text',
+      inputLabel: 'Enter Lab Test / Investigation Name',
+      placeholder: 'e.g. Complete Blood Count, Chest X-Ray',
+      showCancelButton: true,
+      confirmButtonColor: '#0d9488',
+      cancelButtonColor: '#ef4444',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Please enter a test name!';
+        }
+      }
+    });
+
+    if (!testName) return;
+
+    setIsSyncing(true);
+    try {
+      const res = await axios.patch(`${API_URL}/api/queue/refer/lab/${activePatient._id}`, { testName }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        localStorage.removeItem(`consultation_draft_${activePatient._id}`);
+        setIsConsultationMode(false);
+        setActivePatient(null);
+        setNotes("");
+        setDiagnosis("");
+        setMedicines([]);
+        Swal.fire({
+          icon: 'success',
+          title: 'Referred to Lab',
+          text: `Patient has been routed to the lab for: ${testName}`,
+          confirmButtonColor: '#0d9488'
+        });
+        fetchDashboardData(true);
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Failed to refer patient to lab. Please try again.', 'error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleSaveDraft = () => {
     if (!activePatient?._id) return;
     const draftData = {
@@ -710,13 +757,21 @@ const DoctorDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="pt-6 border-t border-gray-50 flex gap-4">
+                    <div className="pt-6 border-t border-gray-50 flex flex-wrap sm:flex-nowrap gap-4">
                       <button
                         type="submit"
                         disabled={isProcessing}
                         className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20 disabled:opacity-50 active:scale-95"
                       >
                         {isProcessing ? 'Saving...' : 'Complete Consultation'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleReferToLab}
+                        disabled={isProcessing}
+                        className="px-6 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 active:scale-95"
+                      >
+                        Go for Lab
                       </button>
                       <button type="button" onClick={handleSaveDraft} className="px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">
                         Save Draft
