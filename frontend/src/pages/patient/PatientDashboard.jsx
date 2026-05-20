@@ -105,6 +105,95 @@ const PatientDashboard = () => {
       .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))[0];
   }, [appointments]);
 
+  const MobileSummary = () => {
+    const pulse = patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--';
+    const temp = patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--';
+    const weight = patientData?.vitals?.[0]?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--';
+    const bp = patientData?.vitals?.[0]?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--';
+
+    return (
+      <div className="md:hidden space-y-4 mb-6">
+        <div className="bg-white p-4 rounded-2xl shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-black">Hello, {displayName.split(' ')[0]} <span className="inline-block">👋</span></p>
+              <p className="text-xs text-slate-400 mt-1">Your digital health records and wellness hub.</p>
+            </div>
+            <button onClick={() => navigate('/patient/locker')} className="bg-teal-600 text-white px-3 py-2 rounded-lg text-xs font-black">Digital Locker</button>
+          </div>
+
+          <div className="mt-4 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Patient Name</p>
+                <p className="font-black">{displayName}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Patient ID</p>
+                <p className="font-black">{patientData?.phone || 'N/A'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <p className="text-sm font-black">Active</p>
+              </div>
+              <div className="text-xs text-slate-500">Verified</div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+            <div className="p-2 bg-slate-50 rounded-lg">
+              <p className="text-[10px] text-slate-400">Pulse</p>
+              <p className="font-black text-sm">{pulse}</p>
+              <p className="text-[10px] text-slate-400">bpm</p>
+            </div>
+            <div className="p-2 bg-slate-50 rounded-lg">
+              <p className="text-[10px] text-slate-400">Temp</p>
+              <p className="font-black text-sm">{temp}</p>
+              <p className="text-[10px] text-slate-400">°C</p>
+            </div>
+            <div className="p-2 bg-slate-50 rounded-lg">
+              <p className="text-[10px] text-slate-400">Weight</p>
+              <p className="font-black text-sm">{weight}</p>
+              <p className="text-[10px] text-slate-400">kg</p>
+            </div>
+            <div className="p-2 bg-slate-50 rounded-lg">
+              <p className="text-[10px] text-slate-400">BP</p>
+              <p className="font-black text-sm">{bp}</p>
+              <p className="text-[10px] text-slate-400">mmHg</p>
+            </div>
+          </div>
+
+          <div className="mt-4 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-black">Health Records</p>
+                <p className="text-[10px] text-slate-400">{reportsCount} Files</p>
+              </div>
+              <button onClick={() => navigate('/patient/locker')} className="px-3 py-2 rounded-lg border border-slate-100 text-[10px] font-black">Open Health Locker</button>
+            </div>
+          </div>
+
+          <div className="mt-4 border-t pt-4">
+            <p className="text-xs font-black">Coming Up Next</p>
+            <p className="text-sm text-slate-600 mt-1">{upcomingAppointment ? `Appointment with Dr. ${upcomingAppointment.doctorName}` : 'Stay Proactive! Schedule your next routine check-up.'}</p>
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })} className="flex-1 bg-teal-600 text-white py-2 rounded-lg font-black text-sm">{upcomingAppointment ? 'Reschedule' : 'Book New Slot'}</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl shadow-sm text-center">
+          <div className="text-xs text-slate-400 font-black uppercase">Search history & diagnosis...</div>
+          <div className="text-sm font-black mt-2">{filteredHistory.length} Total Visits</div>
+          {filteredHistory.length === 0 && <div className="text-xs text-slate-400 mt-2">No Medical</div>}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4">
       <RefreshCcw size={40} className="text-teal-600 animate-spin" />
@@ -115,7 +204,7 @@ const PatientDashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
       <Sidebar role="patient" />
-      
+
       <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
         {/* Header Section */}
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
@@ -133,13 +222,13 @@ const PatientDashboard = () => {
           </div>
 
           <div className="flex gap-4">
-            <button 
+            <button
               onClick={() => navigate('/patient/locker')}
               className="px-6 py-3.5 bg-teal-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 hover:bg-teal-700 transition-all flex items-center gap-2"
             >
               <FolderHeart size={16} /> Digital Locker
             </button>
-            <button 
+            <button
               onClick={() => fetchProfile(true)}
               className="p-3.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
             >
@@ -147,6 +236,9 @@ const PatientDashboard = () => {
             </button>
           </div>
         </header>
+
+        {/* Mobile summary card */}
+        <MobileSummary />
 
         <div className="grid lg:grid-cols-3 gap-10">
           {/* Left Panel: Identity & Quick Stats */}
@@ -159,14 +251,14 @@ const PatientDashboard = () => {
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-teal-400">
                     <ShieldCheck size={26} />
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowQrModal(true)}
                     className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
                   >
                     <QrCode size={20} className="text-teal-400" />
                   </button>
                 </div>
-                
+
                 <div className="mb-8">
                   <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mb-2">Patient Name</p>
                   <h3 className="text-2xl font-black tracking-tight uppercase leading-tight">{displayName}</h3>
@@ -193,7 +285,7 @@ const PatientDashboard = () => {
               <h3 className="font-black text-xl text-slate-900 mb-8 flex items-center gap-3">
                 <Activity size={20} className="text-teal-600" /> Latest Vitals
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <VitalCard icon={<Zap size={14} />} label="Pulse" val={patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--'} unit="bpm" color="teal" />
                 <VitalCard icon={<Thermometer size={14} />} label="Temp" val={patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--'} unit="°C" color="orange" />
@@ -219,7 +311,7 @@ const PatientDashboard = () => {
                 <span className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Files</span>
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Documents in Digital Locker</p>
-              <button 
+              <button
                 onClick={() => navigate('/patient/locker')}
                 className="w-full py-4 border-2 border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-teal-500 hover:text-teal-600 transition-all active:scale-95"
               >
@@ -233,7 +325,7 @@ const PatientDashboard = () => {
             {/* Upcoming Appointment High Priority */}
             <div className="bg-gradient-to-br from-teal-600 to-indigo-700 p-10 rounded-[3rem] text-white shadow-2xl shadow-teal-600/20 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-700" />
-              
+
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-10">
                   <div>
@@ -271,8 +363,8 @@ const PatientDashboard = () => {
                   ) : (
                     <p className="text-teal-200 font-bold text-sm italic">"Prevention is better than cure. Book your slot today."</p>
                   )}
-                  
-                  <button 
+
+                  <button
                     onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })}
                     className="px-8 py-4 bg-white text-teal-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-xl active:scale-95 flex items-center gap-3"
                   >
@@ -287,8 +379,8 @@ const PatientDashboard = () => {
               <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
                 <div className="relative w-full md:w-80">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Search history & diagnosis..."
                     className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-100 rounded-2xl outline-none focus:border-teal-500 text-sm font-bold shadow-sm"
                     value={searchTerm}
@@ -329,13 +421,13 @@ const PatientDashboard = () => {
                                 <h4 className="text-xl font-black text-slate-900 tracking-tight">Dr. {visit.doctorName || visit.doctorId?.name}</h4>
                               </div>
                               <div className="flex gap-2">
-                                <button 
+                                <button
                                   onClick={() => setSelectedVisit(visit)}
                                   className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 transition-all shadow-sm"
                                 >
                                   <Eye size={18} />
                                 </button>
-                                <button 
+                                <button
                                   className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 transition-all shadow-sm"
                                 >
                                   <ArrowUpRight size={18} />
@@ -411,8 +503,8 @@ const PatientDashboard = () => {
             <p className="text-sm font-bold text-slate-400 mb-8">This temporary link grants secure access to your medical file.</p>
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between overflow-hidden mb-8">
               <code className="text-[10px] font-bold text-slate-400 truncate pr-4">{shareFile.fileUrl}</code>
-              <button 
-                onClick={() => handleCopyLink(shareFile.fileUrl)} 
+              <button
+                onClick={() => handleCopyLink(shareFile.fileUrl)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-slate-900 text-white'}`}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -428,23 +520,23 @@ const PatientDashboard = () => {
       {showQrModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[120] flex items-center justify-center p-6">
           <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 border border-slate-100 animate-in zoom-in-95 shadow-2xl relative text-center">
-            <button 
-              onClick={() => setShowQrModal(false)} 
+            <button
+              onClick={() => setShowQrModal(false)}
               className="absolute top-6 right-6 p-3 bg-slate-50 hover:bg-rose-50 rounded-2xl transition-all text-slate-400 hover:text-rose-500 cursor-pointer"
             >
               <X size={20} />
             </button>
-            
+
             <div className="mx-auto w-20 h-20 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mb-6">
               <QrCode size={36} />
             </div>
-            
+
             <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Your Patient Pass</h3>
             <p className="text-xs font-bold text-slate-400 mb-8 uppercase tracking-widest">Scan at Clinic Desk to Check-In</p>
-            
+
             <div className="bg-slate-50 border border-slate-100 p-8 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
-              <QRCodeSVG 
-                value={patientData?.phone || ''} 
+              <QRCodeSVG
+                value={patientData?.phone || ''}
                 size={180}
                 bgColor="#F8FAFC"
                 fgColor="#0F172A"
@@ -452,7 +544,7 @@ const PatientDashboard = () => {
                 includeMargin={true}
               />
             </div>
-            
+
             <div className="space-y-1">
               <h4 className="font-black text-slate-900">{displayName}</h4>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">ID: {patientData?.phone || 'N/A'}</p>
@@ -472,7 +564,7 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
     blue: "bg-blue-50 text-blue-600 border-blue-100",
     rose: "bg-rose-50 text-rose-600 border-rose-100",
   };
-  
+
   return (
     <div className={`p-5 rounded-2xl border ${colors[color]} shadow-sm transition-all hover:scale-105 duration-300`}>
       <div className="flex items-center gap-2 mb-3">
