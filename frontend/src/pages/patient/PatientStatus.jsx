@@ -1,16 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/runtime';
-import { 
-    Clock, ShieldCheck, Lock, XCircle, ArrowRight, UserCheck, 
-    RefreshCw, RefreshCcw, Activity, CheckCircle, Zap, AlertCircle
+import {
+    Clock, ShieldCheck, Lock, XCircle, ArrowRight, UserCheck,
+    RefreshCcw, Activity, Zap, AlertCircle, Heart, Wifi, WifiOff,
+    CheckCircle2, Stethoscope, Timer, Users, Sparkles, Hospital
 } from 'lucide-react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
+const socket = SOCKET_URL ? io(SOCKET_URL, {
+    transports: ['websocket', 'polling'],
+    withCredentials: true
+}) : { on: () => { }, off: () => { }, emit: () => { } };
+
+/* ── animated background blobs ── */
+const Blob = ({ className }) => (
+    <div className={`absolute rounded-full blur-3xl opacity-20 animate-pulse ${className}`} />
+);
+
+/* ── pulsing ring around token number when In-Consultation ── */
+const PulseRing = () => (
+    <span className="absolute inset-0 rounded-full border-4 border-teal-400 animate-ping opacity-30" />
+);
 
 const PatientStatus = () => {
     const [searchParams] = useSearchParams();
@@ -22,6 +36,15 @@ const PatientStatus = () => {
     const [isPending, setIsPending] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
+    const [socketConnected, setSocketConnected] = useState(false);
+    const tickRef = useRef(null);
+
+    /* ── live clock tick every minute ── */
+    useEffect(() => {
+        tickRef.current = setInterval(() => setLastUpdated(d => d), 60000);
+        return () => clearInterval(tickRef.current);
+    }, []);
 
     const fetchStatus = async (silent = false) => {
         if (!silent) setLoading(true);
@@ -37,6 +60,7 @@ const PatientStatus = () => {
             } else {
                 setIsPending(false);
                 setStatus(res.data.data);
+                setLastUpdated(new Date());
 
                 const incomingClinicId = res.data.data.clinicId?._id || res.data.data.clinicId;
                 if (incomingClinicId && incomingClinicId !== clinicId) {
@@ -44,20 +68,24 @@ const PatientStatus = () => {
                 }
             }
         } catch (err) {
-            console.error("Status fetch failed:", err);
+            console.error('Status fetch failed:', err);
         } finally {
             setLoading(false);
-            setTimeout(() => setIsSyncing(false), 1000);
+            setTimeout(() => setIsSyncing(false), 1200);
         }
     };
 
     useEffect(() => {
         if (queueId) fetchStatus();
 
+        socket.on('connect', () => setSocketConnected(true));
+        socket.on('disconnect', () => setSocketConnected(false));
         socket.on('queueUpdate', () => fetchStatus(true));
         socket.on('doctorStatusChanged', () => fetchStatus(true));
 
         return () => {
+            socket.off('connect');
+            socket.off('disconnect');
             socket.off('queueUpdate');
             socket.off('doctorStatusChanged');
         };
@@ -70,164 +98,334 @@ const PatientStatus = () => {
 
     const handleCancel = () => {
         Swal.fire({
-            title: 'Cancel Entry?',
-            text: "This will remove you from the live queue.",
+            title: 'Leave Queue?',
+            text: 'This will permanently remove you from the live queue.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#0D9488',
-            cancelButtonColor: '#94A3B8',
-            confirmButtonText: 'Yes, Cancel',
-            background: '#F8FAFC',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Yes, Remove Me',
+            cancelButtonText: 'Stay in Queue',
+            background: '#fff',
+            customClass: { popup: 'rounded-3xl' }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     await axios.delete(`${API_URL}/api/queue/public/cancel/${queueId}`);
                     navigate('/');
-                } catch (err) {
+                } catch {
                     Swal.fire('Error', 'Could not cancel request.', 'error');
                 }
             }
         });
     };
 
-    if (loading) return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4 font-body">
-            <RefreshCw size={32} className="text-teal-600 animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Syncing Live Lounge Status...</p>
-        </div>
-    );
+    const isInConsultation = status?.status === 'In-Consultation';
+    const isEmergency = status?.isEmergency;
 
-    if (isPending) return (
-        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-body text-slate-900">
-            <div className="w-full max-w-md bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-10 text-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5"><ShieldCheck size={100} /></div>
-                <div className="w-20 h-20 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
-                    <UserCheck size={40} className="animate-pulse" />
-                </div>
-                <h1 className="text-2xl font-black tracking-tight mb-4">Request Sent</h1>
-                <p className="text-slate-500 text-xs font-bold leading-relaxed uppercase tracking-wider mb-10">
-                    The clinical desk has received your request. Stay on this screen—your token will be issued automatically.
-                </p>
-                <div className="flex flex-col gap-4">
-                    <button onClick={() => fetchStatus(true)} className="flex items-center justify-center gap-3 w-full py-4 bg-teal-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-600/20 active:scale-95 transition-all">
-                        <RefreshCcw size={14} className={isSyncing ? 'animate-spin' : ''} /> Manual Sync
-                    </button>
-                    <button onClick={handleCancel} className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">
-                        Cancel Request ✕
-                    </button>
-                </div>
+    /* ═══════════════════════════════════════════
+       LOADING SCREEN
+    ═══════════════════════════════════════════ */
+    if (loading) return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 flex flex-col items-center justify-center gap-6 font-sans relative overflow-hidden">
+            <Blob className="w-96 h-96 bg-teal-500 -top-20 -left-20" />
+            <Blob className="w-80 h-80 bg-cyan-400 bottom-0 right-0" />
+            <div className="relative z-10 text-center">
+                <div className="w-20 h-20 border-4 border-white/10 border-t-teal-400 rounded-full animate-spin mx-auto mb-6" />
+                <p className="text-white/80 text-sm font-semibold tracking-widest uppercase">Connecting to live queue...</p>
             </div>
         </div>
     );
 
+    /* ═══════════════════════════════════════════
+       PENDING APPROVAL SCREEN
+    ═══════════════════════════════════════════ */
+    if (isPending) return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50/30 flex items-center justify-center p-5 font-sans">
+            <div className="w-full max-w-sm">
+                {/* Card */}
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100/80 p-10 text-center">
+                    <div className="relative w-24 h-24 mx-auto mb-8">
+                        <div className="w-24 h-24 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-3xl flex items-center justify-center shadow-xl shadow-teal-400/30">
+                            <UserCheck size={40} className="text-white" />
+                        </div>
+                        <span className="absolute -top-1 -right-1 w-6 h-6 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center">
+                            <Timer size={12} className="text-white" />
+                        </span>
+                    </div>
+
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-3">Request Received</h1>
+                    <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                        The reception desk has your check-in request. Your queue token will be issued shortly — stay on this page.
+                    </p>
+
+                    {/* Animated waiting dots */}
+                    <div className="flex items-center justify-center gap-2 mb-8">
+                        {[0, 1, 2, 3].map(i => (
+                            <div
+                                key={i}
+                                className="w-2 h-2 rounded-full bg-teal-400"
+                                style={{ animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => fetchStatus(true)}
+                        className="w-full py-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-teal-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-4"
+                    >
+                        <RefreshCcw size={14} className={isSyncing ? 'animate-spin' : ''} /> Refresh Status
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
+                    >
+                        Cancel Request
+                    </button>
+                </div>
+
+                <p className="text-center text-xs text-slate-400 mt-6">Live updates via SwasthyaMitra</p>
+            </div>
+
+            <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} }`}</style>
+        </div>
+    );
+
+    /* ═══════════════════════════════════════════
+       COMPLETED / NOT FOUND SCREEN
+    ═══════════════════════════════════════════ */
     if (isCompleted || (!status && !loading)) return (
-        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-body text-slate-900">
-            <div className="w-full max-w-md bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-12 text-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-10 opacity-5"><Activity size={120} /></div>
-                <div className="text-6xl mb-8">🏥</div>
-                <h1 className="text-3xl font-black tracking-tighter mb-4">Visit Complete</h1>
-                <p className="text-slate-500 text-sm font-bold uppercase tracking-wider leading-relaxed mb-10">
-                    Consultation finished. You can now access your prescriptions and lab reports in the Health Locker.
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 flex items-center justify-center p-5 font-sans relative overflow-hidden">
+            <Blob className="w-96 h-96 bg-teal-500/40 -top-20 -right-20" />
+            <Blob className="w-80 h-80 bg-cyan-400/30 bottom-10 left-0" />
+
+            <div className="relative z-10 w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/20 p-10 text-center text-white">
+                <div className="text-7xl mb-6 animate-bounce">🎉</div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-400/20 border border-green-400/30 rounded-full mb-6">
+                    <CheckCircle2 size={14} className="text-green-400" />
+                    <span className="text-green-300 text-xs font-black uppercase tracking-widest">Visit Complete</span>
+                </div>
+                <h1 className="text-3xl font-black tracking-tight mb-4">All Done!</h1>
+                <p className="text-white/70 text-sm leading-relaxed mb-8">
+                    Your consultation is finished. Access your prescriptions, lab reports and visit history in your personal Health Locker.
                 </p>
-                <button onClick={() => navigate('/patient/login')} className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95">
-                    Open Health Locker <Lock size={16} />
+                <button
+                    onClick={() => navigate('/patient/login')}
+                    className="w-full py-4 bg-gradient-to-r from-teal-400 to-cyan-400 text-slate-900 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-teal-400/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                >
+                    <Lock size={18} /> Open Health Locker
                 </button>
             </div>
         </div>
     );
 
+    /* ═══════════════════════════════════════════
+       MAIN LIVE QUEUE STATUS SCREEN
+    ═══════════════════════════════════════════ */
     return (
-        <div className="min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex flex-col items-center">
-            <div className="w-full max-w-lg px-6 py-12 flex flex-col items-center">
-                
-                {/* Real-time Status Header */}
-                <header className="w-full mb-10">
-                    <div className="flex items-center justify-between bg-white px-6 py-4 rounded-3xl border border-slate-100 shadow-sm mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-2.5 h-2.5 rounded-full ${isSyncing ? 'bg-teal-500 animate-ping' : 'bg-green-500 shadow-lg shadow-green-500/20'}`}></div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Connected To</span>
-                                <span className="text-[10px] font-black uppercase text-slate-900 tracking-wider">{status.clinicName}</span>
-                            </div>
+        <div className="min-h-screen font-sans text-slate-900 relative overflow-hidden"
+            style={{ background: isInConsultation ? 'linear-gradient(135deg,#f0fdf9,#ccfbf1,#f0fdfa)' : '#f8fafc' }}>
+
+            {/* BG Blobs */}
+            {isInConsultation && (
+                <>
+                    <Blob className="w-72 h-72 bg-teal-300 -top-10 -right-10" />
+                    <Blob className="w-56 h-56 bg-cyan-300 bottom-20 -left-10" />
+                </>
+            )}
+            {isEmergency && <Blob className="w-72 h-72 bg-red-300 -top-10 -right-10" />}
+
+            <div className="relative z-10 w-full max-w-md mx-auto px-5 pt-8 pb-28 flex flex-col gap-5">
+
+                {/* ── TOP BAR: Clinic + Connection ── */}
+                <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm px-5 py-3.5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                        <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-400 animate-pulse' : socketConnected ? 'bg-green-500 shadow-md shadow-green-500/40' : 'bg-slate-300'}`} />
+                        <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Connected</p>
+                            <p className="text-xs font-black text-slate-900 leading-tight mt-0.5">{status.clinicName || 'Clinic'}</p>
                         </div>
-                        <button onClick={() => fetchStatus(true)} className="p-2 hover:bg-slate-50 rounded-xl transition-all group">
-                            <RefreshCcw size={18} className={`text-slate-400 group-hover:text-teal-600 ${isSyncing ? 'animate-spin' : ''}`} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {isSyncing ? (
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                                <RefreshCcw size={10} className="animate-spin" /> Syncing
+                            </span>
+                        ) : (
+                            <span className="text-[9px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">
+                                <Wifi size={10} /> Live
+                            </span>
+                        )}
+                        <button
+                            onClick={() => fetchStatus(true)}
+                            className="w-8 h-8 bg-slate-50 hover:bg-teal-50 text-slate-400 hover:text-teal-600 rounded-xl flex items-center justify-center transition-all active:scale-90"
+                        >
+                            <RefreshCcw size={14} className={isSyncing ? 'animate-spin' : ''} />
                         </button>
                     </div>
-                    <div className="flex items-center justify-center gap-3">
-                        <h1 className="text-3xl font-black tracking-tighter text-slate-900">Live Lounge</h1>
-                        <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-teal-100">Active</span>
-                    </div>
-                </header>
+                </div>
 
+                {/* ── DOCTOR ON BREAK ALERT ── */}
                 {status.isDoctorOnBreak && (
-                    <div className="w-full bg-rose-50 border border-rose-100 p-4 rounded-2xl mb-8 flex items-center justify-center gap-3 animate-in slide-in-from-top-4 duration-500">
-                        <AlertCircle size={16} className="text-rose-600" />
-                        <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.15em] animate-pulse">Doctor is on a temporary break</p>
+                    <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 animate-in slide-in-from-top duration-500">
+                        <AlertCircle size={18} className="text-amber-500 shrink-0" />
+                        <div>
+                            <p className="text-xs font-black text-amber-700 uppercase tracking-wider">Doctor on Break</p>
+                            <p className="text-[10px] text-amber-600 font-medium mt-0.5">The doctor will resume shortly. Your position is held.</p>
+                        </div>
                     </div>
                 )}
 
-                {/* Main Token Card */}
-                <div className={`w-full bg-white border-2 rounded-[4rem] p-12 shadow-2xl mb-10 relative transition-all duration-700 overflow-hidden ${status.status === 'In-Consultation' ? 'border-teal-500 ring-8 ring-teal-50 shadow-teal-500/10' : status.isEmergency ? 'border-rose-500' : 'border-slate-100'}`}>
-                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12"><Zap size={200} /></div>
-                    
-                    <div className="flex justify-between items-start mb-8 relative z-10">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">My Current Token</span>
-                            <span className="text-xs font-black text-slate-900 uppercase mt-1">Lounge Access</span>
-                        </div>
-                        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border ${status.status === 'In-Consultation' ? 'bg-teal-50 border-teal-100 text-teal-600' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-                            <div className={`w-2 h-2 rounded-full ${status.status === 'In-Consultation' ? 'bg-teal-500 animate-ping' : 'bg-slate-400'}`}></div>
-                            <span className="text-[9px] font-black uppercase tracking-widest">{status.status === 'In-Consultation' ? 'Live In Cabin' : 'Waiting'}</span>
-                        </div>
+                {/* ── MAIN TOKEN CARD ── */}
+                <div className={`relative rounded-[2.5rem] overflow-hidden transition-all duration-700 ${isInConsultation
+                    ? 'bg-gradient-to-br from-teal-500 to-cyan-600 shadow-2xl shadow-teal-400/40'
+                    : isEmergency
+                        ? 'bg-gradient-to-br from-red-500 to-rose-600 shadow-2xl shadow-red-400/40'
+                        : 'bg-white shadow-xl shadow-slate-200/60 border border-slate-100'
+                    }`}>
+
+                    {/* Decorative background element */}
+                    <div className={`absolute inset-0 opacity-[0.06] ${isInConsultation || isEmergency ? 'opacity-10' : ''}`}>
+                        <Stethoscope size={300} className="absolute -bottom-10 -right-10" />
                     </div>
 
-                    <div className="text-center relative z-10">
-                        <p className={`text-[9rem] font-black leading-none mb-6 tracking-tighter transition-colors duration-500 ${status.status === 'In-Consultation' ? 'text-teal-600' : status.isEmergency ? 'text-rose-600' : 'text-slate-900'}`}>
-                            {status.tokenNumber}
-                        </p>
-                        <p className="text-xl font-black text-slate-900 tracking-tight">Namaste, {status.patientName}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Clinical ID: {queueId.slice(-6).toUpperCase()}</p>
-                    </div>
+                    <div className="relative z-10 p-8">
+                        {/* Status pill */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${isInConsultation ? 'text-teal-100' : 'text-slate-400'}`}>
+                                <Hospital size={12} />
+                                My Queue Token
+                            </div>
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isInConsultation
+                                ? 'bg-white/20 text-white'
+                                : isEmergency
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-slate-50 text-slate-500 border border-slate-100'
+                                }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${isInConsultation ? 'bg-teal-200 animate-ping' : isEmergency ? 'bg-rose-200 animate-ping' : 'bg-slate-300'}`} />
+                                {isInConsultation ? 'In Cabin Now' : isEmergency ? 'Emergency' : 'Waiting'}
+                            </div>
+                        </div>
 
-                    <div className="mt-12 pt-10 border-t border-slate-50 flex justify-between relative z-10">
-                        <div className="text-left">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Patients Ahead</p>
-                            <p className="text-2xl font-black text-slate-900">{status.status === 'In-Consultation' ? '0' : status.peopleAhead}</p>
+                        {/* Token Number — HUGE */}
+                        <div className="text-center mb-6">
+                            <div className="relative inline-block">
+                                <span className={`text-[8rem] leading-none font-black tracking-tighter transition-colors duration-500 ${isInConsultation ? 'text-white' : isEmergency ? 'text-white' : 'text-slate-900'}`}>
+                                    {status.tokenNumber}
+                                </span>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Est. Wait Time</p>
-                            <p className="text-2xl font-black text-slate-900">~{status.status === 'In-Consultation' ? '0' : status.estimatedWait} <span className="text-xs uppercase">Min</span></p>
+
+                        {/* Patient name */}
+                        <div className="text-center mb-6">
+                            <p className={`text-lg font-black tracking-tight ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-800'}`}>
+                                Namaste, {status.patientName?.split(' ')[0]} 🙏
+                            </p>
+                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isInConsultation || isEmergency ? 'text-white/60' : 'text-slate-400'}`}>
+                                Visit ID: {queueId?.slice(-8).toUpperCase()}
+                            </p>
                         </div>
+
+                        {/* Stats row */}
+                        <div className={`grid grid-cols-2 gap-3 pt-6 ${isInConsultation || isEmergency ? 'border-t border-white/20' : 'border-t border-slate-50'}`}>
+                            <div className={`rounded-2xl p-4 text-center ${isInConsultation || isEmergency ? 'bg-white/15' : 'bg-slate-50 border border-slate-100'}`}>
+                                <div className={`flex items-center justify-center gap-1.5 mb-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>
+                                    <Users size={12} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Ahead</span>
+                                </div>
+                                <p className={`text-3xl font-black ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-900'}`}>
+                                    {isInConsultation ? '0' : status.peopleAhead ?? '—'}
+                                </p>
+                            </div>
+                            <div className={`rounded-2xl p-4 text-center ${isInConsultation || isEmergency ? 'bg-white/15' : 'bg-slate-50 border border-slate-100'}`}>
+                                <div className={`flex items-center justify-center gap-1.5 mb-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>
+                                    <Clock size={12} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Est. Wait</span>
+                                </div>
+                                <p className={`text-3xl font-black ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-900'}`}>
+                                    {isInConsultation ? '0' : status.estimatedWait ?? '—'}
+                                    <span className={`text-sm font-bold ml-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>min</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* In-Consultation Banner */}
+                        {isInConsultation && (
+                            <div className="mt-4 py-3 bg-white/20 rounded-2xl flex items-center justify-center gap-2 animate-in slide-in-from-bottom duration-500">
+                                <span className="w-2 h-2 bg-white rounded-full animate-ping" />
+                                <p className="text-white font-black text-xs uppercase tracking-widest">Please proceed to the doctor's cabin</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Digital Locker Promotion */}
-                <div className="w-full p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-2xl mb-12 flex items-center justify-between group cursor-pointer hover:bg-black transition-all overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* ── PROGRESS INDICATOR ── */}
+                {!isInConsultation && (
+                    <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Queue Progress</p>
+                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">
+                                {status.peopleAhead === 0 ? "You're Next!" : `${status.peopleAhead} before you`}
+                            </p>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full transition-all duration-1000"
+                                style={{
+                                    width: status.peopleAhead === 0 ? '95%' : `${Math.max(10, 100 - (status.peopleAhead * 15))}%`
+                                }}
+                            />
+                        </div>
+                        <div className="flex justify-between mt-2">
+                            <span className="text-[9px] text-slate-300 font-bold">Start</span>
+                            <span className="text-[9px] text-slate-300 font-bold">Your Turn</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── LAST UPDATED ── */}
+                {lastUpdated && (
+                    <p className="text-center text-[10px] text-slate-400 font-medium">
+                        Last synced: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                )}
+
+                {/* ── HEALTH LOCKER CTA ── */}
+                <div
+                    onClick={() => navigate('/patient/login')}
+                    className="bg-slate-900 text-white rounded-[1.5rem] p-5 flex items-center justify-between cursor-pointer hover:bg-slate-800 active:scale-[0.98] transition-all group relative overflow-hidden shadow-xl shadow-slate-900/20"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative z-10">
-                        <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-1 flex items-center gap-2">
-                            <ShieldCheck size={12} /> Personal Health Hub
+                        <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                            <ShieldCheck size={10} /> Personal Health Hub
                         </p>
-                        <h4 className="text-xl font-black tracking-tight">Open Health Locker</h4>
+                        <p className="text-base font-black tracking-tight">Health Locker</p>
+                        <p className="text-[10px] text-white/50 font-medium mt-0.5">Access prescriptions & lab reports</p>
                     </div>
-                    <button onClick={() => navigate('/patient/login')} className="p-4 bg-white/10 group-hover:bg-teal-600 rounded-2xl transition-all relative z-10 shadow-lg">
-                        <ArrowRight size={20} />
-                    </button>
+                    <div className="relative z-10 w-11 h-11 bg-white/10 group-hover:bg-teal-500 rounded-2xl flex items-center justify-center transition-all">
+                        <ArrowRight size={18} />
+                    </div>
                 </div>
 
-                <button onClick={handleCancel} className="text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-all flex items-center gap-2 tracking-widest">
-                    <XCircle size={14} /> Cancel Visit Request
-                </button>
+
+
             </div>
 
-            {/* Mobile Sticky Sync */}
+            {/* ── FLOATING SYNC FAB (mobile) ── */}
             <button
                 onClick={() => fetchStatus(true)}
-                className="fixed bottom-10 right-8 w-14 h-14 bg-teal-600 text-white rounded-2xl shadow-2xl shadow-teal-600/30 flex items-center justify-center animate-bounce md:hidden active:scale-90 transition-all z-50 border-4 border-white"
+                className={`fixed bottom-8 right-5 w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all active:scale-90 z-50 border-4 border-white md:hidden ${isInConsultation ? 'bg-teal-500 shadow-teal-500/40' : 'bg-slate-900 shadow-slate-900/30'}`}
             >
-                <RefreshCcw size={24} className={isSyncing ? 'animate-spin' : ''} />
+                <RefreshCcw size={22} className={`text-white ${isSyncing ? 'animate-spin' : ''}`} />
             </button>
+
+            <style>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-8px); }
+                }
+            `}</style>
         </div>
     );
 };

@@ -25,22 +25,22 @@ const Appointments = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Upcoming');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [selectedDate]);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      // Reusing the queue stats for now as it contains scheduled appointments
       const res = await axios.get(`${API_URL}/api/queue/stats/doctor`, {
+        params: { date: selectedDate },
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success && res.data.data) {
-        // Filter for scheduled/waiting
         setAppointments(res.data.data.queue || []);
       }
     } catch (err) {
@@ -115,20 +115,29 @@ const Appointments = () => {
                 Manage your daily patient consultations and follow-ups
               </p>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="relative flex-grow md:flex-grow-0">
+             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-auto">
+                <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-600" size={16} />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-teal-500 text-xs font-black uppercase tracking-wider text-slate-700 shadow-sm transition-all w-full sm:w-48 cursor-pointer"
+                />
+              </div>
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <input
                   type="text"
                   placeholder="Search by name or phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-teal-500 text-sm w-full md:w-64 shadow-sm transition-all"
+                  className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-teal-500 text-sm w-full sm:w-64 shadow-sm transition-all"
                 />
               </div>
               <button 
                 onClick={fetchAppointments}
-                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95 shrink-0"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
               </button>
@@ -197,7 +206,12 @@ const Appointments = () => {
                         <h3 className="text-lg font-black text-slate-900 truncate pr-16">{app.patientName || 'Unknown Patient'}</h3>
                         <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <Clock size={12} />
-                          Scheduled: {app.createdAt ? new Date(app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                          {app.visitType === 'Appointment' ? 'Slot: ' : 'Registered: '}
+                          {app.visitType === 'Appointment' && app.appointmentDate 
+                            ? new Date(app.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                            : app.createdAt 
+                              ? new Date(app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                              : 'N/A'}
                         </p>
                       </div>
                     </div>

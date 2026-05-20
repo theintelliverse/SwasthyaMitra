@@ -287,7 +287,7 @@ const ReceptionDashboard = () => {
         <nav className="bg-white border-b border-sandstone px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-sm z-20">
           <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
             {showBackButton && (
-              <button 
+              <button
                 onClick={() => navigate('/admin/dashboard')}
                 className="mr-2 p-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase tracking-widest border border-teal-100"
               >
@@ -395,9 +395,9 @@ const ReceptionDashboard = () => {
                           <td className="px-3 md:px-10 py-3 md:py-6 text-right">
                             <div className="flex justify-end gap-1 md:gap-2">
                               {p.status === 'Waiting' && (
-                                <button 
-                                  onClick={() => handleStartSession(p._id)} 
-                                  className="p-1.5 md:p-3 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-100 rounded-lg md:rounded-xl transition-all shadow-sm flex-shrink-0 flex items-center justify-center" 
+                                <button
+                                  onClick={() => handleStartSession(p._id)}
+                                  className="p-1.5 md:p-3 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-100 rounded-lg md:rounded-xl transition-all shadow-sm flex-shrink-0 flex items-center justify-center"
                                   title="Start Session"
                                 >
                                   <Stethoscope size={14} />

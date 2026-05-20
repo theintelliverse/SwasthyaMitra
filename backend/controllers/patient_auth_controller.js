@@ -357,10 +357,10 @@ exports.registerPatient = async (req, res) => {
  */
 exports.bookAppointment = async (req, res) => {
     try {
-        const { clinicId, doctorId, appointmentDate, reason } = req.body;
+        const { clinicId, doctorId, appointmentDate, reason, rescheduleAppointmentId } = req.body;
         const patientId = req.user?.id;
 
-        console.log('🔍 Booking appointment:', { clinicId, doctorId, appointmentDate, reason, patientId });
+        console.log('🔍 Booking appointment:', { clinicId, doctorId, appointmentDate, reason, patientId, rescheduleAppointmentId });
 
         if (!clinicId || !doctorId || !appointmentDate) {
             return res.status(400).json({ success: false, message: "Clinic, doctor, and date are required" });
@@ -387,6 +387,73 @@ exports.bookAppointment = async (req, res) => {
         }
 
         console.log(`✅ Found clinic: ${clinic.name}, doctor: Dr. ${doctor.name}`);
+
+        if (rescheduleAppointmentId) {
+            // Find existing queue entry
+            const queueEntry = await Queue.findById(rescheduleAppointmentId);
+            if (!queueEntry) {
+                return res.status(404).json({ success: false, message: "Original appointment not found." });
+            }
+
+            // Update queue entry
+            queueEntry.clinicId = clinicId;
+            queueEntry.doctorId = doctorId;
+            queueEntry.appointmentDate = new Date(appointmentDate);
+            queueEntry.reason = reason || queueEntry.reason || '';
+            queueEntry.status = 'Pending-Approval';
+            queueEntry.isApproved = false;
+            await queueEntry.save();
+
+            // Find patient and update their appointment record
+            const appointmentIndex = patient.appointments.findIndex(app => app.queueId?.toString() === rescheduleAppointmentId);
+            if (appointmentIndex !== -1) {
+                patient.appointments[appointmentIndex].appointmentDate = new Date(appointmentDate);
+                patient.appointments[appointmentIndex].status = 'Scheduled';
+                patient.appointments[appointmentIndex].clinicId = clinicId;
+                patient.appointments[appointmentIndex].clinicName = clinic.name;
+                patient.appointments[appointmentIndex].doctorId = doctorId;
+                patient.appointments[appointmentIndex].doctorName = doctor.name;
+            } else {
+                patient.appointments.push({
+                    queueId: queueEntry._id,
+                    clinicId,
+                    clinicName: clinic.name,
+                    doctorId,
+                    doctorName: doctor.name,
+                    appointmentDate: new Date(appointmentDate),
+                    status: 'Scheduled'
+                });
+            }
+
+            await patient.save();
+
+            // Send rescheduled request submitted SMS
+            try {
+                const cleanPhone = patient.phone.replace(/\D/g, '').slice(-10);
+                const formattedPhone = `+91${cleanPhone}`;
+                if (process.env.TWILIO_PHONE_NUMBER) {
+                    await client.messages.create({
+                        body: `Your appointment reschedule request has been submitted to ${clinic.name} with Dr. ${doctor.name}. New Date: ${new Date(appointmentDate).toLocaleDateString()}. The receptionist will verify and confirm shortly. Request ID: ${queueEntry._id}`,
+                        from: process.env.TWILIO_PHONE_NUMBER,
+                        to: formattedPhone
+                    });
+                }
+            } catch (smsError) {
+                console.error("❌ Reschedule SMS Error:", smsError.message);
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Appointment reschedule request submitted successfully. Receptionist will verify and confirm shortly.",
+                data: {
+                    appointmentId: queueEntry._id,
+                    clinicName: clinic.name,
+                    doctorName: doctor.name,
+                    appointmentDate,
+                    status: 'Pending-Approval'
+                }
+            });
+        }
 
         // Create queue entry for appointment REQUEST (pending receptionist approval)
         const queueEntry = await Queue.create({
@@ -419,11 +486,11 @@ exports.bookAppointment = async (req, res) => {
         try {
             const cleanPhone = patient.phone.replace(/\D/g, '').slice(-10);
             const formattedPhone = `+91${cleanPhone}`;
-            
+
             if (!process.env.TWILIO_PHONE_NUMBER) {
                 throw new Error('Missing TWILIO_PHONE_NUMBER - Check .env file');
             }
-            
+
             await client.messages.create({
                 body: `Your appointment request has been submitted to ${clinic.name} with Dr. ${doctor.name}. Date: ${new Date(appointmentDate).toLocaleDateString()}. The receptionist will verify and confirm shortly. Request ID: ${queueEntry._id}`,
                 from: process.env.TWILIO_PHONE_NUMBER,

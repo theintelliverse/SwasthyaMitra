@@ -9,9 +9,13 @@ import {
   Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
+const socket = SOCKET_URL ? io(SOCKET_URL, {
+  transports: ['websocket', 'polling'],
+  withCredentials: true
+}) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const PatientDashboard = () => {
   const navigate = useNavigate();
@@ -23,6 +27,7 @@ const PatientDashboard = () => {
   const [previewFile, setPreviewFile] = useState(null);
   const [shareFile, setShareFile] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   const [lastVisitUpdate, setLastVisitUpdate] = useState(Date.now());
 
   const fetchProfile = useCallback(async (silent = false) => {
@@ -154,9 +159,12 @@ const PatientDashboard = () => {
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-teal-400">
                     <ShieldCheck size={26} />
                   </div>
-                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <button 
+                    onClick={() => setShowQrModal(true)}
+                    className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                  >
                     <QrCode size={20} className="text-teal-400" />
-                  </div>
+                  </button>
                 </div>
                 
                 <div className="mb-8">
@@ -166,7 +174,7 @@ const PatientDashboard = () => {
 
                 <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/5">
                   <div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Clinic ID</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Patient ID</p>
                     <p className="text-sm font-black text-white">{patientData?.phone || 'N/A'}</p>
                   </div>
                   <div>
@@ -265,7 +273,7 @@ const PatientDashboard = () => {
                   )}
                   
                   <button 
-                    onClick={() => navigate('/patient/book-appointment')}
+                    onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })}
                     className="px-8 py-4 bg-white text-teal-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-xl active:scale-95 flex items-center gap-3"
                   >
                     <Plus size={18} /> {upcomingAppointment ? "Reschedule" : "Book New Slot"}
@@ -412,6 +420,43 @@ const PatientDashboard = () => {
               </button>
             </div>
             <p className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider">Locker Sync ID: {shareFile._id.substring(0, 12)}</p>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQrModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[120] flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 border border-slate-100 animate-in zoom-in-95 shadow-2xl relative text-center">
+            <button 
+              onClick={() => setShowQrModal(false)} 
+              className="absolute top-6 right-6 p-3 bg-slate-50 hover:bg-rose-50 rounded-2xl transition-all text-slate-400 hover:text-rose-500 cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="mx-auto w-20 h-20 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mb-6">
+              <QrCode size={36} />
+            </div>
+            
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Your Patient Pass</h3>
+            <p className="text-xs font-bold text-slate-400 mb-8 uppercase tracking-widest">Scan at Clinic Desk to Check-In</p>
+            
+            <div className="bg-slate-50 border border-slate-100 p-8 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
+              <QRCodeSVG 
+                value={patientData?.phone || ''} 
+                size={180}
+                bgColor="#F8FAFC"
+                fgColor="#0F172A"
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+            
+            <div className="space-y-1">
+              <h4 className="font-black text-slate-900">{displayName}</h4>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">ID: {patientData?.phone || 'N/A'}</p>
+            </div>
           </div>
         </div>
       )}

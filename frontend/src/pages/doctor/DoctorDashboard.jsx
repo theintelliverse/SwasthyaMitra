@@ -128,7 +128,7 @@ const DoctorDashboard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [showHistoryLocker, setShowHistoryLocker] = useState(false);
-  
+
   const [isDictating, setIsDictating] = useState(false);
   const handleStartDictation = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -321,7 +321,7 @@ const DoctorDashboard = () => {
       if (res.data.success) {
         // Clear local storage draft
         localStorage.removeItem(`consultation_draft_${activePatient._id}`);
-        
+
         setIsConsultationMode(false);
         setActivePatient(null);
         setNotes("");
@@ -584,7 +584,7 @@ const DoctorDashboard = () => {
                     <div className="absolute top-0 right-0 p-4">
                       <button onClick={() => setShowProfile(true)} className="text-gray-400 hover:text-teal-600 transition-colors"><Layout size={20} /></button>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
                       <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-2xl font-black shadow-inner flex-shrink-0">
                         {activePatient.patientName.charAt(0).toUpperCase()}
@@ -624,7 +624,7 @@ const DoctorDashboard = () => {
                       <button onClick={() => navigate('/doctor/reports')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-xs font-black uppercase tracking-wider text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all">
                         <FlaskConical size={18} /> Order Lab Test
                       </button>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setShowHistoryLocker(true)}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-xs font-black uppercase tracking-wider text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all"
@@ -648,11 +648,10 @@ const DoctorDashboard = () => {
                           <button
                             type="button"
                             onClick={handleStartDictation}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                              isDictating 
-                                ? 'bg-red-500 text-white animate-pulse shadow-md shadow-red-500/20' 
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDictating
+                                ? 'bg-red-500 text-white animate-pulse shadow-md shadow-red-500/20'
                                 : 'bg-teal-50 text-teal-600 border border-teal-100 hover:bg-teal-100'
-                            }`}
+                              }`}
                           >
                             <Mic size={12} className={isDictating ? 'animate-bounce' : ''} />
                             {isDictating ? 'Listening...' : 'Dictate'}
@@ -695,16 +694,16 @@ const DoctorDashboard = () => {
                           >
                             <Layout size={14} /> Templates
                           </button>
-                          <button 
-                            type="button" 
-                            onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])} 
+                          <button
+                            type="button"
+                            onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])}
                             className="flex-1 sm:flex-none text-[9px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 flex items-center justify-center gap-1 bg-teal-50 px-3 py-2 rounded-xl transition-all"
                           >
                             <Plus size={14} /> Add Drug
                           </button>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                         {medicines.map((m, idx) => (
                           <div key={idx} className="flex flex-col sm:flex-row gap-2.5 items-center group w-full bg-gray-50/50 sm:bg-transparent p-3 sm:p-0 rounded-2xl border border-gray-100 sm:border-none">
@@ -744,9 +743,9 @@ const DoctorDashboard = () => {
                                 }}
                                 className="flex-1 sm:w-32 bg-gray-50 border-2 border-transparent rounded-xl px-3 py-2 text-xs sm:text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800 font-bold"
                               />
-                              <button 
-                                type="button" 
-                                onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} 
+                              <button
+                                type="button"
+                                onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))}
                                 className="p-2 text-gray-400 hover:text-red-500 rounded-xl hover:bg-red-50 sm:opacity-0 sm:group-hover:opacity-100 transition-all flex-shrink-0"
                               >
                                 <X size={16} />
@@ -860,8 +859,8 @@ const DoctorDashboard = () => {
                     <table className="w-full text-left border-separate border-spacing-y-1.5">
                       <tbody>
                         {filteredQueue.map((patient, idx) => (
-                          <tr 
-                            key={patient._id} 
+                          <tr
+                            key={patient._id}
                             onClick={() => {
                               if (patient.status === 'Waiting') {
                                 if (patient.currentStage === 'Lab-Pending') {
@@ -903,17 +902,16 @@ const DoctorDashboard = () => {
                             </td>
                             <td className="py-1.5 px-2.5">
                               <div className="flex items-center gap-1.5">
-                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                                  patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600 border border-green-100' :
-                                  patient.currentStage === 'Lab-Pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
-                                  patient.currentStage === 'Lab-Completed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' :
-                                  patient.status === 'Waiting' ? 'bg-orange-50 text-orange-600 border border-orange-100' :
-                                  patient.status === 'Completed' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
-                                  'bg-gray-50 text-gray-400'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600 border border-green-100' :
+                                    patient.currentStage === 'Lab-Pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                                      patient.currentStage === 'Lab-Completed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' :
+                                        patient.status === 'Waiting' ? 'bg-orange-50 text-orange-600 border border-orange-100' :
+                                          patient.status === 'Completed' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                                            'bg-gray-50 text-gray-400'
+                                  }`}>
                                   {patient.currentStage === 'Lab-Pending' ? 'At Lab' :
-                                   patient.currentStage === 'Lab-Completed' ? 'Lab Done' :
-                                   patient.status}
+                                    patient.currentStage === 'Lab-Completed' ? 'Lab Done' :
+                                      patient.status}
                                 </span>
                               </div>
                             </td>
@@ -932,9 +930,8 @@ const DoctorDashboard = () => {
                                       e.stopPropagation();
                                       handleStartConsultation(patient);
                                     }}
-                                    className={`px-3.5 py-1.5 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 inline-flex ${
-                                      patient.currentStage === 'Lab-Completed' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-teal-600 hover:bg-teal-700'
-                                    }`}
+                                    className={`px-3.5 py-1.5 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 inline-flex ${patient.currentStage === 'Lab-Completed' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-teal-600 hover:bg-teal-700'
+                                      }`}
                                   >
                                     {patient.currentStage === 'Lab-Completed' ? 'Start (Lab Done)' : 'Start'}
                                   </button>
@@ -950,9 +947,13 @@ const DoctorDashboard = () => {
                                 >
                                   Resume
                                 </button>
+                              ) : patient.status === 'Pending-Approval' ? (
+                                <span className="px-3.5 py-1.5 bg-gray-50 text-slate-400 border border-gray-150 rounded-lg text-[9px] font-black uppercase tracking-widest inline-flex">
+                                  Pending Desk
+                                </span>
                               ) : (
                                 <span className="text-[9px] font-bold text-gray-400 whitespace-nowrap">
-                                  Completed
+                                  {patient.status}
                                 </span>
                               )}
                             </td>
@@ -979,8 +980,8 @@ const DoctorDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center w-full mt-2">
                         <button
-                           onClick={handleToggleBreak}
-                           className="px-3.5 py-1.5 bg-teal-600 text-white rounded-lg font-bold text-xs shadow-md shadow-teal-600/10 hover:bg-teal-700 transition-all"
+                          onClick={handleToggleBreak}
+                          className="px-3.5 py-1.5 bg-teal-600 text-white rounded-lg font-bold text-xs shadow-md shadow-teal-600/10 hover:bg-teal-700 transition-all"
                         >
                           {isOnBreak ? 'Resume Work' : 'Start Break'}
                         </button>
@@ -1089,10 +1090,10 @@ const DoctorDashboard = () => {
                 <QuickActionTile icon={<div className="text-lg font-bold">Rx</div>} label="Add Prescription" color="bg-purple-50 text-purple-600" onClick={() => { navigate('/doctor/prescriptions'); setShowQuickActions(false); }} />
                 <QuickActionTile icon={<FlaskConical size={20} />} label="Order Lab Test" color="bg-orange-50 text-orange-600" onClick={() => { navigate('/doctor/reports'); setShowQuickActions(false); }} />
                 <QuickActionTile icon={<Layout size={20} />} label="Templates" color="bg-indigo-50 text-indigo-600" onClick={() => { setShowTemplatesModal(true); setShowQuickActions(false); }} />
-                
+
                 {/* Take a Break (Mobile Quick Action) */}
                 <div className="lg:hidden col-span-2 mt-2">
-                  <button 
+                  <button
                     onClick={() => { handleToggleBreak(); setShowQuickActions(false); }}
                     className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl bg-amber-50 text-amber-600 font-bold hover:bg-amber-100 transition-all active:scale-95 border border-amber-100"
                   >
