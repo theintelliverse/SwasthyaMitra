@@ -1187,37 +1187,37 @@ const LabDashboard = () => {
                   </div>
 
                   {/* Recent Samples */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-bold text-gray-900">Recent Samples</h2>
-                      <button onClick={() => navigate('/lab/samples')} className="text-teal-600 text-sm font-semibold hover:text-teal-700">View All</button>
+                  <div className="bg-white rounded-xl border border-gray-200 p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h2 className="text-sm font-bold text-gray-900">Recent Samples</h2>
+                      <button onClick={() => navigate('/lab/samples')} className="text-teal-600 text-xs font-semibold hover:text-teal-700">View All</button>
                     </div>
-                    <div className="flex md:grid overflow-x-auto hide-scrollbar gap-4 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-4">
+                    <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-4">
                       {/* Sample Cards */}
                       {labQueue.slice(0, 4).map((patient, idx) => (
-                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-teal-300 transition-colors shrink-0 snap-start w-[240px] md:w-auto">
-                          <div className="flex items-start gap-3 mb-3">
-                            <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                              {patient.currentStage === 'Lab-Pending' ? <Beaker size={16} /> : patient.currentStage === 'Lab-Processing' ? <TestTubes size={16} /> : <FileCheck size={16} />}
+                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-lg p-2.5 hover:border-teal-300 transition-colors shrink-0 snap-start w-[200px] md:w-auto">
+                          <div className="flex items-start gap-2 mb-2">
+                            <div className="w-6 h-6 bg-blue-50 text-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                              {patient.currentStage === 'Lab-Pending' ? <Beaker size={12} /> : patient.currentStage === 'Lab-Processing' ? <TestTubes size={12} /> : <FileCheck size={12} />}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold text-gray-900 truncate">SMP-2025-{patient.tokenNumber}</p>
-                              <p className="text-[10px] text-gray-500 truncate">{patient.patientName}</p>
+                              <p className="text-[10px] font-bold text-gray-900 truncate">SMP-2025-{patient.tokenNumber}</p>
+                              <p className="text-[9px] text-gray-500 truncate">{patient.patientName}</p>
                             </div>
                           </div>
-                          <p className="text-[10px] font-semibold text-gray-700 mb-4 truncate">{patient.requiredTest || 'CBC, RBS, Lipid Profile'}</p>
-                          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                          <p className="text-[9px] font-semibold text-gray-700 mb-2 truncate">{patient.requiredTest || 'CBC, RBS'}</p>
+                          <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
                               {patient.currentStage === 'Lab-Pending' ? 'Testing' : patient.currentStage === 'Lab-Processing' ? 'In Process' : 'Collected'}
                             </span>
-                            <span className="text-[9px] font-bold text-gray-500">
+                            <span className="text-[8px] font-bold text-gray-500">
                               {new Date(patient.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                         </div>
                       ))}
                       {labQueue.length === 0 && (
-                        <div className="col-span-full py-6 text-center text-gray-500 text-sm w-full">No recent samples available</div>
+                        <div className="col-span-full py-4 text-center text-gray-500 text-xs w-full">No recent samples available</div>
                       )}
                     </div>
                   </div>
