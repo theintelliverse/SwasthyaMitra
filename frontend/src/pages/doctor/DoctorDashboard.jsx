@@ -762,32 +762,31 @@ const DoctorDashboard = () => {
                   <span className="hidden md:block text-xs text-gray-400">Dashboard &gt; Patients &gt; {activePatient?.patientName}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                   {/* Actions removed as requested */}
                 </div>
               </div>
 
               {/* Patient Info Card */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-3 flex flex-col lg:flex-row gap-3 items-center lg:items-start">
-                   <div className="w-12 h-12 bg-gray-100 rounded-full flex-shrink-0 border-2 border-white shadow-sm overflow-hidden mt-1">
-                      <div className="w-full h-full bg-teal-50 text-teal-600 flex items-center justify-center text-xl font-black">{activePatient?.patientName?.charAt(0).toUpperCase() || 'P'}</div>
+                <div className="p-2 flex flex-col lg:flex-row gap-2 items-center lg:items-start">
+                   <div className="w-10 h-10 bg-gray-100 rounded-full flex-shrink-0 border-2 border-white shadow-sm overflow-hidden mt-0.5">
+                      <div className="w-full h-full bg-teal-50 text-teal-600 flex items-center justify-center text-lg font-black">{activePatient?.patientName?.charAt(0).toUpperCase() || 'P'}</div>
                    </div>
                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h2 className="text-lg font-bold text-gray-900 leading-none">{activePatient?.patientName}</h2>
-                        <span className="px-2 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-[9px] font-bold flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> In Consultation</span>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h2 className="text-base font-bold text-gray-900 leading-none">{activePatient?.patientName}</h2>
+                        <span className="px-1.5 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-[9px] font-bold flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> In Consultation</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500 mb-1.5">
+                      <div className="flex flex-wrap items-center gap-2 text-[9px] text-gray-500 mb-1">
                          <span>{patientData?.patientId || 'N/A'}</span>•<span>{patientData?.age ? `${patientData.age} yrs` : 'N/A'}</span>•<span>{patientData?.gender || 'N/A'}</span>•<span>{patientData?.dob ? new Date(patientData.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-6 text-xs text-gray-600">
-                         <div className="flex items-center gap-1.5"><Phone size={14} className="text-gray-400"/> {activePatient?.patientPhone || patientData?.phone || 'N/A'}</div>
-                         <div className="flex items-center gap-1.5"><Mail size={14} className="text-gray-400"/> {patientData?.email || 'N/A'}</div>
-                         <div className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400"/> {patientData?.address || 'N/A'}</div>
+                      <div className="flex flex-wrap items-center gap-4 text-[10px] text-gray-600">
+                         <div className="flex items-center gap-1"><Phone size={12} className="text-gray-400"/> {activePatient?.patientPhone || patientData?.phone || 'N/A'}</div>
+                         <div className="flex items-center gap-1"><Mail size={12} className="text-gray-400"/> {patientData?.email || 'N/A'}</div>
+                         <div className="flex items-center gap-1"><MapPin size={12} className="text-gray-400"/> {patientData?.address || 'N/A'}</div>
                       </div>
                    </div>
                    
-                   <div className="flex flex-wrap lg:grid lg:grid-cols-2 gap-4 text-xs border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 w-full lg:w-auto flex-shrink-0">
+                   <div className="flex flex-wrap lg:grid lg:grid-cols-2 gap-2 text-[10px] border-t lg:border-t-0 lg:border-l border-gray-100 pt-2 lg:pt-0 lg:pl-4 w-full lg:w-[320px] flex-shrink-0">
                       <div>
                         <p className="text-gray-400 mb-1">Blood Group</p>
                         <p className="font-bold text-gray-900">{patientData?.bloodGroup || 'N/A'}</p>
@@ -797,15 +796,23 @@ const DoctorDashboard = () => {
                         <p className="font-bold text-gray-900">{patientData?.lastVisit ? new Date(patientData.lastVisit).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</p>
                       </div>
                       
-                      {patientData?.medicalHistory?.length > 0 && (
-                        <div className="col-span-2 mt-2 pt-2 border-t border-gray-100">
-                          <div className="flex justify-between items-center mb-1">
-                             <p className="text-gray-400 text-[10px]">Previous Private Note ({new Date(patientData.medicalHistory[patientData.medicalHistory.length-1].date).toLocaleDateString('en-GB')})</p>
-                             <button onClick={() => setShowHistoryLocker(true)} className="text-[9px] font-bold text-teal-600 hover:underline">View All Notes</button>
+                      {(() => {
+                        const drName = localStorage.getItem('userName');
+                        const prevNote = patientData?.medicalHistory?.slice().reverse().find(h => h.doctorName === drName && h.symptoms && h.symptoms.trim() !== '');
+                        return (
+                          <div className="col-span-2 mt-1 pt-1 border-t border-gray-100">
+                            <div className="flex justify-between items-center mb-0.5">
+                               <p className="text-gray-400 text-[9px]">
+                                  {prevNote ? `Previous Private Note (${new Date(prevNote.date).toLocaleDateString('en-GB')})` : 'Previous Private Note'}
+                               </p>
+                               <button onClick={() => setShowHistoryLocker(true)} className="text-[9px] font-bold text-teal-600 hover:underline">View All</button>
+                            </div>
+                            <p className="font-medium text-gray-700 italic line-clamp-1 max-w-sm text-[9px]">
+                               {prevNote ? `"${prevNote.symptoms}"` : "No previous notes recorded by you."}
+                            </p>
                           </div>
-                          <p className="font-medium text-gray-700 italic line-clamp-2 max-w-sm text-[10px]">"{patientData.medicalHistory[patientData.medicalHistory.length-1].symptoms || 'No previous notes recorded.'}"</p>
-                        </div>
-                      )}
+                        );
+                      })()}
                    </div>
                 </div>
                 
