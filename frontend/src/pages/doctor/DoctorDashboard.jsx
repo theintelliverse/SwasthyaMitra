@@ -113,7 +113,7 @@ const DoctorDashboard = () => {
   ]);
   const [templateSearch, setTemplateSearch] = useState("");
   const [activeTab, setActiveTab] = useState('All');
-  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [isOnBreak, setIsOnBreak] = useState(() => localStorage.getItem('break_active') === 'true');
   const [showProfile, setShowProfile] = useState(false);
   const [activePatient, setActivePatient] = useState(null);
   const [isConsultationMode, setIsConsultationMode] = useState(false);
@@ -121,6 +121,24 @@ const DoctorDashboard = () => {
   const [workStartTime] = useState(new Date());
   const [elapsedWorkTime, setElapsedWorkTime] = useState("0h 0m");
   const [showQuickActions, setShowQuickActions] = useState(false);
+  // Break management — persisted to localStorage so reload survives
+  const [selectedBreakMins, setSelectedBreakMins] = useState(() => parseInt(localStorage.getItem('break_duration_mins') || '10', 10));
+  const [breakCountdown, setBreakCountdown] = useState(() => {
+    const startedAt = localStorage.getItem('break_started_at');
+    const durMins = parseInt(localStorage.getItem('break_duration_mins') || '10', 10);
+    if (localStorage.getItem('break_active') === 'true' && startedAt) {
+      const elapsed = Math.floor((Date.now() - parseInt(startedAt, 10)) / 1000);
+      const remaining = durMins * 60 - elapsed;
+      return remaining > 0 ? remaining : 0;
+    }
+    return 0;
+  });
+  const [breakStartedAt, setBreakStartedAt] = useState(() => {
+    const s = localStorage.getItem('break_started_at');
+    return s ? new Date(parseInt(s, 10)) : null;
+  });
+  const [breaksTaken, setBreaksTaken] = useState(() => parseInt(localStorage.getItem('breaks_taken_today') || '0', 10));
+  const [breakTimerRef, setBreakTimerRef] = useState(null);
 
   const [notes, setNotes] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
@@ -225,6 +243,44 @@ const DoctorDashboard = () => {
       setIsSyncing(false);
     }
   }, [token, isConsultationMode]);
+
+  // ─── Restore break countdown timer on reload ───────────────────────
+  useEffect(() => {
+    const wasOnBreak = localStorage.getItem('break_active') === 'true';
+    const startedAtMs = parseInt(localStorage.getItem('break_started_at') || '0', 10);
+    const durMins = parseInt(localStorage.getItem('break_duration_mins') || '10', 10);
+    if (wasOnBreak && startedAtMs) {
+      const elapsed = Math.floor((Date.now() - startedAtMs) / 1000);
+      const remaining = durMins * 60 - elapsed;
+      if (remaining > 0) {
+        // Break still in progress — restart the tick
+        const ref = setInterval(() => {
+          setBreakCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(ref);
+              Swal.fire({
+                toast: true, position: 'top-end', icon: 'info',
+                title: '☕ Break time is up!', text: 'Ready to get back to work?',
+                showConfirmButton: true, confirmButtonText: 'Resume',
+                confirmButtonColor: '#0d9488', timer: 30000
+              }).then(r => { if (r.isConfirmed) handleToggleBreak(); });
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        setBreakTimerRef(ref);
+        return () => clearInterval(ref);
+      } else {
+        // Break expired while away — auto-clear
+        localStorage.removeItem('break_active');
+        localStorage.removeItem('break_started_at');
+        setIsOnBreak(false);
+        setBreakCountdown(0);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -445,7 +501,53 @@ const DoctorDashboard = () => {
       const res = await axios.patch(`${API_URL}/api/staff/toggle-status/me`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setIsOnBreak(!res.data.isAvailable);
+      const nowOnBreak = !res.data.isAvailable;
+      setIsOnBreak(nowOnBreak);
+      if (nowOnBreak) {
+        // Starting break — persist to localStorage
+        const startTs = Date.now();
+        const totalSecs = selectedBreakMins * 60;
+        setBreakCountdown(totalSecs);
+        setBreakStartedAt(new Date(startTs));
+        const newCount = breaksTaken + 1;
+        setBreaksTaken(newCount);
+        localStorage.setItem('break_active', 'true');
+        localStorage.setItem('break_started_at', String(startTs));
+        localStorage.setItem('break_duration_mins', String(selectedBreakMins));
+        localStorage.setItem('breaks_taken_today', String(newCount));
+        // countdown tick
+        const ref = setInterval(() => {
+          setBreakCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(ref);
+              localStorage.removeItem('break_active');
+              localStorage.removeItem('break_started_at');
+              setIsOnBreak(false);
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: '☕ Break time is up!',
+                text: 'Ready to get back to work?',
+                showConfirmButton: true,
+                confirmButtonText: 'Resume',
+                confirmButtonColor: '#0d9488',
+                timer: 30000
+              });
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        setBreakTimerRef(ref);
+      } else {
+        // Ending break — clear countdown + localStorage
+        if (breakTimerRef) clearInterval(breakTimerRef);
+        setBreakCountdown(0);
+        setBreakStartedAt(null);
+        localStorage.removeItem('break_active');
+        localStorage.removeItem('break_started_at');
+      }
       fetchDashboardData(false);
     } catch (err) {
       Swal.fire('Error', 'Failed to toggle status', 'error');
@@ -773,25 +875,95 @@ const DoctorDashboard = () => {
 
                 {/* Sidebar */}
                 <div className="lg:col-span-4 space-y-3 flex flex-col">
-                  <div className="hidden lg:block bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-teal-400 rounded-full blur-3xl opacity-10" />
+                  <div className="hidden lg:block rounded-xl p-4 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #134e4a 100%)' }}>
+                    {/* Ambient glow blobs */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-teal-400 rounded-full blur-3xl opacity-10 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-indigo-500 rounded-full blur-3xl opacity-10 pointer-events-none" />
+
                     <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-2.5">
+                      {/* Top row: title + break count */}
+                      <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h3 className="text-xs font-bold">Take a Break</h3>
-                          <p className="text-[8px] text-white/40 mt-0.5">Short breaks improve focus</p>
+                          <h3 className="text-xs font-bold tracking-tight flex items-center gap-1.5">
+                            <Coffee size={12} className={isOnBreak ? 'text-teal-300 animate-bounce' : 'text-white/50'} />
+                            {isOnBreak ? 'On Break' : 'Take a Break'}
+                          </h3>
+                          <p className="text-[8px] text-white/40 mt-0.5">
+                            {isOnBreak ? 'Queue paused · patients notified' : 'Short breaks improve focus'}
+                          </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[8px] font-bold text-white/30 uppercase tracking-wider">Working</p>
-                          <p className="text-sm font-bold text-teal-400">{elapsedWorkTime}</p>
+                        <div className="flex items-center gap-1.5">
+                          {breaksTaken > 0 && (
+                            <span className="text-[7px] font-black bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                              {breaksTaken}×
+                            </span>
+                          )}
+                          <div className="text-right">
+                            <p className="text-[7px] font-bold text-white/30 uppercase tracking-wider">{isOnBreak ? 'Break' : 'Working'}</p>
+                            <p className={`text-xs font-black ${isOnBreak ? 'text-teal-300' : 'text-white/70'}`}>
+                              {isOnBreak && breakCountdown > 0
+                                ? `${String(Math.floor(breakCountdown / 60)).padStart(2,'0')}:${String(breakCountdown % 60).padStart(2,'0')}`
+                                : elapsedWorkTime}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <button onClick={handleToggleBreak}
-                        className={`w-full py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all active:scale-[0.98] ${isOnBreak ? 'bg-teal-500 hover:bg-teal-400 text-white shadow-md shadow-teal-500/30' : 'bg-white/10 hover:bg-white/15 text-white/80 border border-white/10'}`}>
-                        {isOnBreak ? 'Resume Work' : 'Start Break'}
+
+                      {/* Countdown arc + icon */}
+                      {isOnBreak && (
+                        <div className="flex justify-center mb-2.5">
+                          <div className="relative w-14 h-14">
+                            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="4"/>
+                              <circle
+                                cx="28" cy="28" r="24" fill="none"
+                                stroke="#14b8a6" strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeDasharray={`${2 * Math.PI * 24}`}
+                                strokeDashoffset={`${2 * Math.PI * 24 * (1 - breakCountdown / (selectedBreakMins * 60))}`}
+                                style={{ transition: 'stroke-dashoffset 1s linear' }}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Coffee size={18} className="text-teal-300 animate-pulse" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Duration presets (only when not on break) */}
+                      {!isOnBreak && (
+                        <div className="flex gap-1.5 mb-2.5">
+                          {[5, 10, 15].map(m => (
+                            <button
+                              key={m}
+                              onClick={() => setSelectedBreakMins(m)}
+                              className={`flex-1 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
+                                selectedBreakMins === m
+                                  ? 'bg-teal-500/25 border-teal-400/50 text-teal-300'
+                                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
+                              }`}
+                            >
+                              {m}m
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* CTA button */}
+                      <button
+                        onClick={handleToggleBreak}
+                        className={`w-full py-2 rounded-lg font-black text-[10px] uppercase tracking-wider transition-all active:scale-[0.97] ${
+                          isOnBreak
+                            ? 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400/30'
+                            : 'bg-white/10 hover:bg-white/18 text-white/80 border border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        {isOnBreak ? '↩ Resume Work' : `Start ${selectedBreakMins}m Break`}
                       </button>
                     </div>
                   </div>
+
 
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 flex-1 flex flex-col" style={{ minHeight: '180px' }}>
                     <div className="flex justify-between items-center mb-2.5">

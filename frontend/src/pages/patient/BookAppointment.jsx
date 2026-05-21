@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -257,7 +257,7 @@ const BookAppointment = () => {
             if (res.data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: formData.rescheduleAppointmentId ? 'Reschedule Submitted! 🗓️' : 'Booking Confirmed! 🎉',
+                    title: formData.rescheduleAppointmentId ? 'Reschedule Submitted! ðŸ—“ï¸' : 'Booking Confirmed! ðŸŽ‰',
                     text: formData.rescheduleAppointmentId 
                         ? 'Your reschedule request has been submitted to the receptionist for confirmation.' 
                         : 'Your request is being processed by the clinical team.',
@@ -451,7 +451,7 @@ const BookAppointment = () => {
                                 </div>
                             )}
 
-                            {/* ── DATE SELECTION ── */}
+                            {/* â”€â”€ DATE SELECTION â”€â”€ */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                                 <div className="flex items-center justify-between px-5 pt-5 pb-3">
                                     <div className="flex items-center gap-2.5">
@@ -468,7 +468,7 @@ const BookAppointment = () => {
                                     <span className="text-[9px] font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full uppercase tracking-widest border border-teal-100">14 Days</span>
                                 </div>
 
-                                {/* Date Strip — tight, scrollable */}
+                                {/* Date Strip â€” tight, scrollable */}
                                 <div className="flex gap-2.5 overflow-x-auto px-5 pb-5 no-scrollbar">
                                     {dateStrip.map((date, idx) => {
                                         const isSelected = selectedDate.toDateString() === date.toDateString();
@@ -492,7 +492,7 @@ const BookAppointment = () => {
                                 </div>
                             </div>
 
-                            {/* ── SLOT SELECTION ── */}
+                            {/* â”€â”€ SLOT SELECTION â”€â”€ */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                                 {/* Header + Mode Toggle */}
                                 <div className="px-5 pt-5 pb-3">
@@ -522,7 +522,7 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
 
-                                {/* Slot Grid — quick mode */}
+                                {/* Slot Grid â€” quick mode */}
                                 {formData.slotMode === 'quick' && (
                                     <div className="px-5 pb-5">
                                         {availableSlots.length > 0 ? (
@@ -580,9 +580,9 @@ const BookAppointment = () => {
                                                     : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
                                             }`}
                                         >
-                                            <h4 className="text-sm font-black mb-1">🌅 Morning Shift</h4>
+                                            <h4 className="text-sm font-black mb-1">ðŸŒ… Morning Shift</h4>
                                             <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().openingTime} – {getClinicTimingConfig().breakStartTime}
+                                                {getClinicTimingConfig().openingTime} â€“ {getClinicTimingConfig().breakStartTime}
                                             </p>
                                         </button>
 
@@ -607,9 +607,9 @@ const BookAppointment = () => {
                                                     : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
                                             }`}
                                         >
-                                            <h4 className="text-sm font-black mb-1">🌇 Afternoon Shift</h4>
+                                            <h4 className="text-sm font-black mb-1">ðŸŒ‡ Afternoon Shift</h4>
                                             <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().breakEndTime} – {getClinicTimingConfig().closingTime}
+                                                {getClinicTimingConfig().breakEndTime} â€“ {getClinicTimingConfig().closingTime}
                                             </p>
                                         </button>
                                     </div>
@@ -638,11 +638,11 @@ const BookAppointment = () => {
                                 )}
                             </div>
 
-                            {/* ── WAIT INTELLIGENCE + VERIFY BOOKING ── */}
+                            {/* â”€â”€ WAIT INTELLIGENCE + VERIFY BOOKING â”€â”€ */}
                             <div
                                 onClick={() => {
                                     Swal.fire({
-                                        title: 'Predictive Wait Intelligence 🧠',
+                                        title: 'Predictive Wait Intelligence ðŸ§ ',
                                         html: `
                                             <div class="text-left space-y-4 text-slate-600 font-sans mt-4">
                                                 <p>This estimate is dynamically computed using SwasthyaMitra's AI Engine based on:</p>
@@ -694,217 +694,6 @@ const BookAppointment = () => {
                                 </button>
                             </div>
 
-                        </div>
-                    )}
-
-
-                            {/* Date Selection Strip */}
-                            <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div>
-                                        <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                                            <CalendarDays size={24} className="text-teal-600" /> Choose Date
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
-                                            Today: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        </p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-3 py-1 rounded-full uppercase tracking-widest border border-teal-100">Next 14 Days</span>
-                                </div>
-                                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                                    {dateStrip.map((date, idx) => {
-                                        const isSelected = selectedDate.toDateString() === date.toDateString();
-                                        return (
-                                            <button
-                                                key={idx}
-                                                onClick={() => { setSelectedDate(date); setFormData({ ...formData, appointmentDate: '' }); }}
-                                                className={`flex flex-col items-center min-w-[80px] p-5 rounded-[2rem] border-2 transition-all ${isSelected ? 'border-teal-500 bg-teal-600 text-white shadow-xl scale-105' : 'border-slate-50 bg-slate-50/50 text-slate-400 hover:border-teal-100 hover:bg-white'}`}
-                                            >
-                                                <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-200' : 'text-slate-300'}`}>
-                                                    {idx === 0 ? 'Today' : WEEKDAY_MAP[date.getDay()].slice(0, 3)}
-                                                </span>
-                                                <span className="text-xl font-black">{date.getDate()}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Slot Selection */}
-                            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                                        <Clock size={24} className="text-teal-600" /> Select Time Slot
-                                    </h3>
-                                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-                                        <button 
-                                            onClick={() => setFormData({ ...formData, slotMode: 'quick', appointmentDate: '' })}
-                                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.slotMode === 'quick' ? 'bg-white text-teal-600 shadow-sm border border-slate-100' : 'text-slate-400'}`}
-                                        >
-                                            Hourly Slots
-                                        </button>
-                                        <button 
-                                            onClick={() => setFormData({ ...formData, slotMode: 'shift', appointmentDate: '' })}
-                                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.slotMode === 'shift' ? 'bg-white text-teal-600 shadow-sm border border-slate-100' : 'text-slate-400'}`}
-                                        >
-                                            Shift Booking
-                                        </button>
-                                        <button 
-                                            onClick={() => setFormData({ ...formData, slotMode: 'manual', appointmentDate: '' })}
-                                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.slotMode === 'manual' ? 'bg-white text-teal-600 shadow-sm border border-slate-100' : 'text-slate-400'}`}
-                                        >
-                                            Custom Time
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                {formData.slotMode === 'quick' && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {availableSlots.length > 0 ? availableSlots.map((slot, idx) => {
-                                            const slotKey = toLocalDateTimeKey(slot);
-                                            const isActive = formData.appointmentDate === slotKey;
-                                            return (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => setFormData({ ...formData, appointmentDate: slotKey })}
-                                                    className={`p-5 rounded-2xl border-2 transition-all group text-center ${isActive ? 'border-teal-500 bg-teal-600 text-white shadow-xl shadow-teal-500/10' : 'border-slate-50 bg-slate-50/30 text-slate-600 hover:border-teal-200 hover:bg-white'}`}
-                                                >
-                                                    <div className="text-base font-black tracking-tight">{slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
-                                                </button>
-                                            );
-                                        }) : (
-                                            <div className="col-span-full py-12 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
-                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No availability on this date</p>
-                                                <p className="text-[9px] text-slate-300 mt-2 font-medium">Please select another date from the timeline above.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {formData.slotMode === 'shift' && (
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <button
-                                            disabled={(() => {
-                                                const now = new Date();
-                                                if (selectedDate.toDateString() !== now.toDateString()) return false;
-                                                const [breakStartHour, breakStartMinute] = getClinicTimingConfig().breakStartTime.split(':').map(Number);
-                                                const breakStart = new Date(selectedDate);
-                                                breakStart.setHours(breakStartHour, breakStartMinute, 0, 0);
-                                                return now >= breakStart;
-                                            })()}
-                                            onClick={() => {
-                                                const { openingTime } = getClinicTimingConfig();
-                                                const slotKey = `${selectedDate.toISOString().split('T')[0]}T${openingTime}`;
-                                                setFormData({ ...formData, appointmentDate: slotKey });
-                                            }}
-                                            className={`p-8 rounded-[2.5rem] border-2 transition-all text-left relative overflow-hidden group disabled:opacity-40 disabled:cursor-not-allowed ${
-                                                formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime)
-                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-xl shadow-teal-500/10'
-                                                    : 'border-slate-50 bg-slate-50/30 text-slate-600 hover:border-teal-200 hover:bg-white'
-                                            }`}
-                                        >
-                                            <h4 className="text-xl font-black mb-2">Morning Shift</h4>
-                                            <p className={`text-xs font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-200' : 'text-slate-400'}`}>
-                                                Timing: {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().breakStartTime}
-                                            </p>
-                                        </button>
-
-                                        <button
-                                            disabled={(() => {
-                                                const now = new Date();
-                                                if (selectedDate.toDateString() !== now.toDateString()) return false;
-                                                const [closeHour, closeMinute] = getClinicTimingConfig().closingTime.split(':').map(Number);
-                                                const closeTime = new Date(selectedDate);
-                                                closeTime.setHours(closeHour, closeMinute, 0, 0);
-                                                return now >= closeTime;
-                                            })()}
-                                            onClick={() => {
-                                                const { breakEndTime } = getClinicTimingConfig();
-                                                const slotKey = `${selectedDate.toISOString().split('T')[0]}T${breakEndTime}`;
-                                                setFormData({ ...formData, appointmentDate: slotKey });
-                                            }}
-                                            className={`p-8 rounded-[2.5rem] border-2 transition-all text-left relative overflow-hidden group disabled:opacity-40 disabled:cursor-not-allowed ${
-                                                formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime)
-                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-xl shadow-teal-500/10'
-                                                    : 'border-slate-50 bg-slate-50/30 text-slate-600 hover:border-teal-200 hover:bg-white'
-                                            }`}
-                                        >
-                                            <h4 className="text-xl font-black mb-2">Afternoon / Evening Shift</h4>
-                                            <p className={`text-xs font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-200' : 'text-slate-400'}`}>
-                                                Timing: {getClinicTimingConfig().breakEndTime} - {getClinicTimingConfig().closingTime}
-                                            </p>
-                                        </button>
-                                    </div>
-                                )}
-
-                                {formData.slotMode === 'manual' && (
-                                    <div className="grid md:grid-cols-2 gap-8 max-w-2xl">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Selected Date</label>
-                                            <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-900 flex items-center justify-between">
-                                                {selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                <Calendar size={18} className="text-teal-600" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Select Hour</label>
-                                            <input 
-                                                type="time" 
-                                                className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-black text-slate-900 shadow-inner"
-                                                value={formData.appointmentDate.split('T')[1] || '10:00'}
-                                                onChange={(e) => setFormData({ ...formData, appointmentDate: `${selectedDate.toISOString().split('T')[0]}T${e.target.value}` })}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div 
-                                onClick={() => {
-                                    Swal.fire({
-                                        title: 'Predictive Wait Intelligence 🧠',
-                                        html: `
-                                            <div class="text-left space-y-4 text-slate-600 font-sans mt-4">
-                                                <p>This estimate is dynamically computed using SwasthyaMitra's AI Engine based on: </p>
-                                                <ul class="list-disc pl-5 space-y-2 text-xs">
-                                                    <li>Doctor's average consultation duration.</li>
-                                                    <li>Today's current active queue load & scheduling density.</li>
-                                                    <li>Statistical delay factor (typically 12-15 minutes per ahead patient).</li>
-                                                </ul>
-                                                <div class="p-4 bg-teal-50 rounded-2xl border border-teal-100 mt-6 text-center">
-                                                    <p class="text-teal-700 font-black text-sm">Estimated Waiting: ~${estimatedWaitTime || 15} mins</p>
-                                                </div>
-                                            </div>
-                                        `,
-                                        confirmButtonColor: '#0D9488',
-                                        confirmButtonText: 'Understood',
-                                        customClass: {
-                                            popup: 'rounded-[2rem]',
-                                            confirmButton: 'rounded-xl px-10 py-3 font-black uppercase text-[10px] tracking-widest'
-                                        }
-                                    });
-                                }}
-                                className="bg-teal-900 p-10 rounded-[3.5rem] text-white flex flex-col md:flex-row justify-between items-center gap-10 shadow-2xl relative overflow-hidden cursor-pointer hover:bg-teal-850 active:scale-[0.99] transition-all"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-transparent pointer-events-none" />
-                                <div className="flex items-center gap-8 relative z-10">
-                                    <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-teal-400 shadow-inner"><Activity size={32} /></div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] mb-2">Predictive Wait Intelligence</p>
-                                        <h4 className="text-3xl font-black tracking-tight">Est. Wait: {estimatedWaitTime || '---'} Mins</h4>
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setStep(4);
-                                    }}
-                                    disabled={!formData.appointmentDate}
-                                    className="w-full md:w-auto px-12 py-5 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale rounded-2xl text-white font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-teal-500/20 flex items-center justify-center gap-4 active:scale-95"
-                                >
-                                    Verify Booking <ArrowRight size={20} />
-                                </button>
-                            </div>
                         </div>
                     )}
 
