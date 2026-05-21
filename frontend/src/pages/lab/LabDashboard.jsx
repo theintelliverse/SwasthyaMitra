@@ -1209,24 +1209,23 @@ const LabDashboard = () => {
                     <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-2 snap-x snap-mandatory">
                       {/* Sample Cards */}
                       {labQueue.slice(0, 4).map((patient, idx) => (
-                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-lg p-3 hover:border-teal-300 transition-colors shrink-0 snap-start w-[280px]">
-                          <div className="flex items-start gap-2 mb-2">
-                            <div className="w-6 h-6 bg-blue-50 text-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                              {patient.currentStage === 'Lab-Pending' ? <Beaker size={12} /> : patient.currentStage === 'Lab-Processing' ? <TestTubes size={12} /> : <FileCheck size={12} />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-bold text-gray-900 truncate">SMP-2025-{patient.tokenNumber}</p>
-                              <p className="text-[9px] text-gray-500 truncate">{patient.patientName}</p>
-                            </div>
+                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-lg p-2.5 hover:border-teal-300 transition-colors shrink-0 snap-start w-[320px] flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            {patient.currentStage === 'Lab-Pending' ? <Beaker size={14} /> : patient.currentStage === 'Lab-Processing' ? <TestTubes size={14} /> : <FileCheck size={14} />}
                           </div>
-                          <p className="text-[9px] font-semibold text-gray-700 mb-2 truncate">{patient.requiredTest || 'CBC, RBS'}</p>
-                          <div className="flex items-center justify-between border-t border-gray-100 pt-2">
-                            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                              {patient.currentStage === 'Lab-Pending' ? 'Testing' : patient.currentStage === 'Lab-Processing' ? 'In Process' : 'Collected'}
-                            </span>
-                            <span className="text-[8px] font-bold text-gray-500">
-                              {new Date(patient.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                          <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <div className="flex justify-between items-center mb-0.5">
+                              <p className="text-[11px] font-bold text-gray-900 truncate">SMP-{patient.tokenNumber}</p>
+                              <span className="text-[8px] font-bold text-gray-500">
+                                {new Date(patient.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p className="text-[9px] text-gray-500 truncate max-w-[120px]">{patient.patientName}</p>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                                {patient.currentStage === 'Lab-Pending' ? 'Testing' : patient.currentStage === 'Lab-Processing' ? 'In Process' : 'Collected'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       ))}
