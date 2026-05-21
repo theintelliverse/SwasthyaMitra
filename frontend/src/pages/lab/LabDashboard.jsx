@@ -1223,24 +1223,24 @@ const LabDashboard = () => {
                 </div>
 
                 {/* --- RIGHT COLUMN --- */}
-                <div className="lg:col-span-1 space-y-8">
+                <div className="lg:col-span-1 space-y-4">
                   {/* Sample Status Pie Chart */}
-                  <div className="bg-white p-6 rounded-xl border border-gray-200">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-bold text-gray-900">Sample Status Overview</h2>
-                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-xs font-semibold hover:text-teal-700">View Details</button>
+                  <div className="bg-white p-4 rounded-xl border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-sm font-bold text-gray-900">Sample Status Overview</h2>
+                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-[10px] font-semibold hover:text-teal-700">View Details</button>
                     </div>
-                    <div className="flex items-center justify-center mb-6 relative min-h-[180px]">
+                    <div className="flex items-center justify-center mb-4 relative min-h-[160px]">
                       {sampleStatusData.length > 0 && stats.total > 0 ? (
                         <>
-                          <ResponsiveContainer width="100%" height={180}>
+                          <ResponsiveContainer width="100%" height={160}>
                             <PieChart>
                               <Pie
                                 data={sampleStatusData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={55}
-                                outerRadius={80}
+                                innerRadius={50}
+                                outerRadius={70}
                                 paddingAngle={2}
                                 dataKey="value"
                               >
@@ -1252,22 +1252,22 @@ const LabDashboard = () => {
                             </PieChart>
                           </ResponsiveContainer>
                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-2xl font-bold text-gray-900">{stats.total}</span>
-                            <span className="text-xs text-gray-500">Total Samples</span>
+                            <span className="text-xl font-bold text-gray-900 leading-none">{stats.total}</span>
+                            <span className="text-[10px] text-gray-500 mt-1">Total Samples</span>
                           </div>
                         </>
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-[180px] text-gray-400">
-                          <Activity size={32} className="opacity-20 mb-2" />
-                          <p className="text-xs">No data to visualize</p>
+                        <div className="flex flex-col items-center justify-center h-[160px] text-gray-400">
+                          <Activity size={24} className="opacity-20 mb-2" />
+                          <p className="text-[10px]">No data to visualize</p>
                         </div>
                       )}
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {sampleStatusData.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-3">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <div key={item.name} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
                             <span className="text-gray-700 font-medium">{item.name}</span>
                           </div>
                           <span className="font-bold text-gray-900">
@@ -1283,61 +1283,61 @@ const LabDashboard = () => {
 
                   {/* Dashboard Summary */}
                   <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                      <h2 className="text-lg font-bold text-gray-900">Dashboard Summary</h2>
-                      <div className="flex items-center gap-1 text-sm font-semibold text-gray-600 cursor-pointer">
-                        This Month <ChevronDown size={14} />
+                    <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                      <h2 className="text-sm font-bold text-gray-900">Dashboard Summary</h2>
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 cursor-pointer">
+                        This Month <ChevronDown size={12} />
                       </div>
                     </div>
-                    <div className="p-6 space-y-5">
+                    <div className="p-4 space-y-3">
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-purple-50 text-purple-600 rounded flex items-center justify-center">
-                            <FileCheck size={16} />
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 bg-purple-50 text-purple-600 rounded flex items-center justify-center">
+                            <FileCheck size={14} />
                           </div>
-                          <p className="text-sm font-semibold text-gray-700">Reports Generated</p>
+                          <p className="text-xs font-semibold text-gray-700">Reports Generated</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">{stats.completed}</p>
-                          <span className="text-xs font-bold text-green-600 w-10 text-right">
-                            {stats.completed > 0 ? `↑ ${Math.min(100, Math.round((stats.completed / (stats.total || 1)) * 100))}%` : '0%'}
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 text-sm">{stats.completed}</p>
+                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">
+                            {stats.completed > 0 ? `+${Math.min(100, Math.round((stats.completed / (stats.total || 1)) * 100))}%` : '0%'}
                           </span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded flex items-center justify-center">
-                            <Clock size={16} />
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 bg-teal-50 text-teal-600 rounded flex items-center justify-center">
+                            <Clock size={14} />
                           </div>
-                          <p className="text-sm font-semibold text-gray-700">Average Turnaround Time</p>
+                          <p className="text-xs font-semibold text-gray-700">Turnaround Time</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">{getAvgTurnaroundTime()}</p>
-                          <span className="text-xs font-bold text-green-600 w-10 text-right">↓ 8%</span>
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 text-sm">{getAvgTurnaroundTime()}</p>
+                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">- 8%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-50 text-green-600 rounded flex items-center justify-center">
-                            <Activity size={16} />
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 bg-green-50 text-green-600 rounded flex items-center justify-center">
+                            <Activity size={14} />
                           </div>
-                          <p className="text-sm font-semibold text-gray-700">Test Accuracy</p>
+                          <p className="text-xs font-semibold text-gray-700">Test Accuracy</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">{getDynamicAccuracy()}</p>
-                          <span className="text-xs font-bold text-green-600 w-10 text-right">↑ 2%</span>
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 text-sm">{getDynamicAccuracy()}</p>
+                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">+ 2%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-red-50 text-red-600 rounded flex items-center justify-center">
-                            <RefreshCw size={16} />
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 bg-red-50 text-red-600 rounded flex items-center justify-center">
+                            <RefreshCw size={14} />
                           </div>
-                          <p className="text-sm font-semibold text-gray-700">Repeat Tests</p>
+                          <p className="text-xs font-semibold text-gray-700">Repeat Tests</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-bold text-gray-900">{getDynamicRepeatTests()}</p>
-                          <span className="text-xs font-bold text-red-600 w-10 text-right">0%</span>
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 text-sm">{getDynamicRepeatTests()}</p>
+                          <span className="text-[10px] font-bold text-red-600 w-8 text-right">0%</span>
                         </div>
                       </div>
                     </div>

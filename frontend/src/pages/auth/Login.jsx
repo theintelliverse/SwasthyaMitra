@@ -113,11 +113,11 @@ const Login = () => {
       <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-marigold/5 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-saffron/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-      <div className="flex-grow flex flex-col justify-center items-center px-6 py-12 relative z-10">
+      <div className="flex-grow flex flex-col justify-center items-center px-6 py-6 relative z-10">
 
         {/* Brand Header */}
         <div
-          className="flex items-center gap-4 mb-10 cursor-pointer group transition-all duration-500 hover:opacity-80"
+          className="flex items-center gap-4 mb-6 cursor-pointer group transition-all duration-500 hover:opacity-80"
           onClick={() => navigate('/')}
         >
           <div className="w-14 h-14 bg-gradient-to-br from-marigold to-saffron rounded-2xl flex items-center justify-center shadow-2xl shadow-marigold/30 group-hover:rotate-[10deg] transition-all duration-500">
@@ -131,10 +131,10 @@ const Login = () => {
 
         {/* Login Card */}
         <div className="w-full max-w-md">
-          <div className="bg-white/70 backdrop-blur-xl border border-white p-8 sm:p-12 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(26,60,52,0.08)] relative overflow-hidden group">
+          <div className="bg-white/70 backdrop-blur-xl border border-white p-6 sm:p-8 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(26,60,52,0.08)] relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-marigold/20 via-marigold to-marigold/20"></div>
 
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
               <h2 className="text-3xl font-heading font-bold mb-2 text-teak">Clinic Portal</h2>
               <p className="text-sm text-khaki font-medium">Authenticate to access your facility dashboard</p>
             </div>
@@ -170,7 +170,7 @@ const Login = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Clinic Code */}
               <div className="space-y-2 group/field">
                 <label className={`text-[10px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/60'}`}>
@@ -183,7 +183,7 @@ const Login = () => {
                     required
                     placeholder="e.g. CITY01"
                     autoComplete="off"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
                       }`}
                     value={formData.clinicCode}
                     onFocus={() => setFocusedField('clinicCode')}
@@ -205,7 +205,7 @@ const Login = () => {
                     required
                     placeholder="name@clinic.com"
                     autoComplete="email"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium placeholder:text-khaki/30 text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium placeholder:text-khaki/30 text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
                       }`}
                     value={formData.email}
                     onFocus={() => setFocusedField('email')}
@@ -236,9 +236,9 @@ const Login = () => {
                     required
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className={`w-full pl-12 pr-6 py-4 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
+                    className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-medium text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'
                       }`}
-                    lik value={formData.password}
+                    value={formData.password}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
                     onChange={(e) => handleInputChange('password', e.target.value)}
@@ -250,7 +250,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-5 bg-gradient-to-r from-marigold to-saffron text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl shadow-marigold/20 hover:shadow-marigold/40 transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+                  className="w-full py-3.5 bg-gradient-to-r from-marigold to-saffron text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl shadow-marigold/20 hover:shadow-marigold/40 transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
                 >
                   {loading ? (
                     <RefreshCw className="animate-spin" size={20} />
@@ -264,7 +264,7 @@ const Login = () => {
               </div>
             </form>
 
-            <div className="mt-12 text-center pt-8 border-t border-sandstone/30">
+            <div className="mt-8 text-center pt-6 border-t border-sandstone/30">
               <p className="text-xs text-khaki font-medium">
                 New facility?{' '}
                 <button
@@ -277,7 +277,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="mt-10 flex items-center justify-center gap-6 opacity-40">
+          <div className="mt-8 flex items-center justify-center gap-6 opacity-40">
             <div className="flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-marigold" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-teak">HIPAA Compliant</span>
