@@ -962,16 +962,30 @@ const LabDashboard = () => {
                                 <p className="font-semibold text-gray-700">Loading requests...</p>
                               </td>
                             </tr>
-                          ) : paginatedQueue.length === 0 ? (
-                            <tr>
-                              <td colSpan="7" className="px-3 py-12 text-center text-gray-500">
-                                <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
-                                <p className="font-semibold text-gray-700">No test requests found</p>
-                                <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
-                              </td>
-                            </tr>
                           ) : (
-                            paginatedQueue.map((request) => {
+                            Array.from({ length: itemsPerPage }).map((_, index) => {
+                              const request = paginatedQueue[index];
+                              if (!request) {
+                                if (index === 0 && paginatedQueue.length === 0) {
+                                  return (
+                                    <tr key={`empty-state`}>
+                                      <td colSpan="7" className="px-3 py-12 text-center text-gray-500 h-[64px]">
+                                        <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
+                                        <p className="font-semibold text-gray-700">No test requests found</p>
+                                        <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+                                return (
+                                  <tr key={`dummy-${index}`} className="opacity-0 pointer-events-none border-b border-transparent">
+                                    <td className="px-3 py-3 align-middle h-[64px]" colSpan="7">
+                                      <span className="invisible">Dummy</span>
+                                    </td>
+                                  </tr>
+                                );
+                              }
+
                               const initials = request.patientName
                                 ? request.patientName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                                 : 'PT';
