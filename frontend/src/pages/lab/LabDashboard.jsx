@@ -112,7 +112,7 @@ const LabDashboard = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalPatient, setUploadModalPatient] = useState(null);
   const [selectedUploadFiles, setSelectedUploadFiles] = useState([]);
-  const itemsPerPage = 8;
+  const itemsPerPage = 3;
 
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
