@@ -51,22 +51,23 @@ const LabMetricCard = ({ title, value, change, icon, color }) => {
     .replace('Pending Reports', 'Pending');
 
   return (
-    <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col items-center md:items-start text-center md:text-left h-24 justify-center min-w-[70px]">
-      <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full mb-1 md:mb-1.5 gap-1 md:gap-0">
-        <h3 className="hidden md:block text-[10px] font-black text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
-        <div className={`p-1.5 rounded-lg shrink-0 ${colorMap[color]} group-hover:scale-110 transition-transform`}>
+    <div className="bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm hover:shadow hover:border-teal-200 cursor-pointer transition-all flex items-center justify-between gap-3 min-w-[130px] md:w-full group">
+      <div className="flex items-center gap-2.5">
+        <div className={`p-1.5 rounded-lg ${colorMap[color]} group-hover:scale-110 transition-transform`}>
           {icon}
         </div>
-      </div>
-      <h3 className="md:hidden text-[8px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
-      <p className="text-sm md:text-2xl font-black text-gray-900 mb-0">{value}</p>
-      {change && (
-        <div className="hidden md:flex items-center gap-1 mt-0.5">
-          <TrendingUp size={10} className={change.startsWith('+') ? 'text-green-500' : 'text-red-500'} />
-          <span className={`text-[9px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</span>
-          <span className="text-[10px] text-gray-400 hidden sm:inline">from yesterday</span>
+        <div className="flex flex-col text-left">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{shortTitle}</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm md:text-lg font-black text-gray-900 leading-none">{value}</span>
+            {change && (
+              <span className={`text-[9px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                {change}
+              </span>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
