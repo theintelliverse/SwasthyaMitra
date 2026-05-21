@@ -244,6 +244,7 @@ exports.completeVisit = async (req, res) => {
                 medicines: medicines || [],
                 symptoms: notes
             });
+            patient.lastVisit = Date.now();
             await patient.save();
         }
 

@@ -9,6 +9,13 @@ const patientSchema = mongoose.Schema({
   age: { type: Number },
   gender: { type: String, enum: ['Male', 'Female', 'Other'] },
   bloodGroup: { type: String },
+  dob: { type: Date },
+  allergies: { type: String },
+  occupation: { type: String },
+  email: { type: String },
+  address: { type: String },
+  lastVisit: { type: Date },
+  registeredOn: { type: Date, default: Date.now },
 
   vitals: [{
     bloodPressure: String,
@@ -23,7 +30,7 @@ const patientSchema = mongoose.Schema({
   }],
 
   medicalHistory: [{
-    // 🔑 ADD THIS: Link to the specific visit session
+    // dY"` ADD THIS: Link to the specific visit session
     visitId: { type: String },
     date: { type: Date, default: Date.now },
     doctorName: String,
@@ -33,10 +40,12 @@ const patientSchema = mongoose.Schema({
     prescription: String,
     medicines: [
       {
-        name: String, // Medicine name (Kyare kai Vastu)
-        time: String, // When to take (Savar/Bapor/Sanj)
-        amount: String, // Per dose dosage
-        total: String // Total quantity to purchase
+        name: String,
+        strength: String,
+        whenToTake: String,
+        beforeAfter: String,
+        duration: String,
+        instructions: String
       }
     ]
   }],

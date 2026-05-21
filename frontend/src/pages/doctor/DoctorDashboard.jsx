@@ -23,6 +23,7 @@ import {
   Coffee,
   Play,
   ArrowRight,
+  ArrowLeft,
   CheckCircle2,
   AlertCircle,
   Stethoscope,
@@ -30,7 +31,19 @@ import {
   RefreshCw,
   History,
   Mic,
-  Trash2
+  Trash2,
+  Edit3,
+  Lock,
+  Droplets,
+  Wind,
+  Scale,
+  Thermometer,
+  Mail,
+  MapPin,
+  Phone,
+  Heart,
+  CalendarDays,
+  Save
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import PatientQuickView from '../../components/PatientQuickView';
@@ -314,34 +327,73 @@ const DoctorDashboard = () => {
 
   useEffect(() => {
     if (activePatient && isConsultationMode) {
-      const fetchPatientDetails = async () => {
+      const loadConsultationData = async () => {
+        let fetchedHistory = [];
         try {
           const res = await axios.get(`${API_URL}/api/staff/patient-full-profile/${activePatient.patientPhone}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPatientData(res.data.data);
+          fetchedHistory = res.data.data?.medicalHistory || [];
         } catch (err) {
           console.error(err);
         }
-      };
-      fetchPatientDetails();
 
-      // --- 💾 LOAD CONSULTATION DRAFT ---
-      const savedDraft = localStorage.getItem(`consultation_draft_${activePatient._id}`);
-      if (savedDraft) {
-        try {
-          const { diagnosis: draftDiag, medicines: draftMeds, notes: draftNotes } = JSON.parse(savedDraft);
-          setDiagnosis(draftDiag || "");
-          setMedicines(draftMeds || [{ name: '', time: '', amount: '', total: '' }]);
-          setNotes(draftNotes || "");
-        } catch (e) {
-          console.error("Draft load error:", e);
+        // --- 💾 LOAD CONSULTATION DRAFT OR PREVIOUS PRESCRIPTION ---
+        const savedDraft = localStorage.getItem(`consultation_draft_${activePatient._id}`);
+        if (savedDraft) {
+          try {
+            const { diagnosis: draftDiag, medicines: draftMeds, notes: draftNotes } = JSON.parse(savedDraft);
+            setDiagnosis(draftDiag || "");
+            setMedicines(draftMeds || []);
+            setNotes(draftNotes || "");
+          } catch (e) {
+            console.error("Draft load error:", e);
+          }
+        } else {
+          // Pre-populate with last prescription from SAME DOCTOR
+          const currentDoctorName = localStorage.getItem('userName');
+          const sortedHistory = [...fetchedHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+          const lastVisitSameDoc = sortedHistory.find(v => v.doctorName === currentDoctorName);
+          
+          if (lastVisitSameDoc) {
+             let loadedAny = false;
+             if (lastVisitSameDoc.medicines && lastVisitSameDoc.medicines.length > 0) {
+                 setMedicines(lastVisitSameDoc.medicines);
+                 loadedAny = true;
+             } else {
+                 setMedicines([]);
+             }
+             
+             if (lastVisitSameDoc.symptoms) {
+                 setNotes(lastVisitSameDoc.symptoms);
+                 loadedAny = true;
+             } else {
+                 setNotes("");
+             }
+             
+             if (loadedAny) {
+                 const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                 });
+                 Toast.fire({
+                    icon: 'info',
+                    title: 'Loaded previous notes & prescription.'
+                 });
+             }
+          } else {
+             setMedicines([]);
+             setNotes("");
+          }
+          setDiagnosis("");
         }
-      } else {
-        setDiagnosis("");
-        setMedicines([{ name: '', time: '', amount: '', total: '' }]);
-        setNotes("");
-      }
+      };
+      
+      loadConsultationData();
     }
   }, [activePatient, isConsultationMode, token]);
 
@@ -458,6 +510,27 @@ const DoctorDashboard = () => {
       timer: 2000
     });
     setIsConsultationMode(false);
+  };
+
+  const handleSaveNote = () => {
+    if (!activePatient?._id) return;
+    const draftData = {
+      diagnosis,
+      medicines,
+      notes
+    };
+    localStorage.setItem(`consultation_draft_${activePatient._id}`, JSON.stringify(draftData));
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+    Toast.fire({
+      icon: 'success',
+      title: 'Private Note Saved'
+    });
   };
 
   const handleCreateAppointment = async (e) => {
@@ -645,105 +718,283 @@ const DoctorDashboard = () => {
 
         {/* MAIN CONTENT */}
         <main className="flex-grow p-3 md:p-5 overflow-y-auto">
-          <div className="max-w-5xl mx-auto w-full">
+          <div className={isConsultationMode ? "w-full" : "max-w-5xl mx-auto w-full"}>
           {isConsultationMode ? (
             /* CONSULTATION MODE */
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in">
+              {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <button onClick={() => setIsConsultationMode(false)} className="flex items-center gap-2 text-xs font-bold text-teal-600 hover:text-teal-700 transition-all">
-                  <ArrowRight className="rotate-180" size={14} /> Back to Dashboard
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-teal-50 text-teal-600 border border-teal-100 rounded-full text-[10px] font-bold animate-pulse">In Consultation</span>
-                  <span className="text-[10px] text-gray-400">Started {new Date(activePatient.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setIsConsultationMode(false)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
+                    <ArrowLeft size={18} />
+                  </button>
+                  <h1 className="text-lg font-bold text-gray-900">Patient Overview</h1>
+                  <span className="hidden md:block text-xs text-gray-400">Dashboard &gt; Patients &gt; {activePatient?.patientName}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                   {/* Actions removed as requested */}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-1 space-y-4">
-                  <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative">
-                    <button onClick={() => setShowProfile(true)} className="absolute top-4 right-4 text-gray-300 hover:text-teal-600 transition-colors"><Layout size={18} /></button>
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
-                        {activePatient.patientName.charAt(0).toUpperCase()}
+              {/* Patient Info Card */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-3 flex flex-col lg:flex-row gap-3 items-center lg:items-start">
+                   <div className="w-12 h-12 bg-gray-100 rounded-full flex-shrink-0 border-2 border-white shadow-sm overflow-hidden mt-1">
+                      <div className="w-full h-full bg-teal-50 text-teal-600 flex items-center justify-center text-xl font-black">{activePatient?.patientName?.charAt(0).toUpperCase() || 'P'}</div>
+                   </div>
+                   <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h2 className="text-lg font-bold text-gray-900 leading-none">{activePatient?.patientName}</h2>
+                        <span className="px-2 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-[9px] font-bold flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> In Consultation</span>
                       </div>
-                      <div className="min-w-0">
-                        <h2 className="text-lg font-bold text-gray-900 truncate">{activePatient.patientName}</h2>
-                        <p className="text-[10px] font-semibold text-teal-600">Token #{activePatient.tokenNumber}</p>
+                      <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500 mb-1.5">
+                         <span>{patientData?.patientId || 'N/A'}</span>•<span>{patientData?.age ? `${patientData.age} yrs` : 'N/A'}</span>•<span>{patientData?.gender || 'N/A'}</span>•<span>{patientData?.dob ? new Date(patientData.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</span>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { label: 'BP', val: patientData?.vitals?.[0]?.bloodPressure || '120/80' },
-                        { label: 'Temp', val: `${patientData?.vitals?.[0]?.temperature || '98.6'}F` },
-                        { label: 'Pulse', val: `${patientData?.vitals?.[0]?.pulseRate || '72'} bpm` },
-                        { label: 'Sugar', val: `${patientData?.vitals?.[0]?.sugarLevel || '96'} mg/dL` }
-                      ].map(v => (
-                        <div key={v.label} className="bg-gray-50 p-2.5 rounded-lg">
-                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">{v.label}</p>
-                          <p className="font-bold text-xs text-gray-900">{v.val}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-xs font-bold text-gray-900 mb-3">Quick Actions</h3>
-                    <div className="space-y-2">
-                      <button onClick={() => navigate('/doctor/reports')} className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 rounded-xl text-xs font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all"><FlaskConical size={15} /> Order Lab Test</button>
-                      <button type="button" onClick={() => setShowHistoryLocker(true)} className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 rounded-xl text-xs font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all"><History size={15} /> Medical History</button>
-                      <button onClick={() => navigate('/doctor/appointments')} className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 rounded-xl text-xs font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-all"><Calendar size={15} /> Schedule Follow-up</button>
-                    </div>
-                  </div>
+                      <div className="flex flex-wrap items-center gap-6 text-xs text-gray-600">
+                         <div className="flex items-center gap-1.5"><Phone size={14} className="text-gray-400"/> {activePatient?.patientPhone || patientData?.phone || 'N/A'}</div>
+                         <div className="flex items-center gap-1.5"><Mail size={14} className="text-gray-400"/> {patientData?.email || 'N/A'}</div>
+                         <div className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400"/> {patientData?.address || 'N/A'}</div>
+                      </div>
+                   </div>
+                   
+                   <div className="flex flex-wrap lg:grid lg:grid-cols-2 gap-4 text-xs border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 w-full lg:w-auto flex-shrink-0">
+                      <div>
+                        <p className="text-gray-400 mb-1">Blood Group</p>
+                        <p className="font-bold text-gray-900">{patientData?.bloodGroup || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-1">Last Visit</p>
+                        <p className="font-bold text-gray-900">{patientData?.lastVisit ? new Date(patientData.lastVisit).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</p>
+                      </div>
+                   </div>
                 </div>
+                
+                <div className="flex border-t border-gray-100 px-4">
+                   <button className="px-6 py-1.5 border-b-2 border-teal-600 text-teal-600 text-xs font-bold flex items-center gap-2"><Layout size={14}/> Overview</button>
+                   <button onClick={() => setShowHistoryLocker(true)} className="px-6 py-1.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-xs font-bold flex items-center gap-2"><History size={14}/> History</button>
+                </div>
+              </div>
 
-                <div className="lg:col-span-2">
-                  <form onSubmit={handleCompleteVisit} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-xs font-bold text-gray-700">Clinical Diagnosis</label>
-                        {('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && (
-                          <button type="button" onClick={handleStartDictation}
-                            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
-                            <Mic size={11} className={isDictating ? 'animate-bounce' : ''} />
-                            {isDictating ? 'Listening...' : 'Dictate'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {['Fever', 'Dry Cough', 'Headache', 'Hypertension', 'Body Ache', 'Chest Pain', 'Nausea', 'Fatigue', 'Cold & Flu'].map((s) => (
-                          <button key={s} type="button" onClick={() => setDiagnosis(prev => prev ? `${prev}, ${s}` : s)}
-                            className="px-2 py-0.5 bg-gray-50 border border-gray-100 hover:border-teal-300 hover:bg-teal-50 text-gray-500 hover:text-teal-700 rounded text-[9px] font-semibold transition-all">+{s}</button>
-                        ))}
-                      </div>
-                      <textarea value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder="Symptoms, diagnostic codes, observations..."
-                        className="w-full h-24 bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm outline-none focus:border-teal-400 focus:bg-white transition-all text-gray-800" />
+              {/* TOP ROW: Notes, Vitals, Lab Reports */}
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 mt-4">
+                 
+                 {/* Private Notes */}
+                 <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-4">
+                       <h3 className="text-xs font-bold text-gray-900">Doctor's Private Notes</h3>
+                       <div className="flex gap-2 items-center">
+                         {('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && (
+                           <button type="button" onClick={handleStartDictation}
+                             className={`flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
+                             <Mic size={10} className={isDictating ? 'animate-bounce' : ''} />
+                             {isDictating ? 'Listening...' : 'Dictate'}
+                           </button>
+                         )}
+                         <button className="text-[10px] font-bold text-gray-500 hover:text-teal-600 flex items-center gap-1"><Edit3 size={12}/> Edit Notes</button>
+                       </div>
                     </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <label className="text-xs font-bold text-gray-700">Medicines</label>
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => setShowTemplatesModal(true)} className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg flex items-center gap-1"><Layout size={12} /> Templates</button>
-                          <button type="button" onClick={() => setMedicines([...medicines, { name: '', time: '', amount: '', total: '' }])} className="text-[9px] font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-lg flex items-center gap-1"><Plus size={12} /> Add</button>
-                        </div>
-                      </div>
-                      <div className="space-y-2 max-h-56 overflow-y-auto">
-                        {medicines.map((m, idx) => (
-                          <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center group bg-gray-50 p-2.5 rounded-xl">
-                            <input type="text" placeholder="Medicine" value={m.name} onChange={(e) => { const u = [...medicines]; u[idx].name = e.target.value; setMedicines(u); }} className="flex-1 bg-white border border-gray-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-teal-400 transition-all w-full" />
-                            <input type="text" placeholder="Dosage" value={m.amount} onChange={(e) => { const u = [...medicines]; u[idx].amount = e.target.value; setMedicines(u); }} className="w-full sm:w-24 bg-white border border-gray-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-teal-400 transition-all" />
-                            <input type="text" placeholder="Timing" value={m.time || ''} onChange={(e) => { const u = [...medicines]; u[idx].time = e.target.value; setMedicines(u); }} className="w-full sm:w-24 bg-white border border-gray-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-teal-400 transition-all" />
-                            <button type="button" onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} className="p-1.5 text-gray-300 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all shrink-0"><X size={14} /></button>
+                    <div className="flex items-start gap-1.5 mb-2">
+                       <Lock size={10} className="text-orange-400 mt-0.5" />
+                       <p className="text-[9px] font-semibold text-orange-400/80">These notes are only visible to you.</p>
+                    </div>
+                    <textarea 
+                       className="w-full flex-grow min-h-[80px] bg-[#FFFAF0] border border-orange-100/50 rounded-xl p-2.5 text-xs text-gray-800 outline-none focus:border-orange-200 transition-colors resize-none"
+                       placeholder="Patient has recurring headaches and elevated BP. Advised lifestyle changes..."
+                       value={notes}
+                       onChange={(e) => setNotes(e.target.value)}
+                    />
+                    <div className="flex justify-end mt-2">
+                       <button onClick={handleSaveNote} className="px-3 py-1 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md text-[9px] font-bold transition-colors flex items-center gap-1 shadow-sm">
+                          <Save size={10}/> Store Note
+                       </button>
+                    </div>
+                 </div>
+
+                 {/* Vitals */}
+                 <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-3">
+                       <h3 className="text-xs font-bold text-gray-900">Vitals</h3>
+                       <button className="text-[9px] font-bold text-teal-600 hover:underline">View</button>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-1.5 flex-grow">
+                       <div className="flex items-center justify-between bg-[#F8FBFA] rounded-md px-2 py-1.5 border border-teal-50 hover:bg-teal-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Heart size={10} className="text-teal-500" />
+                             <span className="text-[9px] font-semibold text-gray-500">BP</span>
                           </div>
-                        ))}
-                      </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.bloodPressure || '--/--'}</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">mmHg</span>
+                          </div>
+                       </div>
+                       
+                       <div className="flex items-center justify-between bg-[#FAFAFF] rounded-md px-2 py-1.5 border border-indigo-50 hover:bg-indigo-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Droplets size={10} className="text-indigo-400" />
+                             <span className="text-[9px] font-semibold text-gray-500">Sugar</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.sugarLevel || '--'}</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">mg/dL</span>
+                          </div>
+                       </div>
+                       
+                       <div className="flex items-center justify-between bg-[#FFF8F8] rounded-md px-2 py-1.5 border border-red-50 hover:bg-red-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Activity size={10} className="text-red-400" />
+                             <span className="text-[9px] font-semibold text-gray-500">Pulse</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.pulseRate || '--'}</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">bpm</span>
+                          </div>
+                       </div>
+                       
+                       <div className="flex items-center justify-between bg-[#F0FAFF] rounded-md px-2 py-1.5 border border-blue-50 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Wind size={10} className="text-blue-400" />
+                             <span className="text-[9px] font-semibold text-gray-500">SpO2</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">--</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">%</span>
+                          </div>
+                       </div>
+                       
+                       <div className="flex items-center justify-between bg-[#FFFBF0] rounded-md px-2 py-1.5 border border-amber-50 hover:bg-amber-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Lock size={10} className="text-amber-500" />
+                             <span className="text-[9px] font-semibold text-gray-500">Weight</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.weight || '--'}</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">kg</span>
+                          </div>
+                       </div>
+                       
+                       <div className="flex items-center justify-between bg-[#FFF4F6] rounded-md px-2 py-1.5 border border-pink-50 hover:bg-pink-50/50 transition-colors cursor-pointer">
+                          <div className="flex items-center gap-1.5">
+                             <Thermometer size={10} className="text-pink-400" />
+                             <span className="text-[9px] font-semibold text-gray-500">Temp</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.temperature || '--'}</span>
+                             <span className="text-[8px] text-gray-400 ml-0.5">°F</span>
+                          </div>
+                       </div>
                     </div>
-                    <div className="pt-4 border-t border-gray-100 flex flex-wrap gap-3">
-                      <button type="submit" disabled={isProcessing} className="flex-1 py-3 bg-teal-600 text-white rounded-xl font-bold text-xs hover:bg-teal-700 transition-all shadow-md shadow-teal-600/20 disabled:opacity-50 active:scale-[0.98]">{isProcessing ? 'Saving...' : 'Complete Consultation'}</button>
-                      <button type="button" onClick={handleReferToLab} disabled={isProcessing} className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs transition-all shadow-md disabled:opacity-50 active:scale-[0.98]">Lab</button>
-                      <button type="button" onClick={handleSaveDraft} className="px-5 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold text-xs hover:bg-gray-200 transition-all active:scale-[0.98]">Draft</button>
+                    <p className="text-[8px] text-gray-400 mt-2 text-center">{patientData?.vitals?.[0]?.recordedAt ? new Date(patientData.vitals[0].recordedAt).toLocaleString() : 'N/A'}</p>
+                 </div>
+
+                 {/* Lab Reports */}
+                 <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col h-full">
+                    <h3 className="text-sm font-bold text-gray-900 mb-3">Lab Reports</h3>
+                    <div className="space-y-2 flex-grow">
+                       {patientData?.documents?.length > 0 ? patientData.documents.slice(0, 3).map((rep, i) => (
+                          <div key={i} className="flex justify-between items-start sm:items-center pb-2 border-b border-gray-50 last:border-0 last:pb-0">
+                             <div className="flex-1 min-w-0 pr-2">
+                                <p className="text-[10px] font-bold text-gray-800 truncate">{rep.title || 'Diagnostic Report'}</p>
+                                <p className="text-[9px] text-gray-400">{new Date(rep.uploadedAt).toLocaleDateString()}</p>
+                             </div>
+                             <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="px-2 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded text-[8px] font-bold">Available</span>
+                                <button onClick={() => window.open(rep.fileUrl, '_blank')} className="text-[8px] font-bold text-red-500 hover:underline flex items-center gap-1"><FileText size={10}/> PDF</button>
+                             </div>
+                          </div>
+                       )) : <p className="text-[10px] text-gray-400 text-center py-4 border-2 border-dashed border-gray-50 rounded-xl flex-grow flex items-center justify-center">No reports available</p>}
                     </div>
-                  </form>
-                </div>
+                    {patientData?.documents?.length > 3 && (
+                       <button onClick={() => setShowHistoryLocker(true)} className="text-[10px] font-bold text-teal-600 mt-3 text-left flex items-center gap-1 hover:underline">View All Reports <ArrowRight size={10}/></button>
+                    )}
+                 </div>
+
+              </div>
+
+              {/* BOTTOM ROW: Prescription, Follow Up, Completion */}
+              <div className="flex flex-col xl:flex-row gap-4 mt-4">
+                 
+                 {/* Prescription Table */}
+                 <div className="w-full xl:w-[70%]">
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 h-full flex flex-col">
+                       <div className="flex justify-between items-center mb-6">
+                          <h3 className="text-xs font-bold text-gray-900">Current Prescription</h3>
+                          <div className="flex gap-2">
+                             <button type="button" onClick={() => setShowTemplatesModal(true)} className="px-2.5 py-1.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded-md hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                                <Layout size={10}/> Templates
+                             </button>
+                             <button 
+                                type="button" 
+                                onClick={() => setMedicines([...medicines, { name: '', strength: '', whenToTake: '', beforeAfter: '', duration: '', instructions: '' }])}
+                                className="px-3 py-1.5 bg-teal-600 text-white text-[9px] font-bold rounded-md shadow hover:bg-teal-700 transition-colors flex items-center gap-1"
+                             >
+                                <Plus size={12}/> New Medicine
+                             </button>
+                          </div>
+                       </div>
+                       
+                       <div className="overflow-x-auto flex-grow">
+                          <table className="w-full text-left text-[10px] min-w-[700px]">
+                             <thead>
+                                <tr className="border-b border-gray-100 text-gray-400">
+                                   <th className="pb-2 font-semibold">Medicine Name</th>
+                                   <th className="pb-2 font-semibold">Strength</th>
+                                   <th className="pb-2 font-semibold">When to Take</th>
+                                   <th className="pb-2 font-semibold">Before / After</th>
+                                   <th className="pb-2 font-semibold">Duration</th>
+                                   <th className="pb-2 font-semibold">Instructions</th>
+                                   <th className="pb-2 font-semibold text-right">Actions</th>
+                                </tr>
+                             </thead>
+                             <tbody className="divide-y divide-gray-50">
+                                {medicines.map((m, idx) => (
+                                   <tr key={idx} className="group hover:bg-gray-50/50">
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.name || ''} onChange={(e) => { const u = [...medicines]; u[idx].name = e.target.value; setMedicines(u); }} placeholder="Telmisartan" className="w-full bg-transparent outline-none text-gray-800 font-bold placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.strength || m.amount || ''} onChange={(e) => { const u = [...medicines]; u[idx].strength = e.target.value; setMedicines(u); }} placeholder="40 mg" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.whenToTake || m.time || ''} onChange={(e) => { const u = [...medicines]; u[idx].whenToTake = e.target.value; setMedicines(u); }} placeholder="Morning" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.beforeAfter || ''} onChange={(e) => { const u = [...medicines]; u[idx].beforeAfter = e.target.value; setMedicines(u); }} placeholder="After Breakfast" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.duration || ''} onChange={(e) => { const u = [...medicines]; u[idx].duration = e.target.value; setMedicines(u); }} placeholder="30 Days" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 pr-1"><input type="text" value={m.instructions || ''} onChange={(e) => { const u = [...medicines]; u[idx].instructions = e.target.value; setMedicines(u); }} placeholder="For BP control" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                      <td className="py-1.5 text-right px-1">
+                                         <button type="button" onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} className="p-1 text-gray-300 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={12}/></button>
+                                      </td>
+                                   </tr>
+                                ))}
+                                {medicines.length === 0 && (
+                                   <tr>
+                                      <td colSpan="7" className="py-8 text-center text-gray-400 text-xs font-medium border-2 border-dashed border-gray-100 rounded-xl mt-4 block w-full box-border">No medicines prescribed yet</td>
+                                   </tr>
+                                )}
+                             </tbody>
+                          </table>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* Follow Up & Actions */}
+                 <div className="w-full xl:w-[30%] flex flex-col gap-4">
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex-grow">
+                       <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-sm font-bold text-gray-900">Follow Up</h3>
+                          <button className="text-[10px] font-bold text-teal-600 hover:underline">Schedule</button>
+                       </div>
+                       <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
+                          <p className="text-[10px] text-gray-400 w-full text-center py-1">No follow-up scheduled.</p>
+                       </div>
+                    </div>
+
+                    {/* Completion Buttons */}
+                    <div className="flex flex-col gap-3">
+                       <button onClick={handleCompleteVisit} disabled={isProcessing} className="w-full py-3 bg-teal-600 text-white rounded-xl font-bold text-sm hover:bg-teal-700 transition-all shadow-md shadow-teal-600/20 disabled:opacity-50">
+                          {isProcessing ? 'Saving...' : 'Complete Consultation'}
+                       </button>
+                       <div className="flex gap-3">
+                          <button onClick={handleReferToLab} className="flex-1 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-xl font-bold text-xs hover:bg-teal-100 transition-all shadow-sm flex items-center justify-center gap-1.5"><Plus size={14}/> New Test</button>
+                          <button onClick={handleSaveDraft} className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all shadow-sm">Save Draft</button>
+                       </div>
+                    </div>
+                 </div>
+
               </div>
             </div>
           ) : (
