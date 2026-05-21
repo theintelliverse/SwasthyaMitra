@@ -51,7 +51,7 @@ const LabMetricCard = ({ title, value, change, icon, color }) => {
     .replace('Pending Reports', 'Pending');
 
   return (
-    <div className="bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm hover:shadow hover:border-teal-200 cursor-pointer transition-all flex items-center justify-between gap-3 min-w-[130px] md:w-full group">
+    <div className="bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm hover:shadow hover:border-teal-200 cursor-pointer transition-all flex items-center justify-between gap-2 w-full group">
       <div className="flex items-center gap-2.5">
         <div className={`p-1.5 rounded-lg ${colorMap[color]} group-hover:scale-110 transition-transform`}>
           {icon}
@@ -863,20 +863,20 @@ const LabDashboard = () => {
               </div>
 
               {/* Key Metrics Cards */}
-              <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 md:gap-4 mb-4 md:mb-6 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-2 lg:grid-cols-5">
-                <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+              <div className="flex overflow-x-auto hide-scrollbar gap-3 md:gap-4 mb-4 md:mb-6 pb-2 snap-x snap-mandatory">
+                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
                   <LabMetricCard title="Total Requests" value={stats.total} change="+12%" icon={<Activity size={16} className="md:w-5 md:h-5" />} color="teal" />
                 </div>
-                <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
                   <LabMetricCard title="Samples Collected" value={stats.samplesCollected} change="+8%" icon={<TestTubes size={16} className="md:w-5 md:h-5" />} color="blue" />
                 </div>
-                <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
                   <LabMetricCard title="In Process" value={stats.inProcess} change="-5%" icon={<Clock size={16} className="md:w-5 md:h-5" />} color="orange" />
                 </div>
-                <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
+                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
                   <LabMetricCard title="Completed" value={stats.completed} change="+15%" icon={<FileCheck size={16} className="md:w-5 md:h-5" />} color="green" />
                 </div>
-                <div className="snap-start shrink-0 min-w-[21%] md:w-auto pr-4 md:pr-0">
+                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
                   <LabMetricCard title="Pending Reports" value={stats.pending} change="-30%" icon={<Beaker size={16} className="md:w-5 md:h-5" />} color="red" />
                 </div>
               </div>
@@ -925,7 +925,7 @@ const LabDashboard = () => {
                           <button
                             key={tab}
                             onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                            className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors shrink-0 snap-start ${activeTab === tab
+                            className={`px-3 py-2 text-[10px] font-bold border-b-2 transition-colors shrink-0 snap-start ${activeTab === tab
                               ? 'text-teal-600 border-teal-600'
                               : 'text-gray-600 border-transparent hover:text-gray-900'
                               }`}
@@ -934,8 +934,8 @@ const LabDashboard = () => {
                           </button>
                         ))}
                       </div>
-                      <button className="hidden sm:flex items-center gap-2 text-gray-600 text-sm font-semibold hover:text-teal-600 transition-colors">
-                        <Filter size={16} /> Filters
+                      <button className="hidden sm:flex items-center gap-1.5 text-gray-600 text-[10px] font-bold hover:text-teal-600 transition-colors">
+                        <Filter size={14} /> Filters
                       </button>
                     </div>
 
@@ -944,13 +944,13 @@ const LabDashboard = () => {
                       <table className="w-full text-sm border-collapse min-w-[720px]">
                         <thead>
                           <tr className="border-b border-gray-200 bg-gray-50/75 backdrop-blur-sm">
-                            <th className="w-[8%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
-                            <th className="w-[24%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
-                            <th className="w-[15%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Referred Tests</th>
-                            <th className="w-[12%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="w-[12%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th className="w-[13%] px-3 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Requested On</th>
-                            <th className="w-[16%] px-3 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="w-[8%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Request ID</th>
+                            <th className="w-[24%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Patient Details</th>
+                            <th className="w-[15%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Referred Tests</th>
+                            <th className="w-[12%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Status</th>
+                            <th className="w-[12%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Priority</th>
+                            <th className="w-[13%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Requested On</th>
+                            <th className="w-[16%] px-2 py-3 text-center text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100/80">
@@ -1042,22 +1042,22 @@ const LabDashboard = () => {
                                         <FileCheck size={14} className="text-gray-400" /> Published
                                       </span>
                                     ) : (
-                                      <div className="flex flex-col items-center justify-center gap-1.5 w-full max-w-[125px] mx-auto">
+                                      <div className="flex items-center justify-center gap-1.5 w-full min-w-[130px] mx-auto">
                                         <button
-                                          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[9px] font-extrabold uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
                                           onClick={() => handleFileUpload(request.patientPhone, request._id)}
                                           title="Upload Clinical Files"
                                         >
-                                          <Upload size={12} />
-                                          <span>Upload Report</span>
+                                          <Upload size={14} />
+                                          <span>Upload</span>
                                         </button>
                                         <button
-                                          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[9px] font-extrabold uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
-                                          <FileCheck size={12} />
-                                          <span>Fill Digital</span>
+                                          <FileCheck size={14} />
+                                          <span>Digital</span>
                                         </button>
                                       </div>
                                     )}
