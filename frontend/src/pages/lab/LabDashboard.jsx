@@ -24,12 +24,12 @@ const socket = io(SOCKET_URL || API_URL || 'http://localhost:5000');
 const QuickActionTile = ({ icon, label, color, onClick }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center justify-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl border border-transparent hover:border-gray-100 transition-all ${color} active:scale-95 shadow-sm hover:shadow-md w-full`}
+    className={`flex flex-col items-center justify-center gap-1 p-2 md:p-2.5 rounded-lg md:rounded-xl border border-transparent hover:border-gray-100 transition-all ${color} active:scale-95 shadow-sm hover:shadow-md w-full`}
   >
-    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg md:rounded-xl flex items-center justify-center shadow-sm">
+    <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-md md:rounded-lg flex items-center justify-center shadow-sm">
       {icon}
     </div>
-    <span className="text-[9px] md:text-xs font-bold text-center leading-tight uppercase tracking-widest">{label}</span>
+    <span className="text-[8px] md:text-[9px] font-bold text-center leading-tight uppercase tracking-widest">{label}</span>
   </button>
 );
 
@@ -1057,7 +1057,7 @@ const LabDashboard = () => {
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
-                                          <FileCheck size={14} />
+                                          <FileCheck size={10} />
                                           <span>Digital</span>
                                         </button>
                                       </div>
@@ -1280,22 +1280,22 @@ const LabDashboard = () => {
 
                   {/* Dashboard Summary */}
                   <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex justify-between items-center p-4 border-b border-gray-200">
-                      <h2 className="text-sm font-bold text-gray-900">Dashboard Summary</h2>
+                    <div className="flex justify-between items-center p-2.5 px-3 border-b border-gray-200">
+                      <h2 className="text-xs font-bold text-gray-900">Dashboard Summary</h2>
                       <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 cursor-pointer">
                         This Month <ChevronDown size={12} />
                       </div>
                     </div>
-                    <div className="p-4 space-y-3">
+                    <div className="p-3 space-y-1.5">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 bg-purple-50 text-purple-600 rounded flex items-center justify-center">
-                            <FileCheck size={14} />
+                          <div className="w-5 h-5 bg-purple-50 text-purple-600 rounded flex items-center justify-center">
+                            <FileCheck size={10} />
                           </div>
-                          <p className="text-xs font-semibold text-gray-700">Reports Generated</p>
+                          <p className="text-[10px] font-semibold text-gray-700">Reports Generated</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-sm">{stats.completed}</p>
+                          <p className="font-bold text-gray-900 text-[11px]">{stats.completed}</p>
                           <span className="text-[10px] font-bold text-green-600 w-8 text-right">
                             {stats.completed > 0 ? `+${Math.min(100, Math.round((stats.completed / (stats.total || 1)) * 100))}%` : '0%'}
                           </span>
@@ -1303,37 +1303,37 @@ const LabDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 bg-teal-50 text-teal-600 rounded flex items-center justify-center">
-                            <Clock size={14} />
+                          <div className="w-5 h-5 bg-teal-50 text-teal-600 rounded flex items-center justify-center">
+                            <Clock size={10} />
                           </div>
-                          <p className="text-xs font-semibold text-gray-700">Turnaround Time</p>
+                          <p className="text-[10px] font-semibold text-gray-700">Turnaround Time</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-sm">{getAvgTurnaroundTime()}</p>
+                          <p className="font-bold text-gray-900 text-[11px]">{getAvgTurnaroundTime()}</p>
                           <span className="text-[10px] font-bold text-green-600 w-8 text-right">- 8%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 bg-green-50 text-green-600 rounded flex items-center justify-center">
-                            <Activity size={14} />
+                          <div className="w-5 h-5 bg-green-50 text-green-600 rounded flex items-center justify-center">
+                            <Activity size={10} />
                           </div>
-                          <p className="text-xs font-semibold text-gray-700">Test Accuracy</p>
+                          <p className="text-[10px] font-semibold text-gray-700">Test Accuracy</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-sm">{getDynamicAccuracy()}</p>
+                          <p className="font-bold text-gray-900 text-[11px]">{getDynamicAccuracy()}</p>
                           <span className="text-[10px] font-bold text-green-600 w-8 text-right">+ 2%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 bg-red-50 text-red-600 rounded flex items-center justify-center">
-                            <RefreshCw size={14} />
+                            <RefreshCw size={10} />
                           </div>
-                          <p className="text-xs font-semibold text-gray-700">Repeat Tests</p>
+                          <p className="text-[10px] font-semibold text-gray-700">Repeat Tests</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-sm">{getDynamicRepeatTests()}</p>
+                          <p className="font-bold text-gray-900 text-[11px]">{getDynamicRepeatTests()}</p>
                           <span className="text-[10px] font-bold text-red-600 w-8 text-right">0%</span>
                         </div>
                       </div>
@@ -1888,17 +1888,17 @@ const LabDashboard = () => {
         {/* Floating Action Button (PC & Mobile) */}
         <div className="fixed bottom-24 lg:bottom-8 right-4 lg:right-8 z-50 flex flex-col items-end gap-3">
           <div className={`transition-all duration-300 transform origin-bottom-right ${showQuickActions ? 'scale-100 opacity-100 animate-fade-in' : 'scale-0 opacity-0 pointer-events-none'}`}>
-            <div className="bg-white/95 backdrop-blur-xl p-5 rounded-[2rem] shadow-2xl border border-gray-150 grid grid-cols-2 gap-4 mb-2 w-[calc(100vw-2rem)] max-w-sm">
+            <div className="bg-white/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-gray-150 grid grid-cols-2 gap-2 mb-2 w-[calc(100vw-2rem)] max-w-xs">
               <div className="col-span-2 border-b pb-2 mb-1 flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Quick Actions</span>
                 <span className="text-[10px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full">Interactive Panel</span>
               </div>
-              <QuickActionTile icon={<Plus size={20} />} label="New Test" color="bg-teal-50 text-teal-600 hover:bg-teal-100" onClick={() => { setShowNewTestModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<TestTubes size={20} />} label="Add Sample" color="bg-blue-50 text-blue-600 hover:bg-blue-100" onClick={() => { setShowAddSampleModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<BarChart3 size={20} />} label="PDF Customizer" color="bg-orange-50 text-orange-600 hover:bg-orange-100" onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<Upload size={20} />} label="Upload File" color="bg-purple-50 text-purple-600 hover:bg-purple-100" onClick={() => { setShowSampleCollectionModal(true); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<TrendingUp size={20} />} label="Daily Summary" color="bg-emerald-50 text-emerald-600 hover:bg-emerald-100" onClick={() => { handleDailySummary(); setShowQuickActions(false); }} />
-              <QuickActionTile icon={<RefreshCw size={20} />} label="Sync Stats" color="bg-indigo-50 text-indigo-600 hover:bg-indigo-100" onClick={() => { fetchLabDashboardStats(false); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<Plus size={14} />} label="New Test" color="bg-teal-50 text-teal-600 hover:bg-teal-100" onClick={() => { setShowNewTestModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<TestTubes size={14} />} label="Add Sample" color="bg-blue-50 text-blue-600 hover:bg-blue-100" onClick={() => { setShowAddSampleModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<BarChart3 size={14} />} label="PDF Customizer" color="bg-orange-50 text-orange-600 hover:bg-orange-100" onClick={() => { setReportConfig({ ...reportConfig, reportType: 'Daily' }); setShowReportConfigModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<Upload size={14} />} label="Upload File" color="bg-purple-50 text-purple-600 hover:bg-purple-100" onClick={() => { setShowSampleCollectionModal(true); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<TrendingUp size={14} />} label="Daily Summary" color="bg-emerald-50 text-emerald-600 hover:bg-emerald-100" onClick={() => { handleDailySummary(); setShowQuickActions(false); }} />
+              <QuickActionTile icon={<RefreshCw size={14} />} label="Sync Stats" color="bg-indigo-50 text-indigo-600 hover:bg-indigo-100" onClick={() => { fetchLabDashboardStats(false); setShowQuickActions(false); }} />
             </div>
           </div>
           <button
