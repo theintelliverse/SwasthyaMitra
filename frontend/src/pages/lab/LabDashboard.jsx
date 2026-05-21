@@ -1206,10 +1206,10 @@ const LabDashboard = () => {
                       <h2 className="text-sm font-bold text-gray-900">Recent Samples</h2>
                       <button onClick={() => navigate('/lab/samples')} className="text-teal-600 text-xs font-semibold hover:text-teal-700">View All</button>
                     </div>
-                    <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-4">
+                    <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-2 snap-x snap-mandatory">
                       {/* Sample Cards */}
                       {labQueue.slice(0, 4).map((patient, idx) => (
-                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-lg p-2.5 hover:border-teal-300 transition-colors shrink-0 snap-start w-[200px] md:w-auto">
+                        <div key={patient._id || idx} className="bg-white border border-gray-200 rounded-lg p-3 hover:border-teal-300 transition-colors shrink-0 snap-start w-[280px]">
                           <div className="flex items-start gap-2 mb-2">
                             <div className="w-6 h-6 bg-blue-50 text-blue-600 rounded flex items-center justify-center flex-shrink-0">
                               {patient.currentStage === 'Lab-Pending' ? <Beaker size={12} /> : patient.currentStage === 'Lab-Processing' ? <TestTubes size={12} /> : <FileCheck size={12} />}
