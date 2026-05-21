@@ -160,6 +160,36 @@ const DoctorDashboard = () => {
   const [patientData, setPatientData] = useState(null);
   const [showHistoryLocker, setShowHistoryLocker] = useState(false);
 
+  const [showVitalsModal, setShowVitalsModal] = useState(false);
+  const [vitalsInput, setVitalsInput] = useState({
+     bloodPressure: '', sugarLevel: '', pulseRate: '', spO2: '', weight: '', temperature: ''
+  });
+
+  const handleUpdateVitals = async () => {
+     try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/queue/update-vitals/${activePatient._id}`, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+           body: JSON.stringify(vitalsInput)
+        });
+        const data = await res.json();
+        if (data.success) {
+           Swal.fire('Success', 'Vitals updated successfully', 'success');
+           setShowVitalsModal(false);
+           setPatientData(prev => ({ 
+               ...prev, 
+               vitals: [{ ...vitalsInput, recordedAt: new Date().toISOString() }] 
+           }));
+        } else {
+           Swal.fire('Error', data.message || 'Failed to update vitals', 'error');
+        }
+     } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Could not update vitals', 'error');
+     }
+  };
+
   const [isDictating, setIsDictating] = useState(false);
   const handleStartDictation = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -766,6 +796,16 @@ const DoctorDashboard = () => {
                         <p className="text-gray-400 mb-1">Last Visit</p>
                         <p className="font-bold text-gray-900">{patientData?.lastVisit ? new Date(patientData.lastVisit).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</p>
                       </div>
+                      
+                      {patientData?.medicalHistory?.length > 0 && (
+                        <div className="col-span-2 mt-2 pt-2 border-t border-gray-100">
+                          <div className="flex justify-between items-center mb-1">
+                             <p className="text-gray-400 text-[10px]">Previous Private Note ({new Date(patientData.medicalHistory[patientData.medicalHistory.length-1].date).toLocaleDateString('en-GB')})</p>
+                             <button onClick={() => setShowHistoryLocker(true)} className="text-[9px] font-bold text-teal-600 hover:underline">View All Notes</button>
+                          </div>
+                          <p className="font-medium text-gray-700 italic line-clamp-2 max-w-sm text-[10px]">"{patientData.medicalHistory[patientData.medicalHistory.length-1].symptoms || 'No previous notes recorded.'}"</p>
+                        </div>
+                      )}
                    </div>
                 </div>
                 
@@ -814,10 +854,24 @@ const DoctorDashboard = () => {
                  <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-3">
                        <h3 className="text-xs font-bold text-gray-900">Vitals</h3>
-                       <button className="text-[9px] font-bold text-teal-600 hover:underline">View</button>
+                       <button onClick={() => { setVitalsInput({
+                          bloodPressure: patientData?.vitals?.[0]?.bloodPressure || '',
+                          sugarLevel: patientData?.vitals?.[0]?.sugarLevel || '',
+                          pulseRate: patientData?.vitals?.[0]?.pulseRate || '',
+                          spO2: patientData?.vitals?.[0]?.spO2 || '',
+                          weight: patientData?.vitals?.[0]?.weight || '',
+                          temperature: patientData?.vitals?.[0]?.temperature || ''
+                       }); setShowVitalsModal(true); }} className="text-[9px] font-bold text-teal-600 hover:underline">Edit</button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-1.5 flex-grow">
+                    <div className="grid grid-cols-2 gap-1.5 flex-grow" onClick={() => { setVitalsInput({
+                          bloodPressure: patientData?.vitals?.[0]?.bloodPressure || '',
+                          sugarLevel: patientData?.vitals?.[0]?.sugarLevel || '',
+                          pulseRate: patientData?.vitals?.[0]?.pulseRate || '',
+                          spO2: patientData?.vitals?.[0]?.spO2 || '',
+                          weight: patientData?.vitals?.[0]?.weight || '',
+                          temperature: patientData?.vitals?.[0]?.temperature || ''
+                       }); setShowVitalsModal(true); }}>
                        <div className="flex items-center justify-between bg-[#F8FBFA] rounded-md px-2 py-1.5 border border-teal-50 hover:bg-teal-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Heart size={10} className="text-teal-500" />
@@ -857,7 +911,7 @@ const DoctorDashboard = () => {
                              <span className="text-[9px] font-semibold text-gray-500">SpO2</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">--</span>
+                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.spO2 || '--'}</span>
                              <span className="text-[8px] text-gray-400 ml-0.5">%</span>
                           </div>
                        </div>
@@ -1320,6 +1374,50 @@ const DoctorDashboard = () => {
           </button>
         </div>
 
+        {/* Vitals Modal */}
+        {showVitalsModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Update Vitals</h3>
+                <button onClick={() => setShowVitalsModal(false)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Blood Pressure (mmHg)</label>
+                  <input type="text" value={vitalsInput.bloodPressure} onChange={(e) => setVitalsInput({ ...vitalsInput, bloodPressure: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="120/80" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Sugar (mg/dL)</label>
+                  <input type="text" value={vitalsInput.sugarLevel} onChange={(e) => setVitalsInput({ ...vitalsInput, sugarLevel: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="90" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Pulse (bpm)</label>
+                  <input type="text" value={vitalsInput.pulseRate} onChange={(e) => setVitalsInput({ ...vitalsInput, pulseRate: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="75" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">SpO2 (%)</label>
+                  <input type="text" value={vitalsInput.spO2} onChange={(e) => setVitalsInput({ ...vitalsInput, spO2: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="98" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Weight (kg)</label>
+                  <input type="text" value={vitalsInput.weight} onChange={(e) => setVitalsInput({ ...vitalsInput, weight: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="70" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Temp (°F)</label>
+                  <input type="text" value={vitalsInput.temperature} onChange={(e) => setVitalsInput({ ...vitalsInput, temperature: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="98.6" />
+                </div>
+              </div>
+              <button onClick={handleUpdateVitals} className="w-full mt-8 bg-teal-600 text-white rounded-xl py-4 text-sm font-bold shadow-lg shadow-teal-600/30 hover:bg-teal-700 hover:shadow-teal-700/40 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                Save Vitals
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Appointment Modal */}
         {showAppointmentModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">

@@ -158,6 +158,11 @@ exports.startConsultation = async (req, res) => {
 
         if (!entry) return res.status(404).json({ message: "Patient not found" });
 
+        // Update Patient's lastVisit immediately when consultation starts
+        if (entry.patientId) {
+            await Patient.findByIdAndUpdate(entry.patientId, { lastVisit: Date.now() });
+        }
+
         // � Send Simple SMS Notification (Consultation Starting)
         const doctorName = entry.doctorId?.name || 'Doctor';
         const simpleMessage = `Your appointment is starting with Dr. ${doctorName}. Please go to the consultation room. - Appointory`;
@@ -608,7 +613,7 @@ exports.getPublicDoctorQueue = async (req, res) => {
 exports.updateVitals = async (req, res) => {
     try {
         const { queueId } = req.params;
-        const { bloodPressure, pulseRate, temperature, weight, bmi } = req.body;
+        const { bloodPressure, pulseRate, temperature, weight, bmi, sugarLevel, spO2 } = req.body;
         const doctorId = req.user.id;
 
         // Validate input
@@ -644,6 +649,8 @@ exports.updateVitals = async (req, res) => {
             bloodPressure,
             pulseRate,
             temperature,
+            sugarLevel,
+            spO2,
             weight,
             bmi,
             recordedBy: doctorId,

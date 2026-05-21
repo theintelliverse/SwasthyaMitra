@@ -765,9 +765,9 @@ const LabDashboard = () => {
     <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
       <Sidebar role="lab" />
 
-      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-20 md:pb-0">
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex justify-between items-center gap-4 shadow-sm sticky top-0 z-30">
+        <nav className="bg-white border-b border-gray-200 px-3 md:px-5 py-3 flex justify-between items-center gap-4 shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4 flex-1">
             <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center text-white shadow-lg">
               <Beaker size={20} />
@@ -806,7 +806,7 @@ const LabDashboard = () => {
         </nav>
 
         {/* Main Content */}
-        <main className="px-4 md:px-8 py-6 flex-grow max-w-7xl mx-auto w-full">
+        <main className="p-3 md:p-5 flex-grow max-w-7xl mx-auto w-full overflow-y-auto">
           {/* Loading State - Show on first load only */}
           {loading && labQueue.length === 0 && (
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
@@ -842,17 +842,17 @@ const LabDashboard = () => {
           {!error && (
             <>
               {/* Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">LabDashboard</h1>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Activity size={16} className="text-teal-500" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-lg font-bold text-gray-900">LabDashboard</h1>
+                  <p className="hidden md:flex text-xs text-gray-400 items-center gap-2">
+                    <Activity size={14} className="text-teal-500" />
                     Diagnostic Laboratory Management
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">Last update: {lastUpdate.toLocaleTimeString()}</p>
-                  <div className="flex items-center gap-2 mt-1">
+                <div className="text-right flex items-center gap-3">
+                  <p className="text-[10px] text-gray-400">Last update: {lastUpdate.toLocaleTimeString()}</p>
+                  <div className="flex items-center gap-1">
                     <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-yellow-500 animate-pulse' : socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                     <span className="text-xs text-gray-600">
                       {isSyncing ? 'Syncing...' : socketConnected ? 'Live' : 'Offline'}
@@ -862,7 +862,7 @@ const LabDashboard = () => {
               </div>
 
               {/* Key Metrics Cards */}
-              <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 md:gap-4 mb-6 md:mb-8 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-2 lg:grid-cols-5">
+              <div className="flex md:grid overflow-x-auto hide-scrollbar gap-2 md:gap-4 mb-4 md:mb-6 pb-2 md:pb-0 snap-x snap-mandatory md:grid-cols-2 lg:grid-cols-5">
                 <div className="snap-start shrink-0 min-w-[21%] md:w-auto">
                   <LabMetricCard title="Total Requests" value={stats.total} change="+12%" icon={<Activity size={16} className="md:w-5 md:h-5" />} color="teal" />
                 </div>
@@ -881,16 +881,16 @@ const LabDashboard = () => {
               </div>
 
               {/* Main Two-Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 {/* --- LEFT COLUMN --- */}
                 <div className="lg:col-span-2 space-y-8">
 
                   {/* Test Requests Table */}
-                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 border-b border-gray-200 bg-white">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-gray-100 bg-white">
                       <div>
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <Activity size={18} className="text-teal-600 animate-pulse" />
+                        <h2 className="text-xs font-bold text-gray-900 flex items-center gap-2">
+                          <Activity size={14} className="text-teal-600" />
                           Test Requests Queue
                         </h2>
                         <p className="text-xs text-gray-400 mt-0.5 font-medium">Manage patient diagnostics, collections and digital reports</p>

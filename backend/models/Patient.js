@@ -22,6 +22,7 @@ const patientSchema = mongoose.Schema({
     pulseRate: String,
     temperature: String,
     sugarLevel: String,
+    spO2: String,
     weight: Number,
     height: Number,
     bmi: Number,
