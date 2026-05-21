@@ -863,29 +863,29 @@ const LabDashboard = () => {
                 </div>
               </div>
 
-              {/* Key Metrics Cards */}
-              <div className="flex overflow-x-auto hide-scrollbar gap-3 md:gap-4 mb-4 md:mb-6 pb-2 snap-x snap-mandatory">
-                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
-                  <LabMetricCard title="Total Requests" value={stats.total} change="+12%" icon={<Activity size={16} className="md:w-5 md:h-5" />} color="teal" />
-                </div>
-                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
-                  <LabMetricCard title="Samples Collected" value={stats.samplesCollected} change="+8%" icon={<TestTubes size={16} className="md:w-5 md:h-5" />} color="blue" />
-                </div>
-                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
-                  <LabMetricCard title="In Process" value={stats.inProcess} change="-5%" icon={<Clock size={16} className="md:w-5 md:h-5" />} color="orange" />
-                </div>
-                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
-                  <LabMetricCard title="Completed" value={stats.completed} change="+15%" icon={<FileCheck size={16} className="md:w-5 md:h-5" />} color="green" />
-                </div>
-                <div className="snap-start shrink-0 w-[150px] md:w-[180px]">
-                  <LabMetricCard title="Pending Reports" value={stats.pending} change="-30%" icon={<Beaker size={16} className="md:w-5 md:h-5" />} color="red" />
-                </div>
-              </div>
-
               {/* Main Two-Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 {/* --- LEFT COLUMN --- */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-4">
+
+                  {/* Key Metrics Cards (Moved inline with the pie chart) */}
+                  <div className="flex overflow-x-auto hide-scrollbar gap-3 md:gap-4 pb-2 snap-x snap-mandatory">
+                    <div className="snap-start shrink-0 w-[130px] md:w-[140px]">
+                      <LabMetricCard title="Total Requests" value={stats.total} change="+12%" icon={<Activity size={16} className="md:w-5 md:h-5" />} color="teal" />
+                    </div>
+                    <div className="snap-start shrink-0 w-[130px] md:w-[140px]">
+                      <LabMetricCard title="Samples Collected" value={stats.samplesCollected} change="+8%" icon={<TestTubes size={16} className="md:w-5 md:h-5" />} color="blue" />
+                    </div>
+                    <div className="snap-start shrink-0 w-[130px] md:w-[140px]">
+                      <LabMetricCard title="In Process" value={stats.inProcess} change="-5%" icon={<Clock size={16} className="md:w-5 md:h-5" />} color="orange" />
+                    </div>
+                    <div className="snap-start shrink-0 w-[130px] md:w-[140px]">
+                      <LabMetricCard title="Completed" value={stats.completed} change="+15%" icon={<FileCheck size={16} className="md:w-5 md:h-5" />} color="green" />
+                    </div>
+                    <div className="snap-start shrink-0 w-[130px] md:w-[140px]">
+                      <LabMetricCard title="Pending Reports" value={stats.pending} change="-30%" icon={<Beaker size={16} className="md:w-5 md:h-5" />} color="red" />
+                    </div>
+                  </div>
 
                   {/* Test Requests Table */}
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -977,33 +977,33 @@ const LabDashboard = () => {
                                 : 'PT';
                               return (
                                 <tr key={request._id} className="hover:bg-gradient-to-r hover:from-teal-50/[0.04] hover:to-indigo-50/[0.04] transition-all duration-300 group">
-                                  <td className="px-3 py-6.5 align-middle">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
+                                  <td className="px-3 py-3 align-middle">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
                                       TRF-{request.tokenNumber || '00'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle">
+                                  <td className="px-3 py-3 align-middle">
                                     <div className="flex items-center gap-2.5">
-                                      <div className="w-8.5 h-8.5 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[11px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
+                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[9px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
                                         {initials}
                                       </div>
                                       <div>
-                                        <p className="text-gray-900 font-extrabold text-[13px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
-                                        <p className="text-[11px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                        <p className="text-gray-900 font-extrabold text-[11px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
+                                        <p className="text-[9px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
                                           <Smartphone size={10} className="text-gray-300 animate-pulse" />
                                           {request.patientPhone}
                                         </p>
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle">
+                                  <td className="px-3 py-3 align-middle">
                                     <div className="flex items-center gap-1 bg-teal-50/30 border border-teal-100/50 text-teal-800 px-2 py-1 rounded-lg w-fit shadow-sm">
                                       <Beaker size={11} className="text-teal-600" />
-                                      <span className="font-bold text-[11px]">{request.requiredTest || 'Routine Diagnosis'}</span>
+                                      <span className="font-bold text-[10px]">{request.requiredTest || 'Routine Diagnosis'}</span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                  <td className="px-3 py-3 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                       request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
                                         'bg-amber-50 text-amber-700 border border-amber-200'
                                       }`}>
@@ -1021,31 +1021,31 @@ const LabDashboard = () => {
                                         request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
+                                  <td className="px-3 py-3 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
                                       }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
                                       {request.isEmergency ? 'Emergency' : 'Standard'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle">
+                                  <td className="px-3 py-3 align-middle">
                                     <div className="flex flex-col">
-                                      <span className="text-gray-900 font-bold text-xs">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                      <span className="text-[10px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                      <span className="text-gray-900 font-bold text-[10px]">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                      <span className="text-[9px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
                                         <Clock size={10} className="text-gray-300" />
                                         {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-6.5 align-middle text-center">
+                                  <td className="px-3 py-3 align-middle text-center">
                                     {request.currentStage === 'Lab-Completed' ? (
                                       <span className="inline-flex items-center gap-1 text-xs font-extrabold text-gray-400 py-1">
                                         <FileCheck size={14} className="text-gray-400" /> Published
                                       </span>
                                     ) : (
-                                      <div className="flex items-center justify-center gap-1.5 w-full min-w-[130px] mx-auto">
+                                      <div className="flex items-center justify-center gap-1.5 w-full min-w-[110px] mx-auto">
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[9px] font-extrabold uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[8px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
                                           onClick={() => handleFileUpload(request.patientPhone, request._id)}
                                           title="Upload Clinical Files"
                                         >
@@ -1053,7 +1053,7 @@ const LabDashboard = () => {
                                           <span>Upload</span>
                                         </button>
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[9px] font-extrabold uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[8px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
@@ -1226,22 +1226,22 @@ const LabDashboard = () => {
                 {/* --- RIGHT COLUMN --- */}
                 <div className="lg:col-span-1 space-y-4">
                   {/* Sample Status Pie Chart */}
-                  <div className="bg-white p-4 rounded-xl border border-gray-200">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-sm font-bold text-gray-900">Sample Status Overview</h2>
-                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-[10px] font-semibold hover:text-teal-700">View Details</button>
+                  <div className="bg-white p-3 rounded-xl border border-gray-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-wide">Sample Status</h2>
+                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-[9px] font-bold hover:text-teal-700">Details</button>
                     </div>
-                    <div className="flex items-center justify-center mb-4 relative min-h-[160px]">
+                    <div className="flex items-center justify-center mb-2 relative min-h-[90px]">
                       {sampleStatusData.length > 0 && stats.total > 0 ? (
                         <>
-                          <ResponsiveContainer width="100%" height={160}>
+                          <ResponsiveContainer width="100%" height={90}>
                             <PieChart>
                               <Pie
                                 data={sampleStatusData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={50}
-                                outerRadius={70}
+                                innerRadius={30}
+                                outerRadius={45}
                                 paddingAngle={2}
                                 dataKey="value"
                               >
@@ -1253,29 +1253,25 @@ const LabDashboard = () => {
                             </PieChart>
                           </ResponsiveContainer>
                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-xl font-bold text-gray-900 leading-none">{stats.total}</span>
-                            <span className="text-[10px] text-gray-500 mt-1">Total Samples</span>
+                            <span className="text-sm font-black text-gray-900 leading-none">{stats.total}</span>
                           </div>
                         </>
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-[160px] text-gray-400">
-                          <Activity size={24} className="opacity-20 mb-2" />
-                          <p className="text-[10px]">No data to visualize</p>
+                        <div className="flex flex-col items-center justify-center h-[90px] text-gray-400">
+                          <Activity size={16} className="opacity-20 mb-1" />
+                          <p className="text-[9px]">No data</p>
                         </div>
                       )}
                     </div>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {sampleStatusData.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                            <span className="text-gray-700 font-medium">{item.name}</span>
+                        <div key={item.name} className="flex items-center justify-between text-[9px] bg-gray-50/80 px-1.5 py-1 rounded">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+                            <span className="text-gray-700 font-bold truncate">{item.name}</span>
                           </div>
-                          <span className="font-bold text-gray-900">
+                          <span className="font-black text-gray-900">
                             {item.value}
-                            <span className="text-gray-400 font-normal ml-1">
-                              ({stats.total > 0 ? Math.round((item.value / stats.total) * 100) : 0}%)
-                            </span>
                           </span>
                         </div>
                       ))}
