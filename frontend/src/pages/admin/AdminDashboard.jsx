@@ -22,13 +22,11 @@ const AdminDashboard = () => {
     todayVisits: 0,
     activeDoctors: 0,
     avgWait: 0,
-    avgConsultationTime: 12,
     newPatients: 0,
     revenue: 0,
     revenueChange: '+0%',
     consultFees: 0,
     labFees: 0,
-    medicineFees: 0,
     todayWalkins: 0,
     todayAppointments: 0,
     satisfaction: 98
@@ -115,26 +113,6 @@ const AdminDashboard = () => {
         revenueChange = "0%";
       }
 
-      // Calculate actual average consultation time from completed visits in historyData
-      const completedVisits = historyData.filter(r => r.status === 'Completed' && r.startTime && r.endTime);
-      let avgConsultationTime = 12; // default fallback 12 mins
-      if (completedVisits.length > 0) {
-        let totalMins = 0;
-        let count = 0;
-        completedVisits.forEach(r => {
-          const duration = (new Date(r.endTime).getTime() - new Date(r.startTime).getTime()) / (1000 * 60);
-          if (duration > 0 && duration < 60) {
-            totalMins += duration;
-            count++;
-          }
-        });
-        if (count > 0) {
-          avgConsultationTime = Math.max(5, Math.round(totalMins / count));
-        }
-      }
-
-      const calculatedAvgWait = queueData.length > 0 ? Math.max(5, queueData.length * avgConsultationTime) : 10;
-
       // Breakdown of today's walk-ins vs appointments
       const todayWalkins = todayPatients.filter(p => p.visitType === 'Walk-in').length;
       const todayAppointments = todayPatients.filter(p => p.visitType === 'Appointment').length;
@@ -147,14 +125,12 @@ const AdminDashboard = () => {
         ...prev,
         todayVisits: totalVisits,
         activeDoctors: staffData.filter(s => s.role === 'doctor' && s.isAvailable).length,
-        avgWait: calculatedAvgWait,
-        avgConsultationTime: avgConsultationTime,
+        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 14, // 14 mins realistic baseline when queue is clear
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length,
         revenue: todayRevenue,
         revenueChange: revenueChange,
         consultFees: consultFees,
         labFees: labFees,
-        medicineFees: medicineFees,
         todayWalkins: todayWalkins,
         todayAppointments: todayAppointments
       }));
@@ -308,7 +284,7 @@ const AdminDashboard = () => {
                     change="Dynamic"
                     icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Clock size={24} /></div>}
                     color="teal"
-                    subtitle={`Avg. consult: ${stats.avgConsultationTime} mins`}
+                    subtitle="Based on queue size"
                   />
                 </div>
                 <div>
@@ -318,7 +294,7 @@ const AdminDashboard = () => {
                     change={stats.revenueChange}
                     icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
                     color="emerald"
-                    subtitle={`Consults: ₹${stats.consultFees} · Meds: ₹${stats.medicineFees} · Labs: ₹${stats.labFees}`}
+                    subtitle={`Consults: ₹${stats.consultFees} · Labs: ₹${stats.labFees}`}
                     onClick={() => window.open('/admin/reports', '_blank')}
                   />
                 </div>
