@@ -22,11 +22,13 @@ const AdminDashboard = () => {
     todayVisits: 0,
     activeDoctors: 0,
     avgWait: 0,
+    avgConsultationTime: 12,
     newPatients: 0,
     revenue: 0,
     revenueChange: '+0%',
     consultFees: 0,
     labFees: 0,
+    medicineFees: 0,
     todayWalkins: 0,
     todayAppointments: 0,
     satisfaction: 98
@@ -113,6 +115,26 @@ const AdminDashboard = () => {
         revenueChange = "0%";
       }
 
+      // Calculate actual average consultation time from completed visits in historyData
+      const completedVisits = historyData.filter(r => r.status === 'Completed' && r.startTime && r.endTime);
+      let avgConsultationTime = 12; // default fallback 12 mins
+      if (completedVisits.length > 0) {
+        let totalMins = 0;
+        let count = 0;
+        completedVisits.forEach(r => {
+          const duration = (new Date(r.endTime).getTime() - new Date(r.startTime).getTime()) / (1000 * 60);
+          if (duration > 0 && duration < 60) {
+            totalMins += duration;
+            count++;
+          }
+        });
+        if (count > 0) {
+          avgConsultationTime = Math.max(5, Math.round(totalMins / count));
+        }
+      }
+
+      const calculatedAvgWait = queueData.length > 0 ? Math.max(5, queueData.length * avgConsultationTime) : 10;
+
       // Breakdown of today's walk-ins vs appointments
       const todayWalkins = todayPatients.filter(p => p.visitType === 'Walk-in').length;
       const todayAppointments = todayPatients.filter(p => p.visitType === 'Appointment').length;
@@ -125,12 +147,14 @@ const AdminDashboard = () => {
         ...prev,
         todayVisits: totalVisits,
         activeDoctors: staffData.filter(s => s.role === 'doctor' && s.isAvailable).length,
-        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 14, // 14 mins realistic baseline when queue is clear
+        avgWait: calculatedAvgWait,
+        avgConsultationTime: avgConsultationTime,
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length,
         revenue: todayRevenue,
         revenueChange: revenueChange,
         consultFees: consultFees,
         labFees: labFees,
+        medicineFees: medicineFees,
         todayWalkins: todayWalkins,
         todayAppointments: todayAppointments
       }));
@@ -284,7 +308,7 @@ const AdminDashboard = () => {
                     change="Dynamic"
                     icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Clock size={24} /></div>}
                     color="teal"
-                    subtitle="Based on queue size"
+                    subtitle={`Avg. consult: ${stats.avgConsultationTime} mins`}
                   />
                 </div>
                 <div>
@@ -294,7 +318,8 @@ const AdminDashboard = () => {
                     change={stats.revenueChange}
                     icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
                     color="emerald"
-                    subtitle={`Consults: ₹${stats.consultFees} · Labs: ₹${stats.labFees}`}
+                    subtitle={`Consults: ₹${stats.consultFees} · Meds: ₹${stats.medicineFees} · Labs: ₹${stats.labFees}`}
+                    onClick={() => window.open('/admin/reports', '_blank')}
                   />
                 </div>
                 <div>
@@ -435,13 +460,24 @@ const AdminDashboard = () => {
   );
 };
 
-const MetricCard = ({ title, value, change, icon, color, subtitle }) => {
+const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) => {
   const isPositive = change.includes('+') || change === 'Live' || change === 'Active' || change === 'Dynamic';
   const trendBg = isPositive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 
                   change.includes('-') ? 'bg-teal-50 text-teal-600 border border-teal-100/50' : 'bg-slate-50 text-slate-400';
 
+  const hoverBorderColors = {
+    indigo: 'hover:border-indigo-400',
+    teal: 'hover:border-teal-400',
+    emerald: 'hover:border-emerald-400',
+    rose: 'hover:border-rose-400',
+  };
+  const clickableClass = onClick ? `cursor-pointer ${hoverBorderColors[color] || 'hover:border-slate-300'} active:scale-[0.98]` : '';
+
   return (
-    <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-[6.5rem] flex flex-col justify-between">
+    <div 
+      onClick={onClick}
+      className={`bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-[6.5rem] flex flex-col justify-between ${clickableClass}`}
+    >
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
