@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -211,13 +211,20 @@ const BookAppointment = () => {
         if (formData.clinicId && formData.doctorId) {
             const fetchWaitTime = async () => {
                 try {
-                    const res = await axios.get(`${API_URL}/api/queue/public/estimate-wait`, {
-                        params: {
-                            clinicId: formData.clinicId,
-                            doctorId: formData.doctorId,
-                            visitType: formData.appointmentType
+                    const params = {
+                        clinicId: formData.clinicId,
+                        doctorId: formData.doctorId,
+                        visitType: formData.appointmentType
+                    };
+                    if (formData.appointmentDate) {
+                        params.appointmentDate = formData.appointmentDate;
+                        if (formData.appointmentDate.includes('T')) {
+                            params.appointmentTime = formData.appointmentDate.split('T')[1];
                         }
-                    });
+                    } else {
+                        params.appointmentDate = selectedDate.toISOString();
+                    }
+                    const res = await axios.get(`${API_URL}/api/queue/public/estimate-wait`, { params });
                     if (res.data.success) {
                         setEstimatedWaitTime(res.data.estimatedWait);
                     }
@@ -231,7 +238,7 @@ const BookAppointment = () => {
             };
             fetchWaitTime();
         }
-    }, [formData.clinicId, formData.doctorId, formData.appointmentType]);
+    }, [formData.clinicId, formData.doctorId, formData.appointmentType, formData.appointmentDate, selectedDate]);
 
     const handleConfirmBooking = async () => {
         if (!formData.appointmentDate) { setError('Selection required: Please pick a clinical slot.'); return; }

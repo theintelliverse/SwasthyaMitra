@@ -398,13 +398,24 @@ const ReceptionDashboard = () => {
                           </td>
                           <td className="px-3 md:px-10 py-3 md:py-6 hidden md:table-cell">
                             <div>
-                              <p className={`font-bold text-xs md:text-sm truncate ${p.isEmergency ? 'text-red-700' : 'text-teak'}`}>{p.patientName}</p>
-                              <p className="text-[8px] md:text-[10px] text-khaki font-bold truncate">Dr. {p.doctorId?.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className={`font-bold text-xs md:text-sm truncate ${p.isEmergency ? 'text-red-700' : 'text-teak'}`}>{p.patientName}</p>
+                                {(p.currentStage === 'Lab-Pending' || p.currentStage === 'Lab-Processing') && (
+                                  <Beaker size={14} className="text-blue-500 animate-pulse flex-shrink-0" title="Patient in Lab" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[8px] md:text-[10px] text-khaki font-bold truncate">Dr. {p.doctorId?.name}</span>
+                                {p.estimatedWait !== undefined && (
+                                  <span className="px-1.5 py-0.5 bg-marigold/10 text-marigold rounded text-[7px] md:text-[8px] font-black uppercase whitespace-nowrap">Est. Wait: {p.estimatedWait}m</span>
+                                )}
+                              </div>
                             </div>
                           </td>
                           <td className="px-3 md:px-10 py-3 md:py-6 text-center hidden lg:table-cell">
-                            <span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : p.status.startsWith('Lab') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-parchment text-khaki border-sandstone'}`}>
-                              {p.status === 'In-Consultation' ? 'Active' : p.status.startsWith('Lab') ? 'Go for Lab' : p.status}
+                            <span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-flex items-center gap-1 ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : (p.currentStage === 'Lab-Pending' || p.currentStage === 'Lab-Processing') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-parchment text-khaki border-sandstone'}`}>
+                              {(p.currentStage === 'Lab-Pending' || p.currentStage === 'Lab-Processing') && <Beaker size={10} className="animate-pulse" />}
+                              {(p.currentStage === 'Lab-Pending' || p.currentStage === 'Lab-Processing') ? 'Go for Lab' : p.status}
                             </span>
                           </td>
                           <td className="px-3 md:px-10 py-3 md:py-6 text-right">

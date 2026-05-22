@@ -1141,8 +1141,16 @@ const DoctorDashboard = () => {
                                 {(patient.patientName || 'UP').substring(0, 2).toUpperCase()}
                               </div>
                               <div className="min-w-0">
-                                <p className="text-[11px] font-semibold text-gray-900 leading-tight truncate">{patient.patientName}</p>
-                                <p className="text-[9px] text-gray-400 truncate">{patient.reason || 'General'} - {patient.tokenNumber}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-[11px] font-semibold text-gray-900 leading-tight truncate">{patient.patientName}</p>
+                                  {(patient.currentStage === 'Lab-Pending' || patient.currentStage === 'Lab-Processing') && (
+                                    <FlaskConical size={11} className="text-blue-500 animate-pulse shrink-0" title="Patient in Lab" />
+                                  )}
+                                </div>
+                                <p className="text-[9px] text-gray-400 truncate">
+                                  {patient.reason || 'General'} - {patient.tokenNumber}
+                                  {patient.estimatedWait !== undefined && ` · Est: ${patient.estimatedWait}m`}
+                                </p>
                               </div>
                             </div>
                             <span className={`shrink-0 px-2 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider hidden md:block ${
