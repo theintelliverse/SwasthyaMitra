@@ -37,6 +37,88 @@ const AdminDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const socketRef = useRef(null);
 
+  const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState('billing'); // 'billing' | 'inventory'
+  
+  const [config, setConfig] = useState({
+    avgWaitFactor: Number(localStorage.getItem('SM_avgWaitFactor') || 8),
+    feeConsult: Number(localStorage.getItem('SM_feeConsult') || 500),
+    feeLab: Number(localStorage.getItem('SM_feeLab') || 450),
+    feeEmergency: Number(localStorage.getItem('SM_feeEmergency') || 300),
+    feeMedicine: Number(localStorage.getItem('SM_feeMedicine') || 120),
+  });
+
+  const defaultInventory = [
+    { name: 'Paracetamol 500mg', stock: 120, minStock: 30, unitPrice: 10 },
+    { name: 'Amlodipine 5mg', stock: 85, minStock: 20, unitPrice: 15 },
+    { name: 'Levocetirizine 5mg', stock: 45, minStock: 15, unitPrice: 12 },
+    { name: 'Amoxicillin 500mg', stock: 15, minStock: 25, unitPrice: 20 },
+    { name: 'Cough Syrup (100ml)', stock: 32, minStock: 10, unitPrice: 65 },
+  ];
+
+  const [inventory, setInventory] = useState(() => {
+    const saved = localStorage.getItem('SM_inventory');
+    return saved ? JSON.parse(saved) : defaultInventory;
+  });
+
+  const handleConfigChange = (key, value) => {
+    setConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const saveConfig = () => {
+    localStorage.setItem('SM_avgWaitFactor', config.avgWaitFactor);
+    localStorage.setItem('SM_feeConsult', config.feeConsult);
+    localStorage.setItem('SM_feeLab', config.feeLab);
+    localStorage.setItem('SM_feeEmergency', config.feeEmergency);
+    localStorage.setItem('SM_feeMedicine', config.feeMedicine);
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: 'Operational Rules Saved',
+      showConfirmButton: false,
+      timer: 2000,
+      background: '#EEF6FA'
+    });
+    
+    setIsRevenueModalOpen(false);
+    fetchLiveStats(true);
+  };
+
+  const restockMed = (index) => {
+    const updated = [...inventory];
+    updated[index].stock += 50;
+    setInventory(updated);
+    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: `${updated[index].name} Restocked (+50)`,
+      showConfirmButton: false,
+      timer: 2000,
+      background: '#EEF6FA'
+    });
+  };
+
+  const resetInventory = () => {
+    setInventory(defaultInventory);
+    localStorage.setItem('SM_inventory', JSON.stringify(defaultInventory));
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Inventory Stock Reset',
+      showConfirmButton: false,
+      timer: 2000,
+      background: '#EEF6FA'
+    });
+  };
+
   const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
   const clinicName = localStorage.getItem('clinicName') || 'SwasthyaMitra Clinic';
@@ -63,6 +145,13 @@ const AdminDashboard = () => {
       const staffData = staffRes.data.staff || [];
       const historyData = historyRes.data.data || [];
 
+      // Read dynamic rules from localStorage
+      const avgWaitFactor = Number(localStorage.getItem('SM_avgWaitFactor') || 8);
+      const feeConsult = Number(localStorage.getItem('SM_feeConsult') || 500);
+      const feeLab = Number(localStorage.getItem('SM_feeLab') || 450);
+      const feeEmergency = Number(localStorage.getItem('SM_feeEmergency') || 300);
+      const feeMedicine = Number(localStorage.getItem('SM_feeMedicine') || 120);
+
       // Calculate today's revenue & visit breakdowns dynamically
       const todayStart = new Date().setHours(0, 0, 0, 0);
       const todayPatients = [
@@ -76,11 +165,11 @@ const AdminDashboard = () => {
       let emergencyFees = 0;
 
       todayPatients.forEach(p => {
-        consultFees += 500; // Base Consultation Fee
-        if (p.requiredTest) labFees += 450; // Lab test fee
-        if (p.isEmergency) emergencyFees += 300; // Emergency surcharge
+        consultFees += feeConsult; // Base Consultation Fee
+        if (p.requiredTest) labFees += feeLab; // Lab test fee
+        if (p.isEmergency) emergencyFees += feeEmergency; // Emergency surcharge
         if (p.medicines && p.medicines.length > 0) {
-          medicineFees += p.medicines.length * 120; // Prescribed medicines fee
+          medicineFees += p.medicines.length * feeMedicine; // Prescribed medicines fee
         }
       });
 
@@ -95,11 +184,11 @@ const AdminDashboard = () => {
 
       let yesterdayRevenue = 0;
       yesterdayPatients.forEach(p => {
-        yesterdayRevenue += 500;
-        if (p.requiredTest) yesterdayRevenue += 450;
-        if (p.isEmergency) yesterdayRevenue += 300;
+        yesterdayRevenue += feeConsult;
+        if (p.requiredTest) yesterdayRevenue += feeLab;
+        if (p.isEmergency) yesterdayRevenue += feeEmergency;
         if (p.medicines && p.medicines.length > 0) {
-          yesterdayRevenue += p.medicines.length * 120;
+          yesterdayRevenue += p.medicines.length * feeMedicine;
         }
       });
 
@@ -125,7 +214,7 @@ const AdminDashboard = () => {
         ...prev,
         todayVisits: totalVisits,
         activeDoctors: staffData.filter(s => s.role === 'doctor' && s.isAvailable).length,
-        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 14, // 14 mins realistic baseline when queue is clear
+        avgWait: queueData.length > 0 ? Math.max(10, queueData.length * avgWaitFactor) : 14, // 14 mins realistic baseline when queue is clear
         newPatients: queueData.filter(p => p.visitType === 'Walk-in').length,
         revenue: todayRevenue,
         revenueChange: revenueChange,
@@ -295,7 +384,7 @@ const AdminDashboard = () => {
                     icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
                     color="emerald"
                     subtitle={`Consults: ₹${stats.consultFees} · Labs: ₹${stats.labFees}`}
-                    onClick={() => window.open('/admin/reports', '_blank')}
+                    onClick={() => setIsRevenueModalOpen(true)}
                   />
                 </div>
                 <div>
@@ -476,5 +565,20 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
     </div>
   );
 };
+
+const ConfigInput = ({ label, value, onChange }) => (
+  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">{label}</label>
+    <div className="relative">
+      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+      <input 
+        type="number" 
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full bg-white border border-slate-200/60 pl-6 pr-2 py-1.5 rounded-lg text-xs font-black text-slate-900 outline-none focus:border-teal-500 transition-colors"
+      />
+    </div>
+  </div>
+);
 
 export default AdminDashboard;
