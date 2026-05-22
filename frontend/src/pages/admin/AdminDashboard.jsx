@@ -23,7 +23,12 @@ const AdminDashboard = () => {
     activeDoctors: 0,
     avgWait: 0,
     newPatients: 0,
-    revenue: 12500,
+    revenue: 0,
+    revenueChange: '+0%',
+    consultFees: 0,
+    labFees: 0,
+    todayWalkins: 0,
+    todayAppointments: 0,
     satisfaction: 98
   });
   const [recentStaffActivity, setRecentStaffActivity] = useState([]);
@@ -58,11 +63,62 @@ const AdminDashboard = () => {
       const staffData = staffRes.data.staff || [];
       const historyData = historyRes.data.data || [];
 
-      // Calculate completed visits today
+      // Calculate today's revenue & visit breakdowns dynamically
       const todayStart = new Date().setHours(0, 0, 0, 0);
-      const todayCompletedVisits = historyData.filter(r => new Date(r.visitDate || r.createdAt).getTime() >= todayStart).length;
-      
+      const todayPatients = [
+        ...queueData,
+        ...historyData.filter(r => new Date(r.visitDate || r.createdAt).getTime() >= todayStart)
+      ];
+
+      let consultFees = 0;
+      let labFees = 0;
+      let medicineFees = 0;
+      let emergencyFees = 0;
+
+      todayPatients.forEach(p => {
+        consultFees += 500; // Base Consultation Fee
+        if (p.requiredTest) labFees += 450; // Lab test fee
+        if (p.isEmergency) emergencyFees += 300; // Emergency surcharge
+        if (p.medicines && p.medicines.length > 0) {
+          medicineFees += p.medicines.length * 120; // Prescribed medicines fee
+        }
+      });
+
+      const todayRevenue = consultFees + labFees + medicineFees + emergencyFees;
+
+      // Calculate yesterday's revenue for comparison
+      const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+      const yesterdayPatients = historyData.filter(r => {
+        const t = new Date(r.visitDate || r.createdAt).getTime();
+        return t >= yesterdayStart && t < todayStart;
+      });
+
+      let yesterdayRevenue = 0;
+      yesterdayPatients.forEach(p => {
+        yesterdayRevenue += 500;
+        if (p.requiredTest) yesterdayRevenue += 450;
+        if (p.isEmergency) yesterdayRevenue += 300;
+        if (p.medicines && p.medicines.length > 0) {
+          yesterdayRevenue += p.medicines.length * 120;
+        }
+      });
+
+      let revenueChange = "+18%";
+      if (yesterdayRevenue > 0) {
+        const diff = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100;
+        revenueChange = `${diff >= 0 ? '+' : ''}${diff.toFixed(0)}%`;
+      } else if (todayRevenue > 0) {
+        revenueChange = "+100%";
+      } else {
+        revenueChange = "0%";
+      }
+
+      // Breakdown of today's walk-ins vs appointments
+      const todayWalkins = todayPatients.filter(p => p.visitType === 'Walk-in').length;
+      const todayAppointments = todayPatients.filter(p => p.visitType === 'Appointment').length;
+
       // Total visits includes live waiting queue + completed visits today
+      const todayCompletedVisits = historyData.filter(r => new Date(r.visitDate || r.createdAt).getTime() >= todayStart).length;
       const totalVisits = queueData.length + todayCompletedVisits;
 
       setStats(prev => ({
@@ -70,7 +126,13 @@ const AdminDashboard = () => {
         todayVisits: totalVisits,
         activeDoctors: staffData.filter(s => s.role === 'doctor' && s.isAvailable).length,
         avgWait: queueData.length > 0 ? Math.max(10, queueData.length * 8) : 14, // 14 mins realistic baseline when queue is clear
-        newPatients: queueData.filter(p => p.visitType === 'Walk-in').length
+        newPatients: queueData.filter(p => p.visitType === 'Walk-in').length,
+        revenue: todayRevenue,
+        revenueChange: revenueChange,
+        consultFees: consultFees,
+        labFees: labFees,
+        todayWalkins: todayWalkins,
+        todayAppointments: todayAppointments
       }));
       
       setQueueList(queueData);
@@ -209,27 +271,30 @@ const AdminDashboard = () => {
                   <MetricCard 
                     title="Total Daily Visits"
                     value={stats.todayVisits}
-                    change="+12.5%"
+                    change={stats.todayVisits > 0 ? "Active" : "Idle"}
                     icon={<div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Users size={24} /></div>}
                     color="indigo"
+                    subtitle={`Walk-ins: ${stats.todayWalkins} · Appts: ${stats.todayAppointments}`}
                   />
                 </div>
                 <div>
                   <MetricCard 
                     title="Average Wait Time"
                     value={`${stats.avgWait} mins`}
-                    change="-2 mins"
+                    change="Dynamic"
                     icon={<div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><Clock size={24} /></div>}
                     color="teal"
+                    subtitle="Based on queue size"
                   />
                 </div>
                 <div>
                   <MetricCard 
                     title="Clinical Revenue"
-                    value={`₹${stats.todayVisits * 500}`}
-                    change="+18%"
+                    value={`₹${stats.revenue.toLocaleString('en-IN')}`}
+                    change={stats.revenueChange}
                     icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
                     color="emerald"
+                    subtitle={`Consults: ₹${stats.consultFees} · Labs: ₹${stats.labFees}`}
                   />
                 </div>
                 <div>
@@ -239,6 +304,7 @@ const AdminDashboard = () => {
                     change="Live"
                     icon={<div className="p-3 bg-rose-50 text-rose-600 rounded-2xl"><ShieldCheck size={24} /></div>}
                     color="rose"
+                    subtitle="Staff on duty"
                   />
                 </div>
               </div>
@@ -369,16 +435,20 @@ const AdminDashboard = () => {
   );
 };
 
-const MetricCard = ({ title, value, change, icon, color }) => {
-  const trendBg = change.includes('+') || change === 'Live' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 
+const MetricCard = ({ title, value, change, icon, color, subtitle }) => {
+  const isPositive = change.includes('+') || change === 'Live' || change === 'Active' || change === 'Dynamic';
+  const trendBg = isPositive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 
                   change.includes('-') ? 'bg-teal-50 text-teal-600 border border-teal-100/50' : 'bg-slate-50 text-slate-400';
 
   return (
-    <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-24 flex flex-col justify-between">
+    <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-[6.5rem] flex flex-col justify-between">
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
           <span className="text-xl font-bold text-slate-900 leading-none">{value}</span>
+          {subtitle && (
+            <span className="text-[8px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
+          )}
         </div>
         <div className="shrink-0 scale-90">
           {icon}
