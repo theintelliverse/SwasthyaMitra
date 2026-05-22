@@ -154,58 +154,58 @@ const AdminReports = () => {
 
                 <div className="grid lg:grid-cols-3 gap-10">
                     {/* Left Panel: Controls */}
-                    <div className="lg:col-span-1 space-y-8">
-                        <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm">
-                            <div className="flex justify-between items-center mb-8">
-                                <h3 className="font-black text-xl text-slate-900">Intelligence Portal</h3>
-                                <div className="p-2 bg-slate-50 rounded-xl text-slate-400"><FileSpreadsheet size={20} /></div>
+                    <div className="lg:col-span-1 space-y-4">
+                        <div className="bg-white border border-slate-100 p-5 rounded-3xl shadow-sm">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-black text-lg text-slate-900">Intelligence Portal</h3>
+                                <div className="p-1.5 bg-slate-50 rounded-lg text-slate-400"><FileSpreadsheet size={16} /></div>
                             </div>
                             
-                            <div className="space-y-6 mb-10">
+                            <div className="space-y-4 mb-5">
                                 <DateInput label="Start Date" onChange={(e) => setDates({...dates, start: e.target.value})} />
                                 <DateInput label="End Date" onChange={(e) => setDates({...dates, end: e.target.value})} />
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-2.5">
                                 <button 
                                     onClick={() => fetchPreviewData()}
                                     disabled={loading || !dates.start || !dates.end}
-                                    className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-slate-800 transition-all disabled:opacity-30 active:scale-95"
+                                    className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-slate-800 transition-all disabled:opacity-30 active:scale-95"
                                 >
-                                    {loading ? <Loader2 size={18} className="animate-spin" /> : <CalendarSearch size={18} />}
+                                    {loading ? <Loader2 size={14} className="animate-spin" /> : <CalendarSearch size={14} />}
                                     {loading ? 'Accessing...' : 'Review Intelligence'}
                                 </button>
 
                                 <button 
                                     onClick={handleDownload}
                                     disabled={isDownloading || !hasSearched}
-                                    className="w-full bg-teal-600 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 disabled:opacity-30 active:scale-95"
+                                    className="w-full bg-teal-600 text-white py-3.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/10 disabled:opacity-30 active:scale-95"
                                 >
-                                    {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                                    {isDownloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                                     {isDownloading ? 'Generating...' : 'Export CSV Report'}
                                 </button>
                             </div>
                             
-                            <div className="mt-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                                <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
+                            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[9px] font-bold text-slate-400 leading-normal uppercase tracking-wider">
                                     Define a date range to unlock medical logs, staff productivity metrics, and duty cycles.
                                 </p>
                             </div>
                         </div>
 
                         {/* Summary Widget */}
-                        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative group">
+                        <div className="bg-slate-900 p-5 rounded-3xl text-white overflow-hidden relative group">
                             <div className="relative z-10">
-                                <h4 className="text-lg font-black mb-1">Operational Health</h4>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Total Logs Processed</p>
-                                <div className="text-4xl font-black text-teal-500 mb-2">
+                                <h4 className="text-base font-black mb-0.5">Operational Health</h4>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Logs Processed</p>
+                                <div className="text-3xl font-black text-teal-500 mb-1.5">
                                     {data.medicalRecords.length + data.sessions.length}+
                                 </div>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                                     {hasSearched ? `Range: ${dates.start} to ${dates.end}` : "Today's Clinical Activity"}
                                 </p>
                             </div>
-                            <ShieldCheck size={120} className="absolute -bottom-10 -right-10 text-white/5 group-hover:rotate-12 transition-transform duration-500" />
+                            <ShieldCheck size={80} className="absolute -bottom-6 -right-6 text-white/5 group-hover:rotate-12 transition-transform duration-500" />
                         </div>
                     </div>
 
@@ -358,10 +358,10 @@ const TabBtn = ({ active, onClick, icon, label }) => (
 
 const DateInput = ({ label, onChange }) => (
     <div className="group">
-        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-3 block mb-2 group-focus-within:text-teal-600 transition-colors">{label}</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2.5 block mb-1.5 group-focus-within:text-teal-600 transition-colors">{label}</label>
         <input 
             type="date" 
-            className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-teal-500 focus:bg-white text-sm font-bold transition-all shadow-sm"
+            className="w-full bg-slate-50 border border-slate-100 p-3 rounded-xl outline-none focus:border-teal-500 focus:bg-white text-xs font-bold transition-all shadow-sm"
             onChange={onChange}
         />
     </div>
