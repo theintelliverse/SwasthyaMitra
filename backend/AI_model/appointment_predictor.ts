@@ -425,10 +425,8 @@ export function predictSingleUser(userData: AppointmentInput): number {
 }
 
 export async function estimateWaitTimeFromDb(context: WaitTimeContext): Promise<number> {
-    if (context.clinicId || context.doctorId) {
-        await loadHistoricalStats({ clinicId: context.clinicId, doctorId: context.doctorId, limit: 500 });
-    } else if (!modelReady) {
-        await loadHistoricalStats({ limit: 500 });
+    if (!modelReady && !trainingInProgress) {
+        await loadHistoricalStats({ limit: 2000 });
     }
 
     let peopleAhead = Math.max(context.peopleAhead || 0, 0);
