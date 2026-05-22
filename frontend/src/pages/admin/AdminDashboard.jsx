@@ -276,61 +276,61 @@ const AdminDashboard = () => {
                  </div>
               </div>
             </div>            {/* Right Section: Quick Actions & Staff Duty */}
-            <div className="lg:col-span-1 space-y-8">
+            <div className="lg:col-span-1 space-y-4">
               
               {/* Quick Action Grid */}
-              <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm">
-                <h3 className="text-lg md:text-xl font-black text-slate-900 mb-6 flex items-center justify-between">
+              <div className="bg-white p-4 md:p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 className="text-base md:text-lg font-black text-slate-900 mb-3 flex items-center justify-between">
                   Operations
-                  <Layout size={18} className="text-slate-200" />
+                  <Layout size={16} className="text-slate-200" />
                 </h3>
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 gap-2.5">
                    <button 
                      onClick={() => navigate('/admin/staff-management')}
-                     className="p-4 md:p-5 bg-indigo-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-indigo-100/50 group hover:bg-indigo-600 transition-all duration-300"
+                     className="p-3 md:p-3.5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 flex flex-col items-center justify-center text-center group hover:bg-indigo-600 transition-all duration-300"
                    >
-                      <UserPlus size={20} className="text-indigo-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
-                      <p className="text-[9px] md:text-[10px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest leading-none">Add Staff</p>
+                      <UserPlus size={18} className="text-indigo-600 group-hover:text-white transition-colors mb-1.5" />
+                      <p className="text-[9px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest leading-none">Add Staff</p>
                    </button>
                    <button 
                      onClick={() => navigate('/admin/reports')}
-                     className="p-4 md:p-5 bg-teal-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-teal-100/50 group hover:bg-teal-600 transition-all duration-300"
+                     className="p-3 md:p-3.5 bg-teal-50/50 rounded-2xl border border-teal-100/50 flex flex-col items-center justify-center text-center group hover:bg-teal-600 transition-all duration-300"
                    >
-                      <FileSpreadsheet size={20} className="text-teal-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
-                      <p className="text-[9px] md:text-[10px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Reports</p>
+                      <FileSpreadsheet size={18} className="text-teal-600 group-hover:text-white transition-colors mb-1.5" />
+                      <p className="text-[9px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Reports</p>
                    </button>
                    <button 
                      onClick={() => navigate('/receptionist/dashboard?fromAdmin=true')}
-                     className="p-4 md:p-5 bg-rose-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-rose-100/50 group hover:bg-rose-600 transition-all duration-300"
+                     className="p-3 md:p-3.5 bg-rose-50/50 rounded-2xl border border-rose-100/50 flex flex-col items-center justify-center text-center group hover:bg-rose-600 transition-all duration-300"
                    >
-                      <Layout size={20} className="text-rose-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
-                      <p className="text-[9px] md:text-[10px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest leading-none">Front Desk</p>
+                      <Layout size={18} className="text-rose-600 group-hover:text-white transition-colors mb-1.5" />
+                      <p className="text-[9px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest leading-none">Front Desk</p>
                    </button>
                    <button 
                      onClick={() => window.open(publicDisplayUrl, '_blank')}
-                     className="p-4 md:p-5 bg-sky-50/50 rounded-[1.5rem] md:rounded-[2rem] border border-sky-100/50 group hover:bg-sky-600 transition-all duration-300"
+                     className="p-3 md:p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100/50 flex flex-col items-center justify-center text-center group hover:bg-sky-600 transition-all duration-300"
                    >
-                      <Tv size={20} className="text-sky-600 group-hover:text-white transition-colors mb-2 md:mb-3" />
-                      <p className="text-[9px] md:text-[10px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
+                      <Tv size={18} className="text-sky-600 group-hover:text-white transition-colors mb-1.5" />
+                      <p className="text-[9px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
                    </button>
                  </div>
               </div>
 
               {/* Staff Status Tracker */}
-              <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-                <div className="flex justify-between items-center mb-6">
-                   <h3 className="text-lg md:text-xl font-black text-slate-900">Staff Duty Roster</h3>
+              <div className="bg-white p-4 md:p-5 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="flex justify-between items-center mb-3.5">
+                   <h3 className="text-base md:text-lg font-black text-slate-900">Staff Duty Roster</h3>
                    <button onClick={() => navigate('/admin/staff-management')} className="text-[9px] font-black text-teal-600 uppercase tracking-widest hover:underline">Manage</button>
                 </div>
-                <div className="space-y-4 md:space-y-5">
+                <div className="space-y-2.5 md:space-y-3">
                    {recentStaffActivity.map((staff, idx) => (
                      <div key={idx} className="flex items-center justify-between group">
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-50 text-slate-400 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                        <div className="flex items-center gap-2.5">
+                           <div className="w-7 h-7 md:w-8 md:h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-[10px] md:text-xs uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                               {staff.name.substring(0, 2)}
                            </div>
                            <div>
-                              <p className="text-xs md:text-sm font-black text-slate-900 leading-none mb-1">{staff.name}</p>
+                              <p className="text-xs font-black text-slate-900 leading-none mb-1">{staff.name}</p>
                               <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">{staff.role}</p>
                            </div>
                         </div>
@@ -338,27 +338,27 @@ const AdminDashboard = () => {
                      </div>
                    ))}
                    {recentStaffActivity.length === 0 && (
-                     <div className="text-center py-6">
-                        <AlertCircle size={28} className="mx-auto text-slate-100 mb-2" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
+                     <div className="text-center py-4">
+                        <AlertCircle size={22} className="mx-auto text-slate-100 mb-1.5" />
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
                      </div>
                    )}
                 </div>
               </div>
 
               {/* System Health Info */}
-              <div className="bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] text-white relative overflow-hidden">
+              <div className="bg-slate-900 p-4 md:p-5 rounded-3xl text-white relative overflow-hidden">
                  <div className="relative z-10">
-                    <h4 className="text-base md:text-lg font-black mb-1">System Health</h4>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Global Sync Status</p>
-                    <div className="flex items-center gap-4">
-                       <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <h4 className="text-sm md:text-base font-black mb-0.5">System Health</h4>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-3">Global Sync Status</p>
+                    <div className="flex items-center gap-3">
+                       <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div className="h-full bg-teal-500 rounded-full w-[98.8%]" />
                        </div>
                        <span className="text-xs font-black text-teal-500">98.8%</span>
                     </div>
                  </div>
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
+                 <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/10 blur-2xl rounded-full -mr-12 -mt-12" />
               </div>
             </div>
           </div>
