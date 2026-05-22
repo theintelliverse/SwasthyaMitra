@@ -9,7 +9,8 @@ import Footer from '../../components/Footer';
 import {
   BarChart3, Users, Settings, ClipboardList, UserPlus,
   ArrowUpRight, ShieldCheck, Activity, Tv, Share2, Copy, Check, RefreshCw, FileSpreadsheet,
-  Clock, TrendingUp, Calendar, AlertCircle, Layout, MoreHorizontal
+  Clock, TrendingUp, Calendar, AlertCircle, Layout, MoreHorizontal,
+  X, Plus, Search, Trash2, Edit
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -27,6 +28,8 @@ const AdminDashboard = () => {
     revenueChange: '+0%',
     consultFees: 0,
     labFees: 0,
+    medicineFees: 0,
+    emergencyFees: 0,
     todayWalkins: 0,
     todayAppointments: 0,
     satisfaction: 98
@@ -220,6 +223,8 @@ const AdminDashboard = () => {
         revenueChange: revenueChange,
         consultFees: consultFees,
         labFees: labFees,
+        medicineFees: medicineFees,
+        emergencyFees: emergencyFees,
         todayWalkins: todayWalkins,
         todayAppointments: todayAppointments
       }));
@@ -308,7 +313,11 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
-      <Sidebar role="admin" />
+      <Sidebar 
+        role="admin" 
+        revenueStats={stats} 
+        onRevenueClick={() => setIsRevenueModalOpen(true)} 
+      />
 
       <div className="flex-grow flex flex-col min-h-screen overflow-y-auto">
         <main className="px-4 md:px-8 py-8 flex-grow max-w-7xl mx-auto w-full">
@@ -331,10 +340,38 @@ const AdminDashboard = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-4 flex-wrap md:flex-nowrap w-full md:w-auto">
+              {/* Clinical Revenue Nav Widget */}
+              <div 
+                onClick={() => setIsRevenueModalOpen(true)}
+                className="flex-grow md:flex-grow-0 flex items-center gap-3 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100/70 hover:to-teal-100/70 border-2 border-emerald-100/80 rounded-2xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group shrink-0"
+              >
+                <div className="p-2 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                  <TrendingUp size={16} />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5 leading-none">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
+                    <span className="px-1.5 py-0.2 bg-emerald-500/10 text-[8px] font-black text-emerald-600 rounded">
+                      {stats.revenueChange}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
+                    <span className="text-base font-black text-slate-800 leading-none">₹{stats.revenue.toLocaleString('en-IN')}</span>
+                    <span className="text-[8px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
+                      Consults: ₹{stats.consultFees} · Labs: ₹{stats.labFees}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  Live Sync
+                </div>
+              </div>
+
               <button 
                 onClick={handleShare}
-                className="flex-1 md:flex-none flex items-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-black text-[10px] text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 shadow-sm group"
+                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-black text-[10px] text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 shadow-sm group"
               >
                 <Share2 size={16} className="text-teal-500 group-hover:rotate-12 transition-transform" />
                 Live Monitor Link
@@ -521,9 +558,498 @@ const AdminDashboard = () => {
         </main>
         <Footer />
       </div>
+
+      {/* Revenue & Billing Management Modal */}
+      <RevenueModal
+        isOpen={isRevenueModalOpen}
+        onClose={() => setIsRevenueModalOpen(false)}
+        config={config}
+        handleConfigChange={handleConfigChange}
+        saveConfig={saveConfig}
+        inventory={inventory}
+        setInventory={setInventory}
+        restockMed={restockMed}
+        resetInventory={resetInventory}
+        stats={stats}
+      />
     </div>
   );
 };
+
+const RevenueModal = ({ 
+  isOpen, 
+  onClose, 
+  config, 
+  handleConfigChange, 
+  saveConfig, 
+  inventory, 
+  setInventory, 
+  restockMed, 
+  resetInventory, 
+  stats 
+}) => {
+  const [activeTab, setActiveTab] = useState('billing'); // 'billing' | 'inventory'
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [tempPrice, setTempPrice] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newMed, setNewMed] = useState({ name: '', stock: 100, minStock: 20, unitPrice: 10 });
+
+  if (!isOpen) return null;
+
+  const filteredInventory = inventory.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const startEditing = (idx, price) => {
+    setEditingIndex(idx);
+    setTempPrice(price);
+  };
+
+  const savePrice = (idx) => {
+    const updated = [...inventory];
+    updated[idx].unitPrice = Number(tempPrice) || 0;
+    setInventory(updated);
+    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    setEditingIndex(null);
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: 'Price Updated',
+      showConfirmButton: false,
+      timer: 1500,
+      background: '#EEF6FA'
+    });
+  };
+
+  const handleAddMedicine = (e) => {
+    e.preventDefault();
+    if (!newMed.name.trim()) return;
+
+    const updated = [...inventory, {
+      name: newMed.name,
+      stock: Number(newMed.stock) || 0,
+      minStock: Number(newMed.minStock) || 0,
+      unitPrice: Number(newMed.unitPrice) || 0
+    }];
+
+    setInventory(updated);
+    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    setNewMed({ name: '', stock: 100, minStock: 20, unitPrice: 10 });
+    setShowAddForm(false);
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: 'Medicine Added',
+      showConfirmButton: false,
+      timer: 1500,
+      background: '#EEF6FA'
+    });
+  };
+
+  const deleteMedicine = (idx) => {
+    Swal.fire({
+      title: 'Delete Medicine?',
+      text: `Are you sure you want to remove ${inventory[idx].name} from inventory?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#EF4444',
+      cancelButtonColor: '#94A3B8',
+      confirmButtonText: 'Delete',
+      background: '#EEF6FA'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const updated = inventory.filter((_, i) => i !== idx);
+        setInventory(updated);
+        localStorage.setItem('SM_inventory', JSON.stringify(updated));
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Medicine Deleted',
+          showConfirmButton: false,
+          timer: 1500,
+          background: '#EEF6FA'
+        });
+      }
+    });
+  };
+
+  // Calculate percentages for breakdown progress bars
+  const totalBreakdown = (stats.consultFees || 0) + (stats.labFees || 0) + (stats.medicineFees || 0) + (stats.emergencyFees || 0) || 1;
+  const consultPct = Math.round(((stats.consultFees || 0) / totalBreakdown) * 100);
+  const labPct = Math.round(((stats.labFees || 0) / totalBreakdown) * 100);
+  const medPct = Math.round(((stats.medicineFees || 0) / totalBreakdown) * 100);
+  const emergencyPct = Math.round(((stats.emergencyFees || 0) / totalBreakdown) * 100);
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div 
+        className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform scale-100 transition-all duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+              <TrendingUp className="text-emerald-500" size={24} />
+              Clinical Revenue Settings
+            </h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Manage billing rates, rules & pharmacy inventory</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setActiveTab('billing')}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'billing' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+            >
+              Billing Config
+            </button>
+            <button 
+              onClick={() => setActiveTab('inventory')}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'inventory' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+            >
+              Pharmacy Inventory
+            </button>
+            <button 
+              onClick={onClose}
+              className="ml-2 p-2 bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+          {activeTab === 'billing' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Left Form: Rates Configuration */}
+              <div className="lg:col-span-3 space-y-6">
+                <h3 className="text-base font-black text-slate-800 uppercase tracking-wider border-b pb-2 border-slate-100 flex items-center gap-2">
+                  <Settings size={18} className="text-teal-600" />
+                  Define Base Rates
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ConfigField 
+                    label="Consultation Fee" 
+                    value={config.feeConsult} 
+                    onChange={(val) => handleConfigChange('feeConsult', val)} 
+                    icon="₹"
+                  />
+                  <ConfigField 
+                    label="Lab Test Fee" 
+                    value={config.feeLab} 
+                    onChange={(val) => handleConfigChange('feeLab', val)} 
+                    icon="₹"
+                  />
+                  <ConfigField 
+                    label="Emergency Surcharge" 
+                    value={config.feeEmergency} 
+                    onChange={(val) => handleConfigChange('feeEmergency', val)} 
+                    icon="₹"
+                  />
+                  <ConfigField 
+                    label="Medicine Unit Fee" 
+                    value={config.feeMedicine} 
+                    onChange={(val) => handleConfigChange('feeMedicine', val)} 
+                    icon="₹"
+                  />
+                </div>
+
+                <div className="bg-teal-50/50 border border-teal-100/60 p-4 rounded-2xl">
+                  <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <Clock size={14} />
+                    Queue Management Wait Factor
+                  </h4>
+                  <p className="text-[10px] text-teal-600 font-bold leading-normal mb-3">
+                    Adjust how many minutes are allocated per patient in queue to calculate dynamic waiting times.
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="range" 
+                      min="5" 
+                      max="20" 
+                      value={config.avgWaitFactor}
+                      onChange={(e) => handleConfigChange('avgWaitFactor', Number(e.target.value))}
+                      className="flex-1 accent-teal-600"
+                    />
+                    <span className="px-3 py-1 bg-white border border-teal-200 text-teal-700 rounded-xl font-black text-xs shrink-0">
+                      {config.avgWaitFactor} mins/pat
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4">
+                  <button 
+                    onClick={saveConfig}
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-600/10 active:scale-95 transition-all"
+                  >
+                    Save Operational Rules
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Sidebar: Stats Breakdown */}
+              <div className="lg:col-span-2 space-y-6 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                <div>
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Today's Total</h3>
+                  <div className="text-3xl font-black text-slate-900">₹{stats.revenue.toLocaleString('en-IN')}</div>
+                  <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-emerald-600">
+                    <span className="px-1.5 py-0.2 bg-emerald-50 rounded">{stats.revenueChange}</span>
+                    <span>Vs Yesterday</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-slate-200/60">
+                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Revenue Breakdown</h4>
+                  
+                  <BreakdownBar 
+                    label="Consultations" 
+                    amount={stats.consultFees || 0} 
+                    percentage={consultPct} 
+                    color="bg-indigo-500" 
+                  />
+                  <BreakdownBar 
+                    label="Laboratory Tests" 
+                    amount={stats.labFees || 0} 
+                    percentage={labPct} 
+                    color="bg-teal-500" 
+                  />
+                  <BreakdownBar 
+                    label="Prescribed Medicines" 
+                    amount={stats.medicineFees || 0} 
+                    percentage={medPct} 
+                    color="bg-amber-500" 
+                  />
+                  <BreakdownBar 
+                    label="Emergency Surcharges" 
+                    amount={stats.emergencyFees || 0} 
+                    percentage={emergencyPct} 
+                    color="bg-rose-500" 
+                  />
+                  
+                  <div className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between mt-6">
+                    <div>
+                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Stream</h5>
+                      <p className="text-xs font-bold text-slate-800 mt-0.5">Real-time Connection</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[9px] font-black text-emerald-600 uppercase tracking-wider">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      Live Syncing
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" 
+                    placeholder="Search medicine..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:border-teal-500 transition-all"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowAddForm(!showAddForm)}
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-teal-600/10 active:scale-95"
+                  >
+                    <Plus size={14} />
+                    {showAddForm ? 'Cancel' : 'Add Item'}
+                  </button>
+                  <button 
+                    onClick={resetInventory}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                  >
+                    Reset Inventory
+                  </button>
+                </div>
+              </div>
+
+              {/* Add New Medicine Form */}
+              {showAddForm && (
+                <form onSubmit={handleAddMedicine} className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-4 items-end animate-in slide-in-from-top-3 duration-250">
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Medicine Name</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="e.g. Ibuprofen 400mg"
+                      value={newMed.name}
+                      onChange={(e) => setNewMed({...newMed, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Initial Stock</label>
+                    <input 
+                      type="number" 
+                      required
+                      min="1" 
+                      value={newMed.stock}
+                      onChange={(e) => setNewMed({...newMed, stock: Number(e.target.value)})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Unit Price (₹)</label>
+                    <input 
+                      type="number" 
+                      required
+                      min="1" 
+                      value={newMed.unitPrice}
+                      onChange={(e) => setNewMed({...newMed, unitPrice: Number(e.target.value)})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                    />
+                  </div>
+                  <div className="md:col-span-4 flex justify-end">
+                    <button 
+                      type="submit"
+                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider"
+                    >
+                      Save to Inventory
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Medicines Inventory List */}
+              <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="p-4">Item Name</th>
+                      <th className="p-4">Stock Level</th>
+                      <th className="p-4">Unit Price</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredInventory.map((item, idx) => {
+                      const isLowStock = item.stock <= item.minStock;
+                      const stockPct = Math.min(100, Math.max(0, (item.stock / 150) * 100));
+                      const stockColor = item.stock <= item.minStock ? 'bg-rose-500' : item.stock <= item.minStock * 2 ? 'bg-amber-500' : 'bg-emerald-500';
+
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="p-4">
+                            <span className="text-xs font-black text-slate-800 block">{item.name}</span>
+                            {isLowStock && (
+                              <span className="inline-block mt-1 px-1.5 py-0.2 bg-rose-50 border border-rose-100 text-[8px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
+                            )}
+                          </td>
+                          <td className="p-4 w-1/3">
+                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1.5">
+                              <span>{item.stock} Units</span>
+                              <span>Min: {item.minStock}</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={`h-full ${stockColor} rounded-full transition-all`} style={{width: `${stockPct}%`}} />
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            {editingIndex === idx ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-slate-500">₹</span>
+                                <input 
+                                  type="number"
+                                  className="w-16 px-1.5 py-0.8 border border-slate-300 rounded text-xs font-black outline-none focus:border-teal-500"
+                                  value={tempPrice}
+                                  onChange={(e) => setTempPrice(e.target.value)}
+                                />
+                                <button 
+                                  onClick={() => savePrice(idx)}
+                                  className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                                >
+                                  <Check size={12} />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-slate-800">₹{item.unitPrice}</span>
+                                <button 
+                                  onClick={() => startEditing(idx, item.unitPrice)}
+                                  className="p-1 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-all"
+                                >
+                                  <Edit size={12} className="text-slate-400 hover:text-teal-600" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => restockMed(idx)}
+                                className="px-2.5 py-1 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[10px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-lg transition-all active:scale-95"
+                              >
+                                Restock (+50)
+                              </button>
+                              <button 
+                                onClick={() => deleteMedicine(idx)}
+                                className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredInventory.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="text-center py-8 text-slate-400 font-bold text-xs">
+                          No matching medicines found in inventory.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ConfigField = ({ label, value, onChange, icon }) => (
+  <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors">
+    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">{label}</label>
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">{icon}</span>
+      <input 
+        type="number" 
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        className="w-full bg-white border border-slate-200/60 pl-8 pr-3 py-2 rounded-xl text-sm font-black text-slate-800 outline-none focus:border-teal-500 transition-colors"
+      />
+    </div>
+  </div>
+);
+
+const BreakdownBar = ({ label, amount, percentage, color }) => (
+  <div className="space-y-1.5">
+    <div className="flex justify-between items-center text-[11px] font-bold text-slate-600">
+      <span>{label}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="font-black text-slate-800">₹{amount.toLocaleString('en-IN')}</span>
+        <span className="text-[9px] text-slate-400">({percentage}%)</span>
+      </div>
+    </div>
+    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className={`h-full ${color} rounded-full transition-all`} style={{width: `${percentage}%`}} />
+    </div>
+  </div>
+);
 
 const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) => {
   const isPositive = change.includes('+') || change === 'Live' || change === 'Active' || change === 'Dynamic';
