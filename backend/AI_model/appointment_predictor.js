@@ -365,7 +365,7 @@ async function estimateWaitTimeFromDb(context) {
     if (!peopleAhead && (context.clinicId || context.doctorId)) {
         const queueQuery = {
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] }
+            status: { $in: ['Waiting', 'In-Consultation', 'Lab-Pending', 'Lab-Processing'] }
         };
 
         if (context.clinicId) {
@@ -388,8 +388,13 @@ async function estimateWaitTimeFromDb(context) {
                     return false;
                 }
 
+                let isLab = entry.status === 'Lab-Pending' || entry.status === 'Lab-Processing';
+                if (isLab) return true; // Lab patients count as ahead
                 return true;
             }).length;
+
+            const labCount = activeQueue.filter(entry => entry.status === 'Lab-Pending' || entry.status === 'Lab-Processing').length;
+            peopleAhead += labCount * 0.5; // Lab patients add 50% more weight to wait time
         }
     }
 

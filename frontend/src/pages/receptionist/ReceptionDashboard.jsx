@@ -388,7 +388,10 @@ const ReceptionDashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-[#AFC4D8]/30">
                     {activeTab === 'live' ? (
-                      queue.filter(p => p.patientName.toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => a.isEmergency === b.isEmergency ? 0 : a.isEmergency ? -1 : 1).map((p) => (
+                      queue.filter(p => 
+                        p.patientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                        p.status !== 'In-Consultation' && p.status !== 'Completed'
+                      ).sort((a, b) => a.isEmergency === b.isEmergency ? 0 : a.isEmergency ? -1 : 1).map((p) => (
                         <tr key={p._id} className={`${p.isEmergency ? 'bg-red-50/50' : ''} hover:bg-parchment/50 transition-colors animate-in duration-300`}>
                           <td className="px-3 md:px-10 py-3 md:py-6">
                             <div className={`w-10 md:w-14 h-10 md:h-14 rounded-lg md:rounded-2xl flex flex-col items-center justify-center border shadow-sm text-[7px] md:text-[8px] ${p.isEmergency ? 'border-red-600 bg-red-600 text-white' : 'border-sandstone bg-white'}`}><span className={`font-black uppercase ${p.isEmergency ? 'text-white' : 'text-khaki'}`}>TK</span><span className="font-heading text-lg md:text-xl">{p.tokenNumber}</span></div>
@@ -399,7 +402,11 @@ const ReceptionDashboard = () => {
                               <p className="text-[8px] md:text-[10px] text-khaki font-bold truncate">Dr. {p.doctorId?.name}</p>
                             </div>
                           </td>
-                          <td className="px-3 md:px-10 py-3 md:py-6 text-center hidden lg:table-cell"><span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-parchment text-khaki border-sandstone'}`}>{p.status === 'In-Consultation' ? 'Active' : p.status}</span></td>
+                          <td className="px-3 md:px-10 py-3 md:py-6 text-center hidden lg:table-cell">
+                            <span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-tighter border inline-block ${p.status === 'In-Consultation' ? 'bg-green-100 text-green-700 border-green-200' : p.status.startsWith('Lab') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-parchment text-khaki border-sandstone'}`}>
+                              {p.status === 'In-Consultation' ? 'Active' : p.status.startsWith('Lab') ? 'Go for Lab' : p.status}
+                            </span>
+                          </td>
                           <td className="px-3 md:px-10 py-3 md:py-6 text-right">
                             <div className="flex justify-end gap-1 md:gap-2">
                               {p.status === 'Waiting' && (

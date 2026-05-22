@@ -92,9 +92,9 @@ const LabDashboard = () => {
   const [showReportConfigModal, setShowReportConfigModal] = useState(false);
   const [reportConfig, setReportConfig] = useState({
     labName: localStorage.getItem('clinicName') || 'SwasthyaMitra Lab',
-    primaryColor: '#14B8A6',
-    headerFontSize: 24,
-    bodyFontSize: 12,
+    primaryColor: localStorage.getItem('primaryColor') || '#14B8A6',
+    headerFontSize: parseInt(localStorage.getItem('headerFontSize') || '24'),
+    bodyFontSize: parseInt(localStorage.getItem('bodyFontSize') || '12'),
     reportType: 'Daily',
     defaultNotes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
     defaultDoctorName: localStorage.getItem('defaultDoctorName') || 'Laboratory'
@@ -401,6 +401,9 @@ const LabDashboard = () => {
     localStorage.setItem('defaultNotes', reportConfig.defaultNotes || '');
     localStorage.setItem('defaultDoctorName', reportConfig.defaultDoctorName || '');
     localStorage.setItem('clinicName', reportConfig.labName || '');
+    localStorage.setItem('primaryColor', reportConfig.primaryColor || '#14B8A6');
+    localStorage.setItem('headerFontSize', reportConfig.headerFontSize?.toString() || '24');
+    localStorage.setItem('bodyFontSize', reportConfig.bodyFontSize?.toString() || '12');
     setShowReportConfigModal(false);
     Swal.fire({
       icon: 'success',
@@ -413,22 +416,22 @@ const LabDashboard = () => {
 
   const handleDownloadReport = (report) => {
     const doc = new jsPDF();
-    const primaryColor = reportConfig.primaryColor;
+    const { primaryColor, headerFontSize, bodyFontSize, labName } = reportConfig;
 
     // Header
     doc.setFillColor(primaryColor);
     doc.rect(0, 0, 210, 40, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text(reportConfig.labName, 20, 25);
+    doc.setFontSize(headerFontSize);
+    doc.text(labName, 20, 25);
 
     // Patient Info
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
+    doc.setFontSize(bodyFontSize + 2);
     doc.text('PATIENT REPORT', 20, 55);
     doc.line(20, 58, 190, 58);
 
-    doc.setFontSize(10);
+    doc.setFontSize(bodyFontSize);
     doc.text(`Patient Name: ${report.patientName}`, 20, 70);
     doc.text(`Phone: ${report.patientPhone}`, 20, 75);
     doc.text(`Date: ${new Date(report.createdAt).toLocaleDateString()}`, 140, 70);
@@ -445,7 +448,8 @@ const LabDashboard = () => {
       head: [tableData[0]],
       body: [tableData[1]],
       theme: 'striped',
-      headStyles: { fillColor: primaryColor }
+      headStyles: { fillColor: primaryColor, fontSize: bodyFontSize + 1 },
+      bodyStyles: { fontSize: bodyFontSize }
     });
 
     // Footer
@@ -514,16 +518,16 @@ const LabDashboard = () => {
 
     try {
       const doc = new jsPDF();
-      const primaryColor = reportConfig.primaryColor || '#0f9488';
+      const { primaryColor, headerFontSize, bodyFontSize, labName } = reportConfig;
 
       // Professional Header
       doc.setFillColor(primaryColor);
       doc.rect(0, 0, 210, 40, 'F');
 
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(headerFontSize);
       doc.setFont("helvetica", "bold");
-      doc.text(reportConfig.labName || 'SWASTHYAMITRA PATHOLOGY LAB', 20, 25);
+      doc.text(labName || 'SWASTHYAMITRA PATHOLOGY LAB', 20, 25);
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -531,12 +535,12 @@ const LabDashboard = () => {
 
       // Patient Information
       doc.setTextColor(0, 0, 0);
-      doc.setFontSize(14);
+      doc.setFontSize(bodyFontSize + 4);
       doc.setFont("helvetica", "bold");
       doc.text('PATIENT DIAGNOSTIC REPORT', 20, 55);
       doc.line(20, 58, 190, 58);
 
-      doc.setFontSize(11);
+      doc.setFontSize(bodyFontSize + 1);
       doc.setFont("helvetica", "normal");
       doc.text(`Patient Name: ${activeDigitalPatient.patientName}`, 20, 70);
       doc.text(`Phone Number: ${activeDigitalPatient.patientPhone}`, 20, 78);
@@ -546,12 +550,12 @@ const LabDashboard = () => {
       doc.text(`Report ID: SMP-${activeDigitalPatient._id.slice(-8).toUpperCase()}`, 130, 78);
 
       // Findings Section
-      doc.setFontSize(14);
+      doc.setFontSize(bodyFontSize + 4);
       doc.setFont("helvetica", "bold");
       doc.text('TEST RESULTS & OBSERVATIONS', 20, 105);
       doc.line(20, 108, 190, 108);
 
-      doc.setFontSize(11);
+      doc.setFontSize(bodyFontSize + 1);
       doc.setFont("helvetica", "normal");
 
       const findingsLines = doc.splitTextToSize(digitalReportForm.findings, 170);
@@ -559,12 +563,12 @@ const LabDashboard = () => {
 
       // Pathologist Notes Section
       const startNotesY = 118 + (findingsLines.length * 7) + 15;
-      doc.setFontSize(14);
+      doc.setFontSize(bodyFontSize + 4);
       doc.setFont("helvetica", "bold");
       doc.text('CLINICAL NOTES & INTERPRETATION', 20, startNotesY);
       doc.line(20, startNotesY + 3, 190, startNotesY + 3);
 
-      doc.setFontSize(11);
+      doc.setFontSize(bodyFontSize + 1);
       doc.setFont("helvetica", "normal");
       const notesLines = doc.splitTextToSize(digitalReportForm.notes, 170);
       doc.text(notesLines, 20, startNotesY + 12);
