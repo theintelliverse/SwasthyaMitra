@@ -44,7 +44,7 @@ const Reports = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/api/staff/all-reports`, {
+      const res = await axios.get(`${API_URL}/api/lab/reports/recent?limit=50&filter=all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {

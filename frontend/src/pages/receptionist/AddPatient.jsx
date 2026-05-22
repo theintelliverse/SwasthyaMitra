@@ -207,17 +207,17 @@ const AddPatient = () => {
             <div>
               <button 
                 onClick={() => navigate('/receptionist/dashboard')}
-                className="flex items-center gap-2 text-xs font-bold text-khaki hover:text-marigold transition-colors mb-3 uppercase tracking-wider"
+                className="flex items-center gap-2 text-[10px] font-bold text-khaki hover:text-marigold transition-colors mb-2 uppercase tracking-wider"
               >
-                <ArrowLeft size={14} /> Back to Dashboard
+                <ArrowLeft size={12} /> Back to Dashboard
               </button>
-              <h1 className="text-4xl font-black tracking-tight text-teak leading-tight">Patient Entry Portal</h1>
-              <p className="text-sm text-khaki font-medium mt-1">Register walk-in patients and generate live queue tokens instantly.</p>
+              <h1 className="text-2xl font-black tracking-tight text-teak leading-tight">Patient Entry Portal</h1>
+              <p className="text-xs text-khaki font-medium mt-1">Register walk-in patients and generate live queue tokens instantly.</p>
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-marigold/10 text-marigold rounded-full text-[10px] font-black uppercase tracking-widest border border-marigold/10 flex items-center gap-2">
-                <Sparkles size={12} className="animate-pulse" /> Live Synchronization
+              <span className="px-3 py-1 bg-marigold/10 text-marigold rounded-full text-[9px] font-black uppercase tracking-widest border border-marigold/10 flex items-center gap-2">
+                <Sparkles size={10} className="animate-pulse" /> Live Synchronization
               </span>
             </div>
           </header>
@@ -225,15 +225,15 @@ const AddPatient = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Left Section: Registration Form */}
-            <div className="lg:col-span-2 space-y-6">
-              <form onSubmit={handleSubmit} className="bg-white border border-sandstone rounded-[2.5rem] shadow-sm overflow-hidden p-6 md:p-10 space-y-8 relative">
+            <div className="lg:col-span-2 space-y-4">
+              <form onSubmit={handleSubmit} className="bg-white border border-sandstone rounded-[2rem] shadow-sm overflow-hidden p-5 md:p-8 space-y-6 relative">
                 {formData.isEmergency && (
-                  <div className="absolute top-0 left-0 w-full h-2 bg-red-500 animate-pulse"></div>
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500 animate-pulse"></div>
                 )}
 
-                <div className="flex justify-between items-center pb-4 border-b border-sandstone/40">
-                  <h2 className="text-xl font-heading text-teak flex items-center gap-2">
-                    <User size={20} className="text-marigold" /> Basic Profile Info
+                <div className="flex justify-between items-center pb-3 border-b border-sandstone/40">
+                  <h2 className="text-lg font-heading text-teak flex items-center gap-2">
+                    <User size={18} className="text-marigold" /> Basic Profile Info
                   </h2>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black text-khaki uppercase tracking-widest">Emergency Priority?</span>
@@ -247,15 +247,15 @@ const AddPatient = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Patient Full Name *</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Patient Full Name *</label>
                     <div className="relative">
-                      <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
+                      <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
                       <input 
                         type="text" required placeholder="e.g. Sameer Dixit"
-                        className="w-full pl-11 pr-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                         value={formData.patientName}
                         onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
                       />
@@ -263,13 +263,13 @@ const AddPatient = () => {
                   </div>
 
                   {/* Phone */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Mobile Number *</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Mobile Number *</label>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
+                      <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
                       <input 
                         type="tel" required placeholder="10-digit mobile number"
-                        className="w-full pl-11 pr-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                         value={formData.patientPhone}
                         onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
                       />
@@ -277,21 +277,21 @@ const AddPatient = () => {
                   </div>
 
                   {/* Age */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Patient Age</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Patient Age</label>
                     <input 
                       type="number" placeholder="Age in years"
-                      className="w-full px-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                       value={formData.patientAge}
                       onChange={(e) => setFormData({ ...formData, patientAge: e.target.value })}
                     />
                   </div>
 
                   {/* Gender */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Biological Gender</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Biological Gender</label>
                     <select 
-                      className="w-full px-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                       value={formData.patientGender}
                       onChange={(e) => setFormData({ ...formData, patientGender: e.target.value })}
                     >
@@ -302,10 +302,10 @@ const AddPatient = () => {
                   </div>
 
                   {/* Blood Group */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Blood Group</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Blood Group</label>
                     <select 
-                      className="w-full px-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                       value={formData.patientBloodGroup}
                       onChange={(e) => setFormData({ ...formData, patientBloodGroup: e.target.value })}
                     >
@@ -316,10 +316,10 @@ const AddPatient = () => {
                   </div>
 
                   {/* Visit Type */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Visit Description</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Visit Description</label>
                     <select 
-                      className="w-full px-4 py-4 bg-parchment/30 border border-sandstone rounded-2xl outline-none focus:border-marigold text-sm font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
                       value={formData.visitType}
                       onChange={(e) => setFormData({ ...formData, visitType: e.target.value })}
                     >
@@ -331,43 +331,43 @@ const AddPatient = () => {
                 </div>
 
                 {/* Vitals Input Grid */}
-                <div className="space-y-4 pt-4 border-t border-sandstone/40">
-                  <h2 className="text-xl font-heading text-teak flex items-center gap-2">
-                    <HeartPulse size={20} className="text-teal-600" /> Walk-in Vitals (Optional)
+                <div className="space-y-3 pt-3 border-t border-sandstone/40">
+                  <h2 className="text-lg font-heading text-teak flex items-center gap-2">
+                    <HeartPulse size={18} className="text-teal-600" /> Walk-in Vitals (Optional)
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-khaki ml-1">BP (eg. 120/80)</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">BP (eg. 120/80)</span>
                       <input 
                         type="text" placeholder="120/80"
-                        className="px-4 py-3 bg-teal-50/10 border border-teal-100 rounded-xl outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.bloodPressure}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, bloodPressure: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-khaki ml-1">Pulse (bpm)</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Pulse (bpm)</span>
                       <input 
                         type="text" placeholder="72"
-                        className="px-4 py-3 bg-teal-50/10 border border-teal-100 rounded-xl outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.pulseRate}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, pulseRate: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-khaki ml-1">Temp (°F)</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Temp (°F)</span>
                       <input 
                         type="text" placeholder="98.6"
-                        className="px-4 py-3 bg-teal-50/10 border border-teal-100 rounded-xl outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.temperature}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, temperature: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-khaki ml-1">Sugar (mg/dL)</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Sugar (mg/dL)</span>
                       <input 
                         type="text" placeholder="100"
-                        className="px-4 py-3 bg-teal-50/10 border border-teal-100 rounded-xl outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.sugarLevel}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, sugarLevel: e.target.value } })}
                       />
@@ -376,25 +376,25 @@ const AddPatient = () => {
                 </div>
 
                 {/* Practitioner Assignment */}
-                <div className="space-y-4 pt-4 border-t border-sandstone/40">
-                  <h2 className="text-xl font-heading text-teak flex items-center gap-2">
-                    <Stethoscope size={20} className="text-sky-600" /> Assign Medical Practitioner *
+                <div className="space-y-3 pt-3 border-t border-sandstone/40">
+                  <h2 className="text-lg font-heading text-teak flex items-center gap-2">
+                    <Stethoscope size={18} className="text-sky-600" /> Assign Medical Practitioner *
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {loadingDoctors ? (
-                      <div className="py-4 text-center text-xs animate-pulse font-medium text-slate-400">Loading Doctors...</div>
+                      <div className="py-2 text-center text-[10px] animate-pulse font-medium text-slate-400">Loading Doctors...</div>
                     ) : (
                       doctors.map(doc => (
                         <div 
                           key={doc._id}
                           onClick={() => setFormData({ ...formData, doctorId: doc._id })}
-                          className={`p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center ${formData.doctorId === doc._id ? 'border-teal-600 bg-teal-50/20' : 'border-sandstone bg-parchment/10 hover:border-marigold'}`}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${formData.doctorId === doc._id ? 'border-teal-600 bg-teal-50/20' : 'border-sandstone bg-parchment/10 hover:border-marigold'}`}
                         >
                           <div>
-                            <p className="text-sm font-black text-teak leading-tight">Dr. {doc.name}</p>
-                            <p className="text-[10px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
+                            <p className="text-xs font-black text-teak leading-tight">Dr. {doc.name}</p>
+                            <p className="text-[9px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
                           </div>
-                          <div className={`w-3 h-3 rounded-full ${doc.isAvailable ? 'bg-green-500 shadow-sm' : 'bg-slate-200'}`} />
+                          <div className={`w-2.5 h-2.5 rounded-full ${doc.isAvailable ? 'bg-green-500 shadow-sm' : 'bg-slate-200'}`} />
                         </div>
                       ))
                     )}
@@ -402,14 +402,14 @@ const AddPatient = () => {
                 </div>
 
                 {/* Form Action */}
-                <div className="pt-4">
+                <div className="pt-2">
                   <button 
                     type="submit"
                     disabled={submitting}
-                    className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${formData.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold text-white hover:bg-teak'} disabled:opacity-50 flex items-center justify-center gap-2`}
+                    className={`w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${formData.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold text-white hover:bg-teak'} disabled:opacity-50 flex items-center justify-center gap-2`}
                   >
                     {submitting ? (
-                      <><RefreshCw size={14} className="animate-spin" /> Issuing Access Token...</>
+                      <><RefreshCw size={12} className="animate-spin" /> Issuing Access Token...</>
                     ) : (
                       formData.isEmergency ? '🚨 Process Critical Emergency Token' : 'Generate Queue Access Token'
                     )}

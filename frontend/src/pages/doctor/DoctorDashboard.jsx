@@ -1285,8 +1285,8 @@ const DoctorDashboard = () => {
                       <button onClick={() => navigate('/doctor/appointments')} className="text-[9px] font-bold text-teal-600">View All</button>
                     </div>
                     <div className="space-y-1.5 flex-grow overflow-y-auto">
-                      {reminders.map((rem) => (
-                        <div key={rem._id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer">
+                      {reminders.map((rem, idx) => (
+                        <div key={rem._id || `rem-${idx}`} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-all cursor-pointer">
                           <div className={`p-1.5 rounded-md shrink-0 ${rem.type === 'lab' ? 'bg-red-50 text-red-500' : rem.type === 'followup' ? 'bg-orange-50 text-orange-500' : rem.type === 'prescription' ? 'bg-purple-50 text-purple-500' : 'bg-blue-50 text-blue-500'}`}>
                             {rem.type === 'lab' ? <FlaskConical size={12} /> : rem.type === 'followup' ? <Calendar size={12} /> : rem.type === 'prescription' ? <FileText size={12} /> : <Bell size={12} />}
                           </div>

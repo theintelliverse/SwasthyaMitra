@@ -149,20 +149,20 @@ const ProfilePage = () => {
                                 {/* Visual Banner */}
                                 <div className="absolute inset-0 bg-gradient-to-b from-teal-500/10 via-transparent to-slate-900 opacity-50 group-hover:opacity-100 transition-opacity duration-700 -z-10"></div>
                                 
-                                <div className={`h-32 ${role === 'patient' ? 'bg-gradient-to-br from-teal-900 to-slate-900' : 'bg-gradient-to-r from-slate-800 to-slate-900'} relative overflow-hidden border-b border-white/5`}>
+                                <div className={`h-24 ${role === 'patient' ? 'bg-gradient-to-br from-teal-900 to-slate-900' : 'bg-gradient-to-r from-slate-800 to-slate-900'} relative overflow-hidden border-b border-white/5`}>
                                     <div className="absolute inset-0 opacity-[0.15]">
-                                        <div className="absolute -top-8 -right-8 p-6 rotate-12 transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-125"><Activity size={120} className="text-teal-400" /></div>
-                                        <div className="absolute -bottom-8 -left-8 p-3 -rotate-12 transition-transform duration-1000 group-hover:-rotate-45 group-hover:scale-125"><ShieldCheck size={100} className="text-indigo-400" /></div>
+                                        <div className="absolute -top-8 -right-8 p-6 rotate-12 transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-125"><Activity size={100} className="text-teal-400" /></div>
+                                        <div className="absolute -bottom-8 -left-8 p-3 -rotate-12 transition-transform duration-1000 group-hover:-rotate-45 group-hover:scale-125"><ShieldCheck size={80} className="text-indigo-400" /></div>
                                     </div>
                                 </div>
-                                <div className="px-6 pb-10 pt-16 relative flex flex-col items-center">
-                                    <div className="absolute -top-14 group-hover:-translate-y-2 transition-transform duration-500">
-                                        <div className="w-28 h-28 bg-gradient-to-br from-teal-400 via-teal-500 to-indigo-600 rounded-3xl flex items-center justify-center text-5xl text-white shadow-[0_0_40px_rgba(45,212,191,0.4)] border-[4px] border-slate-900 font-black ring-1 ring-white/10 group-hover:shadow-[0_0_60px_rgba(45,212,191,0.6)] transition-all duration-500">
+                                <div className="px-5 pb-6 pt-12 relative flex flex-col items-center">
+                                    <div className="absolute -top-10 group-hover:-translate-y-2 transition-transform duration-500">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-teal-400 via-teal-500 to-indigo-600 rounded-3xl flex items-center justify-center text-4xl text-white shadow-[0_0_30px_rgba(45,212,191,0.4)] border-[3px] border-slate-900 font-black ring-1 ring-white/10 group-hover:shadow-[0_0_50px_rgba(45,212,191,0.6)] transition-all duration-500">
                                             {user.name?.charAt(0)}
                                         </div>
-                                        <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center border border-white/10">
-                                            <div className="w-7 h-7 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(20,184,166,0.8)]">
-                                                <Check size={16} strokeWidth={3} />
+                                        <div className="absolute -bottom-1.5 -right-1.5 w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center border border-white/10">
+                                            <div className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(20,184,166,0.8)]">
+                                                <Check size={12} strokeWidth={3} />
                                             </div>
                                         </div>
                                     </div>
@@ -176,23 +176,23 @@ const ProfilePage = () => {
                                         {role === 'patient' ? `Member since ${new Date(user.createdAt || Date.now()).getFullYear()}` : (user.specialization || "Clinical Associate")}
                                     </p>
 
-                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8"></div>
+                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>
 
-                                    <div className="flex flex-col w-full gap-3 relative z-10">
+                                    <div className="flex flex-col w-full gap-2 relative z-10">
                                         <button 
                                             onClick={() => setIsEditing(!isEditing)} 
-                                            className={`w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all border flex justify-center items-center gap-2.5 overflow-hidden relative group/btn ${isEditing ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'}`}
+                                            className={`w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all border flex justify-center items-center gap-2.5 overflow-hidden relative group/btn ${isEditing ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'}`}
                                         >
                                             <div className="absolute inset-0 bg-white/5 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                                             <span className="relative z-10 flex items-center gap-2.5">
-                                                {isEditing ? <><X size={16} /> Cancel Edit</> : <><Edit3 size={16} /> Edit Profile</>}
+                                                {isEditing ? <><X size={14} /> Cancel</> : <><Edit3 size={14} /> Edit Profile</>}
                                             </span>
                                         </button>
                                         <button 
                                             onClick={handleLogout} 
-                                            className="w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all bg-transparent text-slate-500 border border-transparent hover:bg-white/5 hover:text-white flex justify-center items-center gap-2.5"
+                                            className="w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all bg-transparent text-slate-500 border border-transparent hover:bg-white/5 hover:text-white flex justify-center items-center gap-2.5"
                                         >
-                                            <LogOut size={16} /> Sign Out
+                                            <LogOut size={14} /> Sign Out
                                         </button>
                                     </div>
                                 </div>
@@ -227,22 +227,21 @@ const ProfilePage = () => {
 
                         {/* RIGHT COLUMN: Form Details */}
                         <div className="lg:col-span-8">
-                            <form onSubmit={handleUpdate} className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white relative overflow-hidden group/form">
+                            <form onSubmit={handleUpdate} className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-6 md:p-8 shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white relative overflow-hidden group/form">
                                 <div className="absolute top-0 right-0 w-96 h-96 bg-teal-100/40 rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none opacity-50 group-hover/form:opacity-100 transition-opacity duration-1000"></div>
                                 
-                                <div className="mb-10 pb-8 border-b border-slate-100/50 flex items-center justify-between relative z-10">
+                                <div className="mb-6 pb-6 border-b border-slate-100/50 flex items-center justify-between relative z-10">
                                     <div>
-                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">Profile Details</h3>
-                                        <p className="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-[0.2em]">Update your information</p>
+                                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Profile Details</h3>
                                     </div>
                                     {isEditing && (
-                                        <button type="submit" disabled={saveLoading} className="hidden sm:flex px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all items-center gap-2.5 active:scale-95 disabled:opacity-50">
-                                            {saveLoading ? <Loader size={16} className="animate-spin text-teal-400" /> : <Save size={16} className="text-teal-400" />} Save Changes
+                                        <button type="submit" disabled={saveLoading} className="hidden sm:flex px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all items-center gap-2.5 active:scale-95 disabled:opacity-50">
+                                            {saveLoading ? <Loader size={14} className="animate-spin text-teal-400" /> : <Save size={14} className="text-teal-400" />} Save Changes
                                         </button>
                                     )}
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-x-8 gap-y-8 relative z-10">
+                                <div className="grid md:grid-cols-2 gap-x-6 gap-y-5 relative z-10">
                                     <ProfileInput 
                                         icon={<User size={18} />} 
                                         label="Full Identity" 
@@ -277,11 +276,11 @@ const ProfilePage = () => {
                                                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] group-focus-within:text-teal-600 transition-colors">Gender Identity</label>
                                                 <div className="relative">
                                                     <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors ${isEditing && 'group-focus-within:text-teal-600'}`}>
-                                                        <UserCircle size={18} />
+                                                        <UserCircle size={16} />
                                                     </div>
                                                     <select 
                                                         disabled={!isEditing}
-                                                        className="w-full pl-12 pr-4 py-4 bg-white/50 border border-slate-200/60 rounded-2xl outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 focus:bg-white font-black text-sm text-slate-900 shadow-sm appearance-none disabled:opacity-60 disabled:bg-slate-50 transition-all duration-300"
+                                                        className="w-full pl-10 pr-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 focus:bg-white font-black text-xs text-slate-900 shadow-sm appearance-none disabled:opacity-60 disabled:bg-slate-50 transition-all duration-300"
                                                         value={user.gender || ''}
                                                         onChange={(e) => setUser({...user, gender: e.target.value})}
                                                     >

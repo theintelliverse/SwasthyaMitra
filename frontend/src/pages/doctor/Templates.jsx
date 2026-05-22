@@ -109,9 +109,9 @@ const Templates = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-1">Clinical Templates</h1>
-              <p className="text-slate-500 flex items-center gap-2 font-medium">
-                <ClipboardList size={16} className="text-indigo-500" />
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Clinical Templates</h1>
+              <p className="text-slate-500 flex items-center gap-2 font-medium text-xs">
+                <ClipboardList size={14} className="text-indigo-500" />
                 Manage and standardize your clinical protocols and medication sets
               </p>
             </div>
@@ -123,14 +123,14 @@ const Templates = () => {
                   placeholder="Protocol name or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-indigo-500 text-sm w-full md:w-64 shadow-sm transition-all"
+                  className="pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-xs w-full md:w-56 shadow-sm transition-all"
                 />
               </div>
               <button 
                 onClick={handleCreate}
-                className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+                className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
               >
-                <Plus size={20} />
+                <Plus size={16} />
               </button>
             </div>
           </div>
@@ -141,9 +141,9 @@ const Templates = () => {
                <button 
                  key={cat}
                  onClick={() => setSearchTerm(cat)}
-                 className={`px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                 className={`px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
                    searchTerm === cat 
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' 
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
                     : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-100 hover:text-indigo-600'
                  }`}
                >
@@ -176,46 +176,46 @@ const Templates = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 {filteredTemplates.map((t) => (
-                    <div key={t.id} className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+                  {filteredTemplates.map((t) => (
+                    <div key={t.id} className="bg-white border border-slate-100 p-5 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                        {/* Background Accent */}
-                       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-bl-[4rem] -mr-8 -mt-8 group-hover:scale-110 transition-transform"></div>
+                       <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-50/50 rounded-bl-[3rem] -mr-6 -mt-6 group-hover:scale-110 transition-transform"></div>
                        
-                       <div className="flex justify-between items-start mb-6 relative z-10">
-                          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-                             <FileText size={24} />
+                       <div className="flex justify-between items-start mb-4 relative z-10">
+                          <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                             <FileText size={20} />
                           </div>
                           <div className="flex gap-2">
-                             <button className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                <Edit3 size={16} />
+                             <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                                <Edit3 size={14} />
                              </button>
                              <button 
                                 onClick={() => handleDelete(t.id)}
-                                className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:text-red-600 hover:bg-red-50 transition-all"
+                                className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-red-600 hover:bg-red-50 transition-all"
                              >
-                                <Trash2 size={16} />
+                                <Trash2 size={14} />
                              </button>
                           </div>
                        </div>
                        
-                       <div className="mb-6 relative z-10">
-                          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full mb-3 inline-block">
+                       <div className="mb-4 relative z-10">
+                          <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-full mb-2 inline-block">
                              {t.category}
                           </span>
-                          <h4 className="text-xl font-black text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">{t.name}</h4>
-                          <p className="text-sm font-bold text-slate-500 leading-relaxed line-clamp-2">{t.drugs}</p>
+                          <h4 className="text-lg font-black text-slate-900 mb-1 group-hover:text-indigo-600 transition-colors">{t.name}</h4>
+                          <p className="text-xs font-bold text-slate-500 leading-relaxed line-clamp-2">{t.drugs}</p>
                        </div>
  
-                       <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest py-4 border-t border-slate-50 mt-2">
-                          <div className="flex items-center gap-2 text-slate-400">
-                             <RefreshCw size={14} className="text-indigo-500" />
+                       <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest py-3 border-t border-slate-50 mt-1">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                             <RefreshCw size={12} className="text-indigo-500" />
                              {t.instruction}
                           </div>
                           <button 
                             onClick={() => navigate('/doctor/dashboard')}
                             className="flex items-center gap-1 text-indigo-600 hover:translate-x-1 transition-transform"
                           >
-                             Use Protocol <ChevronRight size={14} />
+                             Use Protocol <ChevronRight size={12} />
                           </button>
                        </div>
                     </div>
