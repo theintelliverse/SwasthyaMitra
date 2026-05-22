@@ -280,6 +280,14 @@ const ReceptionDashboard = () => {
   const fromAdmin = new URLSearchParams(location.search).get('fromAdmin') === 'true';
   const showBackButton = fromAdmin || userRole === 'admin';
 
+  // Compute future appointments (excluding today) for the "Next" tab and badge
+  const futureAppointments = scheduledAppointments.filter(apt => {
+    if (!apt.appointmentDate) return true;
+    const aptDate = new Date(apt.appointmentDate);
+    const today = new Date();
+    return aptDate.toDateString() !== today.toDateString();
+  });
+
   return (
     <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
       <Sidebar role="receptionist" />
@@ -305,7 +313,7 @@ const ReceptionDashboard = () => {
             </button>
             <button onClick={() => setActiveTab('scheduled')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'scheduled' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
               📅 Next
-              {scheduledAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[7px] md:text-[9px] border-2 border-white">{scheduledAppointments.length}</span>}
+              {futureAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[7px] md:text-[9px] border-2 border-white">{futureAppointments.length}</span>}
             </button>
           </div>
         </nav>
@@ -435,7 +443,9 @@ const ReceptionDashboard = () => {
                         </tr>
                       ))
                     ) : (
-                      scheduledAppointments.filter(apt => apt.patientName.toLowerCase().includes(searchTerm.toLowerCase())).map((apt) => (
+                      futureAppointments
+                        .filter(apt => apt.patientName.toLowerCase().includes(searchTerm.toLowerCase()))
+                        .map((apt) => (
                         <tr key={apt._id} className="hover:bg-blue-50/30 transition-colors animate-in">
                           <td className="px-3 md:px-10 py-3 md:py-6">
                             <div className="w-10 md:w-14 h-10 md:h-14 rounded-lg md:rounded-2xl flex flex-col items-center justify-center border border-blue-200 shadow-sm bg-blue-50 text-[8px] md:text-base">

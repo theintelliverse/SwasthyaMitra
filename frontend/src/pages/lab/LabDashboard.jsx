@@ -97,7 +97,7 @@ const LabDashboard = () => {
     bodyFontSize: 12,
     reportType: 'Daily',
     defaultNotes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
-    defaultDoctorName: localStorage.getItem('defaultDoctorName') || 'Dr. Swasthya Mitra, MBBS, MD'
+    defaultDoctorName: localStorage.getItem('defaultDoctorName') || 'Laboratory'
   });
   const [newTestForm, setNewTestForm] = useState({ patientName: '', patientPhone: '', testType: '' });
   const [addSampleForm, setAddSampleForm] = useState({ patientId: '', sampleType: '', collectionTime: '' });
@@ -502,7 +502,7 @@ const LabDashboard = () => {
       title: 'Diagnostic Lab Report',
       findings: '',
       notes: reportConfig.defaultNotes || 'Results are within reference intervals. Clinically correlate if needed.',
-      doctorName: reportConfig.defaultDoctorName || 'Dr. Swasthya Mitra, MBBS, MD'
+      doctorName: reportConfig.defaultDoctorName || 'Laboratory'
     });
     setShowDigitalReportModal(true);
   };
@@ -602,7 +602,7 @@ const LabDashboard = () => {
         title: 'Diagnostic Lab Report',
         findings: '',
         notes: 'Results are within reference intervals. Clinically correlate if needed.',
-        doctorName: 'Dr. Swasthya Mitra, MBBS, MD'
+        doctorName: 'Laboratory'
       });
 
     } catch (err) {
@@ -1539,7 +1539,7 @@ const LabDashboard = () => {
                     value={reportConfig.defaultDoctorName || ''}
                     onChange={(e) => setReportConfig({ ...reportConfig, defaultDoctorName: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-sm font-semibold"
-                    placeholder="e.g. Dr. Swasthya Mitra, MBBS, MD"
+                    placeholder="e.g. Authorized Signatory"
                   />
                 </div>
 
@@ -1624,121 +1624,118 @@ const LabDashboard = () => {
 
         {/* Digital Report Builder Modal */}
         {showDigitalReportModal && activeDigitalPatient && (
-          <div className="fixed inset-0 bg-teak/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-parchment rounded-[2rem] max-w-2xl w-full shadow-[0_32px_64px_-12px_rgba(26,60,52,0.3)] overflow-hidden border border-white/50 flex flex-col max-h-[90vh] relative">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-marigold/40 via-marigold to-marigold/40"></div>
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl shadow-slate-900/30 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
 
               {/* Header */}
-              <div className="px-8 py-6 flex justify-between items-center border-b border-sandstone/30 bg-white/40">
-                <div>
-                  <h3 className="text-2xl font-heading font-bold text-teak flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-marigold to-saffron flex items-center justify-center text-white shadow-lg shadow-marigold/20">
-                      <FileText size={20} strokeWidth={2.5} />
-                    </div>
-                    Fill Digital Lab Report
-                  </h3>
-                  <p className="text-sm text-khaki font-medium mt-1 ml-13">Digitally type test values and observations</p>
+              <div className="px-5 py-4 bg-slate-900 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center shadow-lg shadow-teal-600/30">
+                    <FileText size={16} className="text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-white tracking-tight">Fill Digital Lab Report</h3>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Digitally type test values and observations</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowDigitalReportModal(false)}
-                  className="p-2 rounded-xl hover:bg-black/5 transition-colors text-khaki hover:text-teak"
+                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-slate-400 hover:text-white"
                 >
-                  <X size={20} strokeWidth={2.5} />
+                  <X size={15} strokeWidth={2.5} />
                 </button>
               </div>
 
+              {/* Patient Summary Strip */}
+              <div className="px-5 py-3 bg-teal-50 border-b border-teal-100 grid grid-cols-3 gap-4 shrink-0">
+                <div>
+                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Patient Name</span>
+                  <span className="font-black text-slate-900 text-xs">{activeDigitalPatient.patientName}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Phone Number</span>
+                  <span className="font-black text-slate-900 text-xs">{activeDigitalPatient.patientPhone}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Referred Tests</span>
+                  <span className="font-black text-teal-700 text-xs bg-teal-100 px-2 py-0.5 rounded-md inline-block">{activeDigitalPatient.requiredTest || 'CBC'}</span>
+                </div>
+              </div>
+
               {/* Form Content */}
-              <div className="p-8 overflow-y-auto space-y-8 flex-grow custom-scrollbar">
-                {/* Patient Summary Card */}
-                <div className="bg-white rounded-2xl p-5 border border-sandstone/30 grid grid-cols-2 md:grid-cols-3 gap-5 shadow-sm">
-                  <div>
-                    <span className="text-[10px] text-khaki font-bold uppercase tracking-[0.15em] block mb-1">Patient Name</span>
-                    <span className="font-bold text-teak text-sm">{activeDigitalPatient.patientName}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-khaki font-bold uppercase tracking-[0.15em] block mb-1">Phone Number</span>
-                    <span className="font-bold text-teak text-sm">{activeDigitalPatient.patientPhone}</span>
-                  </div>
-                  <div className="col-span-2 md:col-span-1">
-                    <span className="text-[10px] text-khaki font-bold uppercase tracking-[0.15em] block mb-1">Referred Tests</span>
-                    <span className="font-bold text-marigold text-sm bg-marigold/10 px-2 py-0.5 rounded-md">{activeDigitalPatient.requiredTest || 'CBC, RBS'}</span>
+              <div className="p-5 overflow-y-auto space-y-4 flex-grow custom-scrollbar">
+
+                {/* Report Title */}
+                <div>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Report Title / Heading</label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+                    <input
+                      type="text"
+                      value={digitalReportForm.title}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, title: e.target.value })}
+                      placeholder="e.g. Complete Blood Count (CBC) Report"
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300 placeholder:font-normal shadow-sm"
+                    />
                   </div>
                 </div>
 
-                {/* Form Inputs */}
-                <div className="space-y-6">
-                  <div className="space-y-2 group/field">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-khaki ml-4">Report Title / Heading</label>
-                    <div className="relative">
-                      <Type className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki/50" size={16} />
-                      <input
-                        type="text"
-                        value={digitalReportForm.title}
-                        onChange={(e) => setDigitalReportForm({ ...digitalReportForm, title: e.target.value })}
-                        placeholder="e.g. Complete Blood Count (CBC) Report"
-                        className="w-full pl-12 pr-6 py-3.5 bg-white border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:ring-marigold/10 focus:border-marigold transition-all text-sm font-bold text-teak placeholder:text-khaki/40"
-                      />
-                    </div>
-                  </div>
+                {/* Findings */}
+                <div>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Test Results & Observations</label>
+                  <textarea
+                    value={digitalReportForm.findings}
+                    onChange={(e) => setDigitalReportForm({ ...digitalReportForm, findings: e.target.value })}
+                    rows={5}
+                    placeholder="Type detailed observations..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-medium text-slate-900 placeholder:text-slate-300 placeholder:font-normal custom-scrollbar resize-y min-h-[100px] shadow-sm"
+                  />
+                </div>
 
-                  <div className="space-y-2 group/field">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-khaki ml-4">Test Results & Observations</label>
-                    <div className="relative">
-                      <AlignLeft className="absolute left-5 top-5 text-khaki/50" size={16} />
-                      <textarea
-                        value={digitalReportForm.findings}
-                        onChange={(e) => setDigitalReportForm({ ...digitalReportForm, findings: e.target.value })}
-                        rows={6}
-                        placeholder="Type detailed observations..."
-                        className="w-full pl-12 pr-6 py-4 bg-white border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:ring-marigold/10 focus:border-marigold transition-all text-sm font-medium text-teak placeholder:text-khaki/40 custom-scrollbar resize-y min-h-[120px]"
-                      />
-                    </div>
+                {/* Notes */}
+                <div>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Pathologist Interpretation</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={digitalReportForm.notes}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, notes: e.target.value })}
+                      placeholder="Results are within reference intervals. Clinically correlate if needed."
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-medium text-slate-900 placeholder:text-slate-300 placeholder:font-normal shadow-sm"
+                    />
                   </div>
+                </div>
 
-                  <div className="space-y-2 group/field">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-khaki ml-4">Pathologist Interpretation</label>
-                    <div className="relative">
-                      <FileText className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki/50" size={16} />
-                      <input
-                        type="text"
-                        value={digitalReportForm.notes}
-                        onChange={(e) => setDigitalReportForm({ ...digitalReportForm, notes: e.target.value })}
-                        placeholder="e.g. Parameters are within healthy limits."
-                        className="w-full pl-12 pr-6 py-3.5 bg-white border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:ring-marigold/10 focus:border-marigold transition-all text-sm font-medium text-teak placeholder:text-khaki/40"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 group/field">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-khaki ml-4">Authorized Signatory</label>
-                    <div className="relative">
-                      <User className="absolute left-5 top-1/2 -translate-y-1/2 text-khaki/50" size={16} />
-                      <input
-                        type="text"
-                        value={digitalReportForm.doctorName}
-                        onChange={(e) => setDigitalReportForm({ ...digitalReportForm, doctorName: e.target.value })}
-                        placeholder="Name and Qualifications"
-                        className="w-full pl-12 pr-6 py-3.5 bg-white border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:ring-marigold/10 focus:border-marigold transition-all text-sm font-bold text-teak placeholder:text-khaki/40"
-                      />
-                    </div>
+                {/* Signatory */}
+                <div>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Authorized Signatory</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+                    <input
+                      type="text"
+                      value={digitalReportForm.doctorName}
+                      onChange={(e) => setDigitalReportForm({ ...digitalReportForm, doctorName: e.target.value })}
+                      placeholder="Appointory"
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:bg-white transition-all text-sm font-bold text-slate-900 placeholder:text-slate-300 placeholder:font-normal shadow-sm"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Actions Footer */}
-              <div className="px-8 py-5 bg-white/60 backdrop-blur-sm border-t border-sandstone/30 flex gap-4">
+              {/* Footer Actions */}
+              <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex gap-3 shrink-0">
                 <button
                   onClick={() => setShowDigitalReportModal(false)}
-                  className="flex-1 py-4 bg-white border-2 border-sandstone text-khaki hover:text-teak hover:border-khaki/30 rounded-xl font-bold transition-colors text-xs uppercase tracking-widest"
+                  className="flex-1 py-2.5 bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePublishDigitalReport}
-                  className="flex-1 py-4 bg-gradient-to-r from-marigold to-saffron text-white rounded-xl font-bold hover:shadow-lg hover:shadow-marigold/30 transition-all active:scale-[0.98] text-xs uppercase tracking-widest flex items-center justify-center gap-2 group"
+                  className="flex-[2] py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-teal-600/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
                 >
-                  <Save size={16} className="group-hover:scale-110 transition-transform" />
-                  <span>Publish & Sync Locker</span>
+                  <Save size={13} className="group-hover:scale-110 transition-transform" />
+                  Publish & Sync Locker
                 </button>
               </div>
             </div>

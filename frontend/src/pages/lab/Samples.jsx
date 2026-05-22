@@ -19,12 +19,10 @@ const Samples = () => {
 
   const fetchSamples = async () => {
     try {
-      // Use ?filter=all to get historical data for this page
       const res = await axios.get(`${API_URL}/api/lab/dashboard/stats?filter=all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
-        // We filter for items that actually had a sample action or are in lab stages
         const labSamples = res.data.data.queueData.filter(item => 
           ['Lab-Pending', 'Lab-Completed'].includes(item.currentStage)
         );
@@ -44,79 +42,79 @@ const Samples = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
       <Sidebar role="lab" />
       <div className="flex-grow flex flex-col min-h-screen">
-        <main className="px-4 md:px-8 py-6 flex-grow max-w-7xl mx-auto w-full space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+        <main className="px-4 md:px-6 lg:px-8 py-6 flex-grow max-w-7xl mx-auto w-full space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">Recent Samples (All Time)</h1>
-              <p className="text-gray-600 flex items-center gap-2 text-sm">
-                <TestTubes size={16} className="text-teal-500" />
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 mb-1 tracking-tight">Recent Samples (All Time)</h1>
+              <p className="text-slate-500 flex items-center gap-2 text-[10px] md:text-xs font-bold">
+                <TestTubes size={14} className="text-teal-500" />
                 Track and manage all collected specimens
               </p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
                <div className="relative flex-grow sm:flex-grow-0">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                  <input
                    type="text"
                    placeholder="Search samples..."
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm w-full sm:w-64 shadow-sm"
+                   className="pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg outline-none focus:border-teal-500 text-xs font-bold w-full sm:w-56 shadow-sm transition-all"
                  />
                </div>
-               <button onClick={fetchSamples} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors shrink-0">
+               <button onClick={fetchSamples} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-colors shrink-0">
                  Refresh
                </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {loading ? (
-              Array(6).fill(0).map((_, i) => (
-                <div key={i} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-pulse h-40"></div>
+              Array(8).fill(0).map((_, i) => (
+                <div key={i} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm animate-pulse h-32"></div>
               ))
             ) : filteredSamples.length === 0 ? (
-              <div className="col-span-full p-12 text-center bg-white rounded-xl border border-gray-200 shadow-sm">
-                <Beaker size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900">No samples found</h3>
-                <p className="text-gray-500">History of collected samples will appear here.</p>
+              <div className="col-span-full p-8 text-center bg-white rounded-xl border border-slate-100 shadow-sm">
+                <Beaker size={32} className="mx-auto text-slate-300 mb-3" />
+                <h3 className="text-sm font-black text-slate-900">No samples found</h3>
+                <p className="text-xs font-bold text-slate-500 mt-1">History of collected samples will appear here.</p>
               </div>
             ) : (
               filteredSamples.map((sample) => (
-                <div key={sample._id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                <div key={sample._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow transition-all relative overflow-hidden group">
                   <div className={`absolute top-0 left-0 w-1 h-full ${
-                    sample.currentStage === 'Lab-Completed' ? 'bg-green-500' : 'bg-blue-500'
+                    sample.currentStage === 'Lab-Completed' ? 'bg-emerald-500' : 'bg-teal-500'
                   }`}></div>
                   
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-gray-900">{sample.patientName}</h3>
-                      <p className="text-xs text-gray-500">{sample.patientPhone}</p>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="min-w-0 pr-2">
+                      <h3 className="font-black text-xs text-slate-900 truncate">{sample.patientName}</h3>
+                      <p className="text-[10px] font-bold text-slate-400 mt-0.5">{sample.patientPhone}</p>
                     </div>
-                    <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                      sample.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
+                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shrink-0 ${
+                      sample.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-teal-50 text-teal-600 border border-teal-100'
                     }`}>
-                      {sample.currentStage}
+                      {sample.currentStage === 'Lab-Completed' ? 'Completed' : 'Pending'}
                     </div>
                   </div>
 
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <Beaker size={14} className="text-teal-500" />
-                      <span>{sample.requiredTest || 'General Diagnostic'}</span>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600">
+                      <Beaker size={12} className="text-teal-500" />
+                      <span className="truncate">{sample.requiredTest || 'General Diagnostic'}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <Clock size={14} className="text-gray-400" />
-                      <span>Collected: {new Date(sample.createdAt).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                      <Clock size={12} className="text-slate-400" />
+                      <span>Collected: {new Date(sample.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-gray-400">ID: #{sample.tokenNumber || sample._id.substring(18)}</span>
-                    <button className="text-teal-600 text-xs font-bold hover:underline">Details</button>
+                  <div className="pt-3 border-t border-slate-50 flex justify-between items-center">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">ID: #{sample.tokenNumber || sample._id.substring(18)}</span>
+                    <button className="text-teal-600 text-[10px] font-black hover:text-teal-700 transition-colors">Details</button>
                   </div>
                 </div>
               ))

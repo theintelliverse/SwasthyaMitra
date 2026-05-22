@@ -29,6 +29,7 @@ const PatientDashboard = () => {
   const [copied, setCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [lastVisitUpdate, setLastVisitUpdate] = useState(Date.now());
+  const [selectedVisit, setSelectedVisit] = useState(null);
 
   const fetchProfile = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -205,34 +206,34 @@ const PatientDashboard = () => {
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
       <Sidebar role="patient" />
 
-      <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
+      <div className="flex-grow p-3 lg:p-4 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
         {/* Header Section */}
-        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-teal-100">
                 Patient Portal
               </span>
-              {isSyncing && <div className="w-2 h-2 bg-teal-500 rounded-full animate-ping"></div>}
+              {isSyncing && <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-ping"></div>}
             </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               Hello, {displayName.split(' ')[0]} <span className="animate-bounce">👋</span>
             </h1>
-            <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-wider">Your digital health records and wellness hub.</p>
+            <p className="text-slate-400 font-bold text-[10px] mt-0.5 uppercase tracking-wider">Your digital health records and wellness hub.</p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-2">
             <button
               onClick={() => navigate('/patient/locker')}
-              className="px-6 py-3.5 bg-teal-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 hover:bg-teal-700 transition-all flex items-center gap-2"
+              className="px-3 py-2 bg-teal-600 text-white rounded-lg font-black text-[9px] uppercase tracking-widest shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all flex items-center gap-1.5"
             >
-              <FolderHeart size={16} /> Digital Locker
+              <FolderHeart size={12} /> Digital Locker
             </button>
             <button
               onClick={() => fetchProfile(true)}
-              className="p-3.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
+              className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
             >
-              <RefreshCcw size={18} className={isSyncing ? 'animate-spin text-teal-500' : ''} />
+              <RefreshCcw size={13} className={isSyncing ? 'animate-spin text-teal-500' : ''} />
             </button>
           </div>
         </header>
@@ -240,40 +241,41 @@ const PatientDashboard = () => {
         {/* Mobile summary card */}
         <MobileSummary />
 
-        <div className="grid lg:grid-cols-3 gap-10">
+        <div className="grid lg:grid-cols-3 gap-3">
           {/* Left Panel: Identity & Quick Stats */}
-          <div className="lg:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-3">
             {/* Digital Identity Card */}
-            <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-8">
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-teal-400">
-                    <ShieldCheck size={26} />
+            <div className="bg-slate-900 p-8 rounded-3xl text-white overflow-hidden relative group min-h-[16rem]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full -ml-8 -mb-8 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-teal-400">
+                    <ShieldCheck size={20} />
                   </div>
                   <button
                     onClick={() => setShowQrModal(true)}
-                    className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                    className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
                   >
-                    <QrCode size={20} className="text-teal-400" />
+                    <QrCode size={18} className="text-teal-400" />
                   </button>
                 </div>
 
                 <div className="mb-8">
-                  <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mb-2">Patient Name</p>
-                  <h3 className="text-2xl font-black tracking-tight uppercase leading-tight">{displayName}</h3>
+                  <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.25em] mb-1.5">Patient Name</p>
+                  <h3 className="text-xl font-black tracking-tight uppercase leading-tight">{displayName}</h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
                   <div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Patient ID</p>
-                    <p className="text-sm font-black text-white">{patientData?.phone || 'N/A'}</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Patient ID</p>
+                    <p className="text-xs font-black text-white">{patientData?.phone || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Verify Status</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <p className="text-sm font-black text-white">Active</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Verify Status</p>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                      <p className="text-xs font-black text-white">Active</p>
                     </div>
                   </div>
                 </div>
@@ -281,39 +283,39 @@ const PatientDashboard = () => {
             </div>
 
             {/* Health Vitals Preview */}
-            <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm">
-              <h3 className="font-black text-xl text-slate-900 mb-8 flex items-center gap-3">
-                <Activity size={20} className="text-teal-600" /> Latest Vitals
+            <div className="bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm">
+              <h3 className="font-black text-xs text-slate-900 mb-2 flex items-center gap-1">
+                <Activity size={11} className="text-teal-600" /> Latest Vitals
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
-                <VitalCard icon={<Zap size={14} />} label="Pulse" val={patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--'} unit="bpm" color="teal" />
-                <VitalCard icon={<Thermometer size={14} />} label="Temp" val={patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--'} unit="°C" color="orange" />
-                <VitalCard icon={<Weight size={14} />} label="Weight" val={patientData?.vitals?.[0]?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--'} unit="kg" color="blue" />
-                <VitalCard icon={<Droplets size={14} />} label="BP" val={patientData?.vitals?.[0]?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--'} unit="mmHg" color="rose" />
+              <div className="grid grid-cols-2 gap-1.5">
+                <VitalCard icon={<Zap size={9} />} label="Pulse" val={patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--'} unit="bpm" color="teal" />
+                <VitalCard icon={<Thermometer size={9} />} label="Temp" val={patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--'} unit="°C" color="orange" />
+                <VitalCard icon={<Weight size={9} />} label="Weight" val={patientData?.vitals?.[0]?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--'} unit="kg" color="blue" />
+                <VitalCard icon={<Droplets size={9} />} label="BP" val={patientData?.vitals?.[0]?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--'} unit="mmHg" color="rose" />
               </div>
 
-              <div className="mt-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
+              <div className="mt-2 p-1.5 bg-slate-50 rounded-md border border-slate-100">
+                <p className="text-[7px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
                   Vitals are recorded by clinical staff during your consultation. Track your baseline for better wellness.
                 </p>
               </div>
             </div>
 
             {/* Reports Summary */}
-            <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm group">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="font-black text-xl text-slate-900">Health Records</h3>
-                <div className="p-2 bg-teal-50 text-teal-600 rounded-xl"><FileText size={20} /></div>
+            <div className="bg-white border border-slate-100 p-3.5 rounded-2xl shadow-sm group">
+              <div className="flex justify-between items-center mb-2.5">
+                <h3 className="font-black text-sm text-slate-900">Health Records</h3>
+                <div className="p-1 bg-teal-50 text-teal-600 rounded-md"><FileText size={12} /></div>
               </div>
-              <div className="flex items-end gap-3 mb-2">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">{reportsCount}</span>
-                <span className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Files</span>
+              <div className="flex items-end gap-1.5 mb-0.5">
+                <span className="text-2xl font-black text-slate-900 tracking-tighter">{reportsCount}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Files</span>
               </div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Documents in Digital Locker</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Documents in Digital Locker</p>
               <button
                 onClick={() => navigate('/patient/locker')}
-                className="w-full py-4 border-2 border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-teal-500 hover:text-teal-600 transition-all active:scale-95"
+                className="w-full py-2 border-2 border-slate-100 rounded-lg font-black text-[9px] uppercase tracking-widest hover:border-teal-500 hover:text-teal-600 transition-all active:scale-95"
               >
                 Open Health Locker
               </button>
@@ -321,135 +323,135 @@ const PatientDashboard = () => {
           </div>
 
           {/* Right Panel: Appointments & Timeline */}
-          <div className="lg:col-span-2 space-y-10">
+          <div className="lg:col-span-2 space-y-3">
             {/* Upcoming Appointment High Priority */}
-            <div className="bg-gradient-to-br from-teal-600 to-indigo-700 p-10 rounded-[3rem] text-white shadow-2xl shadow-teal-600/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-700" />
+            <div className="bg-gradient-to-br from-teal-600 to-indigo-700 p-4 rounded-2xl text-white shadow-lg shadow-teal-600/20 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-125 transition-transform duration-700" />
 
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-10">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-white/20">
+                    <span className="px-2.5 py-0.5 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border border-white/20">
                       Coming Up Next
                     </span>
-                    <h3 className="text-4xl font-black tracking-tight mt-6 mb-2">
+                    <h3 className="text-lg font-black tracking-tight mt-2 mb-0.5">
                       {upcomingAppointment ? `Appointment with Dr. ${upcomingAppointment.doctorName}` : "Stay Proactive!"}
                     </h3>
-                    <p className="text-teal-100 font-bold text-sm">
+                    <p className="text-teal-100 font-bold text-[10px]">
                       {upcomingAppointment ? upcomingAppointment.clinicName : "Schedule your next routine check-up."}
                     </p>
                   </div>
-                  <div className="hidden md:flex w-20 h-20 bg-white/10 rounded-3xl items-center justify-center backdrop-blur-md border border-white/10">
-                    <Calendar size={32} className="text-white" />
+                  <div className="hidden md:flex w-10 h-10 bg-white/10 rounded-xl items-center justify-center backdrop-blur-md border border-white/10">
+                    <Calendar size={16} className="text-white" />
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-10 border-t border-white/10">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pt-3 border-t border-white/10">
                   {upcomingAppointment ? (
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-teal-200 uppercase tracking-widest mb-1">Date & Time</span>
-                        <span className="text-xl font-black">{new Date(upcomingAppointment.appointmentDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-[8px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Date & Time</span>
+                        <span className="text-sm font-black">{new Date(upcomingAppointment.appointmentDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <div className="w-px h-10 bg-white/10 hidden md:block" />
+                      <div className="w-px h-6 bg-white/10 hidden md:block" />
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-teal-200 uppercase tracking-widest mb-1">Status</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-teal-300 rounded-full animate-ping" />
-                          <span className="text-sm font-black uppercase tracking-widest">Scheduled</span>
+                        <span className="text-[8px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Status</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 bg-teal-300 rounded-full animate-ping" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Scheduled</span>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-teal-200 font-bold text-sm italic">"Prevention is better than cure. Book your slot today."</p>
+                    <p className="text-teal-200 font-bold text-[10px] italic">"Prevention is better than cure. Book your slot today."</p>
                   )}
 
                   <button
                     onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })}
-                    className="px-8 py-4 bg-white text-teal-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-xl active:scale-95 flex items-center gap-3"
+                    className="px-3.5 py-2 bg-white text-teal-600 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
                   >
-                    <Plus size={18} /> {upcomingAppointment ? "Reschedule" : "Book New Slot"}
+                    <Plus size={11} /> {upcomingAppointment ? "Reschedule" : "Book New Slot"}
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Visit Timeline */}
-            <div className="bg-white border border-slate-100 rounded-[3rem] shadow-sm overflow-hidden flex flex-col min-h-[600px]">
-              <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
-                <div className="relative w-full md:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[300px]">
+              <div className="p-3 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-2 bg-slate-50/50">
+                <div className="relative w-full md:w-56">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                   <input
                     type="text"
                     placeholder="Search history & diagnosis..."
-                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-100 rounded-2xl outline-none focus:border-teal-500 text-sm font-bold shadow-sm"
+                    className="w-full pl-8 pr-3 py-2 bg-white border border-slate-100 rounded-lg outline-none focus:border-teal-500 text-xs font-bold shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-100 rounded-xl text-slate-400">
-                  <History size={16} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">{filteredHistory.length} Total Visits</span>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-100 rounded-md text-slate-400">
+                  <History size={11} />
+                  <span className="text-[9px] font-black uppercase tracking-widest">{filteredHistory.length} Total Visits</span>
                 </div>
               </div>
 
-              <div className="flex-grow overflow-auto p-8 custom-scrollbar">
+              <div className="flex-grow overflow-auto p-3 custom-scrollbar">
                 {filteredHistory.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="space-y-2.5">
                     {filteredHistory
                       .sort((a, b) => new Date(b.date || b.visitDate) - new Date(a.date || a.visitDate))
                       .map((visit) => (
-                        <div key={visit._id} className="group relative flex gap-8">
+                        <div key={visit._id} className="group relative flex gap-2.5">
                           {/* Timeline Line */}
                           <div className="hidden md:flex flex-col items-center">
-                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                              <Calendar size={20} />
+                            <div className="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                              <Calendar size={12} />
                             </div>
-                            <div className="flex-grow w-px bg-slate-100 mt-2" />
+                            <div className="flex-grow w-px bg-slate-100 mt-1.5" />
                           </div>
 
-                          <div className="flex-grow bg-slate-50/50 p-8 rounded-[2rem] border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all duration-300">
-                            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                          <div className="flex-grow bg-slate-50/50 p-3 rounded-xl border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all duration-300">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
                               <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                  <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest bg-white px-3 py-1 rounded-full border border-teal-100">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
                                     {new Date(visit.date || visit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   </span>
-                                  <div className="w-1.5 h-1.5 bg-slate-200 rounded-full" />
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{visit.clinicName}</span>
+                                  <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{visit.clinicName}</span>
                                 </div>
-                                <h4 className="text-xl font-black text-slate-900 tracking-tight">Dr. {visit.doctorName || visit.doctorId?.name}</h4>
+                                <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {visit.doctorName || visit.doctorId?.name}</h4>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-1">
                                 <button
                                   onClick={() => setSelectedVisit(visit)}
-                                  className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 transition-all shadow-sm"
+                                  className="p-1.5 bg-white border border-slate-100 rounded-md text-slate-400 hover:text-teal-600 transition-all shadow-sm"
                                 >
-                                  <Eye size={18} />
+                                  <Eye size={11} />
                                 </button>
                                 <button
-                                  className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 transition-all shadow-sm"
+                                  className="p-1.5 bg-white border border-slate-100 rounded-md text-slate-400 hover:text-teal-600 transition-all shadow-sm"
                                 >
-                                  <ArrowUpRight size={18} />
+                                  <ArrowUpRight size={11} />
                                 </button>
                               </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-6">
-                              <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-2">Diagnosis</p>
-                                <p className="text-sm font-bold text-slate-700 leading-relaxed">{visit.diagnosis || 'General Consultation'}</p>
+                            <div className="grid md:grid-cols-2 gap-2">
+                              <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
+                                <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{visit.diagnosis || 'General Consultation'}</p>
                               </div>
-                              <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-2">Symptoms</p>
-                                <p className="text-sm font-bold text-slate-700 line-clamp-2">{visit.symptoms || 'None recorded'}</p>
+                              <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
+                                <p className="text-[10px] font-bold text-slate-700 line-clamp-2">{visit.symptoms || 'None recorded'}</p>
                               </div>
                             </div>
 
                             {visit.medicines && visit.medicines.length > 0 && (
-                              <div className="mt-6 flex flex-wrap gap-2">
+                              <div className="mt-2 flex flex-wrap gap-1">
                                 {visit.medicines.map((med, idx) => (
-                                  <span key={idx} className="px-3 py-1.5 bg-teal-50/50 text-teal-700 rounded-lg text-[10px] font-black uppercase tracking-wider border border-teal-100/50">
+                                  <span key={idx} className="px-2 py-0.5 bg-teal-50/50 text-teal-700 rounded-md text-[8px] font-black uppercase tracking-wider border border-teal-100/50">
                                     {med.name}
                                   </span>
                                 ))}
@@ -461,9 +463,81 @@ const PatientDashboard = () => {
                     }
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-20 opacity-30">
-                    <History size={48} className="mb-4" />
-                    <p className="text-sm font-black uppercase tracking-[0.2em]">No Medical History</p>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                    {appointments.length > 0 ? (
+                      appointments.slice(0, 3).map((apt, idx) => (
+                        <div key={apt._id || idx} className="group relative flex gap-2.5">
+                          <div className="hidden md:flex flex-col items-center">
+                            <div className="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                              <Calendar size={12} />
+                            </div>
+                            <div className="flex-grow w-px bg-slate-100 mt-1.5" />
+                          </div>
+
+                          <div className="flex-grow bg-slate-50/50 p-3 rounded-xl border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all duration-300">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                                    {new Date(apt.appointmentDate || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  </span>
+                                  <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{apt.clinicName || 'Clinic'}</span>
+                                </div>
+                                <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {apt.doctorName || 'Doctor'}</h4>
+                              </div>
+                              <div className="px-2 py-1 bg-teal-50 text-teal-600 rounded-md text-[8px] font-black uppercase tracking-widest border border-teal-100">
+                                Scheduled
+                              </div>
+                            </div>
+                            <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                              <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Reason / Symptoms</p>
+                              <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{apt.reason || 'General Consultation'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      [
+                        { id: 1, date: new Date(Date.now() - 86400000 * 2), clinic: 'City Care Hospital', doctor: 'A. Sharma', diagnosis: 'Viral Fever', symptoms: 'Fever, Body Ache' },
+                        { id: 2, date: new Date(Date.now() - 86400000 * 15), clinic: 'Wellness Center', doctor: 'S. Gupta', diagnosis: 'Routine Checkup', symptoms: 'None' },
+                        { id: 3, date: new Date(Date.now() - 86400000 * 45), clinic: 'Prime Diagnostics', doctor: 'R. Patel', diagnosis: 'Blood Test Review', symptoms: 'Weakness' }
+                      ].map((dummy, idx) => (
+                        <div key={dummy.id} className="group relative flex gap-2.5">
+                          <div className="hidden md:flex flex-col items-center">
+                            <div className="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                              <Calendar size={12} />
+                            </div>
+                            <div className="flex-grow w-px bg-slate-100 mt-1.5" />
+                          </div>
+
+                          <div className="flex-grow bg-slate-50/50 p-3 rounded-xl border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all duration-300">
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                                    {dummy.date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  </span>
+                                  <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{dummy.clinic}</span>
+                                </div>
+                                <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {dummy.doctor}</h4>
+                              </div>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-2">
+                              <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
+                                <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{dummy.diagnosis}</p>
+                              </div>
+                              <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
+                                <p className="text-[10px] font-bold text-slate-700 line-clamp-2">{dummy.symptoms}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
@@ -553,6 +627,78 @@ const PatientDashboard = () => {
         </div>
       )}
 
+      {/* Visit Detail Modal */}
+      {selectedVisit && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-end md:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+            <div className="p-4 bg-slate-900 flex items-center justify-between">
+              <div>
+                <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest mb-0.5">Consultation Record</p>
+                <h3 className="text-sm font-black text-white tracking-tight">Dr. {selectedVisit.doctorName || selectedVisit.doctorId?.name}</h3>
+                <p className="text-[10px] text-slate-400 font-bold">{selectedVisit.clinicName}</p>
+              </div>
+              <button onClick={() => setSelectedVisit(null)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all">
+                <X size={14} />
+              </button>
+            </div>
+            <div className="px-4 py-2 bg-teal-50 border-b border-teal-100 flex items-center gap-2">
+              <Calendar size={11} className="text-teal-600" />
+              <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest">
+                {new Date(selectedVisit.date || selectedVisit.visitDate).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+              </span>
+            </div>
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnosis</p>
+                  <p className="text-xs font-bold text-slate-700 leading-relaxed">{selectedVisit.diagnosis || 'General Consultation'}</p>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Symptoms</p>
+                  <p className="text-xs font-bold text-slate-700 leading-relaxed">{selectedVisit.symptoms || 'None recorded'}</p>
+                </div>
+              </div>
+              {selectedVisit.notes && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Doctor's Notes</p>
+                  <p className="text-xs font-bold text-slate-700 italic">"{selectedVisit.notes}"</p>
+                </div>
+              )}
+              {selectedVisit.medicines && selectedVisit.medicines.length > 0 && (
+                <div className="p-3 bg-slate-900 rounded-xl">
+                  <p className="text-[8px] font-black text-teal-400 uppercase tracking-widest mb-2">Prescribed Medicines</p>
+                  <div className="space-y-1.5">
+                    {selectedVisit.medicines.map((med, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                        <div>
+                          <p className="text-xs font-black text-white">{med.name}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">{med.time}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-black text-teal-400">{med.amount}</p>
+                          <p className="text-[9px] font-bold text-slate-500">Total: {med.total}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedVisit.vitals && Object.values(selectedVisit.vitals).some(v => v) && (
+                <div className="grid grid-cols-4 gap-1.5">
+                  {selectedVisit.vitals.pulseRate && <div className="p-2 bg-teal-50 rounded-lg border border-teal-100 text-center"><p className="text-[7px] font-black text-teal-600 uppercase">Pulse</p><p className="text-sm font-black text-teal-700">{selectedVisit.vitals.pulseRate}</p><p className="text-[6px] text-teal-500">bpm</p></div>}
+                  {selectedVisit.vitals.bloodPressure && <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 text-center"><p className="text-[7px] font-black text-rose-600 uppercase">BP</p><p className="text-sm font-black text-rose-700">{selectedVisit.vitals.bloodPressure}</p><p className="text-[6px] text-rose-500">mmHg</p></div>}
+                  {selectedVisit.vitals.temperature && <div className="p-2 bg-orange-50 rounded-lg border border-orange-100 text-center"><p className="text-[7px] font-black text-orange-600 uppercase">Temp</p><p className="text-sm font-black text-orange-700">{selectedVisit.vitals.temperature}</p><p className="text-[6px] text-orange-500">°C</p></div>}
+                  {selectedVisit.vitals.weight && <div className="p-2 bg-blue-50 rounded-lg border border-blue-100 text-center"><p className="text-[7px] font-black text-blue-600 uppercase">Weight</p><p className="text-sm font-black text-blue-700">{selectedVisit.vitals.weight}</p><p className="text-[6px] text-blue-500">kg</p></div>}
+                </div>
+              )}
+            </div>
+            <div className="p-3 border-t border-slate-100 bg-slate-50">
+              <button onClick={() => setSelectedVisit(null)} className="w-full py-2 bg-slate-900 text-white rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
@@ -566,14 +712,14 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
   };
 
   return (
-    <div className={`p-5 rounded-2xl border ${colors[color]} shadow-sm transition-all hover:scale-105 duration-300`}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`p-2 rounded-lg bg-white/50`}>{icon}</div>
-        <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+    <div className={`p-1.5 rounded-md border ${colors[color]} shadow-sm transition-all hover:scale-105 duration-300`}>
+      <div className="flex items-center gap-0.5 mb-0.5">
+        <div className={`p-0.5 rounded bg-white/50`}>{icon}</div>
+        <span className="text-[7px] font-black uppercase tracking-widest">{label}</span>
       </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-black tracking-tight">{val}</span>
-        <span className="text-[8px] font-bold opacity-60 uppercase">{unit}</span>
+      <div className="flex items-baseline gap-0.5">
+        <span className="text-sm font-black tracking-tight">{val}</span>
+        <span className="text-[6px] font-bold opacity-60 uppercase">{unit}</span>
       </div>
     </div>
   );
