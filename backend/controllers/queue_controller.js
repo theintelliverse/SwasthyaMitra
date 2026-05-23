@@ -86,6 +86,9 @@ exports.selfCheckIn = async (req, res) => {
             isApproved: false
         });
 
+        // 📢 DEBUG LOG: Emit so Admin Dashboard instantly sees the new walk-in request
+        if (req.io) req.io.to(clinic._id.toString()).emit('queueUpdate');
+
         res.status(201).json({
             success: true,
             message: "Request sent. Please check the screen for approval.",
@@ -636,16 +639,37 @@ exports.getPublicDoctorQueue = async (req, res) => {
             status: { $in: ['Waiting', 'In-Consultation'] },
             createdAt: { $gte: today }
         })
-            .select('tokenNumber patientName status isEmergency createdAt')
+            .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate')
             .sort({
                 status: 1,      // 'In-Consultation' first
                 isEmergency: -1, // Emergency second
                 createdAt: 1     // Oldest first
             });
 
+        const queueWithWait = await Promise.all(queue.map(async (item) => {
+            const itemObj = item.toObject ? item.toObject() : item;
+            try {
+                const doctorObjectId = item.doctorId?._id || item.doctorId;
+                const waitTime = await estimateWaitTimeFromDb({
+                    clinicId: item.clinicId,
+                    doctorId: doctorObjectId,
+                    visitType: item.visitType,
+                    problem: item.reason || item.diagnosis || item.consultationNotes,
+                    isEmergency: !!item.isEmergency,
+                    tokenNumber: item.tokenNumber,
+                    queueId: item._id,
+                    appointmentDate: item.appointmentDate || item.createdAt
+                });
+                itemObj.estimatedWait = waitTime;
+            } catch (err) {
+                itemObj.estimatedWait = 15;
+            }
+            return itemObj;
+        }));
+
         res.status(200).json({
             success: true,
-            data: queue
+            data: queueWithWait
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

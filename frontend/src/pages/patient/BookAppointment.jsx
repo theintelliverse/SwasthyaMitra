@@ -688,17 +688,50 @@ const BookAppointment = () => {
                                 </div>
 
                                 {/* Verify Booking Button */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setStep(4);
-                                    }}
-                                    disabled={!formData.appointmentDate}
-                                    className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-95"
-                                >
-                                    {formData.appointmentDate ? <><CheckCircle size={16} /> Verify Booking</> : <><Clock size={16} /> Select a Slot First</>}
-                                    {formData.appointmentDate && <ArrowRight size={16} />}
-                                </button>
+                                {(() => {
+                                    let isValid = false;
+                                    let errorMsg = '';
+                                    if (formData.appointmentDate) {
+                                        const parts = formData.appointmentDate.split('T');
+                                        if (parts.length === 2) {
+                                            const [year, month, day] = parts[0].split('-').map(Number);
+                                            const [hour, min] = parts[1].split(':').map(Number);
+                                            const selectedDateTime = new Date(year, month - 1, day, hour, min);
+                                            
+                                            if (selectedDateTime < new Date()) {
+                                                errorMsg = 'Time has passed';
+                                            } else {
+                                                const { closingTime, openingTime } = getClinicTimingConfig();
+                                                const [ch, cm] = closingTime.split(':').map(Number);
+                                                const [oh, om] = openingTime.split(':').map(Number);
+                                                const closeDateTime = new Date(year, month - 1, day, ch, cm);
+                                                const openDateTime = new Date(year, month - 1, day, oh, om);
+                                                
+                                                if (selectedDateTime > closeDateTime) {
+                                                    errorMsg = 'Clinic Closed';
+                                                } else if (selectedDateTime < openDateTime) {
+                                                    errorMsg = 'Before Clinic Opens';
+                                                } else {
+                                                    isValid = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    return (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setStep(4);
+                                            }}
+                                            disabled={!isValid}
+                                            className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-95"
+                                        >
+                                            {!formData.appointmentDate ? <><Clock size={16} /> Select a Slot First</> : !isValid ? <><Clock size={16} /> {errorMsg}</> : <><CheckCircle size={16} /> Verify Booking</>}
+                                            {isValid && <ArrowRight size={16} />}
+                                        </button>
+                                    );
+                                })()}
                             </div>
 
                         </div>

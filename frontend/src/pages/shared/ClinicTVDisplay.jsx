@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const socket = SOCKET_URL ? io(SOCKET_URL, { reconnection: true }) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ClinicTVDisplay = () => {
   const [doctors, setDoctors] = useState([]);
@@ -41,7 +40,7 @@ const ClinicTVDisplay = () => {
           actualClinicId = actualClinicId._id;
         }
         if (actualClinicId && joinedRoomRef.current !== actualClinicId) {
-          socket.emit('joinClinic', actualClinicId);
+          if (socketRef.current) socketRef.current.emit('joinClinic', actualClinicId);
           joinedRoomRef.current = actualClinicId;
         }
       }
@@ -59,23 +58,32 @@ const ClinicTVDisplay = () => {
     } catch (err) { }
   };
 
+  const socketRef = useRef(null);
+
   useEffect(() => {
-    fetchDoctors();
-    
-    // Automatically re-join clinic room on socket reconnect
+    if (!SOCKET_URL) return;
+    const newSocket = io(SOCKET_URL, { reconnection: true });
+    socketRef.current = newSocket;
+
     const handleReconnect = () => {
       if (joinedRoomRef.current) {
-        socket.emit('joinClinic', joinedRoomRef.current);
+        newSocket.emit('joinClinic', joinedRoomRef.current);
       }
     };
-    socket.on('connect', handleReconnect);
+    newSocket.on('connect', handleReconnect);
 
     return () => {
-      socket.off('connect', handleReconnect);
+      newSocket.off('connect', handleReconnect);
+      newSocket.disconnect();
     };
   }, []);
 
   useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  useEffect(() => {
+    if (!socketRef.current) return;
     const handleUpdate = () => {
       fetchDoctors();
       if (selectedDoc) {
@@ -83,12 +91,12 @@ const ClinicTVDisplay = () => {
       }
     };
 
-    socket.on('queueUpdate', handleUpdate);
-    socket.on('doctorStatusChanged', handleUpdate);
+    socketRef.current.on('queueUpdate', handleUpdate);
+    socketRef.current.on('doctorStatusChanged', handleUpdate);
 
     return () => {
-      socket.off('queueUpdate', handleUpdate);
-      socket.off('doctorStatusChanged', handleUpdate);
+      socketRef.current.off('queueUpdate', handleUpdate);
+      socketRef.current.off('doctorStatusChanged', handleUpdate);
     };
   }, [selectedDoc]);
 
@@ -310,6 +318,12 @@ const ClinicTVDisplay = () => {
                         </span>
                         <div className="w-1 h-1 bg-white/10 rounded-full" />
                         <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Token Auth Verified</span>
+                        {p.estimatedWait > 0 && (
+                          <>
+                            <div className="w-1 h-1 bg-white/10 rounded-full" />
+                            <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait} Mins</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
