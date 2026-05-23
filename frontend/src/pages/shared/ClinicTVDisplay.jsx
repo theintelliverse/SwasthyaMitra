@@ -318,7 +318,7 @@ const ClinicTVDisplay = () => {
                         </span>
                         <div className="w-1 h-1 bg-white/10 rounded-full" />
                         <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Token Auth Verified</span>
-                        {p.estimatedWait > 0 && (
+                        {p.estimatedWait != null && (
                           <>
                             <div className="w-1 h-1 bg-white/10 rounded-full" />
                             <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait} Mins</span>

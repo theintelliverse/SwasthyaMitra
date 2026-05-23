@@ -633,11 +633,17 @@ exports.getPublicDoctorQueue = async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
         const queue = await Queue.find({
             doctorId: doctorId,
             isApproved: true,
             status: { $in: ['Waiting', 'In-Consultation'] },
-            createdAt: { $gte: today }
+            $or: [
+                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
+                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
+            ]
         })
             .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate')
             .sort({
