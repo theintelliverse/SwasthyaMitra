@@ -36,7 +36,10 @@ const ClinicTVDisplay = () => {
       setClinicName(res.data.clinicName);
 
       if (res.data.doctors && res.data.doctors.length > 0) {
-        const actualClinicId = res.data.doctors[0].clinicId;
+        let actualClinicId = res.data.doctors[0].clinicId;
+        if (actualClinicId && typeof actualClinicId === 'object') {
+          actualClinicId = actualClinicId._id;
+        }
         if (actualClinicId && joinedRoomRef.current !== actualClinicId) {
           socket.emit('joinClinic', actualClinicId);
           joinedRoomRef.current = actualClinicId;
@@ -58,19 +61,30 @@ const ClinicTVDisplay = () => {
 
   useEffect(() => {
     fetchDoctors();
-    socket.on('queueUpdate', () => fetchDoctors());
-    socket.on('doctorStatusChanged', () => fetchDoctors());
-    return () => {
-      socket.off('queueUpdate');
-      socket.off('doctorStatusChanged');
-    };
   }, []);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchDoctors();
+      if (selectedDoc) {
+        fetchQueue(selectedDoc._id);
+      }
+    };
+
+    socket.on('queueUpdate', handleUpdate);
+    socket.on('doctorStatusChanged', handleUpdate);
+
+    return () => {
+      socket.off('queueUpdate', handleUpdate);
+      socket.off('doctorStatusChanged', handleUpdate);
+    };
+  }, [selectedDoc]);
 
   useEffect(() => {
     if (selectedDoc) {
       fetchQueue(selectedDoc._id);
     }
-  }, [selectedDoc, doctors]);
+  }, [selectedDoc]);
 
   if (loading && !error) return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">

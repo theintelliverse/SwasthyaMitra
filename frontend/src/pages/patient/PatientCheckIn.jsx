@@ -206,7 +206,7 @@ const PatientCheckIn = () => {
                                     <Stethoscope size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors z-10" />
                                     <select
                                         required
-                                        className="w-full pl-16 pr-10 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer relative z-0 transition-all shadow-sm"
+                                        className="w-full max-w-full truncate pl-16 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer relative z-0 transition-all shadow-sm"
                                         onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
                                     >
                                         <option value="">Choose Doctor</option>
@@ -216,6 +216,9 @@ const PatientCheckIn = () => {
                                             </option>
                                         ))}
                                     </select>
+                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-teal-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                    </div>
                                 </div>
                             </div>
 
