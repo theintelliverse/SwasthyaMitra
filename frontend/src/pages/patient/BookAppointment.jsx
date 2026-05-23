@@ -587,9 +587,9 @@ const BookAppointment = () => {
                                                     : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
                                             }`}
                                         >
-                                            <h4 className="text-sm font-black mb-1">ðŸŒ… Morning Shift</h4>
+                                            <h4 className="text-sm font-black mb-1">Morning Shift</h4>
                                             <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().openingTime} â€“ {getClinicTimingConfig().breakStartTime}
+                                                {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().breakStartTime}
                                             </p>
                                         </button>
 
@@ -614,9 +614,9 @@ const BookAppointment = () => {
                                                     : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
                                             }`}
                                         >
-                                            <h4 className="text-sm font-black mb-1">ðŸŒ‡ Afternoon Shift</h4>
+                                            <h4 className="text-sm font-black mb-1">Afternoon Shift</h4>
                                             <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().breakEndTime} â€“ {getClinicTimingConfig().closingTime}
+                                                {getClinicTimingConfig().breakEndTime} - {getClinicTimingConfig().closingTime}
                                             </p>
                                         </button>
                                     </div>
