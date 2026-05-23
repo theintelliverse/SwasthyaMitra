@@ -40,6 +40,8 @@ const AdminDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [todayPatientsList, setTodayPatientsList] = useState([]);
+  const [allPatientsList, setAllPatientsList] = useState([]);
+  const [trafficTimeframe, setTrafficTimeframe] = useState('today');
   const [modalTab, setModalTab] = useState('billing'); // 'billing' | 'inventory'
   const socketRef = useRef(null);
   
@@ -262,6 +264,7 @@ const AdminDashboard = () => {
       
       setQueueList(queueData);
       setTodayPatientsList(todayPatients);
+      setAllPatientsList([...queueData, ...historyData]);
       setRecentStaffActivity(staffData.slice(0, 5));
       setLoading(false);
     } catch (err) {
@@ -320,29 +323,49 @@ const AdminDashboard = () => {
   };
 
   // Dynamically calculate traffic from real-time patient queue data
-  const chartData = [
-    { name: '8 AM', visits: 0 },
-    { name: '10 AM', visits: 0 },
-    { name: '12 PM', visits: 0 },
-    { name: '2 PM', visits: 0 },
-    { name: '4 PM', visits: 0 },
-    { name: '6 PM', visits: 0 },
-  ];
+  let chartData = [];
 
-  todayPatientsList.forEach(patient => {
-    try {
-      const t = patient.visitDate || patient.createdAt;
-      const hour = new Date(t).getHours();
-      if (hour >= 8 && hour < 10) chartData[0].visits++;
-      else if (hour >= 10 && hour < 12) chartData[1].visits++;
-      else if (hour >= 12 && hour < 14) chartData[2].visits++;
-      else if (hour >= 14 && hour < 16) chartData[3].visits++;
-      else if (hour >= 16 && hour < 18) chartData[4].visits++;
-      else if (hour >= 18) chartData[5].visits++;
-    } catch (e) {
-      console.error("Error parsing patient hour: ", e);
-    }
-  });
+  if (trafficTimeframe === 'today') {
+    chartData = [
+      { name: '8 AM', visits: 0 },
+      { name: '10 AM', visits: 0 },
+      { name: '12 PM', visits: 0 },
+      { name: '2 PM', visits: 0 },
+      { name: '4 PM', visits: 0 },
+      { name: '6 PM', visits: 0 },
+    ];
+    todayPatientsList.forEach(patient => {
+      try {
+        const t = patient.visitDate || patient.createdAt;
+        const hour = new Date(t).getHours();
+        if (hour >= 8 && hour < 10) chartData[0].visits++;
+        else if (hour >= 10 && hour < 12) chartData[1].visits++;
+        else if (hour >= 12 && hour < 14) chartData[2].visits++;
+        else if (hour >= 14 && hour < 16) chartData[3].visits++;
+        else if (hour >= 16 && hour < 18) chartData[4].visits++;
+        else if (hour >= 18) chartData[5].visits++;
+      } catch (e) {
+        console.error("Error parsing patient hour: ", e);
+      }
+    });
+  } else {
+    // Week view: past 7 days including today
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    chartData = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { name: days[d.getDay()], visits: 0, dateStr: d.toDateString() };
+    });
+
+    allPatientsList.forEach(patient => {
+      try {
+        const t = patient.visitDate || patient.createdAt;
+        const patientDate = new Date(t).toDateString();
+        const dayMatch = chartData.find(d => d.dateStr === patientDate);
+        if (dayMatch) dayMatch.visits++;
+      } catch (e) {}
+    });
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
@@ -477,8 +500,14 @@ const AdminDashboard = () => {
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time walk-in frequency</p>
                     </div>
                     <div className="flex gap-2">
-                       <button className="px-3 py-1 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase">Today</button>
-                       <button className="px-3 py-1 text-slate-400 rounded-lg text-[10px] font-black uppercase">Week</button>
+                       <button 
+                         onClick={() => setTrafficTimeframe('today')}
+                         className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-colors ${trafficTimeframe === 'today' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                       >Today</button>
+                       <button 
+                         onClick={() => setTrafficTimeframe('week')}
+                         className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-colors ${trafficTimeframe === 'week' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                       >Week</button>
                     </div>
                  </div>
                  <div className="h-[220px] md:h-[280px] w-full">

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
+const socket = SOCKET_URL ? io(SOCKET_URL, { reconnection: true }) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ClinicTVDisplay = () => {
   const [doctors, setDoctors] = useState([]);
@@ -61,6 +61,18 @@ const ClinicTVDisplay = () => {
 
   useEffect(() => {
     fetchDoctors();
+    
+    // Automatically re-join clinic room on socket reconnect
+    const handleReconnect = () => {
+      if (joinedRoomRef.current) {
+        socket.emit('joinClinic', joinedRoomRef.current);
+      }
+    };
+    socket.on('connect', handleReconnect);
+
+    return () => {
+      socket.off('connect', handleReconnect);
+    };
   }, []);
 
   useEffect(() => {
@@ -241,12 +253,12 @@ const ClinicTVDisplay = () => {
 
           {activePatient ? (
             <div className="text-center w-full max-w-2xl animate-in zoom-in-95 duration-1000">
-              <div className={`mx-auto w-80 h-80 lg:w-[480px] lg:h-[480px] rounded-[6rem] lg:rounded-[8rem] flex flex-col items-center justify-center border-[20px] shadow-[0_0_100px_rgba(20,184,166,0.2)] mb-12 relative group transition-all duration-1000 ${activePatient.isEmergency ? 'border-red-600 bg-red-950/60 shadow-red-600/50 pulse-ring' : 'border-teal-500 bg-teal-500/10 shadow-teal-500/30'}`}>
+              <div className={`mx-auto w-56 h-56 lg:w-[320px] lg:h-[320px] rounded-[3rem] lg:rounded-[4rem] flex flex-col items-center justify-center border-[12px] shadow-[0_0_80px_rgba(20,184,166,0.15)] mb-8 relative group transition-all duration-1000 ${activePatient.isEmergency ? 'border-red-600 bg-red-950/60 shadow-red-600/40 pulse-ring' : 'border-teal-500 bg-teal-500/10 shadow-teal-500/20'}`}>
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-[inherit] opacity-30" />
-                <span className="text-xl lg:text-3xl font-black uppercase tracking-[0.3em] text-white/40 mb-2">Token Number</span>
-                <span className="text-[12rem] lg:text-[18rem] font-black leading-none tabular-nums tracking-tighter">{activePatient.tokenNumber}</span>
+                <span className="text-sm lg:text-xl font-black uppercase tracking-[0.3em] text-white/40 mb-2">Token Number</span>
+                <span className="text-7xl lg:text-[7rem] font-black leading-none tabular-nums tracking-tighter">{activePatient.tokenNumber}</span>
               </div>
-              <h2 className="text-6xl lg:text-8xl font-black tracking-tighter truncate max-w-full px-10">{activePatient.patientName}</h2>
+              <h2 className="text-4xl lg:text-6xl font-black tracking-tighter truncate max-w-full px-8">{activePatient.patientName}</h2>
               {activePatient.isEmergency && (
                 <div className="mt-8 inline-flex items-center gap-4 px-8 py-3 bg-red-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] animate-pulse shadow-2xl shadow-red-600/50">
                   <Siren size={24} />
