@@ -71,32 +71,47 @@ const AdminDashboard = () => {
     }));
   };
 
-  const saveConfig = () => {
-    localStorage.setItem('SM_avgWaitFactor', config.avgWaitFactor);
-    localStorage.setItem('SM_feeConsult', config.feeConsult);
-    localStorage.setItem('SM_feeLab', config.feeLab);
-    localStorage.setItem('SM_feeEmergency', config.feeEmergency);
-    localStorage.setItem('SM_feeMedicine', config.feeMedicine);
-    
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: 'Operational Rules Saved',
-      showConfirmButton: false,
-      timer: 2000,
-      background: '#EEF6FA'
-    });
-    
-    setIsRevenueModalOpen(false);
-    fetchLiveStats(true);
+  const saveConfig = async () => {
+    try {
+      await axios.patch(`${API_URL}/api/clinic/settings`, {
+        feeConsult: config.feeConsult,
+        feeLab: config.feeLab,
+        feeEmergency: config.feeEmergency,
+        feeMedicine: config.feeMedicine,
+        avgWaitFactor: config.avgWaitFactor
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Operational Rules Saved',
+        showConfirmButton: false,
+        timer: 2000,
+        background: '#EEF6FA'
+      });
+      
+      setIsRevenueModalOpen(false);
+      fetchLiveStats(true);
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Failed to save config', 'error');
+    }
+  };
+
+  const syncInventory = async (newInventory) => {
+    try {
+      await axios.patch(`${API_URL}/api/clinic/inventory`, { inventory: newInventory }, { headers: { Authorization: `Bearer ${token}` } });
+    } catch (err) {
+      console.error("Failed to sync inventory", err);
+    }
   };
 
   const restockMed = (index) => {
     const updated = [...inventory];
     updated[index].stock += 50;
     setInventory(updated);
-    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    syncInventory(updated);
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -110,7 +125,7 @@ const AdminDashboard = () => {
 
   const resetInventory = () => {
     setInventory(defaultInventory);
-    localStorage.setItem('SM_inventory', JSON.stringify(defaultInventory));
+    syncInventory(defaultInventory);
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -143,17 +158,33 @@ const AdminDashboard = () => {
       const historyRes = await axios.get(`${API_URL}/api/queue/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      const clinicRes = await axios.get(`${API_URL}/api/clinic/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       const queueData = res.data.data || [];
       const staffData = staffRes.data.staff || [];
       const historyData = historyRes.data.data || [];
+      const clinicData = clinicRes.data.data || {};
 
-      // Read dynamic rules from localStorage
-      const avgWaitFactor = Number(localStorage.getItem('SM_avgWaitFactor') || 8);
-      const feeConsult = Number(localStorage.getItem('SM_feeConsult') || 500);
-      const feeLab = Number(localStorage.getItem('SM_feeLab') || 450);
-      const feeEmergency = Number(localStorage.getItem('SM_feeEmergency') || 300);
-      const feeMedicine = Number(localStorage.getItem('SM_feeMedicine') || 120);
+      // Load dynamic rules from backend (or fallback)
+      const avgWaitFactor = clinicData.avgWaitFactor ?? 8;
+      const feeConsult = clinicData.feeConsult ?? 500;
+      const feeLab = clinicData.feeLab ?? 450;
+      const feeEmergency = clinicData.feeEmergency ?? 300;
+      const feeMedicine = clinicData.feeMedicine ?? 120;
+      
+      setConfig({
+        avgWaitFactor,
+        feeConsult,
+        feeLab,
+        feeEmergency,
+        feeMedicine
+      });
+
+      if (clinicData.inventory) {
+        setInventory(clinicData.inventory);
+      }
 
       // Calculate today's revenue & visit breakdowns dynamically
       const todayStart = new Date().setHours(0, 0, 0, 0);
@@ -568,6 +599,7 @@ const AdminDashboard = () => {
         saveConfig={saveConfig}
         inventory={inventory}
         setInventory={setInventory}
+        syncInventory={syncInventory}
         restockMed={restockMed}
         resetInventory={resetInventory}
         stats={stats}
@@ -584,6 +616,7 @@ const RevenueModal = ({
   saveConfig, 
   inventory, 
   setInventory, 
+  syncInventory,
   restockMed, 
   resetInventory, 
   stats 
@@ -610,7 +643,7 @@ const RevenueModal = ({
     const updated = [...inventory];
     updated[idx].unitPrice = Number(tempPrice) || 0;
     setInventory(updated);
-    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    syncInventory(updated);
     setEditingIndex(null);
     Swal.fire({
       toast: true,
@@ -635,7 +668,7 @@ const RevenueModal = ({
     }];
 
     setInventory(updated);
-    localStorage.setItem('SM_inventory', JSON.stringify(updated));
+    syncInventory(updated);
     setNewMed({ name: '', stock: 100, minStock: 20, unitPrice: 10 });
     setShowAddForm(false);
     Swal.fire({
@@ -663,7 +696,7 @@ const RevenueModal = ({
       if (result.isConfirmed) {
         const updated = inventory.filter((_, i) => i !== idx);
         setInventory(updated);
-        localStorage.setItem('SM_inventory', JSON.stringify(updated));
+        syncInventory(updated);
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -922,7 +955,87 @@ const RevenueModal = ({
               )}
 
               {/* Medicines Inventory List */}
-              <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+              <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredInventory.map((item, idx) => {
+                  const isLowStock = item.stock <= item.minStock;
+                  const stockPct = Math.min(100, Math.max(0, (item.stock / 150) * 100));
+                  const stockColor = item.stock <= item.minStock ? 'bg-rose-500' : item.stock <= item.minStock * 2 ? 'bg-amber-500' : 'bg-emerald-500';
+
+                  return (
+                    <div key={idx} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-sm font-black text-slate-800 block">{item.name}</span>
+                          {isLowStock && (
+                            <span className="inline-block mt-1 px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
+                          )}
+                        </div>
+                        {editingIndex === idx ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-slate-500">₹</span>
+                            <input 
+                              type="number"
+                              className="w-16 px-1.5 py-1 border border-slate-300 rounded text-xs font-black outline-none focus:border-teal-500"
+                              value={tempPrice}
+                              onChange={(e) => setTempPrice(e.target.value)}
+                            />
+                            <button 
+                              onClick={() => savePrice(idx)}
+                              className="p-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                            >
+                              <Check size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-slate-800">₹{item.unitPrice}</span>
+                            <button 
+                              onClick={() => startEditing(idx, item.unitPrice)}
+                              className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                            >
+                              <Edit size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5">
+                          <span>{item.stock} Units</span>
+                          <span>Min: {item.minStock}</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${stockColor} rounded-full transition-all`} style={{width: `${stockPct}%`}} />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                        <button 
+                          onClick={() => deleteMedicine(idx)}
+                          className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                          <Trash2 size={16} /> 
+                          <span className="text-[10px] font-black uppercase tracking-wider">Remove</span>
+                        </button>
+                        <button 
+                          onClick={() => restockMed(idx)}
+                          className="px-4 py-2 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-xs font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-xl transition-all active:scale-95"
+                        >
+                          Restock (+50)
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {filteredInventory.length === 0 && (
+                  <div className="text-center py-8 text-slate-400 font-bold text-sm bg-white border border-slate-100 rounded-2xl shadow-sm">
+                    No matching medicines found.
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">

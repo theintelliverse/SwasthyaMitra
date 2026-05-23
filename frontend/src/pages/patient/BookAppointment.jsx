@@ -264,7 +264,7 @@ const BookAppointment = () => {
             if (res.data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: formData.rescheduleAppointmentId ? 'Reschedule Submitted! ðŸ—“ï¸' : 'Booking Confirmed! ðŸŽ‰',
+                    title: formData.rescheduleAppointmentId ? 'Reschedule Submitted!' : 'Booking Confirmed!',
                     text: formData.rescheduleAppointmentId 
                         ? 'Your reschedule request has been submitted to the receptionist for confirmation.' 
                         : 'Your request is being processed by the clinical team.',

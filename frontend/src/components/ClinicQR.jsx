@@ -20,28 +20,28 @@ const ClinicQR = ({ clinicCode, clinicName }) => {
   };
 
   return (
-    <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm flex flex-col items-center relative overflow-hidden group">
+    <div className="bg-white border border-sandstone p-6 md:p-6 rounded-3xl shadow-sm flex flex-col items-center relative overflow-hidden group">
       {/* Decorative Branding Accent */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-marigold/5 rounded-bl-[3rem] -z-0"></div>
 
       <div className="relative z-10 flex flex-col items-center w-full">
         <div className="flex items-center gap-2 mb-2">
           <QrCode size={20} className="text-marigold" />
-          <h3 className="font-heading text-2xl text-teak">Clinic QR Gateway</h3>
+          <h3 className="font-heading text-xl text-teak">Clinic QR Gateway</h3>
         </div>
 
-        <p className="text-xs text-khaki mb-8 text-center px-2 font-medium leading-relaxed">
+        <p className="text-[10px] text-khaki mb-4 text-center px-2 font-medium leading-relaxed">
           Display this at your reception. Patients scan to join the <span className="text-teak font-bold">Live Queue</span>.
         </p>
 
         {/* QR Container with Morning Marigold styling */}
         <div
           ref={qrRef}
-          className="p-8 bg-parchment rounded-[2.5rem] border-2 border-marigold/20 mb-8 shadow-inner relative group/qr transition-transform hover:scale-[1.02]"
+          className="p-6 bg-parchment rounded-3xl border-2 border-marigold/20 mb-4 shadow-inner relative group/qr transition-transform hover:scale-[1.02]"
         >
           <QRCodeCanvas
             value={checkInUrl}
-            size={200}
+            size={150}
             bgColor={"#EEF6FA"} // Parchment
             fgColor={"#0F766E"} // Deep Teak
             level={"H"}         // High error correction
@@ -56,7 +56,7 @@ const ClinicQR = ({ clinicCode, clinicName }) => {
         </div>
 
         {/* Live Link Verification */}
-        <div className="w-full bg-parchment border border-sandstone rounded-2xl p-4 mb-6 flex items-center justify-between group/link hover:border-marigold transition-colors">
+        <div className="w-full bg-parchment border border-sandstone rounded-xl p-3 mb-4 flex items-center justify-between group/link hover:border-marigold transition-colors">
           <div className="overflow-hidden">
             <p className="text-[8px] font-black uppercase text-khaki mb-1">Target URL</p>
             <p className="text-[10px] text-teak font-bold truncate pr-4 italic">
@@ -70,12 +70,12 @@ const ClinicQR = ({ clinicCode, clinicName }) => {
 
         <button
           onClick={downloadQR}
-          className="w-full py-4 bg-teak text-parchment rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-marigold transition-all shadow-xl shadow-[#0F766E]/10 flex items-center justify-center gap-3 active:scale-95"
+          className="w-full py-3 bg-teak text-parchment rounded-xl font-bold text-[9px] uppercase tracking-[0.2em] hover:bg-marigold transition-all shadow-xl shadow-[#0F766E]/10 flex items-center justify-center gap-2 active:scale-95"
         >
-          <Download size={16} /> Download PNG for Print
+          <Download size={14} /> Download PNG for Print
         </button>
 
-        <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-parchment rounded-full border border-sandstone">
+        <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-parchment rounded-full border border-sandstone">
           <Info size={12} className="text-marigold" />
           <p className="text-[9px] font-black uppercase text-khaki tracking-widest">
             Clinic Identity: <span className="text-teak">{clinicCode}</span>

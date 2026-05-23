@@ -108,19 +108,19 @@ const ClinicSettings = () => {
               <SettingsIcon size={24} />
             </div>
             <div>
-              <h1 className="font-heading text-3xl leading-none">Clinic Profile</h1>
+              <h1 className="font-heading text-2xl leading-none">Clinic Profile</h1>
               <p className="text-[10px] font-black uppercase tracking-widest text-khaki mt-1">Configure Global Facility Settings</p>
             </div>
           </div>
         </header>
 
-        <main className="flex-grow max-w-6xl w-full mx-auto p-6 md:p-10">
-          <div className="grid lg:grid-cols-3 gap-10">
+        <main className="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6">
+          <div className="grid lg:grid-cols-3 gap-6">
 
             {/* --- Main Settings Form --- */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="bg-white border border-sandstone rounded-[3.5rem] p-8 md:p-12 shadow-sm">
-                <form onSubmit={handleUpdate} className="space-y-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white border border-sandstone rounded-3xl p-6 md:p-8 shadow-sm">
+                <form onSubmit={handleUpdate} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Clinic Name */}
                     <div className="space-y-2">
@@ -129,7 +129,7 @@ const ClinicSettings = () => {
                         <Building size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all"
+                          className="w-full pl-12 pr-6 py-3 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all text-sm"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
@@ -143,7 +143,7 @@ const ClinicSettings = () => {
                         <QrCode size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
                           type="text" required
-                          className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-black uppercase text-marigold transition-all"
+                          className="w-full pl-12 pr-6 py-3 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-black uppercase text-marigold transition-all text-sm"
                           value={formData.clinicCode}
                           onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                         />
@@ -162,7 +162,7 @@ const ClinicSettings = () => {
                       <input
                         type="text"
                         placeholder="+91 00000 00000"
-                        className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
+                        className="w-full pl-12 pr-6 py-3 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak text-sm"
                         value={formData.contactNumber}
                         onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                       />
@@ -176,7 +176,7 @@ const ClinicSettings = () => {
                       <MapPin size={16} className="absolute left-5 top-4.5 text-sandstone" />
                       <textarea
                         placeholder="Street, Landmark, City, Pincode..."
-                        className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium h-32 resize-none transition-all"
+                        className="w-full pl-12 pr-6 py-3 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium h-24 resize-none transition-all text-sm"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       ></textarea>
@@ -274,13 +274,15 @@ const ClinicSettings = () => {
             </div>
 
             {/* --- Right Sidebar: QR Live Preview & Danger Zone --- */}
-            <div className="space-y-8">
-              <div className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm">
-                <h3 className="font-heading text-xl mb-6 border-b border-sandstone pb-4">Live QR Preview</h3>
-                <div className="transform scale-95 origin-top">
-                  <ClinicQR clinicCode={formData.clinicCode} clinicName={formData.name} />
+            <div className="space-y-6">
+              <div className="bg-white border border-sandstone p-6 md:p-8 rounded-3xl shadow-sm">
+                <h3 className="font-heading text-lg mb-4 border-b border-sandstone pb-3">Live QR Preview</h3>
+                <div className="flex flex-col items-center">
+                  <div className="w-full max-w-xs origin-top md:scale-90 lg:scale-100">
+                    <ClinicQR clinicCode={formData.clinicCode} clinicName={formData.name} />
+                  </div>
                 </div>
-                <p className="mt-6 text-[10px] text-khaki leading-relaxed text-center px-4 font-medium italic">
+                <p className="mt-4 text-[9px] text-khaki leading-relaxed text-center px-4 font-medium italic">
                   This QR code allows patients to join your queue instantly from their mobile devices.
                 </p>
               </div>
