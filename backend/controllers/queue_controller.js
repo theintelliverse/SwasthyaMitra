@@ -640,7 +640,11 @@ exports.getPublicDoctorQueue = async (req, res) => {
             doctorId: doctorId,
             isApproved: true,
             status: { $in: ['Waiting', 'In-Consultation'] },
-            currentStage: { $nin: ['Lab-Pending', 'Lab-Processing'] }
+            currentStage: { $nin: ['Lab-Pending', 'Lab-Processing'] },
+            $or: [
+                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
+                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
+            ]
         })
             .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate currentStage')
             .sort({
