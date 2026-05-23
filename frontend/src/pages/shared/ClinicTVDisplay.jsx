@@ -217,32 +217,32 @@ const ClinicTVDisplay = () => {
       <div className={`absolute top-0 left-0 w-full h-full bg-gradient-to-br from-teal-600/10 via-transparent to-indigo-600/10 pointer-events-none transition-opacity duration-1000 ${activePatient?.isEmergency ? 'opacity-0' : 'opacity-100'}`} />
 
       {/* TV Header */}
-      <nav className="relative z-10 bg-black/40 backdrop-blur-2xl p-10 border-b border-white/10 flex justify-between items-center">
-        <div className="flex items-center gap-10">
+      <nav className="relative z-10 bg-black/40 backdrop-blur-2xl p-6 border-b border-white/10 flex justify-between items-center">
+        <div className="flex items-center gap-6">
           <button
             onClick={() => setSelectedDoc(null)}
-            className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-white/20 hover:text-white transition-all shadow-xl"
+            className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-white/20 hover:text-white transition-all shadow-xl"
           >
-            <ArrowLeft size={28} />
+            <ArrowLeft size={24} />
           </button>
-          <div className="flex items-center gap-6 border-l border-white/10 pl-10">
-            <div className="w-16 h-16 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500">
-              <Stethoscope size={32} />
+          <div className="flex items-center gap-4 border-l border-white/10 pl-6">
+            <div className="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500">
+              <Stethoscope size={24} />
             </div>
             <div>
-              <h1 className="text-5xl font-black tracking-tighter leading-none mb-1">Dr. {selectedDoc.name}</h1>
-              <p className="text-teal-500 font-black uppercase tracking-[0.4em] text-xs">Clinical Specialist • {selectedDoc.specialization}</p>
+              <h1 className="text-3xl font-black tracking-tighter leading-none mb-1">Dr. {selectedDoc.name}</h1>
+              <p className="text-teal-500 font-black uppercase tracking-[0.2em] text-[10px]">Clinical Specialist • {selectedDoc.specialization}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-6">
           <div className="text-right">
-            <p className="text-5xl font-black tracking-tighter tabular-nums leading-none mb-1">
+            <p className="text-3xl font-black tracking-tighter tabular-nums leading-none mb-1">
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <div className="flex items-center justify-end gap-2 text-teal-500/40 font-black uppercase text-[10px] tracking-widest">
-              <Signal size={12} className="text-green-500" />
+            <div className="flex items-center justify-end gap-2 text-teal-500/40 font-black uppercase text-[9px] tracking-widest">
+              <Signal size={10} className="text-green-500" />
               Live Transmission
             </div>
           </div>
@@ -302,22 +302,22 @@ const ClinicTVDisplay = () => {
             </div>
           </div>
 
-          <div className="flex-grow overflow-y-auto p-10 space-y-8 custom-scrollbar">
+          <div className="flex-grow overflow-y-auto p-8 space-y-3 custom-scrollbar">
             {waitingPatients.length > 0 ? (
-              waitingPatients.map((p, idx) => (
-                <div key={p._id} className={`group p-8 rounded-[3rem] flex justify-between items-center border transition-all duration-500 animate-in slide-in-from-right-10 ${p.isEmergency ? 'bg-red-600/20 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/[0.08] hover:translate-x-2'}`}>
-                  <div className="flex items-center gap-8">
-                    <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center font-black text-4xl shadow-2xl ${p.isEmergency ? 'bg-red-600 shadow-red-600/20' : 'bg-teal-500/20 text-teal-400 shadow-teal-500/10'}`}>
+              waitingPatients.slice(0, 5).map((p, idx) => (
+                <div key={p._id} className={`group px-6 py-4 rounded-[1.5rem] flex justify-between items-center border transition-all duration-500 animate-in slide-in-from-right-10 ${p.isEmergency ? 'bg-red-600/20 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/[0.08] hover:translate-x-2'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-xl ${p.isEmergency ? 'bg-red-600 shadow-red-600/20' : 'bg-teal-500/20 text-teal-400 shadow-teal-500/10'}`}>
                       {p.tokenNumber}
                     </div>
                     <div>
-                      <p className="text-3xl font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors">{p.patientName}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${p.isEmergency ? 'text-red-400' : 'text-white/20'}`}>
-                          {p.isEmergency ? 'High Priority' : 'Regular Consultation'}
+                      <p className="text-lg font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors leading-tight">{p.patientName}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${p.isEmergency ? 'text-red-400' : 'text-white/30'}`}>
+                          {p.isEmergency ? 'High Priority' : 'Regular'}
                         </span>
                         <div className="w-1 h-1 bg-white/10 rounded-full" />
-                        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Token Auth Verified</span>
+                        <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Verified</span>
                         {p.estimatedWait != null && (
                           <>
                             <div className="w-1 h-1 bg-white/10 rounded-full" />

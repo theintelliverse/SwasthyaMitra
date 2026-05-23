@@ -139,12 +139,11 @@ exports.getPublicDoctors = async (req, res) => {
             isActive: { $ne: false }
         }).select('name specialization education experience _id isAvailable');
 
-        // Fetch Queue counts for each doctor (Today Only)
+        // Fetch Queue counts for each doctor (Active Only)
         const doctorsWithQueue = await Promise.all(doctors.map(async (doc) => {
             const queueCount = await Queue.countDocuments({
                 doctorId: doc._id,
-                status: { $in: ['Waiting', 'In-Consultation'] },
-                createdAt: { $gte: today }
+                status: { $in: ['Waiting', 'In-Consultation'] }
             });
             return {
                 ...doc.toObject(),

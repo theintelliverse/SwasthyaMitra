@@ -323,23 +323,10 @@ exports.completeVisit = async (req, res) => {
 // 9️⃣ Live Queue for Dashboard
 exports.getLiveQueue = async (req, res) => {
     try {
-        // Filter to show only today's appointments
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         const queue = await Queue.find({
             clinicId: req.user.clinicId,
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] },
-            $or: [
-                // Show walk-ins created today
-                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
-                // Show appointments scheduled for today
-                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
-            ]
+            status: { $in: ['Waiting', 'In-Consultation'] }
         }).sort({ isEmergency: -1, createdAt: 1 }).populate('doctorId', 'name specialization');
 
         const queueWithWait = await Promise.all(queue.map(async (item) => {
@@ -639,11 +626,7 @@ exports.getPublicDoctorQueue = async (req, res) => {
         const queue = await Queue.find({
             doctorId: doctorId,
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] },
-            $or: [
-                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
-                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
-            ]
+            status: { $in: ['Waiting', 'In-Consultation'] }
         })
             .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate')
             .sort({
