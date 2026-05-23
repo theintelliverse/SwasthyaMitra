@@ -76,17 +76,25 @@ const ClinicTVDisplay = () => {
     // Join room
     socketRef.current.emit('joinClinic', clinicId);
 
+    const handleReconnect = () => {
+      console.log("🔄 Socket reconnected, re-joining clinic room:", clinicId);
+      socketRef.current.emit('joinClinic', clinicId);
+    };
+
     const handleUpdate = () => {
+      console.log("⚡ Received live update from server!");
       fetchDoctors();
       if (selectedDoc) {
         fetchQueue(selectedDoc._id);
       }
     };
 
+    socketRef.current.on('connect', handleReconnect);
     socketRef.current.on('queueUpdate', handleUpdate);
     socketRef.current.on('doctorStatusChanged', handleUpdate);
 
     return () => {
+      socketRef.current.off('connect', handleReconnect);
       socketRef.current.off('queueUpdate', handleUpdate);
       socketRef.current.off('doctorStatusChanged', handleUpdate);
     };
