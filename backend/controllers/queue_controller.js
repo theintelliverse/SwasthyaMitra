@@ -887,15 +887,25 @@ exports.getDoctorDashboardStats = async (req, res) => {
             status: 'Waiting'
         });
 
-        // 4. Queue Data for tabs — walk-ins by createdAt (must be approved), appointments by appointmentDate (approved or pending)
-        const queueData = await Queue.find({
+        // 4. Queue Data for tabs
+        let queueQuery = {
             clinicId,
             doctorId,
             $or: [
                 { visitType: { $ne: 'Appointment' }, isApproved: true, createdAt: { $gte: today, $lt: tomorrow } },
                 { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
             ]
-        }).sort({ isEmergency: -1, appointmentDate: 1, createdAt: 1 });
+        };
+
+        if (req.query.allDates === 'true') {
+            queueQuery = {
+                clinicId,
+                doctorId,
+                isApproved: true
+            };
+        }
+
+        const queueData = await Queue.find(queueQuery).sort({ appointmentDate: -1, createdAt: -1 });
 
         const queueWithWait = await Promise.all(queueData.map(async (item) => {
             const itemObj = item.toObject ? item.toObject() : item;

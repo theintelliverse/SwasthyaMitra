@@ -31,13 +31,16 @@ const Appointments = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, [selectedDate]);
+  }, [selectedDate, activeTab]);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/queue/stats/doctor`, {
-        params: { date: selectedDate },
+        params: { 
+          date: selectedDate,
+          allDates: activeTab === 'All'
+        },
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success && res.data.data) {
@@ -97,6 +100,7 @@ const Appointments = () => {
                        (activeTab === 'Upcoming' && (app.status === 'Waiting' || app.status === 'Scheduled')) ||
                        (activeTab === 'In Progress' && app.status === 'In-Consultation') ||
                        (activeTab === 'Completed' && app.status === 'Completed');
+    // If activeTab is 'All', don't filter by search? Wait, search should still apply.
     return matchesSearch && matchesTab;
   });
 

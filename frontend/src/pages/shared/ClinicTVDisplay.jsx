@@ -18,8 +18,8 @@ const ClinicTVDisplay = () => {
   const [clinicName, setClinicName] = useState("Swasthya-Mitra Clinic");
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [clinicId, setClinicId] = useState(null);
 
-  const joinedRoomRef = useRef(null);
   const clinicCode = window.location.pathname.split('/').pop() || 'CITY01';
 
   // Live Clock
@@ -39,9 +39,8 @@ const ClinicTVDisplay = () => {
         if (actualClinicId && typeof actualClinicId === 'object') {
           actualClinicId = actualClinicId._id;
         }
-        if (actualClinicId && joinedRoomRef.current !== actualClinicId) {
-          if (socketRef.current) socketRef.current.emit('joinClinic', actualClinicId);
-          joinedRoomRef.current = actualClinicId;
+        if (actualClinicId) {
+          setClinicId(actualClinicId);
         }
       }
       setLoading(false);
@@ -64,18 +63,7 @@ const ClinicTVDisplay = () => {
     if (!SOCKET_URL) return;
     const newSocket = io(SOCKET_URL, { reconnection: true });
     socketRef.current = newSocket;
-
-    const handleReconnect = () => {
-      if (joinedRoomRef.current) {
-        newSocket.emit('joinClinic', joinedRoomRef.current);
-      }
-    };
-    newSocket.on('connect', handleReconnect);
-
-    return () => {
-      newSocket.off('connect', handleReconnect);
-      newSocket.disconnect();
-    };
+    return () => newSocket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -83,7 +71,11 @@ const ClinicTVDisplay = () => {
   }, []);
 
   useEffect(() => {
-    if (!socketRef.current) return;
+    if (!socketRef.current || !clinicId) return;
+
+    // Join room
+    socketRef.current.emit('joinClinic', clinicId);
+
     const handleUpdate = () => {
       fetchDoctors();
       if (selectedDoc) {
@@ -98,7 +90,7 @@ const ClinicTVDisplay = () => {
       socketRef.current.off('queueUpdate', handleUpdate);
       socketRef.current.off('doctorStatusChanged', handleUpdate);
     };
-  }, [selectedDoc]);
+  }, [clinicId, selectedDoc]);
 
   useEffect(() => {
     if (selectedDoc) {
