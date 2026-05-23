@@ -38,10 +38,10 @@ const AdminDashboard = () => {
   const [queueList, setQueueList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const socketRef = useRef(null);
-
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+  const [todayPatientsList, setTodayPatientsList] = useState([]);
   const [modalTab, setModalTab] = useState('billing'); // 'billing' | 'inventory'
+  const socketRef = useRef(null);
   
   const [config, setConfig] = useState({
     avgWaitFactor: Number(localStorage.getItem('SM_avgWaitFactor') || 8),
@@ -261,6 +261,7 @@ const AdminDashboard = () => {
       }));
       
       setQueueList(queueData);
+      setTodayPatientsList(todayPatients);
       setRecentStaffActivity(staffData.slice(0, 5));
       setLoading(false);
     } catch (err) {
@@ -328,9 +329,10 @@ const AdminDashboard = () => {
     { name: '6 PM', visits: 0 },
   ];
 
-  queueList.forEach(patient => {
+  todayPatientsList.forEach(patient => {
     try {
-      const hour = new Date(patient.createdAt).getHours();
+      const t = patient.visitDate || patient.createdAt;
+      const hour = new Date(t).getHours();
       if (hour >= 8 && hour < 10) chartData[0].visits++;
       else if (hour >= 10 && hour < 12) chartData[1].visits++;
       else if (hour >= 12 && hour < 14) chartData[2].visits++;
