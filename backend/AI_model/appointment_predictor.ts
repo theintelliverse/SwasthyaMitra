@@ -170,14 +170,31 @@ export function convertTimeToMin(value: unknown): number {
     }
 }
 
-function addSample(bucketMap: Record<string, AverageBucket>, key: string, value: number): void {
+function addSample(bucketMap: Record<string, AverageBucket>, key: string, value: number, isLiveUpdate = false): void {
     if (!key) {
         return;
     }
 
     const bucket = bucketMap[key] || { sum: 0, count: 0 };
-    bucket.sum += value;
-    bucket.count += 1;
+    
+    // Exponential Moving Average (EMA) for Recency Bias
+    // Deep Learning concept: Act like an optimizer (SGD/Adam) with a learning rate (alpha)
+    if (isLiveUpdate && bucket.count > 0) {
+        const alpha = 0.35; // Learning Rate
+        const currentAvg = bucket.sum / bucket.count;
+        const newAvg = (alpha * value) + ((1 - alpha) * currentAvg);
+        
+        // Adjust sum so sum/count equals the new moving average
+        bucket.sum = newAvg * bucket.count;
+        // Cap count to prevent integer overflow over long periods
+        if (bucket.count < 1000) {
+            bucket.count += 1;
+        }
+    } else {
+        bucket.sum += value;
+        bucket.count += 1;
+    }
+    
     bucketMap[key] = bucket;
 }
 
@@ -404,6 +421,29 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const dayOfWeek = recordDate.getDay().toString();
 
     const baseServiceTime = getBaseServiceTime(userData);
+    
+    // Deep Learning Concept: Attention Mechanism (Confidence-based Weights)
+    // Instead of static weights, we calculate confidence based on sample count.
+    // If a bucket has many samples (high confidence), it gets a higher attention weight.
+    const getConfidenceWeight = (lookupDict: Record<string, number>, key: string, baseWeight: number) => {
+        // We look at the count in the buckets (which we can access via global maps)
+        const count = problemBuckets[key]?.count || doctorBuckets[key]?.count || clinicBuckets[key]?.count || 1;
+        // Sigmoid-like scaling for confidence: maxes out at 1.5x the base weight if >50 samples
+        const confidenceMultiplier = 0.5 + (1 - Math.exp(-count / 20)); 
+        return baseWeight * confidenceMultiplier;
+    };
+
+    const wProblem = getConfidenceWeight(problemLookup, problem, 0.25);
+    const wDoctor = getConfidenceWeight(doctorLookup, doctorId, 0.20);
+    const wClinic = getConfidenceWeight(clinicLookup, clinicId, 0.15);
+    const wVisit = 0.12;
+    const wEmergency = 0.10;
+    const wTimeSlot = 0.08;
+    const wDayOfWeek = 0.10;
+
+    // Normalize weights so they sum to 1.0 (Softmax principle)
+    const totalWeight = wProblem + wDoctor + wClinic + wVisit + wEmergency + wTimeSlot + wDayOfWeek;
+
     const problemServiceTime = problemLookup[problem] || baseServiceTime;
     const doctorServiceTime = doctorLookup[doctorId] || baseServiceTime;
     const clinicServiceTime = clinicLookup[clinicId] || baseServiceTime;
@@ -413,13 +453,13 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const dayOfWeekServiceTime = dayOfWeekLookup[dayOfWeek] || baseServiceTime;
 
     let prediction = (
-        (problemServiceTime * 0.25) +
-        (doctorServiceTime * 0.20) +
-        (clinicServiceTime * 0.15) +
-        (visitTypeServiceTime * 0.12) +
-        (emergencyServiceTime * 0.10) +
-        (timeSlotServiceTime * 0.08) +
-        (dayOfWeekServiceTime * 0.10)
+        (problemServiceTime * (wProblem / totalWeight)) +
+        (doctorServiceTime * (wDoctor / totalWeight)) +
+        (clinicServiceTime * (wClinic / totalWeight)) +
+        (visitTypeServiceTime * (wVisit / totalWeight)) +
+        (emergencyServiceTime * (wEmergency / totalWeight)) +
+        (timeSlotServiceTime * (wTimeSlot / totalWeight)) +
+        (dayOfWeekServiceTime * (wDayOfWeek / totalWeight))
     );
 
     if (visitType === 'followup') {
@@ -451,6 +491,11 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     if (userData.currentStage === 'Lab-Pending' || userData.currentStage === 'Lab-Processing') {
         prediction *= 1.5;
     }
+
+    // Deep Learning Concept: Non-linear Activation (Soft Bounding)
+    // Prevents extreme outliers (e.g. 500+ mins) by flattening the curve at the top
+    const MAX_ALLOWED_TIME = 120; // Cap single consultation baseline prediction at 120 mins
+    prediction = MAX_ALLOWED_TIME * (1 - Math.exp(-prediction / (MAX_ALLOWED_TIME * 0.6)));
 
     prediction += Math.max(peopleAhead, 0) * Math.max(baseServiceTime, 8);
     prediction += Math.max(tokenNo - 1, 0) * 1.25;
@@ -585,18 +630,24 @@ export function updatePredictorWithData(appointmentData: {
     const visitType = normalizeVisitType(appointmentData.visit_type || appointmentData.diagnosis || appointmentData.notes || appointmentData.problem || 'walk-in');
     const emergencyKey = cleanBasic(appointmentData.emergency ?? 'normal');
     const timeSlot = getTimeSlotKey(appointmentData.time ?? '09:00');
+    
+    const recordDate = new Date(appointmentData.time as string | Date || Date.now());
+    const dayOfWeek = recordDate.getDay().toString();
 
-    addSample(problemBuckets, problem, duration);
-    addSample(doctorBuckets, doctorId, duration);
-    addSample(clinicBuckets, clinicId, duration);
-    addSample(visitTypeBuckets, visitType, duration);
-    addSample(emergencyBuckets, emergencyKey, duration);
-    addSample(timeSlotBuckets, timeSlot, duration);
+    addSample(problemBuckets, problem, duration, true);
+    addSample(doctorBuckets, doctorId, duration, true);
+    addSample(clinicBuckets, clinicId, duration, true);
+    addSample(visitTypeBuckets, visitType, duration, true);
+    addSample(emergencyBuckets, emergencyKey, duration, true);
+    addSample(timeSlotBuckets, timeSlot, duration, true);
+    addSample(dayOfWeekBuckets, dayOfWeek, duration, true);
 
+    // Update global mean with EMA for global recency bias
+    const globalAlpha = 0.1;
     totalSamples += 1;
     globalMeanServiceTime = totalSamples === 1
         ? duration
-        : ((globalMeanServiceTime * (totalSamples - 1)) + duration) / totalSamples;
+        : (globalAlpha * duration) + ((1 - globalAlpha) * globalMeanServiceTime);
 
     rebuildDerivedLookups();
     modelReady = true;
