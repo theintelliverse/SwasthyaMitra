@@ -292,17 +292,17 @@ async function loadHistoricalStats(options: { clinicId?: unknown; doctorId?: unk
 
         const [medicalRecords, queueRecords] = await Promise.all([
             MedicalRecord.find(query)
-            .sort({ visitDate: -1 })
-            .limit(options.limit || 500)
-            .select('clinicId doctorId diagnosis notes duration')
-            .lean(),
+                .sort({ visitDate: -1 })
+                .limit(options.limit || 500)
+                .select('clinicId doctorId diagnosis notes duration')
+                .lean(),
             QueueModel.find({
                 status: 'Completed'
             })
-            .sort({ endTime: -1, createdAt: -1 })
-            .limit(options.limit || 500)
-            .select('clinicId doctorId visitType isEmergency reason diagnosis consultationNotes startTime endTime status createdAt')
-            .lean()
+                .sort({ endTime: -1, createdAt: -1 })
+                .limit(options.limit || 500)
+                .select('clinicId doctorId visitType isEmergency reason diagnosis consultationNotes startTime endTime status createdAt')
+                .lean()
         ]);
 
         const records = medicalRecords as MedicalRecordLike[];
@@ -381,12 +381,12 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const emergencyKey = cleanBasic(userData.emergency ?? 'normal');
     const visitType = normalizeVisitType(userData.visit_type ?? userData.visitType ?? 'new');
     const timeMin = convertTimeToMin(userData.time ?? userData.appointmentTime ?? '09:00');
-    
+
     // Extract digits from token like "P-1" or "T-12"
     const rawToken = String(userData.token_no ?? userData.tokenNumber ?? '1');
     const digitsOnly = rawToken.replace(/\D/g, '');
     const tokenNo = digitsOnly ? Number.parseInt(digitsOnly, 10) : 1;
-    
+
     const doctorId = extractDoctorKey(userData.doctor_id ?? userData.doctorId);
     const clinicId = extractClinicKey(userData.clinicId);
     const problem = extractProblemKey(userData);
@@ -518,7 +518,7 @@ export async function estimateWaitTimeFromDb(context: WaitTimeContext): Promise<
             });
 
             // Find context patient in the sorted list
-            const contextIndex = sortedQueue.findIndex((entry) => 
+            const contextIndex = sortedQueue.findIndex((entry) =>
                 (context.tokenNumber && String(entry.tokenNumber) === String(context.tokenNumber)) ||
                 (context.queueId && String(entry._id) === String(context.queueId))
             );
