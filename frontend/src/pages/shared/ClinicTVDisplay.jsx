@@ -34,14 +34,12 @@ const ClinicTVDisplay = () => {
       setDoctors(res.data.doctors);
       setClinicName(res.data.clinicName);
 
-      if (res.data.doctors && res.data.doctors.length > 0) {
-        let actualClinicId = res.data.doctors[0].clinicId;
-        if (actualClinicId && typeof actualClinicId === 'object') {
+      if (res.data.clinicId) {
+        let actualClinicId = res.data.clinicId;
+        if (typeof actualClinicId === 'object' && actualClinicId._id) {
           actualClinicId = actualClinicId._id;
         }
-        if (actualClinicId) {
-          setClinicId(actualClinicId);
-        }
+        setClinicId(actualClinicId.toString());
       }
       setLoading(false);
     } catch (err) {
@@ -289,16 +287,16 @@ const ClinicTVDisplay = () => {
 
         {/* Right Side: Waiting List */}
         <div className="w-full lg:w-2/5 flex flex-col bg-black/30 backdrop-blur-3xl overflow-hidden shadow-2xl">
-          <div className="p-10 border-b border-white/10 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl">
-                <Users size={28} />
+          <div className="p-6 border-b border-white/10 bg-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-500/10 text-teal-500 rounded-xl">
+                <Users size={20} />
               </div>
-              <h3 className="text-3xl font-black tracking-tighter">Queue Dashboard</h3>
+              <h3 className="text-xl font-black tracking-tighter">Queue Dashboard</h3>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-2xl font-black text-teal-500 tabular-nums leading-none">{waitingPatients.length}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Lounge Queue</span>
+              <span className="text-xl font-black text-teal-500 tabular-nums leading-none">{waitingPatients.length}</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/30 mt-1">Lounge Queue</span>
             </div>
           </div>
 

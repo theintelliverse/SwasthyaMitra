@@ -151,7 +151,12 @@ exports.getPublicDoctors = async (req, res) => {
             };
         }));
 
-        res.status(200).json({ success: true, clinicName: clinic.name, doctors: doctorsWithQueue });
+        res.status(200).json({ 
+            success: true, 
+            clinicName: clinic.name, 
+            clinicId: clinic._id,
+            doctors: doctorsWithQueue 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
