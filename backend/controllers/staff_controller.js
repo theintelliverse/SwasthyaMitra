@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Clinic = require('../models/Clinic');
-const Patient = require('../models/Patient'); 
+const Patient = require('../models/Patient');
 const Queue = require('../models/Queue');
 const MedicalRecord = require('../models/MedicalRecord');
 const { hashPassword } = require('../utils/auth_helper');
@@ -10,13 +10,13 @@ const { sendStaffCredentials } = require('../utils/send_email');
 exports.addStaff = async (req, res) => {
     try {
         const { name, email, password, role, specialization } = req.body;
-        const clinicId = req.user.clinicId; 
+        const clinicId = req.user.clinicId;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "A user with this email is already registered." 
+            return res.status(400).json({
+                success: false,
+                message: "A user with this email is already registered."
             });
         }
 
@@ -44,10 +44,10 @@ exports.addStaff = async (req, res) => {
 
         try {
             await sendStaffCredentials(
-                email, 
-                password, 
-                name, 
-                role, 
+                email,
+                password,
+                name,
+                role,
                 clinic ? clinic.name : "Our Clinic"
             );
         } catch (mailError) {
@@ -102,7 +102,7 @@ exports.toggleAvailability = async (req, res) => {
     try {
         const { staffId } = req.params;
         const targetId = staffId === 'me' ? req.user.id : staffId;
-        
+
         const user = await User.findById(targetId);
         if (!user) return res.status(404).json({ message: "Staff member not found" });
 
@@ -133,8 +133,8 @@ exports.getPublicDoctors = async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const doctors = await User.find({ 
-            clinicId: clinic._id, 
+        const doctors = await User.find({
+            clinicId: clinic._id,
             role: 'doctor',
             isActive: { $ne: false }
         }).select('name specialization education experience _id isAvailable');
@@ -162,15 +162,15 @@ exports.getPublicDoctors = async (req, res) => {
 exports.getPatientFullProfile = async (req, res) => {
     try {
         const { phone } = req.params;
-        
+
         // Normalize phone to search (last 10 digits)
         const cleanPhone = phone.replace(/\D/g, '').slice(-10);
         const patient = await Patient.findOne({ phone: new RegExp(cleanPhone + '$') });
-        
+
         if (!patient) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "This patient hasn't set up a Digital Locker yet." 
+            return res.status(404).json({
+                success: false,
+                message: "This patient hasn't set up a Digital Locker yet."
             });
         }
 
@@ -279,7 +279,7 @@ exports.updatePatientVitals = async (req, res) => {
         };
 
         // Remove undefined fields
-        Object.keys(newVitalsEntry).forEach(key => 
+        Object.keys(newVitalsEntry).forEach(key =>
             newVitalsEntry[key] === undefined && delete newVitalsEntry[key]
         );
 
@@ -307,9 +307,9 @@ exports.archiveStaff = async (req, res) => {
     try {
         const { staffId } = req.params;
 
-        const user = await User.findByIdAndUpdate(staffId, { 
-            isActive: false, 
-            deletedAt: Date.now() 
+        const user = await User.findByIdAndUpdate(staffId, {
+            isActive: false,
+            deletedAt: Date.now()
         }, { new: true });
 
         if (!user) return res.status(404).json({ message: "Staff not found" });
@@ -317,9 +317,9 @@ exports.archiveStaff = async (req, res) => {
         // 📢 SOCKET EMIT: Remove from active UI lists immediately
         if (req.io) req.io.to(user.clinicId.toString()).emit('staffListUpdated');
 
-        res.status(200).json({ 
-            success: true, 
-            message: "Staff member archived. Access revoked but records preserved." 
+        res.status(200).json({
+            success: true,
+            message: "Staff member archived. Access revoked but records preserved."
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
