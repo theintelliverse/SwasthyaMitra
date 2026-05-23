@@ -3,8 +3,8 @@
  * Database-backed predictor used by the Node backend.
  */
 
-import * as MedicalRecord from '../models/MedicalRecord';
-import * as QueueModel from '../models/Queue';
+import * as MedicalRecord from '../models/MedicalRecord.js';
+import * as QueueModel from '../models/Queue.js';
 
 export interface AppointmentInput {
     emergency?: string | boolean | number;
@@ -419,8 +419,19 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
         prediction *= 0.55;
     }
 
-    if (timeMin < 540 || timeMin > 1020) {
+    if (timeMin < 540) {
         prediction *= 1.08;
+    }
+
+    // "ghani var time over thay gaya pachi speed karta hoy"
+    // If it is late in the day (after 7 PM), doctors speed up to finish the queue
+    const currentHour = new Date().getHours();
+    if (currentHour >= 21) {
+        prediction *= 0.65; // 35% faster after 9 PM
+    } else if (currentHour >= 19) {
+        prediction *= 0.75; // 25% faster after 7 PM
+    } else if (currentHour >= 18) {
+        prediction *= 0.85; // 15% faster after 6 PM
     }
 
     // Scale prediction by 1.5x for patients referred to the lab

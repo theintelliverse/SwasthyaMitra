@@ -2,8 +2,8 @@
  * Appointment Wait Time Prediction Module
  * Database-backed predictor used by the Node backend.
  */
-import * as MedicalRecord from '../models/MedicalRecord';
-import * as QueueModel from '../models/Queue';
+import * as MedicalRecord from '../models/MedicalRecord.js';
+import * as QueueModel from '../models/Queue.js';
 let modelReady = false;
 let globalMeanServiceTime = 20;
 let lastTrainingTime = null;
@@ -283,8 +283,20 @@ function calculatePrediction(userData, peopleAhead = 0) {
     if (emergencyKey === 'emergency') {
         prediction *= 0.55;
     }
-    if (timeMin < 540 || timeMin > 1020) {
+    if (timeMin < 540) {
         prediction *= 1.08;
+    }
+    // "ghani var time over thay gaya pachi speed karta hoy"
+    // If it is late in the day (after 7 PM), doctors speed up to finish the queue
+    const currentHour = new Date().getHours();
+    if (currentHour >= 21) {
+        prediction *= 0.65; // 35% faster after 9 PM
+    }
+    else if (currentHour >= 19) {
+        prediction *= 0.75; // 25% faster after 7 PM
+    }
+    else if (currentHour >= 18) {
+        prediction *= 0.85; // 15% faster after 6 PM
     }
     // Scale prediction by 1.5x for patients referred to the lab
     if (userData.currentStage === 'Lab-Pending' || userData.currentStage === 'Lab-Processing') {

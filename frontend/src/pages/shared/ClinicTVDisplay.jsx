@@ -313,15 +313,15 @@ const ClinicTVDisplay = () => {
                       <div>
                         <p className="text-lg font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors leading-tight">{p.patientName}</p>
                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${p.isEmergency ? 'text-red-400' : 'text-white/30'}`}>
-                            {p.isEmergency ? 'High Priority' : 'Regular'}
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${p.currentStage && p.currentStage.includes('Lab') ? 'text-yellow-400' : (p.isEmergency ? 'text-red-400' : 'text-white/30')}`}>
+                            {p.currentStage && p.currentStage.includes('Lab') ? 'Go for Lab' : (p.isEmergency ? 'High Priority' : 'Regular')}
                           </span>
                           <div className="w-1 h-1 bg-white/10 rounded-full" />
                           <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Verified</span>
                           {p.estimatedWait != null && (
                             <>
                               <div className="w-1 h-1 bg-white/10 rounded-full" />
-                              <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait} Mins</span>
+                              <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait}m</span>
                             </>
                           )}
                         </div>
