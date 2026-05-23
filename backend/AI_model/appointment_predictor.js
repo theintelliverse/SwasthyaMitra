@@ -15,12 +15,14 @@ let clinicBuckets = {};
 let visitTypeBuckets = {};
 let emergencyBuckets = {};
 let timeSlotBuckets = {};
+let dayOfWeekBuckets = {};
 let problemLookup = {};
 let doctorLookup = {};
 let clinicLookup = {};
 let visitTypeLookup = {};
 let emergencyLookup = {};
 let timeSlotLookup = {};
+let dayOfWeekLookup = {};
 function safeStringifyId(value) {
     if (!value) {
         return '';
@@ -159,6 +161,7 @@ function rebuildDerivedLookups() {
     visitTypeLookup = rebuildLookup(visitTypeBuckets);
     emergencyLookup = rebuildLookup(emergencyBuckets);
     timeSlotLookup = rebuildLookup(timeSlotBuckets);
+    dayOfWeekLookup = rebuildLookup(dayOfWeekBuckets);
 }
 async function loadHistoricalStats(options = {}) {
     if (trainingInProgress) {
@@ -195,6 +198,7 @@ async function loadHistoricalStats(options = {}) {
         visitTypeBuckets = {};
         emergencyBuckets = {};
         timeSlotBuckets = {};
+        dayOfWeekBuckets = {};
         totalSamples = 0;
         globalMeanServiceTime = 20;
         for (const record of records) {
@@ -221,6 +225,8 @@ async function loadHistoricalStats(options = {}) {
             const visitType = normalizeVisitType(record.visitType || 'walk-in');
             const emergencyKey = record.isEmergency ? 'emergency' : 'normal';
             const timeSlot = getTimeSlotKey(record.createdAt || record.startTime || record.endTime);
+            const recordDate = new Date((record.createdAt || record.startTime || record.endTime) || Date.now());
+            const dayOfWeek = recordDate.getDay().toString();
             totalSamples += 1;
             globalMeanServiceTime = totalSamples === 1
                 ? duration
@@ -231,6 +237,7 @@ async function loadHistoricalStats(options = {}) {
             addSample(visitTypeBuckets, visitType, duration);
             addSample(emergencyBuckets, emergencyKey, duration);
             addSample(timeSlotBuckets, timeSlot, duration);
+            addSample(dayOfWeekBuckets, dayOfWeek, duration);
         }
         rebuildDerivedLookups();
         modelReady = totalSamples > 0;
@@ -261,6 +268,8 @@ function calculatePrediction(userData, peopleAhead = 0) {
     const clinicId = extractClinicKey(userData.clinicId);
     const problem = extractProblemKey(userData);
     const timeSlot = getTimeSlotKey(userData.time ?? userData.appointmentTime ?? '09:00');
+    const recordDate = new Date(userData.appointmentDate || Date.now());
+    const dayOfWeek = recordDate.getDay().toString();
     const baseServiceTime = getBaseServiceTime(userData);
     const problemServiceTime = problemLookup[problem] || baseServiceTime;
     const doctorServiceTime = doctorLookup[doctorId] || baseServiceTime;
@@ -268,12 +277,14 @@ function calculatePrediction(userData, peopleAhead = 0) {
     const visitTypeServiceTime = visitTypeLookup[visitType] || baseServiceTime;
     const emergencyServiceTime = emergencyLookup[emergencyKey] || baseServiceTime;
     const timeSlotServiceTime = timeSlotLookup[timeSlot] || baseServiceTime;
-    let prediction = ((problemServiceTime * 0.30) +
-        (doctorServiceTime * 0.22) +
-        (clinicServiceTime * 0.18) +
+    const dayOfWeekServiceTime = dayOfWeekLookup[dayOfWeek] || baseServiceTime;
+    let prediction = ((problemServiceTime * 0.25) +
+        (doctorServiceTime * 0.20) +
+        (clinicServiceTime * 0.15) +
         (visitTypeServiceTime * 0.12) +
         (emergencyServiceTime * 0.10) +
-        (timeSlotServiceTime * 0.08));
+        (timeSlotServiceTime * 0.08) +
+        (dayOfWeekServiceTime * 0.10));
     if (visitType === 'followup') {
         prediction *= 0.8;
     }

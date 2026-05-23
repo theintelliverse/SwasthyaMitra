@@ -3,6 +3,7 @@
  * Database-backed predictor used by the Node backend.
  */
 
+
 import * as MedicalRecord from '../models/MedicalRecord.js';
 import * as QueueModel from '../models/Queue.js';
 
@@ -86,6 +87,7 @@ let clinicBuckets: Record<string, AverageBucket> = {};
 let visitTypeBuckets: Record<string, AverageBucket> = {};
 let emergencyBuckets: Record<string, AverageBucket> = {};
 let timeSlotBuckets: Record<string, AverageBucket> = {};
+let dayOfWeekBuckets: Record<string, AverageBucket> = {};
 
 let problemLookup: Record<string, number> = {};
 let doctorLookup: Record<string, number> = {};
@@ -93,6 +95,7 @@ let clinicLookup: Record<string, number> = {};
 let visitTypeLookup: Record<string, number> = {};
 let emergencyLookup: Record<string, number> = {};
 let timeSlotLookup: Record<string, number> = {};
+let dayOfWeekLookup: Record<string, number> = {};
 
 function safeStringifyId(value: unknown): string {
     if (!value) {
@@ -270,6 +273,7 @@ function rebuildDerivedLookups(): void {
     visitTypeLookup = rebuildLookup(visitTypeBuckets);
     emergencyLookup = rebuildLookup(emergencyBuckets);
     timeSlotLookup = rebuildLookup(timeSlotBuckets);
+    dayOfWeekLookup = rebuildLookup(dayOfWeekBuckets);
 }
 
 async function loadHistoricalStats(options: { clinicId?: unknown; doctorId?: unknown; limit?: number } = {}): Promise<void> {
@@ -314,6 +318,7 @@ async function loadHistoricalStats(options: { clinicId?: unknown; doctorId?: unk
         visitTypeBuckets = {};
         emergencyBuckets = {};
         timeSlotBuckets = {};
+        dayOfWeekBuckets = {};
         totalSamples = 0;
         globalMeanServiceTime = 20;
 
@@ -345,6 +350,8 @@ async function loadHistoricalStats(options: { clinicId?: unknown; doctorId?: unk
             const visitType = normalizeVisitType(record.visitType || 'walk-in');
             const emergencyKey = record.isEmergency ? 'emergency' : 'normal';
             const timeSlot = getTimeSlotKey(record.createdAt || record.startTime || record.endTime);
+            const recordDate = new Date((record.createdAt || record.startTime || record.endTime) as string | Date || Date.now());
+            const dayOfWeek = recordDate.getDay().toString();
 
             totalSamples += 1;
             globalMeanServiceTime = totalSamples === 1
@@ -357,6 +364,7 @@ async function loadHistoricalStats(options: { clinicId?: unknown; doctorId?: unk
             addSample(visitTypeBuckets, visitType, duration);
             addSample(emergencyBuckets, emergencyKey, duration);
             addSample(timeSlotBuckets, timeSlot, duration);
+            addSample(dayOfWeekBuckets, dayOfWeek, duration);
         }
 
         rebuildDerivedLookups();
@@ -392,6 +400,9 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const problem = extractProblemKey(userData);
     const timeSlot = getTimeSlotKey(userData.time ?? userData.appointmentTime ?? '09:00');
 
+    const recordDate = new Date(userData.appointmentDate || Date.now());
+    const dayOfWeek = recordDate.getDay().toString();
+
     const baseServiceTime = getBaseServiceTime(userData);
     const problemServiceTime = problemLookup[problem] || baseServiceTime;
     const doctorServiceTime = doctorLookup[doctorId] || baseServiceTime;
@@ -399,14 +410,16 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const visitTypeServiceTime = visitTypeLookup[visitType] || baseServiceTime;
     const emergencyServiceTime = emergencyLookup[emergencyKey] || baseServiceTime;
     const timeSlotServiceTime = timeSlotLookup[timeSlot] || baseServiceTime;
+    const dayOfWeekServiceTime = dayOfWeekLookup[dayOfWeek] || baseServiceTime;
 
     let prediction = (
-        (problemServiceTime * 0.30) +
-        (doctorServiceTime * 0.22) +
-        (clinicServiceTime * 0.18) +
+        (problemServiceTime * 0.25) +
+        (doctorServiceTime * 0.20) +
+        (clinicServiceTime * 0.15) +
         (visitTypeServiceTime * 0.12) +
         (emergencyServiceTime * 0.10) +
-        (timeSlotServiceTime * 0.08)
+        (timeSlotServiceTime * 0.08) +
+        (dayOfWeekServiceTime * 0.10)
     );
 
     if (visitType === 'followup') {
