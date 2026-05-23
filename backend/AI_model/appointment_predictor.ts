@@ -381,7 +381,12 @@ function calculatePrediction(userData: AppointmentInput, peopleAhead = 0): numbe
     const emergencyKey = cleanBasic(userData.emergency ?? 'normal');
     const visitType = normalizeVisitType(userData.visit_type ?? userData.visitType ?? 'new');
     const timeMin = convertTimeToMin(userData.time ?? userData.appointmentTime ?? '09:00');
-    const tokenNo = Number.parseInt(String(userData.token_no ?? userData.tokenNumber ?? 1), 10);
+    
+    // Extract digits from token like "P-1" or "T-12"
+    const rawToken = String(userData.token_no ?? userData.tokenNumber ?? '1');
+    const digitsOnly = rawToken.replace(/\D/g, '');
+    const tokenNo = digitsOnly ? Number.parseInt(digitsOnly, 10) : 1;
+    
     const doctorId = extractDoctorKey(userData.doctor_id ?? userData.doctorId);
     const clinicId = extractClinicKey(userData.clinicId);
     const problem = extractProblemKey(userData);

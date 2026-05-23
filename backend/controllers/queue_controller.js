@@ -58,7 +58,7 @@ exports.addToQueue = async (req, res) => {
         const trackingUrl = `${getFrontendUrl()}/patient/status?id=${newEntry._id}`;
         const smsMsg = `✅ Token: ${tokenNumber} | Track your live queue status here: ${trackingUrl} - Appointory`;
         if (patientPhone) {
-            sendTwilioAlert(patientPhone, smsMsg).catch(() => {});
+            sendTwilioAlert(patientPhone, smsMsg).catch(() => { });
         }
 
         // 📢 DEBUG LOG
@@ -323,10 +323,23 @@ exports.completeVisit = async (req, res) => {
 // 9️⃣ Live Queue for Dashboard
 exports.getLiveQueue = async (req, res) => {
     try {
+        // Filter to show only today's appointments
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
         const queue = await Queue.find({
             clinicId: req.user.clinicId,
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] }
+            status: { $in: ['Waiting', 'In-Consultation'] },
+            $or: [
+                // Show walk-ins created today
+                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
+                // Show appointments scheduled for today
+                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
+            ]
         }).sort({ isEmergency: -1, createdAt: 1 }).populate('doctorId', 'name specialization');
 
         const queueWithWait = await Promise.all(queue.map(async (item) => {
@@ -626,7 +639,11 @@ exports.getPublicDoctorQueue = async (req, res) => {
         const queue = await Queue.find({
             doctorId: doctorId,
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] }
+            status: { $in: ['Waiting', 'In-Consultation'] },
+            $or: [
+                { visitType: { $ne: 'Appointment' }, createdAt: { $gte: today, $lt: tomorrow } },
+                { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
+            ]
         })
             .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate')
             .sort({
@@ -870,25 +887,15 @@ exports.getDoctorDashboardStats = async (req, res) => {
             status: 'Waiting'
         });
 
-        // 4. Queue Data for tabs
-        let queueQuery = {
+        // 4. Queue Data for tabs — walk-ins by createdAt (must be approved), appointments by appointmentDate (approved or pending)
+        const queueData = await Queue.find({
             clinicId,
             doctorId,
             $or: [
                 { visitType: { $ne: 'Appointment' }, isApproved: true, createdAt: { $gte: today, $lt: tomorrow } },
                 { visitType: 'Appointment', appointmentDate: { $gte: today, $lt: tomorrow } }
             ]
-        };
-
-        if (req.query.allDates === 'true') {
-            queueQuery = {
-                clinicId,
-                doctorId,
-                isApproved: true
-            };
-        }
-
-        const queueData = await Queue.find(queueQuery).sort({ appointmentDate: -1, createdAt: -1 });
+        }).sort({ isEmergency: -1, appointmentDate: 1, createdAt: 1 });
 
         const queueWithWait = await Promise.all(queueData.map(async (item) => {
             const itemObj = item.toObject ? item.toObject() : item;

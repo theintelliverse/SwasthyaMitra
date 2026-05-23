@@ -301,38 +301,51 @@ const ClinicTVDisplay = () => {
           </div>
 
           <div className="flex-grow overflow-y-auto p-8 space-y-3 custom-scrollbar">
-            {waitingPatients.length > 0 ? (
-              waitingPatients.slice(0, 5).map((p, idx) => (
-                <div key={p._id} className={`group px-6 py-4 rounded-[1.5rem] flex justify-between items-center border transition-all duration-500 animate-in slide-in-from-right-10 ${p.isEmergency ? 'bg-red-600/20 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/[0.08] hover:translate-x-2'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-xl ${p.isEmergency ? 'bg-red-600 shadow-red-600/20' : 'bg-teal-500/20 text-teal-400 shadow-teal-500/10'}`}>
-                      {p.tokenNumber}
-                    </div>
-                    <div>
-                      <p className="text-lg font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors leading-tight">{p.patientName}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${p.isEmergency ? 'text-red-400' : 'text-white/30'}`}>
-                          {p.isEmergency ? 'High Priority' : 'Regular'}
-                        </span>
-                        <div className="w-1 h-1 bg-white/10 rounded-full" />
-                        <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Verified</span>
-                        {p.estimatedWait != null && (
-                          <>
-                            <div className="w-1 h-1 bg-white/10 rounded-full" />
-                            <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait} Mins</span>
-                          </>
-                        )}
+            {[...Array(5)].map((_, idx) => {
+              const p = waitingPatients[idx];
+              if (p) {
+                return (
+                  <div key={p._id} className={`group px-6 py-4 rounded-[1.5rem] flex justify-between items-center border transition-all duration-500 animate-in slide-in-from-right-10 ${p.isEmergency ? 'bg-red-600/20 border-red-500/30' : 'bg-white/5 border-white/5 hover:bg-white/[0.08] hover:translate-x-2'}`}>
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-xl ${p.isEmergency ? 'bg-red-600 shadow-red-600/20' : 'bg-teal-500/20 text-teal-400 shadow-teal-500/10'}`}>
+                        {p.tokenNumber}
+                      </div>
+                      <div>
+                        <p className="text-lg font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors leading-tight">{p.patientName}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${p.isEmergency ? 'text-red-400' : 'text-white/30'}`}>
+                            {p.isEmergency ? 'High Priority' : 'Regular'}
+                          </span>
+                          <div className="w-1 h-1 bg-white/10 rounded-full" />
+                          <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Verified</span>
+                          {p.estimatedWait != null && (
+                            <>
+                              <div className="w-1 h-1 bg-white/10 rounded-full" />
+                              <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait} Mins</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-6">
-                <Info size={80} strokeWidth={1} />
-                <p className="text-3xl font-black tracking-tighter uppercase">Lounge is vacant</p>
-              </div>
-            )}
+                );
+              } else {
+                return (
+                  <div key={`empty-${idx}`} className="group px-6 py-4 rounded-[1.5rem] flex items-center gap-4 border border-white/5 bg-white/[0.02] opacity-50">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-xl bg-white/5 text-white/10 border border-white/10 border-dashed">
+                      -
+                    </div>
+                    <div className="flex-grow flex flex-col gap-2">
+                      <div className="h-4 w-32 bg-white/10 rounded-full"></div>
+                      <div className="h-2 w-24 bg-white/5 rounded-full"></div>
+                    </div>
+                    <div className="text-[9px] font-black text-white/10 uppercase tracking-widest border border-white/10 px-2 py-1 rounded-md border-dashed">
+                      Empty Slot
+                    </div>
+                  </div>
+                );
+              }
+            })}
           </div>
 
           {/* Ticker Tape */}
