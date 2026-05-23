@@ -639,7 +639,8 @@ exports.getPublicDoctorQueue = async (req, res) => {
         const queue = await Queue.find({
             doctorId: doctorId,
             isApproved: true,
-            status: { $in: ['Waiting', 'In-Consultation'] }
+            status: { $in: ['Waiting', 'In-Consultation'] },
+            currentStage: { $nin: ['Lab-Pending', 'Lab-Processing'] }
         })
             .select('tokenNumber patientName status isEmergency createdAt clinicId doctorId visitType reason diagnosis consultationNotes appointmentDate currentStage')
             .sort({
