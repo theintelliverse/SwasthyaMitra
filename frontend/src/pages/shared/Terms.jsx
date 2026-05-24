@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
 
 const Terms = () => {
     const lastUpdated = 'March 2026';
@@ -93,6 +94,11 @@ const Terms = () => {
 
     return (
         <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
+            <SEO
+                title="Terms of Service"
+                description="Terms of Service for Appointory. Review the policies, regulations, and agreements to responsibly use our real-time clinical management platform."
+                url="/terms"
+            />
             <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full border-b border-sandstone/30">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Footer from '../components/Footer';
-// eslint-disable-next-line no-unused-vars
+import SEO from '../components/SEO';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -18,20 +18,6 @@ const MOCK_CLINICS = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
-
-  // SEO Effect
-  useEffect(() => {
-    document.title = "Appointory | Care without the Waiting Room";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.';
-      document.head.appendChild(meta);
-    }
-  }, []);
 
   const [clinicsQueues, setClinicsQueues] = useState(MOCK_CLINICS);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -383,6 +369,11 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-parchment font-body text-teak">
+      <SEO
+        title="Care without the Waiting Room"
+        description="Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time."
+        url="/"
+      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-7xl mx-auto border-b border-sandstone/30">

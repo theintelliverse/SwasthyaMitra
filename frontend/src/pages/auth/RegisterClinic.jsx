@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const RegisterClinic = () => {
   const navigate = useNavigate();
@@ -74,6 +75,11 @@ const RegisterClinic = () => {
 
   return (
     <div className="min-h-screen bg-parchment font-body text-teak flex flex-col items-center">
+      <SEO
+        title="Register Clinic"
+        description="Register your clinic with Appointory to access real-time clinical management and digital health locker platform features."
+        url="/register-clinic"
+      />
       <div className="flex-grow w-full max-w-7xl px-6 py-6 flex flex-col items-center">
         {/* Brand Header */}
         <div className="flex items-center gap-3 mb-4 cursor-pointer group" onClick={() => navigate('/')}>

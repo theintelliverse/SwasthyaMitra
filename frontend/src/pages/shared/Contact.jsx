@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const initialForm = {
@@ -45,6 +46,11 @@ const Contact = () => {
 
     return (
         <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
+            <SEO
+                title="Contact Us"
+                description="Get in touch with the Appointory team. Send us your feedback, questions, or inquiries regarding our clinic management platform."
+                url="/contact"
+            />
             <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full border-b border-sandstone/30">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20">

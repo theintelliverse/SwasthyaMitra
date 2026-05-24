@@ -4,6 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { ShieldCheck, Mail, LockKeyhole, Hash, RefreshCw, ArrowRight, Activity, AlertCircle, X, Wifi, WifiOff } from 'lucide-react';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -109,6 +110,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-parchment font-body text-teak flex flex-col relative overflow-hidden">
+      <SEO
+        title="Login"
+        description="Login to your Appointory clinic account to manage queues, patient records, and lab referrals."
+        url="/login"
+      />
       {/* Background Decorative Elements */}
       <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-marigold/5 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-saffron/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
@@ -143,8 +149,8 @@ const Login = () => {
             {loginError && (
               <div
                 className={`mb-6 flex items-start gap-4 p-5 rounded-2xl border animate-in fade-in slide-in-from-top-2 duration-300 ${loginError.type === 'network'
-                    ? 'bg-orange-50 border-orange-200 text-orange-800'
-                    : 'bg-red-50 border-red-200 text-red-800'
+                  ? 'bg-orange-50 border-orange-200 text-orange-800'
+                  : 'bg-red-50 border-red-200 text-red-800'
                   }`}
               >
                 <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${loginError.type === 'network' ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'
