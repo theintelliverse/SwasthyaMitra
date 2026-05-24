@@ -1,9 +1,143 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Footer from '../components/Footer';
+
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+const MOCK_CLINICS = [
+  {
+    id: 'mock-1',
+    name: 'City Care Clinic',
+    clinicCode: 'CCC01',
+    activeToken: 'T-08',
+    efficiency: '98% On-Time Care',
+    patients: [
+      { name: 'Rahul Sharma', time: 'Seeing Doctor', active: true },
+      { name: 'Anita Gupta', time: 'Next in line', active: false },
+      { name: 'Mohit Kumar', time: '~ 15m wait', active: false },
+    ]
+  },
+  {
+    id: 'mock-2',
+    name: 'Metro Wellness Center',
+    clinicCode: 'MWC02',
+    activeToken: 'T-04',
+    efficiency: '96% On-Time Care',
+    patients: [
+      { name: 'Priya Patel', time: 'Seeing Doctor', active: true },
+      { name: 'Aarav Mehta', time: 'Next in line', active: false },
+      { name: 'Sneha Reddy', time: '~ 12m wait', active: false },
+    ]
+  },
+  {
+    id: 'mock-3',
+    name: 'Apex Pediatrics',
+    clinicCode: 'APX03',
+    activeToken: 'T-11',
+    efficiency: '99% On-Time Care',
+    patients: [
+      { name: 'Kabir Singh', time: 'Seeing Doctor', active: true },
+      { name: 'Vihaan Sharma', time: 'Next in line', active: false },
+      { name: 'Ananya Rao', time: '~ 10m wait', active: false },
+    ]
+  },
+  {
+    id: 'mock-4',
+    name: 'LifeLine Cardiology',
+    clinicCode: 'LLC04',
+    activeToken: 'T-02',
+    efficiency: '95% On-Time Care',
+    patients: [
+      { name: 'Ramesh Patel', time: 'Seeing Doctor', active: true },
+      { name: 'Savita Devi', time: 'Next in line', active: false },
+      { name: 'Karan Malhotra', time: '~ 20m wait', active: false },
+    ]
+  },
+  {
+    id: 'mock-5',
+    name: 'Narmada Family Clinic',
+    clinicCode: 'NFC05',
+    activeToken: 'T-06',
+    efficiency: '97% On-Time Care',
+    patients: [
+      { name: 'Amit Kumar', time: 'Seeing Doctor', active: true },
+      { name: 'Ritu Verma', time: 'Next in line', active: false },
+      { name: 'Deepak Sen', time: '~ 14m wait', active: false },
+    ]
+  }
+];
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [clinicsQueues, setClinicsQueues] = useState(MOCK_CLINICS);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  // Fetch live queues from backend
+  useEffect(() => {
+    const fetchLiveQueues = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/clinic/public/queues-live`);
+        if (res.data.success && res.data.data && res.data.data.length > 0) {
+          const dbClinics = res.data.data;
+          
+          // Format DB clinics
+          const processedDbClinics = dbClinics.map(clinic => {
+            if (!clinic.patients || clinic.patients.length === 0) {
+              return {
+                ...clinic,
+                patients: [
+                  { name: 'Walk-ins Welcome', time: 'Ready', active: false }
+                ]
+              };
+            }
+            return clinic;
+          });
+
+          // Merge DB clinics with mocks to ensure at least 5 clinics for sliding
+          if (processedDbClinics.length < 5) {
+            const neededMockCount = 5 - processedDbClinics.length;
+            const dbNames = new Set(processedDbClinics.map(c => c.name.toLowerCase()));
+            const filteredMocks = MOCK_CLINICS.filter(m => !dbNames.has(m.name.toLowerCase()));
+            setClinicsQueues([...processedDbClinics, ...filteredMocks.slice(0, neededMockCount)]);
+          } else {
+            setClinicsQueues(processedDbClinics);
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Failed to fetch live queues, using fallback mocks:", error.message);
+      }
+    };
+
+    fetchLiveQueues();
+    const pollInterval = setInterval(fetchLiveQueues, 30000);
+    return () => clearInterval(pollInterval);
+  }, []);
+
+  // Memoize extended list for seamless infinite scroll (always visibleCount = 3)
+  const extendedClinics = useMemo(() => {
+    if (clinicsQueues.length === 0) return [];
+    return [...clinicsQueues, ...clinicsQueues.slice(0, 3)];
+  }, [clinicsQueues]);
+
+  // Set up auto-scroll interval (vertically scrolling)
+  useEffect(() => {
+    if (clinicsQueues.length <= 3) return;
+    const scrollTimer = setInterval(() => {
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => prev + 1);
+    }, 4000);
+    return () => clearInterval(scrollTimer);
+  }, [clinicsQueues.length]);
+
+  // Handle resetting index seamlessly at end of slide
+  const handleTransitionEnd = () => {
+    if (currentIndex >= clinicsQueues.length) {
+      setIsTransitioning(false);
+      setCurrentIndex(0);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-parchment font-body text-teak">
@@ -117,49 +251,73 @@ const LandingPage = () => {
           <div className="relative bg-white border border-sandstone p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-2xl">
             <div className="flex justify-between items-center mb-6 sm:mb-8 px-1 sm:px-2">
               <div>
-                <h3 className="font-heading text-lg sm:text-xl font-black">Current Queue</h3>
+                <h3 className="font-heading text-lg sm:text-xl font-black">Appointory Network</h3>
                 <p className="text-[9px] sm:text-[10px] text-khaki font-black uppercase tracking-widest mt-0.5">
-                  City Care Clinic
+                  Live Clinic Status
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl sm:text-3xl font-heading font-black text-marigold">#08</p>
+                <p className="text-2xl sm:text-3xl font-heading font-black text-marigold">
+                  #{String(clinicsQueues.filter(c => c.isReal).length || 4).padStart(2, '0')}
+                </p>
                 <p className="text-[8px] sm:text-[9px] font-black text-khaki uppercase tracking-widest mt-0.5">
-                  Active Token
+                  Active Facilities
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3 sm:space-y-4">
-              {[
-                { name: 'Rahul Sharma', time: 'Seeing Doctor', active: true },
-                { name: 'Anita Gupta', time: 'Next in line', active: false },
-                { name: 'Mohit Kumar', time: '~ 15m wait', active: false },
-              ].map((p, i) => (
-                <div
-                  key={i}
-                  className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all ${p.active
-                    ? 'bg-parchment border-marigold'
-                    : 'bg-white border-sandstone opacity-60'
-                    } flex justify-between items-center`}
-                >
-                  <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Vertical Scroll List Container */}
+            <div className="relative overflow-hidden h-[240px] sm:h-[320px] w-full px-1">
+              <div 
+                className={`flex flex-col gap-3 sm:gap-4 h-full ${isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''}`}
+                style={{ 
+                  transform: `translateY(calc(-${currentIndex} * (${100 / 3}% + ${12 / 3}px)))` 
+                }}
+                onTransitionEnd={handleTransitionEnd}
+              >
+                {extendedClinics.map((clinic, index) => {
+                  const hasActiveToken = clinic.activeToken !== '#00' && clinic.activeToken !== 'T-00';
+                  
+                  return (
                     <div
-                      className={`w-2 h-2 rounded-full ${p.active ? 'bg-marigold animate-pulse' : 'bg-sandstone'
-                        }`}
-                    ></div>
-                    <p className={`text-sm sm:text-base font-bold ${p.active ? 'text-teak' : 'text-khaki'}`}>
-                      {p.name}
-                    </p>
-                  </div>
+                      key={`${clinic.id}-${index}`}
+                      style={{
+                        height: `calc(${100 / 3}% - 8px)`
+                      }}
+                      className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all ${
+                        hasActiveToken
+                          ? 'bg-parchment border-marigold'
+                          : 'bg-white border-sandstone opacity-60'
+                      } flex justify-between items-center flex-shrink-0`}
+                    >
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                            hasActiveToken ? 'bg-marigold animate-pulse' : 'bg-sandstone'
+                          }`}
+                        ></div>
+                        <div className="min-w-0">
+                          <p className={`text-sm sm:text-base font-bold truncate ${
+                            hasActiveToken ? 'text-teak' : 'text-khaki'
+                          }`}>
+                            {clinic.name}
+                          </p>
+                          <p className="text-[8px] sm:text-[9px] text-khaki font-medium">
+                            Code: {clinic.clinicCode}
+                          </p>
+                        </div>
+                      </div>
 
-                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest bg-sandstone/20 px-2 sm:px-3 py-1 rounded-lg">
-                    {p.time}
-                  </span>
-                </div>
-              ))}
+                      <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest bg-sandstone/20 px-2 sm:px-3 py-1 rounded-lg flex-shrink-0">
+                        {hasActiveToken ? `Token ${clinic.activeToken}` : 'Ready'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
+            {/* Footer */}
             <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-teak rounded-2xl sm:rounded-3xl text-parchment flex justify-between items-center shadow-lg">
               <div>
                 <p className="text-[8px] sm:text-[9px] font-black uppercase text-parchment/60 tracking-widest mb-1">
