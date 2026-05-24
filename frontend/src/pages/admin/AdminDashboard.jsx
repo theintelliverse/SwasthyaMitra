@@ -1215,21 +1215,26 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
     >
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-[14px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
-          <span className="text-xl font-bold text-slate-900 leading-none">{value}</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
+          <span className="text-lg font-bold text-slate-900 leading-none">{value}</span>
           {subtitle && (
-            <span className="text-[14px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
+            <span className="text-[10px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
           )}
         </div>
-        <div className="shrink-0 scale-90">
+        <div className="shrink-0 scale-75">
           {icon}
         </div>
       </div>
-      <div className="flex items-center justify-between mt-auto">
-        <span className={`px-1.5 py-0.5 rounded-lg text-[14px] font-black uppercase tracking-widest ${trendBg} ${change === 'Live' ? 'animate-pulse' : ''}`}>
+      <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
+        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${trendBg}`}>
+          {isPositive && <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
           {change}
-        </span>
-        <span className="text-[14px] font-black text-slate-300 uppercase tracking-widest leading-none">Live Sync</span>
+        </div>
+        {onClick && (
+          <span className="text-[10px] text-slate-300 group-hover:text-current font-bold flex items-center gap-1 transition-colors">
+            Details <ArrowUpRight size={12} />
+          </span>
+        )}
       </div>
       <div className={`absolute bottom-0 right-0 w-8 h-8 bg-${color}-500/5 rounded-full blur-sm group-hover:scale-150 transition-transform`} />
     </div>
