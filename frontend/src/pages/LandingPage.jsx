@@ -611,7 +611,7 @@ const LandingPage = () => {
                   <div>
                     {/* Icon block */}
                     <motion.div 
-                      animate={isActive ? { rotate: [0, -3, 3, 0], scale: 1.05 } : { rotate: 0, scale: 1 }}
+                      animate={isActive ? { rotate: [0, -6, 6, 0], scale: 1.06 } : { rotate: 0, scale: 1 }}
                       transition={{ duration: 0.4 }}
                       className={`w-9 h-9 rounded-lg ${s.accent} border flex items-center justify-center text-lg shadow-sm mb-3`}
                     >
@@ -673,41 +673,57 @@ const LandingPage = () => {
                             exit={{ opacity: 0, y: -5 }}
                             className="flex flex-col justify-between h-full"
                           >
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-black uppercase text-teal-700 tracking-wider">Phone Number</label>
-                              <input 
-                                type="tel" 
-                                value={phoneNum}
-                                onChange={(e) => setPhoneNum(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                placeholder="Enter mobile number" 
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-full bg-white border border-sandstone/30 rounded px-2 py-1 text-[10px] focus:outline-none focus:border-teal-500"
-                              />
-                            </div>
-                            <div className="flex gap-1.5 pt-1.5">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setCheckInState('camera'); }}
-                                className="w-1/3 border border-sandstone/30 text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-teak hover:bg-white"
-                              >
-                                Back
-                              </button>
-                              <button 
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  if (phoneNum.length < 10) return;
-                                  setCheckInLoading(true);
-                                  setTimeout(() => {
-                                    setCheckInLoading(false);
-                                    setCheckInState('success');
-                                    setCheckedInPhone(phoneNum);
-                                  }, 800);
-                                }}
-                                disabled={phoneNum.length < 10}
-                                className="w-2/3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-[9.5px] font-black uppercase py-1 rounded cursor-pointer"
-                              >
-                                {checkInLoading ? 'Linking...' : 'Link Locker'}
-                              </button>
-                            </div>
+                            {checkInLoading ? (
+                              <div className="flex flex-col justify-center items-center h-full space-y-2">
+                                <div className="w-5 h-5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-[8.5px] font-bold text-teal-800 animate-pulse text-center">
+                                  {phoneNum.length === 10 ? 'Resolving ABHA keys...' : 'Linking Secure Vault...'}
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="space-y-1">
+                                  <div className="flex justify-between items-center">
+                                    <label className="text-[9px] font-black uppercase text-teal-700 tracking-wider">Phone Number</label>
+                                    <span className={`text-[8px] font-bold ${phoneNum.length === 10 ? 'text-emerald-600' : 'text-khaki'}`}>
+                                      {phoneNum.length}/10
+                                    </span>
+                                  </div>
+                                  <input 
+                                    type="tel" 
+                                    value={phoneNum}
+                                    onChange={(e) => setPhoneNum(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    placeholder="Enter mobile number" 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full bg-white border border-sandstone/30 rounded px-2 py-1 text-[10px] focus:outline-none focus:border-teal-500"
+                                  />
+                                </div>
+                                <div className="flex gap-1.5 pt-1.5">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setCheckInState('camera'); }}
+                                    className="w-1/3 border border-sandstone/30 text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-teak hover:bg-white"
+                                  >
+                                    Back
+                                  </button>
+                                  <button 
+                                    onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      if (phoneNum.length < 10) return;
+                                      setCheckInLoading(true);
+                                      setTimeout(() => {
+                                        setCheckInLoading(false);
+                                        setCheckInState('success');
+                                        setCheckedInPhone(phoneNum);
+                                      }, 1000);
+                                    }}
+                                    disabled={phoneNum.length < 10}
+                                    className="w-2/3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-[9.5px] font-black uppercase py-1 rounded cursor-pointer"
+                                  >
+                                    Link Locker
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </motion.div>
                         )}
 
@@ -765,6 +781,34 @@ const LandingPage = () => {
                           Active
                         </span>
                       </div>
+
+                      {/* Horizontal Queue Milestones */}
+                      <div className="flex justify-between items-center relative my-1 px-1">
+                        <div className="absolute left-0 right-0 h-0.5 bg-sandstone/20 top-1/2 -translate-y-1/2 -z-10"></div>
+                        <motion.div 
+                          className="absolute left-0 h-0.5 bg-indigo-500 top-1/2 -translate-y-1/2 -z-10"
+                          animate={{ width: `${(3 - queuePos) * 33.3}%` }}
+                          transition={{ duration: 0.4 }}
+                        ></motion.div>
+                        {['Check-In', 'Vitals', 'Waiting', 'Doctor'].map((milestone, mIdx) => {
+                          const isActiveM = (3 - queuePos) === mIdx;
+                          const isPassedM = (3 - queuePos) >= mIdx;
+                          return (
+                            <div key={milestone} className="flex flex-col items-center">
+                              <motion.div 
+                                animate={{ 
+                                  scale: isActiveM ? 1.2 : 1,
+                                  backgroundColor: isActiveM ? '#4f46e5' : isPassedM ? '#6366f1' : '#cbd5e1'
+                                }}
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                              ></motion.div>
+                              <span className={`text-[5px] mt-0.5 font-bold uppercase ${isActiveM ? 'text-indigo-600' : 'text-khaki'}`}>
+                                {milestone}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
                       
                       <div className="text-center my-0.5">
                         <AnimatePresence mode="popLayout">
@@ -821,24 +865,36 @@ const LandingPage = () => {
                           <div className="grid grid-cols-3 gap-1">
                             <div 
                               onClick={(e) => handleVitalClick('bp', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors"
+                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/bp relative"
                             >
                               <div className="text-[8px] font-black uppercase text-khaki font-black">BP</div>
                               <div className={`text-[10.5px] font-bold ${vitals.bp.startsWith('145') ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.bp}</div>
+                              {/* BP range tooltip on hover */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/bp:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
+                                {vitals.bp.startsWith('145') ? '🚨 High BP!' : 'BP is Normal'}
+                              </div>
                             </div>
                             <div 
                               onClick={(e) => handleVitalClick('pulse', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors"
+                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/pulse relative"
                             >
                               <div className="text-[8px] font-black uppercase text-khaki font-black">Pulse</div>
                               <div className={`text-[10.5px] font-bold ${Number(vitals.pulse) > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.pulse}</div>
+                              {/* Pulse range tooltip */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/pulse:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
+                                {Number(vitals.pulse) > 100 ? '🚨 Tachycardia!' : 'Pulse Normal'}
+                              </div>
                             </div>
                             <div 
                               onClick={(e) => handleVitalClick('temp', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors"
+                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/temp relative"
                             >
                               <div className="text-[8px] font-black uppercase text-khaki font-black">Temp</div>
                               <div className={`text-[10.5px] font-bold ${Number(vitals.temp) > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.temp}</div>
+                              {/* Temp tooltip */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/temp:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
+                                {Number(vitals.temp) > 100 ? '🚨 Fever Alert!' : 'Temp Normal'}
+                              </div>
                             </div>
                           </div>
 
@@ -939,25 +995,46 @@ const LandingPage = () => {
                             <span className="font-black text-rose-600 uppercase tracking-wider">Secured Vault</span>
                             <span className="text-[8.5px] text-khaki font-bold">Hint OTP: 1234</span>
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[8.5px] font-black uppercase text-rose-700 tracking-wider">Enter SMS OTP Code</label>
-                            <input 
-                              type="text" 
-                              value={otpInput}
-                              maxLength={4}
-                              onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                              placeholder="Enter 4-digit code" 
-                              onClick={(e) => e.stopPropagation()}
-                              className="w-full bg-white border border-sandstone/30 rounded px-2 py-1 text-[11px] text-center focus:outline-none focus:border-rose-500"
-                            />
+                          
+                          {/* OTP Display Field */}
+                          <div className="bg-white/80 border border-sandstone/30 rounded px-2 py-0.5 text-center text-[10px] font-mono tracking-widest text-rose-700 h-5.5 flex items-center justify-center">
+                            {otpInput.padEnd(4, '•').split('').join(' ')}
                           </div>
-                          <button 
-                            onClick={handleOtpVerify}
-                            disabled={otpInput.length < 4}
-                            className="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-center"
-                          >
-                            Verify & Unlock Vault
-                          </button>
+
+                          {/* Virtual OTP Clickable Keypad */}
+                          <div className="grid grid-cols-3 gap-0.5 justify-center max-w-[130px] mx-auto pt-0.5">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                              <motion.button
+                                key={num}
+                                whileTap={{ scale: 0.85 }}
+                                onClick={(e) => { e.stopPropagation(); if (otpInput.length < 4) setOtpInput(prev => prev + num); }}
+                                className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[8px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
+                              >
+                                {num}
+                              </motion.button>
+                            ))}
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
+                              onClick={(e) => { e.stopPropagation(); setOtpInput(prev => prev.slice(0, -1)); }}
+                              className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[7.5px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-rose-600"
+                            >
+                              ⌫
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
+                              onClick={(e) => { e.stopPropagation(); if (otpInput.length < 4) setOtpInput(prev => prev + '0'); }}
+                              className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[8px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
+                            >
+                              0
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
+                              onClick={(e) => { e.stopPropagation(); handleOtpVerify(e); }}
+                              className="bg-rose-600 text-white rounded w-5 h-4 flex items-center justify-center text-[7.5px] font-black hover:bg-rose-700 cursor-pointer shadow-sm"
+                            >
+                              ✓
+                            </motion.button>
+                          </div>
                         </div>
                       ) : (
                         <div className="flex flex-col justify-between h-full">
