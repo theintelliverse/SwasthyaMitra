@@ -1085,13 +1085,13 @@ const LandingPage = () => {
                               <div className="flex justify-center gap-0.5">
                                 <button
                                   onClick={(e) => adjustVital('bpSystolic', true, e)}
-                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8.5px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   +
                                 </button>
                                 <button
                                   onClick={(e) => adjustVital('bpSystolic', false, e)}
-                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[8.5px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   -
                                 </button>
@@ -1168,7 +1168,7 @@ const LandingPage = () => {
                             <span>{vitals.pulse > 100 ? 'TACHY' : 'SINUS'}</span>
                           </div>
 
-                          <div className="flex gap-1 items-center justify-between text-[8.5px] py-0.5 leading-none">
+                          <div className="flex gap-1 items-center justify-between text-[11.5px] py-0.5 leading-none">
                             <span className="font-bold text-khaki">Complaint:</span>
                             <div className="flex gap-1">
                               {['Fever', 'High BP', 'Checkup'].map((lbl) => {
@@ -1291,14 +1291,14 @@ const LandingPage = () => {
                             )}
                           </div>
                           <div className="space-y-0.2">
-                            <p className="text-[11.5px] font-bold text-teak">Prescription Signed & Sent ✓</p>
-                            <p className="text-[7.5px] text-khaki font-medium">
+                            <p className="text-[8.5px] font-bold text-teak">Prescription Signed & Sent ✓</p>
+                            <p className="text-[11.5px] text-khaki font-medium">
                               Linked to patient Secure Vault locker.
                             </p>
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); setUploadState('idle'); }}
-                            className="text-[7.5px] text-emerald-700 font-black uppercase tracking-wider underline cursor-pointer"
+                            className="text-[11.5px] text-emerald-700 font-black uppercase tracking-wider underline cursor-pointer"
                           >
                             Edit prescription
                           </button>
