@@ -407,19 +407,19 @@ const AdminDashboard = () => {
                 </div>
                 <div className="text-left">
                   <div className="flex items-center gap-1.5 leading-none">
-                    <span className="text-[14px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
-                    <span className="px-1.5 py-0.2 bg-emerald-500/10 text-[14px] font-black text-emerald-600 rounded">
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
+                    <span className="px-1.5 py-0.5 bg-emerald-500/10 text-[10px] font-black text-emerald-600 rounded">
                       {stats.revenueChange}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
-                    <span className="text-base font-black text-slate-800 leading-none">₹{stats.revenue.toLocaleString('en-IN')}</span>
-                    <span className="text-[14px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
+                    <span className="text-[14px] font-black text-slate-800 leading-none">₹{stats.revenue.toLocaleString('en-IN')}</span>
+                    <span className="text-[10px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
                       Consults: ₹{stats.consultFees} · Labs: ₹{stats.labFees}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[14px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                   Live Sync
                 </div>
