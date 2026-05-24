@@ -6,6 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
+// Minimal fallback mock clinics used when backend data is unavailable
+const MOCK_CLINICS = [
+  { id: 'm1', name: 'City Care Clinic', clinicCode: 'CCC01', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
+  { id: 'm2', name: 'Green Valley Health', clinicCode: 'GVH02', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
+  { id: 'm3', name: 'Sunrise Clinic', clinicCode: 'SC03', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
+  { id: 'm4', name: 'City Diagnostics', clinicCode: 'CD04', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
+  { id: 'm5', name: 'Community Health', clinicCode: 'CH05', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] }
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [clinicsQueues, setClinicsQueues] = useState(MOCK_CLINICS);
@@ -1655,15 +1664,13 @@ const LandingPage = () => {
                   </div>
                 )}
               </AnimatePresence>
-            </section>  </motion.div>
-          );
-            })}
-        </div>
-    </div>
-      </section >
+            </section>
+          </div>
+          </div>
+      </main>
 
-  <Footer />
-    </div >
+      <Footer />
+    </div>
   );
 };
 
