@@ -125,7 +125,7 @@ const PatientCheckIn = () => {
     if (loading) return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4 font-body">
             <RefreshCw size={32} className="text-teal-600 animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Clinical Network...</p>
+            <p className="text-[14px] font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Clinical Network...</p>
         </div>
     );
 
@@ -142,21 +142,21 @@ const PatientCheckIn = () => {
                         </div>
                         <h2 className="text-2xl font-black tracking-tight leading-tight mb-2">{clinicName}</h2>
                         <div className="flex items-center gap-2 mb-6">
-                            <span className="px-2 py-0.5 bg-white/10 rounded text-[9px] font-black uppercase tracking-widest text-teal-400 border border-white/10">
+                            <span className="px-2 py-0.5 bg-white/10 rounded text-[14px] font-black uppercase tracking-widest text-teal-400 border border-white/10">
                                 {clinicCode}
                             </span>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Facility</span>
+                            <span className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Verified Facility</span>
                         </div>
-                        <p className="text-slate-400 text-xs font-bold leading-relaxed uppercase tracking-wider">Welcome to our self-service check-in portal. Please provide your details to join the queue.</p>
+                        <p className="text-slate-400 text-[14px] font-bold leading-relaxed uppercase tracking-wider">Welcome to our self-service check-in portal. Please provide your details to join the queue.</p>
                     </div>
 
                     <div className="relative z-10 mt-12 md:mt-0">
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-teal-400">Live Queue Active</span>
+                                <span className="text-[14px] font-black uppercase tracking-widest text-teal-400">Live Queue Active</span>
                             </div>
-                            <p className="text-[8px] font-bold text-slate-500 leading-relaxed uppercase tracking-tighter">Your position in the queue will be updated in real-time on the clinic displays.</p>
+                            <p className="text-[14px] font-bold text-slate-500 leading-relaxed uppercase tracking-tighter">Your position in the queue will be updated in real-time on the clinic displays.</p>
                         </div>
                     </div>
                 </div>
@@ -165,7 +165,7 @@ const PatientCheckIn = () => {
                 <div className="w-full md:w-7/12 p-10 md:p-12">
                     <header className="mb-10">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                                 {otpSent ? 'Verification' : 'Self Check-in'}
                             </span>
                         </div>
@@ -177,7 +177,7 @@ const PatientCheckIn = () => {
                     {!otpSent ? (
                         <form onSubmit={handleSendOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
                                 <div className="relative group">
                                     <User size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -189,7 +189,7 @@ const PatientCheckIn = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
                                 <div className="relative group">
                                     <Phone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -201,7 +201,7 @@ const PatientCheckIn = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Specialist</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Specialist</label>
                                 <div className="relative group">
                                     <Stethoscope size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors z-10" />
                                     <select
@@ -224,7 +224,7 @@ const PatientCheckIn = () => {
 
                             <button 
                                 type="submit" disabled={submitting}
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {submitting ? <RefreshCw className="animate-spin" size={18} /> : <>Generate Secure OTP <ArrowRight size={18} /></>}
                             </button>
@@ -232,12 +232,12 @@ const PatientCheckIn = () => {
                     ) : (
                         <form onSubmit={handleVerifyAndCheckin} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100 text-center">
-                                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest">Sent Verification to</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest">Sent Verification to</p>
                                 <p className="text-sm font-black text-slate-900">{formData.patientPhone}</p>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
                                 <input
                                     type="text" required maxLength="6" placeholder="000000"
                                     className="w-full py-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 font-black text-center text-3xl tracking-[0.3em] text-slate-900 shadow-inner"
@@ -248,14 +248,14 @@ const PatientCheckIn = () => {
                             <div className="space-y-4">
                                 <button 
                                     type="submit" disabled={submitting}
-                                    className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                    className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                                 >
                                     {submitting ? <RefreshCw className="animate-spin" size={18} /> : <>Confirm & Request Entry <CheckCircle size={18} /></>}
                                 </button>
                                 <button 
                                     type="button" 
                                     onClick={() => setOtpSent(false)} 
-                                    className="w-full text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors"
+                                    className="w-full text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors"
                                 >
                                     ← Edit Check-in Info
                                 </button>
@@ -264,7 +264,7 @@ const PatientCheckIn = () => {
                     )}
 
                     <div className="mt-12 text-center pt-8 border-t border-slate-50">
-                        <button onClick={() => navigate('/patient/login')} className="text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors flex items-center justify-center gap-2 mx-auto">
+                        <button onClick={() => navigate('/patient/login')} className="text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors flex items-center justify-center gap-2 mx-auto">
                             Already have an account? <span className="text-teal-600">Login</span>
                         </button>
                     </div>

@@ -192,7 +192,7 @@ const Prescriptions = () => {
               </button>
               <button
                 onClick={openCreateModal}
-                className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20 whitespace-nowrap"
+                className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20 whitespace-nowrap"
               >
                 <Plus size={16} /> Add New Record
               </button>
@@ -216,7 +216,7 @@ const Prescriptions = () => {
                 <p className="text-slate-500 max-w-xs mx-auto">History of issued prescriptions will be listed here for quick access and reprinting.</p>
                 <button
                   onClick={openCreateModal}
-                  className="mt-8 px-8 py-3 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
+                  className="mt-8 px-8 py-3 bg-teal-600 text-white rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
                 >
                   Add New Prescription
                 </button>
@@ -242,7 +242,7 @@ const Prescriptions = () => {
 
                       {/* Diagnosis / Illness Name - Primary */}
                       <div className="mb-4">
-                        <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-1">
+                        <span className="text-[14px] font-black text-teal-600 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-1">
                           <AlertCircle size={10} /> Illness / Bimari
                         </span>
                         <h4 className="text-xl font-black text-slate-900 leading-tight tracking-tight">
@@ -252,13 +252,13 @@ const Prescriptions = () => {
 
                       {/* Notes if any */}
                       {p.notes && (
-                        <p className="text-xs text-slate-400 font-medium mb-4 line-clamp-2 leading-relaxed border-l-2 border-slate-100 pl-3">
+                        <p className="text-[14px] text-slate-400 font-medium mb-4 line-clamp-2 leading-relaxed border-l-2 border-slate-100 pl-3">
                           {p.notes}
                         </p>
                       )}
 
                       {/* Date / Time */}
-                      <div className="flex items-center justify-between text-xs font-bold py-2.5 px-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
+                      <div className="flex items-center justify-between text-[14px] font-bold py-2.5 px-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
                         <div className="flex items-center gap-2 text-slate-500">
                           <Calendar size={12} className="text-teal-500" />
                           {p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN') : 'N/A'}
@@ -272,16 +272,16 @@ const Prescriptions = () => {
                       {/* Medicines preview */}
                       {p.medicines && p.medicines.length > 0 && (
                         <div className="mb-4 space-y-1.5">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Pill size={10} /> Medicines ({p.medicines.length})</p>
+                          <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Pill size={10} /> Medicines ({p.medicines.length})</p>
                           <div className="bg-slate-50/60 p-2.5 rounded-xl border border-slate-100/80 space-y-1">
                             {p.medicines.slice(0, 3).map((m, idx) => (
-                              <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-700">
+                              <div key={idx} className="flex justify-between items-center text-[14px] font-bold text-slate-700">
                                 <span className="truncate">{m.name}</span>
-                                <span className="text-[9px] bg-white border border-slate-100 px-2 py-0.5 rounded-lg text-teal-600 whitespace-nowrap ml-2">{m.amount}{m.time ? ` | ${m.time}` : ''}</span>
+                                <span className="text-[14px] bg-white border border-slate-100 px-2 py-0.5 rounded-lg text-teal-600 whitespace-nowrap ml-2">{m.amount}{m.time ? ` | ${m.time}` : ''}</span>
                               </div>
                             ))}
                             {p.medicines.length > 3 && (
-                              <p className="text-[9px] text-slate-400 font-bold text-center pt-1">+{p.medicines.length - 3} more medicines</p>
+                              <p className="text-[14px] text-slate-400 font-bold text-center pt-1">+{p.medicines.length - 3} more medicines</p>
                             )}
                           </div>
                         </div>
@@ -293,14 +293,14 @@ const Prescriptions = () => {
                       {/* Update Button */}
                       <button
                         onClick={() => openEditModal(p)}
-                        className="flex-1 py-3 bg-teal-50 border-2 border-teal-100 rounded-2xl text-[10px] font-black text-teal-700 uppercase tracking-widest hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                        className="flex-1 py-3 bg-teal-50 border-2 border-teal-100 rounded-2xl text-[14px] font-black text-teal-700 uppercase tracking-widest hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                       >
                         <Edit3 size={12} /> Update
                       </button>
                       {/* View Patient */}
                       <button
                         onClick={() => navigate(`/doctor/records?phone=${p.patientPhone}`)}
-                        className="flex-1 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:border-slate-300 hover:bg-slate-100 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                        className="flex-1 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[14px] font-black text-slate-600 uppercase tracking-widest hover:border-slate-300 hover:bg-slate-100 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                       >
                         <ExternalLink size={12} /> Patient File
                       </button>
@@ -339,7 +339,7 @@ const Prescriptions = () => {
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">
                     {editingId ? 'Update Prescription' : 'New Prescription Record'}
                   </h2>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                  <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
                     {editingId ? 'Edit illness, medicines and notes' : 'Issue new clinical medication order'}
                   </p>
                 </div>
@@ -357,7 +357,7 @@ const Prescriptions = () => {
 
               {/* ---- ILLNESS / BIMARI FIELD - TOP PRIORITY ---- */}
               <div className="p-5 bg-teal-50 border-2 border-teal-100 rounded-2xl">
-                <label className="block text-xs font-black text-teal-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <label className="block text-[14px] font-black text-teal-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   <Stethoscope size={12} /> Illness / Bimari Name *
                 </label>
                 <input
@@ -373,7 +373,7 @@ const Prescriptions = () => {
               {/* Patient Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Patient Full Name</label>
+                  <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Patient Full Name</label>
                   <input
                     type="text"
                     required
@@ -384,7 +384,7 @@ const Prescriptions = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Patient Phone Number</label>
+                  <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Patient Phone Number</label>
                   <input
                     type="tel"
                     required
@@ -398,7 +398,7 @@ const Prescriptions = () => {
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Observational Notes</label>
+                <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Observational Notes</label>
                 <textarea
                   placeholder="Additional clinical notes about the patient's condition..."
                   value={notes}
@@ -411,11 +411,11 @@ const Prescriptions = () => {
               {/* Prescribed Medicines */}
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5"><Pill size={12} /> Prescribed Medicines</label>
+                  <label className="text-[14px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5"><Pill size={12} /> Prescribed Medicines</label>
                   <button
                     type="button"
                     onClick={() => setMedicines([...medicines, emptyMed()])}
-                    className="text-xs font-black text-teal-600 hover:text-teal-700 flex items-center gap-1 uppercase tracking-widest"
+                    className="text-[14px] font-black text-teal-600 hover:text-teal-700 flex items-center gap-1 uppercase tracking-widest"
                   >
                     <Plus size={14} /> Add Medicine
                   </button>
@@ -476,7 +476,7 @@ const Prescriptions = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`flex-1 py-4 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${editingId ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20'}`}
+                  className={`flex-1 py-4 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${editingId ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20'}`}
                 >
                   {isSubmitting ? (
                     <RefreshCw size={16} className="animate-spin" />
@@ -488,7 +488,7 @@ const Prescriptions = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-6 py-4 bg-slate-100 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                  className="px-6 py-4 bg-slate-100 text-slate-700 rounded-2xl font-black text-[14px] uppercase tracking-widest hover:bg-slate-200 transition-all"
                 >
                   Cancel
                 </button>

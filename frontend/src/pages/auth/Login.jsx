@@ -131,7 +131,7 @@ const Login = () => {
           </div>
           <div>
             <h1 className="font-heading text-3xl font-bold tracking-tight leading-none text-teak">Appointory</h1>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-khaki mt-1.5 opacity-70">Healthcare Clinical OS</p>
+            <p className="text-[14px] font-bold uppercase tracking-[0.4em] text-khaki mt-1.5 opacity-70">Healthcare Clinical OS</p>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ const Login = () => {
                     : <AlertCircle size={18} />}
                 </div>
                 <div className="flex-grow min-w-0">
-                  <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-70">
+                  <p className="text-[14px] font-black uppercase tracking-widest mb-1 opacity-70">
                     {loginError.type === 'network' ? 'Connection Error' :
                       loginError.type === 'credentials' ? 'Authentication Failed' : 'Server Error'}
                   </p>
@@ -179,7 +179,7 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Clinic Code */}
               <div className="space-y-2 group/field">
-                <label className={`text-[10px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/60'}`}>
+                <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/60'}`}>
                   Clinic Identification Code
                 </label>
                 <div className={`relative transition-all duration-300 transform ${focusedField === 'clinicCode' ? 'scale-[1.02]' : ''}`}>
@@ -201,7 +201,7 @@ const Login = () => {
 
               {/* Email */}
               <div className="space-y-2 group/field">
-                <label className={`text-[10px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'email' ? 'text-marigold' : 'text-khaki/60'}`}>
+                <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'email' ? 'text-marigold' : 'text-khaki/60'}`}>
                   Authorized Email Address
                 </label>
                 <div className={`relative transition-all duration-300 transform ${focusedField === 'email' ? 'scale-[1.02]' : ''}`}>
@@ -224,13 +224,13 @@ const Login = () => {
               {/* Password */}
               <div className="space-y-2 group/field">
                 <div className="flex justify-between items-end px-4">
-                  <label className={`text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${focusedField === 'password' ? 'text-marigold' : 'text-khaki/60'}`}>
+                  <label className={`text-[14px] font-bold uppercase tracking-widest transition-colors duration-300 ${focusedField === 'password' ? 'text-marigold' : 'text-khaki/60'}`}>
                     Secure Password
                   </label>
                   <button
                     type="button"
                     onClick={() => navigate('/forgot-password')}
-                    className="text-[10px] text-khaki/60 hover:text-marigold font-bold uppercase tracking-widest transition-colors"
+                    className="text-[14px] text-khaki/60 hover:text-marigold font-bold uppercase tracking-widest transition-colors"
                   >
                     Forgot?
                   </button>
@@ -271,7 +271,7 @@ const Login = () => {
             </form>
 
             <div className="mt-8 text-center pt-6 border-t border-sandstone/30">
-              <p className="text-xs text-khaki font-medium">
+              <p className="text-[14px] text-khaki font-medium">
                 New facility?{' '}
                 <button
                   onClick={() => navigate('/register-clinic')}
@@ -286,12 +286,12 @@ const Login = () => {
           <div className="mt-8 flex items-center justify-center gap-6 opacity-40">
             <div className="flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-marigold" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-teak">HIPAA Compliant</span>
+              <span className="text-[14px] font-bold uppercase tracking-widest text-teak">HIPAA Compliant</span>
             </div>
             <div className="w-1.5 h-1.5 bg-sandstone rounded-full"></div>
             <div className="flex items-center gap-1.5">
               <Activity size={14} className="text-marigold" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-teak">24/7 Monitoring</span>
+              <span className="text-[14px] font-bold uppercase tracking-widest text-teak">24/7 Monitoring</span>
             </div>
           </div>
         </div>

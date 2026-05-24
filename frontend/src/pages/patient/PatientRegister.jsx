@@ -202,7 +202,7 @@ const PatientRegister = () => {
                 <div className="w-full md:w-7/12 p-10 md:p-12">
                     <header className="mb-10">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                                 Step {step} of 5
                             </span>
                         </div>
@@ -219,7 +219,7 @@ const PatientRegister = () => {
                     {step === 1 && (
                         <form onSubmit={handleSendOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
                                 <div className="relative group">
                                     <Phone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -233,11 +233,11 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Next Step <ArrowRight size={18} /></>}
                             </button>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center mt-6">
+                            <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest text-center mt-6">
                                 Already registered? <button type="button" onClick={() => navigate('/patient/login')} className="text-teal-600 hover:underline">Log in</button>
                             </p>
                         </form>
@@ -247,11 +247,11 @@ const PatientRegister = () => {
                     {step === 2 && (
                         <form onSubmit={handleVerifyOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100 text-center mb-6">
-                                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest">Verification Sent to</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest">Verification Sent to</p>
                                 <p className="text-sm font-black text-slate-900">{formData.phone}</p>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
                                 <input
                                     type="text" required maxLength="6" placeholder="000000"
                                     className="w-full py-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 font-black text-center text-3xl tracking-[0.3em] text-slate-900 shadow-inner"
@@ -262,11 +262,11 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : 'Verify Code'}
                             </button>
-                            <button type="button" onClick={() => setStep(1)} className="w-full text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
+                            <button type="button" onClick={() => setStep(1)} className="w-full text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
                                 ← Change Phone Number
                             </button>
                         </form>
@@ -276,7 +276,7 @@ const PatientRegister = () => {
                     {step === 3 && (
                         <form onSubmit={handleCreatePassword} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Create Password</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Create Password</label>
                                 <div className="relative group">
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -291,7 +291,7 @@ const PatientRegister = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Confirm Password</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Confirm Password</label>
                                 <div className="relative group">
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -307,7 +307,7 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
                             >
                                 Continue <ArrowRight size={18} />
                             </button>
@@ -318,7 +318,7 @@ const PatientRegister = () => {
                     {step === 4 && (
                         <form onSubmit={handlePersonalInfo} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
                                 <div className="relative group">
                                     <User size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
@@ -331,7 +331,7 @@ const PatientRegister = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Age</label>
+                                    <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Age</label>
                                     <input
                                         type="number" placeholder="Years"
                                         className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900"
@@ -340,7 +340,7 @@ const PatientRegister = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Gender</label>
+                                    <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Gender</label>
                                     <select
                                         className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer"
                                         value={formData.gender}
@@ -354,7 +354,7 @@ const PatientRegister = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Blood Group</label>
+                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Blood Group</label>
                                 <select
                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer"
                                     value={formData.bloodGroup}
@@ -367,7 +367,7 @@ const PatientRegister = () => {
                                     <option value="AB+">AB+</option><option value="AB-">AB-</option>
                                 </select>
                             </div>
-                            <button type="submit" className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95">
+                            <button type="submit" className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95">
                                 Review Profile <ArrowRight size={18} />
                             </button>
                         </form>
@@ -383,11 +383,11 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[2rem] font-black text-[14px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Create Secure Account <CheckCircle size={18} /></>}
                             </button>
-                            <button type="button" onClick={() => setStep(4)} className="w-full text-[9px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
+                            <button type="button" onClick={() => setStep(4)} className="w-full text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
                                 ← Edit Information
                             </button>
                         </form>
@@ -399,7 +399,7 @@ const PatientRegister = () => {
 };
 
 const FeatureItem = ({ icon, text }) => (
-    <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400">
+    <div className="flex items-center gap-3 text-[14px] font-bold text-slate-400">
         <span className="text-teal-500">{icon}</span>
         {text}
     </div>
@@ -407,7 +407,7 @@ const FeatureItem = ({ icon, text }) => (
 
 const ReviewRow = ({ label, value }) => (
     <div>
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
         <p className="text-sm font-black text-slate-900">{value}</p>
     </div>
 );

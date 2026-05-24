@@ -29,7 +29,7 @@ const QuickActionTile = ({ icon, label, color, onClick }) => (
     <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-md md:rounded-lg flex items-center justify-center shadow-sm">
       {icon}
     </div>
-    <span className="text-[8px] md:text-[9px] font-bold text-center leading-tight uppercase tracking-widest">{label}</span>
+    <span className="text-[14px] md:text-[14px] font-bold text-center leading-tight uppercase tracking-widest">{label}</span>
   </button>
 );
 
@@ -58,11 +58,11 @@ const LabMetricCard = ({ title, value, change, icon, color }) => {
           {icon}
         </div>
         <div className="flex flex-col text-left">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{shortTitle}</span>
+          <span className="text-[14px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{shortTitle}</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-sm md:text-lg font-black text-gray-900 leading-none">{value}</span>
             {change && (
-              <span className={`text-[9px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+              <span className={`text-[14px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
                 {change}
               </span>
             )}
@@ -801,7 +801,7 @@ const LabDashboard = () => {
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="text-right">
                 <p className="text-sm font-semibold text-gray-900">{localStorage.getItem('userName') || 'Lab Technician'}</p>
-                <p className="text-xs text-gray-500">{localStorage.getItem('clinicName') || 'Central Lab'}</p>
+                <p className="text-[14px] text-gray-500">{localStorage.getItem('clinicName') || 'Central Lab'}</p>
               </div>
               <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold uppercase">
                 {(localStorage.getItem('userName') || 'LT').substring(0, 2)}
@@ -818,7 +818,7 @@ const LabDashboard = () => {
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
               <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin"></div>
               <p className="text-gray-600 font-semibold">Loading lab dashboard...</p>
-              <p className="text-xs text-gray-500">Connecting to {API_URL}</p>
+              <p className="text-[14px] text-gray-500">Connecting to {API_URL}</p>
             </div>
           )}
 
@@ -830,7 +830,7 @@ const LabDashboard = () => {
               </div>
               <p className="text-lg font-semibold text-gray-900">Connection Error</p>
               <p className="text-sm text-gray-600 max-w-md text-center">{error}</p>
-              <div className="text-xs text-gray-500 text-center max-w-md mt-4 bg-gray-50 p-4 rounded-lg">
+              <div className="text-[14px] text-gray-500 text-center max-w-md mt-4 bg-gray-50 p-4 rounded-lg">
                 <p className="font-semibold mb-2">Quick fixes:</p>
                 <ul className="list-disc list-inside space-y-1 text-left">
                   <li>Check if backend is running: npm run dev</li>
@@ -851,16 +851,16 @@ const LabDashboard = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <h1 className="text-lg font-bold text-gray-900">LabDashboard</h1>
-                  <p className="hidden md:flex text-xs text-gray-400 items-center gap-2">
+                  <p className="hidden md:flex text-[14px] text-gray-400 items-center gap-2">
                     <Activity size={14} className="text-teal-500" />
                     Diagnostic Laboratory Management
                   </p>
                 </div>
                 <div className="text-right flex items-center gap-3">
-                  <p className="text-[10px] text-gray-400">Last update: {lastUpdate.toLocaleTimeString()}</p>
+                  <p className="text-[14px] text-gray-400">Last update: {lastUpdate.toLocaleTimeString()}</p>
                   <div className="flex items-center gap-1">
                     <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-yellow-500 animate-pulse' : socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-[14px] text-gray-600">
                       {isSyncing ? 'Syncing...' : socketConnected ? 'Live' : 'Offline'}
                     </span>
                   </div>
@@ -895,11 +895,11 @@ const LabDashboard = () => {
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-gray-100 bg-white">
                       <div>
-                        <h2 className="text-xs font-bold text-gray-900 flex items-center gap-2">
+                        <h2 className="text-[14px] font-bold text-gray-900 flex items-center gap-2">
                           <Activity size={14} className="text-teal-600" />
                           Test Requests Queue
                         </h2>
-                        <p className="text-xs text-gray-400 mt-0.5 font-medium">Manage patient diagnostics, collections and digital reports</p>
+                        <p className="text-[14px] text-gray-400 mt-0.5 font-medium">Manage patient diagnostics, collections and digital reports</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="relative w-64 hidden sm:block">
@@ -907,7 +907,7 @@ const LabDashboard = () => {
                           <input
                             type="text"
                             placeholder="Search patient, phone, test..."
-                            className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:bg-white text-xs w-full transition-all font-semibold shadow-inner"
+                            className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:bg-white text-[14px] w-full transition-all font-semibold shadow-inner"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                           />
@@ -919,7 +919,7 @@ const LabDashboard = () => {
                         >
                           <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
                         </button>
-                        <button onClick={() => navigate('/lab/requests')} className="text-teal-600 text-xs font-bold hover:underline">View All</button>
+                        <button onClick={() => navigate('/lab/requests')} className="text-teal-600 text-[14px] font-bold hover:underline">View All</button>
                       </div>
                     </div>
 
@@ -930,7 +930,7 @@ const LabDashboard = () => {
                           <button
                             key={tab}
                             onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                            className={`px-3 py-2 text-[10px] font-bold border-b-2 transition-colors shrink-0 snap-start ${activeTab === tab
+                            className={`px-3 py-2 text-[14px] font-bold border-b-2 transition-colors shrink-0 snap-start ${activeTab === tab
                               ? 'text-teal-600 border-teal-600'
                               : 'text-gray-600 border-transparent hover:text-gray-900'
                               }`}
@@ -939,7 +939,7 @@ const LabDashboard = () => {
                           </button>
                         ))}
                       </div>
-                      <button className="hidden sm:flex items-center gap-1.5 text-gray-600 text-[10px] font-bold hover:text-teal-600 transition-colors">
+                      <button className="hidden sm:flex items-center gap-1.5 text-gray-600 text-[14px] font-bold hover:text-teal-600 transition-colors">
                         <Filter size={14} /> Filters
                       </button>
                     </div>
@@ -949,13 +949,13 @@ const LabDashboard = () => {
                       <table className="w-full text-sm border-collapse min-w-[720px]">
                         <thead>
                           <tr className="border-b border-gray-200 bg-gray-50/75 backdrop-blur-sm">
-                            <th className="w-[8%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Request ID</th>
-                            <th className="w-[24%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Patient Details</th>
-                            <th className="w-[15%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Referred Tests</th>
-                            <th className="w-[12%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Status</th>
-                            <th className="w-[12%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Priority</th>
-                            <th className="w-[13%] px-2 py-3 text-left text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Requested On</th>
-                            <th className="w-[16%] px-2 py-3 text-center text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Actions</th>
+                            <th className="w-[8%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Request ID</th>
+                            <th className="w-[24%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Patient Details</th>
+                            <th className="w-[15%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Referred Tests</th>
+                            <th className="w-[12%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Status</th>
+                            <th className="w-[12%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Priority</th>
+                            <th className="w-[13%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Requested On</th>
+                            <th className="w-[16%] px-2 py-3 text-center text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100/80">
@@ -976,7 +976,7 @@ const LabDashboard = () => {
                                       <td colSpan="7" className="px-3 py-12 text-center text-gray-500 h-[64px]">
                                         <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
                                         <p className="font-semibold text-gray-700">No test requests found</p>
-                                        <p className="text-xs text-gray-400 mt-1">All samples have been processed and published!</p>
+                                        <p className="text-[14px] text-gray-400 mt-1">All samples have been processed and published!</p>
                                       </td>
                                     </tr>
                                   );
@@ -996,18 +996,18 @@ const LabDashboard = () => {
                               return (
                                 <tr key={request._id} className="hover:bg-gradient-to-r hover:from-teal-50/[0.04] hover:to-indigo-50/[0.04] transition-all duration-300 group">
                                   <td className="px-3 py-3 align-middle">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[14px] font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
                                       TRF-{request.tokenNumber || '00'}
                                     </span>
                                   </td>
                                   <td className="px-3 py-3 align-middle">
                                     <div className="flex items-center gap-2.5">
-                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[9px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
+                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[14px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
                                         {initials}
                                       </div>
                                       <div>
-                                        <p className="text-gray-900 font-extrabold text-[11px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
-                                        <p className="text-[9px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                        <p className="text-gray-900 font-extrabold text-[14px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
+                                        <p className="text-[14px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
                                           <Smartphone size={10} className="text-gray-300 animate-pulse" />
                                           {request.patientPhone}
                                         </p>
@@ -1017,11 +1017,11 @@ const LabDashboard = () => {
                                   <td className="px-3 py-3 align-middle">
                                     <div className="flex items-center gap-1 bg-teal-50/30 border border-teal-100/50 text-teal-800 px-2 py-1 rounded-lg w-fit shadow-sm">
                                       <Beaker size={11} className="text-teal-600" />
-                                      <span className="font-bold text-[10px]">{request.requiredTest || 'Routine Diagnosis'}</span>
+                                      <span className="font-bold text-[14px]">{request.requiredTest || 'Routine Diagnosis'}</span>
                                     </div>
                                   </td>
                                   <td className="px-3 py-3 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[14px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                       request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
                                         'bg-amber-50 text-amber-700 border border-amber-200'
                                       }`}>
@@ -1040,7 +1040,7 @@ const LabDashboard = () => {
                                     </span>
                                   </td>
                                   <td className="px-3 py-3 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[14px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
                                       }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
                                       {request.isEmergency ? 'Emergency' : 'Standard'}
@@ -1048,8 +1048,8 @@ const LabDashboard = () => {
                                   </td>
                                   <td className="px-3 py-3 align-middle">
                                     <div className="flex flex-col">
-                                      <span className="text-gray-900 font-bold text-[10px]">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                      <span className="text-[9px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
+                                      <span className="text-gray-900 font-bold text-[14px]">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                      <span className="text-[14px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
                                         <Clock size={10} className="text-gray-300" />
                                         {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                       </span>
@@ -1057,13 +1057,13 @@ const LabDashboard = () => {
                                   </td>
                                   <td className="px-3 py-3 align-middle text-center">
                                     {request.currentStage === 'Lab-Completed' ? (
-                                      <span className="inline-flex items-center gap-1 text-xs font-extrabold text-gray-400 py-1">
+                                      <span className="inline-flex items-center gap-1 text-[14px] font-extrabold text-gray-400 py-1">
                                         <FileCheck size={14} className="text-gray-400" /> Published
                                       </span>
                                     ) : (
                                       <div className="flex items-center justify-center gap-1.5 w-full min-w-[110px] mx-auto">
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[8px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[14px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
                                           onClick={() => handleFileUpload(request.patientPhone, request._id)}
                                           title="Upload Clinical Files"
                                         >
@@ -1071,7 +1071,7 @@ const LabDashboard = () => {
                                           <span>Upload</span>
                                         </button>
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[8px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[14px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
@@ -1106,11 +1106,11 @@ const LabDashboard = () => {
                           <div key={request._id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors">
                             <div className="flex justify-between items-start">
                               <div>
-                                <span className="text-teal-600 font-bold text-xs uppercase tracking-wider">TRF-2025-{request.tokenNumber}</span>
+                                <span className="text-teal-600 font-bold text-[14px] uppercase tracking-wider">TRF-2025-{request.tokenNumber}</span>
                                 <h4 className="text-sm font-bold text-gray-900 mt-0.5">{request.patientName}</h4>
-                                <span className="text-[10px] text-gray-400 font-mono">#{request._id.slice(-6).toUpperCase()}</span>
+                                <span className="text-[14px] text-gray-400 font-mono">#{request._id.slice(-6).toUpperCase()}</span>
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${request.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-600' :
+                              <span className={`px-2 py-0.5 rounded text-[14px] font-bold ${request.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-600' :
                                 request.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600' :
                                   'bg-orange-50 text-orange-600'
                                 }`}>
@@ -1119,13 +1119,13 @@ const LabDashboard = () => {
                               </span>
                             </div>
 
-                            <div className="flex justify-between items-center text-xs text-gray-600">
+                            <div className="flex justify-between items-center text-[14px] text-gray-600">
                               <div>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Tests</span>
+                                <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block">Tests</span>
                                 <span className="font-semibold text-gray-800">{request.requiredTest || 'CBC, RBS, Lipid Profile'}</span>
                               </div>
                               <div className="text-right">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Priority</span>
+                                <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block">Priority</span>
                                 <span className={`inline-flex items-center gap-1 font-bold ${request.isEmergency ? 'text-red-500' : 'text-green-500'}`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-red-500' : 'bg-green-500'}`}></span>
                                   {request.isEmergency ? 'High' : 'Low'}
@@ -1134,16 +1134,16 @@ const LabDashboard = () => {
                             </div>
 
                             <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                              <span className="text-[10px] text-gray-400">
+                              <span className="text-[14px] text-gray-400">
                                 {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                               {request.currentStage === 'Lab-Completed' ? (
-                                <span className="text-[10px] font-bold text-gray-400">Published</span>
+                                <span className="text-[14px] font-bold text-gray-400">Published</span>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => handleFileUpload(request.patientPhone, request._id)}
-                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95"
+                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-[14px] font-bold transition-all active:scale-95"
                                   >
                                     <Upload size={12} />
                                     <span>Upload</span>
@@ -1153,7 +1153,7 @@ const LabDashboard = () => {
                                       setActiveDigitalPatient(request);
                                       setShowDigitalReportModal(true);
                                     }}
-                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all active:scale-95 border border-indigo-100"
+                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[14px] font-bold transition-all active:scale-95 border border-indigo-100"
                                   >
                                     <FileCheck size={12} />
                                     <span>Fill Digital</span>
@@ -1208,7 +1208,7 @@ const LabDashboard = () => {
                   <div className="bg-white rounded-xl border border-gray-200 p-3">
                     <div className="flex justify-between items-center mb-2">
                       <h2 className="text-sm font-bold text-gray-900">Recent Samples</h2>
-                      <button onClick={() => navigate('/lab/samples')} className="text-teal-600 text-xs font-semibold hover:text-teal-700">View All</button>
+                      <button onClick={() => navigate('/lab/samples')} className="text-teal-600 text-[14px] font-semibold hover:text-teal-700">View All</button>
                     </div>
                     <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-2 snap-x snap-mandatory">
                       {/* Sample Cards */}
@@ -1219,14 +1219,14 @@ const LabDashboard = () => {
                           </div>
                           <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <div className="flex justify-between items-center mb-0.5">
-                              <p className="text-[11px] font-bold text-gray-900 truncate">SMP-{patient.tokenNumber}</p>
-                              <span className="text-[8px] font-bold text-gray-500">
+                              <p className="text-[14px] font-bold text-gray-900 truncate">SMP-{patient.tokenNumber}</p>
+                              <span className="text-[14px] font-bold text-gray-500">
                                 {new Date(patient.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <p className="text-[9px] text-gray-500 truncate max-w-[120px]">{patient.patientName}</p>
-                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                              <p className="text-[14px] text-gray-500 truncate max-w-[120px]">{patient.patientName}</p>
+                              <span className={`text-[14px] font-bold px-1.5 py-0.5 rounded-full ${patient.currentStage === 'Lab-Pending' ? 'bg-orange-50 text-orange-600 border border-orange-100' : patient.currentStage === 'Lab-Processing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
                                 {patient.currentStage === 'Lab-Pending' ? 'Testing' : patient.currentStage === 'Lab-Processing' ? 'In Process' : 'Collected'}
                               </span>
                             </div>
@@ -1234,7 +1234,7 @@ const LabDashboard = () => {
                         </div>
                       ))}
                       {labQueue.length === 0 && (
-                        <div className="col-span-full py-4 text-center text-gray-500 text-xs w-full">No recent samples available</div>
+                        <div className="col-span-full py-4 text-center text-gray-500 text-[14px] w-full">No recent samples available</div>
                       )}
                     </div>
                   </div>
@@ -1245,8 +1245,8 @@ const LabDashboard = () => {
                   {/* Sample Status Pie Chart */}
                   <div className="bg-white p-3 rounded-xl border border-gray-200">
                     <div className="flex justify-between items-center mb-2">
-                      <h2 className="text-[11px] font-bold text-gray-900 uppercase tracking-wide">Sample Status</h2>
-                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-[9px] font-bold hover:text-teal-700">Details</button>
+                      <h2 className="text-[14px] font-bold text-gray-900 uppercase tracking-wide">Sample Status</h2>
+                      <button onClick={() => navigate('/lab/analytics')} className="text-teal-600 text-[14px] font-bold hover:text-teal-700">Details</button>
                     </div>
                     <div className="flex items-center justify-center mb-2 relative min-h-[90px]">
                       {sampleStatusData.length > 0 && stats.total > 0 ? (
@@ -1276,13 +1276,13 @@ const LabDashboard = () => {
                       ) : (
                         <div className="flex flex-col items-center justify-center h-[90px] text-gray-400">
                           <Activity size={16} className="opacity-20 mb-1" />
-                          <p className="text-[9px]">No data</p>
+                          <p className="text-[14px]">No data</p>
                         </div>
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {sampleStatusData.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-[9px] bg-gray-50/80 px-1.5 py-1 rounded">
+                        <div key={item.name} className="flex items-center justify-between text-[14px] bg-gray-50/80 px-1.5 py-1 rounded">
                           <div className="flex items-center gap-1.5">
                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }}></div>
                             <span className="text-gray-700 font-bold truncate">{item.name}</span>
@@ -1298,8 +1298,8 @@ const LabDashboard = () => {
                   {/* Dashboard Summary */}
                   <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <div className="flex justify-between items-center p-2.5 px-3 border-b border-gray-200">
-                      <h2 className="text-xs font-bold text-gray-900">Dashboard Summary</h2>
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 cursor-pointer">
+                      <h2 className="text-[14px] font-bold text-gray-900">Dashboard Summary</h2>
+                      <div className="flex items-center gap-1 text-[14px] font-semibold text-gray-600 cursor-pointer">
                         This Month <ChevronDown size={12} />
                       </div>
                     </div>
@@ -1309,11 +1309,11 @@ const LabDashboard = () => {
                           <div className="w-5 h-5 bg-purple-50 text-purple-600 rounded flex items-center justify-center">
                             <FileCheck size={10} />
                           </div>
-                          <p className="text-[10px] font-semibold text-gray-700">Reports Generated</p>
+                          <p className="text-[14px] font-semibold text-gray-700">Reports Generated</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-[11px]">{stats.completed}</p>
-                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">
+                          <p className="font-bold text-gray-900 text-[14px]">{stats.completed}</p>
+                          <span className="text-[14px] font-bold text-green-600 w-8 text-right">
                             {stats.completed > 0 ? `+${Math.min(100, Math.round((stats.completed / (stats.total || 1)) * 100))}%` : '0%'}
                           </span>
                         </div>
@@ -1323,11 +1323,11 @@ const LabDashboard = () => {
                           <div className="w-5 h-5 bg-teal-50 text-teal-600 rounded flex items-center justify-center">
                             <Clock size={10} />
                           </div>
-                          <p className="text-[10px] font-semibold text-gray-700">Turnaround Time</p>
+                          <p className="text-[14px] font-semibold text-gray-700">Turnaround Time</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-[11px]">{getAvgTurnaroundTime()}</p>
-                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">- 8%</span>
+                          <p className="font-bold text-gray-900 text-[14px]">{getAvgTurnaroundTime()}</p>
+                          <span className="text-[14px] font-bold text-green-600 w-8 text-right">- 8%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
@@ -1335,11 +1335,11 @@ const LabDashboard = () => {
                           <div className="w-5 h-5 bg-green-50 text-green-600 rounded flex items-center justify-center">
                             <Activity size={10} />
                           </div>
-                          <p className="text-[10px] font-semibold text-gray-700">Test Accuracy</p>
+                          <p className="text-[14px] font-semibold text-gray-700">Test Accuracy</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-[11px]">{getDynamicAccuracy()}</p>
-                          <span className="text-[10px] font-bold text-green-600 w-8 text-right">+ 2%</span>
+                          <p className="font-bold text-gray-900 text-[14px]">{getDynamicAccuracy()}</p>
+                          <span className="text-[14px] font-bold text-green-600 w-8 text-right">+ 2%</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
@@ -1347,11 +1347,11 @@ const LabDashboard = () => {
                           <div className="w-7 h-7 bg-red-50 text-red-600 rounded flex items-center justify-center">
                             <RefreshCw size={10} />
                           </div>
-                          <p className="text-[10px] font-semibold text-gray-700">Repeat Tests</p>
+                          <p className="text-[14px] font-semibold text-gray-700">Repeat Tests</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-bold text-gray-900 text-[11px]">{getDynamicRepeatTests()}</p>
-                          <span className="text-[10px] font-bold text-red-600 w-8 text-right">0%</span>
+                          <p className="font-bold text-gray-900 text-[14px]">{getDynamicRepeatTests()}</p>
+                          <span className="text-[14px] font-bold text-red-600 w-8 text-right">0%</span>
                         </div>
                       </div>
                     </div>
@@ -1572,14 +1572,14 @@ const LabDashboard = () => {
                         type="text"
                         value={reportConfig.primaryColor}
                         onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-xs font-mono"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-teal-500 text-[14px] font-mono"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Header Size</label>
+                      <label className="block text-[14px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Header Size</label>
                       <input
                         type="number"
                         value={reportConfig.headerFontSize}
@@ -1588,7 +1588,7 @@ const LabDashboard = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Body Size</label>
+                      <label className="block text-[14px] font-bold text-gray-600 mb-1 uppercase tracking-wider">Body Size</label>
                       <input
                         type="number"
                         value={reportConfig.bodyFontSize}
@@ -1610,13 +1610,13 @@ const LabDashboard = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowReportConfigModal(false)}
-                    className="flex-1 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-xs"
+                    className="flex-1 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-[14px]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleGenerateReport}
-                    className="flex-1 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-lg font-bold hover:bg-indigo-100 transition-colors text-xs flex items-center justify-center gap-1"
+                    className="flex-1 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-lg font-bold hover:bg-indigo-100 transition-colors text-[14px] flex items-center justify-center gap-1"
                   >
                     Generate Daily PDF
                   </button>
@@ -1639,7 +1639,7 @@ const LabDashboard = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-white tracking-tight">Fill Digital Lab Report</h3>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Digitally type test values and observations</p>
+                    <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Digitally type test values and observations</p>
                   </div>
                 </div>
                 <button
@@ -1653,16 +1653,16 @@ const LabDashboard = () => {
               {/* Patient Summary Strip */}
               <div className="px-5 py-3 bg-teal-50 border-b border-teal-100 grid grid-cols-3 gap-4 shrink-0">
                 <div>
-                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Patient Name</span>
-                  <span className="font-black text-slate-900 text-xs">{activeDigitalPatient.patientName}</span>
+                  <span className="text-[14px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Patient Name</span>
+                  <span className="font-black text-slate-900 text-[14px]">{activeDigitalPatient.patientName}</span>
                 </div>
                 <div>
-                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Phone Number</span>
-                  <span className="font-black text-slate-900 text-xs">{activeDigitalPatient.patientPhone}</span>
+                  <span className="text-[14px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Phone Number</span>
+                  <span className="font-black text-slate-900 text-[14px]">{activeDigitalPatient.patientPhone}</span>
                 </div>
                 <div>
-                  <span className="text-[8px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Referred Tests</span>
-                  <span className="font-black text-teal-700 text-xs bg-teal-100 px-2 py-0.5 rounded-md inline-block">{activeDigitalPatient.requiredTest || 'CBC'}</span>
+                  <span className="text-[14px] text-teal-600 font-black uppercase tracking-widest block mb-0.5">Referred Tests</span>
+                  <span className="font-black text-teal-700 text-[14px] bg-teal-100 px-2 py-0.5 rounded-md inline-block">{activeDigitalPatient.requiredTest || 'CBC'}</span>
                 </div>
               </div>
 
@@ -1671,7 +1671,7 @@ const LabDashboard = () => {
 
                 {/* Report Title */}
                 <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Report Title / Heading</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Report Title / Heading</label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
                     <input
@@ -1686,7 +1686,7 @@ const LabDashboard = () => {
 
                 {/* Findings */}
                 <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Test Results & Observations</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Test Results & Observations</label>
                   <textarea
                     value={digitalReportForm.findings}
                     onChange={(e) => setDigitalReportForm({ ...digitalReportForm, findings: e.target.value })}
@@ -1698,7 +1698,7 @@ const LabDashboard = () => {
 
                 {/* Notes */}
                 <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Pathologist Interpretation</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Pathologist Interpretation</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -1712,7 +1712,7 @@ const LabDashboard = () => {
 
                 {/* Signatory */}
                 <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Authorized Signatory</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Authorized Signatory</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
                     <input
@@ -1730,13 +1730,13 @@ const LabDashboard = () => {
               <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex gap-3 shrink-0">
                 <button
                   onClick={() => setShowDigitalReportModal(false)}
-                  className="flex-1 py-2.5 bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all active:scale-95"
+                  className="flex-1 py-2.5 bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900 rounded-xl font-black text-[14px] uppercase tracking-widest transition-all active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePublishDigitalReport}
-                  className="flex-[2] py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-teal-600/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+                  className="flex-[2] py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-black text-[14px] uppercase tracking-widest shadow-lg shadow-teal-600/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
                 >
                   <Save size={13} className="group-hover:scale-110 transition-transform" />
                   Publish & Sync Locker
@@ -1757,7 +1757,7 @@ const LabDashboard = () => {
                     <Upload size={22} className="animate-pulse" />
                     Upload Diagnostic Reports
                   </h3>
-                  <p className="text-xs text-teal-100 mt-0.5">Select multiple report photos or PDF files to publish</p>
+                  <p className="text-[14px] text-teal-100 mt-0.5">Select multiple report photos or PDF files to publish</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1773,17 +1773,17 @@ const LabDashboard = () => {
               {/* Form Content */}
               <div className="p-6 overflow-y-auto space-y-6 flex-grow">
                 {/* Patient Summary Card */}
-                <div className="bg-teal-50/50 rounded-xl p-4 border border-teal-100/50 grid grid-cols-2 gap-4 text-xs font-semibold">
+                <div className="bg-teal-50/50 rounded-xl p-4 border border-teal-100/50 grid grid-cols-2 gap-4 text-[14px] font-semibold">
                   <div>
-                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Patient Name</span>
+                    <span className="text-[14px] text-gray-400 block uppercase tracking-wider">Patient Name</span>
                     <span className="font-extrabold text-sm text-gray-800">{uploadModalPatient.patientName}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Phone / Locker Link</span>
+                    <span className="text-[14px] text-gray-400 block uppercase tracking-wider">Phone / Locker Link</span>
                     <span className="font-extrabold text-sm text-gray-800">{uploadModalPatient.patientPhone}</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-[10px] text-gray-400 block uppercase tracking-wider">Referred Tests</span>
+                    <span className="text-[14px] text-gray-400 block uppercase tracking-wider">Referred Tests</span>
                     <span className="font-extrabold text-sm text-teal-700">{uploadModalPatient.requiredTest}</span>
                   </div>
                 </div>
@@ -1814,20 +1814,20 @@ const LabDashboard = () => {
                     <Upload size={22} className="group-hover:animate-bounce" />
                   </div>
                   <p className="text-sm font-bold text-gray-700">Drag & drop files here, or <span className="text-teal-600 underline">browse</span></p>
-                  <p className="text-[10px] text-gray-400 font-semibold">Supports Multiple Images (PNG, JPG) or PDFs (Up to 5MB each)</p>
+                  <p className="text-[14px] text-gray-400 font-semibold">Supports Multiple Images (PNG, JPG) or PDFs (Up to 5MB each)</p>
                 </div>
 
                 {/* Selected Files Preview Grid */}
                 <div>
-                  <h4 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">
+                  <h4 className="text-[14px] font-black text-gray-500 uppercase tracking-wider mb-3">
                     Selected Pages / Files ({selectedUploadFiles.length})
                   </h4>
 
                   {selectedUploadFiles.length === 0 ? (
                     <div className="border border-gray-150 rounded-2xl p-8 text-center text-gray-400 bg-gray-50/50">
                       <FileCheck size={28} className="mx-auto mb-2 text-gray-300" />
-                      <p className="text-xs font-semibold">No files added yet.</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Add test result photos or prescription files to preview here.</p>
+                      <p className="text-[14px] font-semibold">No files added yet.</p>
+                      <p className="text-[14px] text-gray-400 mt-0.5">Add test result photos or prescription files to preview here.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1849,7 +1849,7 @@ const LabDashboard = () => {
                           {/* Preview Content */}
                           {fileItem.isPdf ? (
                             <div className="flex-grow flex flex-col items-center justify-center text-rose-500">
-                              <span className="text-[9px] font-extrabold uppercase bg-rose-50 border border-rose-100 text-rose-600 px-1.5 py-0.5 rounded mb-1 font-mono">PDF</span>
+                              <span className="text-[14px] font-extrabold uppercase bg-rose-50 border border-rose-100 text-rose-600 px-1.5 py-0.5 rounded mb-1 font-mono">PDF</span>
                               <FileCheck size={24} className="text-rose-500 shrink-0" />
                             </div>
                           ) : (
@@ -1859,10 +1859,10 @@ const LabDashboard = () => {
                           )}
 
                           {/* File Details */}
-                          <p className="text-[10px] font-bold text-gray-700 mt-2 truncate w-full text-center" title={fileItem.name}>
+                          <p className="text-[14px] font-bold text-gray-700 mt-2 truncate w-full text-center" title={fileItem.name}>
                             {fileItem.name}
                           </p>
-                          <p className="text-[9px] font-medium text-gray-400">
+                          <p className="text-[14px] font-medium text-gray-400">
                             {fileItem.size}
                           </p>
                         </div>
@@ -1904,8 +1904,8 @@ const LabDashboard = () => {
           <div className={`transition-all duration-300 transform origin-bottom-right ${showQuickActions ? 'scale-100 opacity-100 animate-fade-in' : 'scale-0 opacity-0 pointer-events-none'}`}>
             <div className="bg-white/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-gray-150 grid grid-cols-2 gap-2 mb-2 w-[calc(100vw-2rem)] max-w-xs">
               <div className="col-span-2 border-b pb-2 mb-1 flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Quick Actions</span>
-                <span className="text-[10px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full">Interactive Panel</span>
+                <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest">Quick Actions</span>
+                <span className="text-[14px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full">Interactive Panel</span>
               </div>
               <QuickActionTile icon={<Plus size={14} />} label="New Test" color="bg-teal-50 text-teal-600 hover:bg-teal-100" onClick={() => { setShowNewTestModal(true); setShowQuickActions(false); }} />
               <QuickActionTile icon={<TestTubes size={14} />} label="Add Sample" color="bg-blue-50 text-blue-600 hover:bg-blue-100" onClick={() => { setShowAddSampleModal(true); setShowQuickActions(false); }} />

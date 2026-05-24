@@ -68,7 +68,7 @@ const LockerSearch = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="absolute right-4 top-4 bottom-4 px-10 bg-teak text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-marigold transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+                className="absolute right-4 top-4 bottom-4 px-10 bg-teak text-white rounded-[2rem] font-black text-[14px] uppercase tracking-widest hover:bg-marigold transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
               >
                 {loading ? <RefreshCw size={18} className="animate-spin" /> : <>Access <ArrowRight size={18} /></>}
               </button>
@@ -76,7 +76,7 @@ const LockerSearch = () => {
             
             {error && (
               <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl animate-in fade-in slide-in-from-top-2">
-                <p className="text-red-600 text-xs font-bold text-center">
+                <p className="text-red-600 text-[14px] font-bold text-center">
                   ⚠️ {error}
                 </p>
               </div>
@@ -87,15 +87,15 @@ const LockerSearch = () => {
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 w-full opacity-60">
              <div className="flex flex-col items-center gap-3">
                 <div className="p-4 bg-white border border-sandstone rounded-2xl text-khaki"><User size={20}/></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teak">Historical Vitals</span>
+                <span className="text-[14px] font-black uppercase tracking-[0.2em] text-teak">Historical Vitals</span>
              </div>
              <div className="flex flex-col items-center gap-3">
                 <div className="p-4 bg-white border border-sandstone rounded-2xl text-khaki"><FileText size={20}/></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teak">Digital Reports</span>
+                <span className="text-[14px] font-black uppercase tracking-[0.2em] text-teak">Digital Reports</span>
              </div>
              <div className="flex flex-col items-center gap-3">
                 <div className="p-4 bg-white border border-sandstone rounded-2xl text-khaki"><Phone size={20}/></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teak">Secure Decryption</span>
+                <span className="text-[14px] font-black uppercase tracking-[0.2em] text-teak">Secure Decryption</span>
              </div>
           </div>
         </main>

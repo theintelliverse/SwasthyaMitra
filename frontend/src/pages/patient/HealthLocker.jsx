@@ -65,7 +65,7 @@ const HealthLocker = () => {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-10">
       <Database size={48} className="text-slate-200 mb-6" />
       <p className="text-xl font-black text-slate-900 tracking-tight mb-6">No records found for this account.</p>
-      <button onClick={() => navigate(-1)} className="px-8 py-3 bg-teal-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-teal-600/20">Go Back</button>
+      <button onClick={() => navigate(-1)} className="px-8 py-3 bg-teal-600 text-white rounded-2xl font-black uppercase text-[14px] tracking-widest shadow-xl shadow-teal-600/20">Go Back</button>
     </div>
   );
 
@@ -80,7 +80,7 @@ const HealthLocker = () => {
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-6">
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-teal-100">
+              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                 Health Locker
               </span>
               {isSyncing && <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-ping"></div>}
@@ -88,7 +88,7 @@ const HealthLocker = () => {
             <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               Medical Vault <span className="text-teal-600">.</span>
             </h1>
-            <p className="text-slate-400 font-bold text-[10px] mt-0.5 uppercase tracking-wider">Authenticated clinical records & wellness logs.</p>
+            <p className="text-slate-400 font-bold text-[14px] mt-0.5 uppercase tracking-wider">Authenticated clinical records & wellness logs.</p>
           </div>
 
           <div className="flex gap-2">
@@ -113,16 +113,16 @@ const HealthLocker = () => {
             </div>
 
             <div className="text-center md:text-left flex-1">
-              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-teal-400 mb-1">Verified Identity</p>
+              <p className="text-[14px] font-black uppercase tracking-[0.3em] text-teal-400 mb-1">Verified Identity</p>
               <h2 className="text-xl font-black tracking-tight mb-2">{data.name}</h2>
               <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
+                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[14px]">
                   <Smartphone size={12} className="text-teal-500" /> {data.phone}
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
+                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[14px]">
                   <Hash size={12} className="text-teal-500" /> {data.medicalHistory?.length || 0} Consultations
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
+                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[14px]">
                   <FileText size={12} className="text-teal-500" /> {data.documents?.length || 0} Reports
                 </div>
               </div>
@@ -161,7 +161,7 @@ const HealthLocker = () => {
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-separate border-spacing-y-2">
                           <thead>
-                            <tr className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                            <tr className="text-[14px] font-black uppercase tracking-widest text-slate-400">
                               <th className="px-3 py-2">Captured Date</th>
                               <th className="px-3 py-2">Blood Pressure</th>
                               <th className="px-3 py-2">Pulse Rate</th>
@@ -173,21 +173,21 @@ const HealthLocker = () => {
                             {data.vitals.map((vital, i) => (
                               <tr key={i} className="group hover:scale-[1.002] transition-all duration-300">
                                 <td className="px-3 py-3 bg-slate-50/50 rounded-l-xl border-y border-l border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                                  <span className="text-[10px] font-black text-slate-900">{new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                  <span className="text-[14px] font-black text-slate-900">{new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                                 </td>
                                 <td className="px-3 py-3 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                                  <span className="text-[10px] font-bold text-slate-600">{vital.bloodPressure || '--'}</span>
+                                  <span className="text-[14px] font-bold text-slate-600">{vital.bloodPressure || '--'}</span>
                                 </td>
                                 <td className="px-3 py-3 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                                  <span className="text-[10px] font-bold text-slate-600">{vital.pulseRate || '--'} bpm</span>
+                                  <span className="text-[14px] font-bold text-slate-600">{vital.pulseRate || '--'} bpm</span>
                                 </td>
                                 <td className="px-3 py-3 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
-                                  <span className="text-[10px] font-bold text-slate-600">{vital.temperature || '--'} °C</span>
+                                  <span className="text-[14px] font-bold text-slate-600">{vital.temperature || '--'} °C</span>
                                 </td>
                                 <td className="px-3 py-3 bg-slate-50/50 rounded-r-xl border-y border-r border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30 text-right">
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-teal-600">{vital.weight ? `${vital.weight} kg` : '--'}</span>
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase">BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}</span>
+                                    <span className="text-[14px] font-black text-teal-600">{vital.weight ? `${vital.weight} kg` : '--'}</span>
+                                    <span className="text-[14px] font-bold text-slate-400 uppercase">BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}</span>
                                   </div>
                                 </td>
                               </tr>
@@ -201,25 +201,25 @@ const HealthLocker = () => {
                         {data.vitals.map((vital, i) => (
                           <div key={i} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100/50 space-y-3">
                             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                              <span className="text-xs font-black text-slate-950">
+                              <span className="text-[14px] font-black text-slate-950">
                                 {new Date(vital.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
-                              <span className="text-[9px] font-black text-teal-600 uppercase bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+                              <span className="text-[14px] font-black text-teal-600 uppercase bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
                                 BMI: {vital.bmi ? vital.bmi.toFixed(1) : '--'}
                               </span>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-center">
                               <div className="bg-white p-2 rounded-lg border border-slate-100/30">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">BP</p>
-                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.bloodPressure || '--'}</p>
+                                <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">BP</p>
+                                <p className="text-[14px] font-black text-slate-800 mt-0.5">{vital.bloodPressure || '--'}</p>
                               </div>
                               <div className="bg-white p-2 rounded-lg border border-slate-100/30">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Pulse</p>
-                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.pulseRate ? `${vital.pulseRate} bpm` : '--'}</p>
+                                <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">Pulse</p>
+                                <p className="text-[14px] font-black text-slate-800 mt-0.5">{vital.pulseRate ? `${vital.pulseRate} bpm` : '--'}</p>
                               </div>
                               <div className="bg-white p-2 rounded-lg border border-slate-100/30">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Weight</p>
-                                <p className="text-xs font-black text-slate-800 mt-0.5">{vital.weight ? `${vital.weight} kg` : '--'}</p>
+                                <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">Weight</p>
+                                <p className="text-[14px] font-black text-slate-800 mt-0.5">{vital.weight ? `${vital.weight} kg` : '--'}</p>
                               </div>
                             </div>
                           </div>
@@ -241,12 +241,12 @@ const HealthLocker = () => {
                       <div className="flex justify-between items-start mb-3 md:mb-4">
                         <div>
                           <div className="flex items-center gap-1.5 mb-1.5">
-                            <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                               Prescription
                             </span>
                           </div>
                           <h4 className="text-sm md:text-base font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{record.clinicName}</p>
+                          <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{record.clinicName}</p>
                         </div>
                         <div className="p-2 md:p-2.5 bg-slate-50 rounded-lg md:rounded-xl text-slate-400 group-hover:text-teal-600 group-hover:bg-teal-50 transition-all">
                           <Calendar size={14} />
@@ -256,18 +256,18 @@ const HealthLocker = () => {
                       <div className="p-3 md:p-4 bg-slate-900 rounded-lg md:rounded-xl text-white mb-3 md:mb-4">
                         <div className="flex items-center gap-2 mb-2.5">
                           <div className="p-1.5 bg-white/10 rounded-lg text-teal-400"><Pill size={12} /></div>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-teal-200">Medicine Course</span>
+                          <span className="text-[14px] font-black uppercase tracking-widest text-teal-200">Medicine Course</span>
                         </div>
                         <div className="space-y-2 md:space-y-2.5">
                           {record.medicines?.map((med, idx) => (
                             <div key={idx} className="flex justify-between items-center py-1.5 md:py-2 border-b border-white/5 last:border-0">
                               <div>
-                                <p className="font-black text-[10px] md:text-xs">{med.name}</p>
-                                <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase">{med.time}</p>
+                                <p className="font-black text-[14px] md:text-[14px]">{med.name}</p>
+                                <p className="text-[14px] md:text-[14px] font-bold text-slate-400 uppercase">{med.time}</p>
                               </div>
                               <div className="text-right">
-                                <p className="font-black text-teal-400 text-[10px] md:text-xs">{med.amount}</p>
-                                <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase">Total: {med.total}</p>
+                                <p className="font-black text-teal-400 text-[14px] md:text-[14px]">{med.amount}</p>
+                                <p className="text-[14px] md:text-[14px] font-bold text-slate-500 uppercase">Total: {med.total}</p>
                               </div>
                             </div>
                           ))}
@@ -276,13 +276,13 @@ const HealthLocker = () => {
 
                       <div className="space-y-2 md:space-y-2.5">
                         <div className="p-2.5 md:p-3 bg-slate-50 rounded-lg md:rounded-xl border border-slate-100">
-                          <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
-                          <p className="text-[10px] md:text-xs font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'N/A'}</p>
+                          <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
+                          <p className="text-[14px] md:text-[14px] font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'N/A'}</p>
                         </div>
                         {record.notes && (
                           <div className="p-2.5 md:p-3 bg-slate-50 rounded-lg md:rounded-xl border border-slate-100">
-                            <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Instructions</p>
-                            <p className="text-[10px] md:text-xs font-bold text-slate-700 leading-relaxed italic">"{record.notes}"</p>
+                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Instructions</p>
+                            <p className="text-[14px] md:text-[14px] font-bold text-slate-700 leading-relaxed italic">"{record.notes}"</p>
                           </div>
                         )}
                       </div>
@@ -305,14 +305,14 @@ const HealthLocker = () => {
                           <FileText size={18} className="hidden md:block" />
                         </div>
                         <div className="text-right">
-                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                          <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
                             {doc.fileType}
                           </span>
                         </div>
                       </div>
 
                       <h4 className="text-sm md:text-base font-black text-slate-900 tracking-tight mb-0.5 md:mb-1 group-hover:text-teal-600 transition-colors">{doc.title}</h4>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4">
+                      <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4">
                         {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </p>
 
@@ -333,7 +333,7 @@ const HealthLocker = () => {
                       <div className="mt-auto flex gap-2">
                         <button 
                           onClick={() => setSelectedReportIndex(i)}
-                          className="flex-1 py-2 md:py-2.5 bg-slate-900 text-white rounded-lg md:rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 md:py-2.5 bg-slate-900 text-white rounded-lg md:rounded-xl font-black text-[14px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                         >
                           <Eye size={11} /> Open
                         </button>
@@ -362,7 +362,7 @@ const HealthLocker = () => {
                     <div key={i} className="group relative flex gap-3 md:gap-5 items-start">
                       <div className="hidden md:flex flex-col items-center">
                         <div className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-sm group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                          <span className="text-[8px] font-black uppercase tracking-tighter opacity-60">{new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { month: 'short' })}</span>
+                          <span className="text-[14px] font-black uppercase tracking-tighter opacity-60">{new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { month: 'short' })}</span>
                           <span className="text-lg font-black leading-none">{new Date(record.date || record.visitDate).getDate()}</span>
                         </div>
                       </div>
@@ -371,28 +371,28 @@ const HealthLocker = () => {
                         <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5 md:mb-4">
                           <div>
                             <div className="flex items-center gap-2 mb-1.5">
-                              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-teal-100">Consultation Session</span>
-                              <span className="md:hidden px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded text-[7px] font-bold">
+                              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">Consultation Session</span>
+                              <span className="md:hidden px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded text-[14px] font-bold">
                                 {new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                               </span>
                             </div>
                             <h4 className="text-sm md:text-base font-black text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
-                            <p className="text-[9px] md:text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{record.clinicName}</p>
+                            <p className="text-[14px] md:text-[14px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{record.clinicName}</p>
                           </div>
                           <div className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-2.5 py-1.5 rounded-lg border border-teal-100">
                             <Activity size={11} />
-                            <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest">Verified</span>
+                            <span className="text-[14px] md:text-[14px] font-black uppercase tracking-widest">Verified</span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                           <div className="p-2.5 md:p-3 bg-slate-50/50 rounded-lg md:rounded-xl border border-slate-100">
-                            <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnostic Analysis</p>
-                            <p className="text-[10px] md:text-xs font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'General follow-up consultation'}</p>
+                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnostic Analysis</p>
+                            <p className="text-[14px] md:text-[14px] font-bold text-slate-700 leading-relaxed">{record.diagnosis || 'General follow-up consultation'}</p>
                           </div>
                           <div className="p-2.5 md:p-3 bg-slate-50/50 rounded-lg md:rounded-xl border border-slate-100">
-                            <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Reported Symptoms</p>
-                            <p className="text-[10px] md:text-xs font-bold text-slate-700 leading-relaxed italic">"{record.symptoms || 'None reported'}"</p>
+                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-1">Reported Symptoms</p>
+                            <p className="text-[14px] md:text-[14px] font-bold text-slate-700 leading-relaxed italic">"{record.symptoms || 'None reported'}"</p>
                           </div>
                         </div>
                       </div>
@@ -421,7 +421,7 @@ const HealthLocker = () => {
 const TabBtn = ({ active, onClick, icon, label }) => (
   <button 
     onClick={onClick}
-    className={`px-3 md:px-5 py-2 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 snap-start ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+    className={`px-3 md:px-5 py-2 rounded-lg text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 snap-start ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
   >
     {icon} {label}
   </button>
@@ -440,11 +440,11 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
     <div className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl border ${colors[color]} shadow-sm transition-all hover:scale-[1.03] duration-300`}>
       <div className="flex items-center gap-1.5 mb-1.5 md:mb-2">
         <div className={`p-1.5 rounded-md md:rounded-lg bg-white/50 shadow-sm`}>{icon}</div>
-        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest">{label}</span>
+        <span className="text-[14px] md:text-[14px] font-black uppercase tracking-widest">{label}</span>
       </div>
       <div className="flex items-baseline gap-0.5">
         <span className="text-lg md:text-2xl font-black tracking-tighter">{val}</span>
-        <span className="text-[7px] md:text-[9px] font-bold opacity-60 uppercase">{unit}</span>
+        <span className="text-[14px] md:text-[14px] font-bold opacity-60 uppercase">{unit}</span>
       </div>
     </div>
   );
@@ -456,7 +456,7 @@ const EmptyState = ({ message }) => (
       <Database size={28} className="text-slate-200" />
     </div>
     <p className="text-sm font-black text-slate-900 tracking-tight mb-1">{message}</p>
-    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No active records in this section</p>
+    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">No active records in this section</p>
   </div>
 );
 

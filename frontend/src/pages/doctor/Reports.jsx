@@ -134,7 +134,7 @@ const Reports = () => {
                 <button
                   type="submit"
                   disabled={lockerLoading}
-                  className="flex items-center justify-center gap-2.5 px-8 py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-60 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-teal-500/20 active:scale-95 whitespace-nowrap"
+                  className="flex items-center justify-center gap-2.5 px-8 py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-60 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest transition-all shadow-lg shadow-teal-500/20 active:scale-95 whitespace-nowrap"
                 >
                   {lockerLoading
                     ? <RefreshCw size={16} className="animate-spin" />
@@ -147,7 +147,7 @@ const Reports = () => {
               {lockerError && (
                 <div className="mt-4 flex items-start gap-3 p-4 bg-red-500/10 border border-red-400/20 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
                   <AlertCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-red-300 text-xs font-bold leading-relaxed">{lockerError}</p>
+                  <p className="text-red-300 text-[14px] font-bold leading-relaxed">{lockerError}</p>
                   <button onClick={() => setLockerError('')} className="ml-auto text-red-400/60 hover:text-red-300">
                     <X size={14} />
                   </button>
@@ -164,7 +164,7 @@ const Reports = () => {
                 ].map((tag) => (
                   <div key={tag.label} className="flex items-center gap-2 px-3.5 py-2 bg-white/8 border border-white/10 rounded-xl">
                     <span className="text-teal-400">{tag.icon}</span>
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{tag.label}</span>
+                    <span className="text-[14px] font-black text-slate-300 uppercase tracking-widest">{tag.label}</span>
                   </div>
                 ))}
               </div>
@@ -222,10 +222,10 @@ const Reports = () => {
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-slate-50/60 border-b border-slate-100">
                     <tr>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient Details</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Test Information</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                      <th className="px-6 py-4 text-[14px] font-black text-slate-400 uppercase tracking-widest">Patient Details</th>
+                      <th className="px-6 py-4 text-[14px] font-black text-slate-400 uppercase tracking-widest">Test Information</th>
+                      <th className="px-6 py-4 text-[14px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                      <th className="px-6 py-4 text-[14px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -233,12 +233,12 @@ const Reports = () => {
                       <tr key={r._id} className="hover:bg-slate-50/40 transition-colors group">
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[14px] group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                               {(r.patientName || 'UP').substring(0, 2).toUpperCase()}
                             </div>
                             <div>
                               <p className="text-sm font-black text-slate-900">{r.patientName || 'Unknown Patient'}</p>
-                              <p className="text-[10px] font-bold text-slate-400 tracking-wider mt-0.5">{r.patientPhone || 'No Phone'}</p>
+                              <p className="text-[14px] font-bold text-slate-400 tracking-wider mt-0.5">{r.patientPhone || 'No Phone'}</p>
                             </div>
                           </div>
                         </td>
@@ -248,21 +248,21 @@ const Reports = () => {
                               <Activity size={13} />
                             </div>
                             <div>
-                              <p className="text-xs font-black text-slate-700 uppercase tracking-wide">{r.requiredTest}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Laboratory Diagnostic</p>
+                              <p className="text-[14px] font-black text-slate-700 uppercase tracking-wide">{r.requiredTest}</p>
+                              <p className="text-[14px] font-bold text-slate-400 uppercase mt-0.5">Laboratory Diagnostic</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
-                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Published</span>
+                            <span className="text-[14px] font-black text-green-600 uppercase tracking-widest">Published</span>
                           </div>
                         </td>
                         <td className="px-6 py-5 text-right">
                           <button
                             onClick={() => navigate(`/doctor/records?phone=${r.patientPhone}`)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-700 uppercase tracking-widest hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm active:scale-95"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[14px] font-black text-slate-700 uppercase tracking-widest hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm active:scale-95"
                           >
                             <FileCheck size={13} /> View Report
                           </button>

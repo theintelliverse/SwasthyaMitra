@@ -13,12 +13,12 @@ const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const InputField = ({ label, icon: Icon, children, note }) => (
   <div>
-    <label className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">
+    <label className="flex items-center gap-1.5 text-[14px] font-black text-slate-500 uppercase tracking-widest mb-1.5">
       {Icon && <Icon size={9} className="text-teal-500" />}
       {label}
     </label>
     {children}
-    {note && <p className="text-[9px] text-slate-400 font-bold mt-1">{note}</p>}
+    {note && <p className="text-[14px] text-slate-400 font-bold mt-1">{note}</p>}
   </div>
 );
 
@@ -152,22 +152,22 @@ const Settings = () => {
                   <div className="p-1.5 bg-teal-600 rounded-lg">
                     <FlaskConical size={13} className="text-white" />
                   </div>
-                  <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest">Lab Settings</span>
+                  <span className="text-[14px] font-black text-teal-400 uppercase tracking-widest">Lab Settings</span>
                 </div>
                 <h1 className="text-xl font-black text-white tracking-tight">Configure your laboratory preferences</h1>
-                <p className="text-slate-400 text-[10px] font-bold mt-1 uppercase tracking-wider">Manage lab identity, staff profile, and report settings</p>
+                <p className="text-slate-400 text-[14px] font-bold mt-1 uppercase tracking-wider">Manage lab identity, staff profile, and report settings</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-3.5 py-2 bg-white/10 hover:bg-red-500/20 text-white hover:text-red-300 border border-white/10 hover:border-red-500/30 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-95"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-white/10 hover:bg-red-500/20 text-white hover:text-red-300 border border-white/10 hover:border-red-500/30 font-black text-[14px] uppercase tracking-widest rounded-xl transition-all active:scale-95"
                 >
                   <LogOut size={12} /> Sign Out
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || loading}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white font-black text-[9px] uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/30 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white font-black text-[14px] uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/30 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {saving ? (
                     <RefreshCcw size={12} className="animate-spin" />
@@ -185,7 +185,7 @@ const Settings = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
               <RefreshCcw size={28} className="text-teal-500 animate-spin" />
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading settings...</p>
+              <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">Loading settings...</p>
             </div>
           ) : (
             <>
@@ -199,7 +199,7 @@ const Settings = () => {
                   </div>
                   <div>
                     <h2 className="text-sm font-black text-slate-900">Laboratory Details</h2>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Identity & hours of operation</p>
+                    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Identity & hours of operation</p>
                   </div>
                 </div>
 
@@ -273,7 +273,7 @@ const Settings = () => {
                   </div>
                   <div>
                     <h2 className="text-sm font-black text-slate-900">Technician Profile</h2>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Staff identity & credentials</p>
+                    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Staff identity & credentials</p>
                   </div>
                 </div>
 
@@ -339,7 +339,7 @@ const Settings = () => {
                   </div>
                   <div>
                     <h2 className="text-sm font-black text-slate-900">Digital Lab Report</h2>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Report generation & delivery preferences</p>
+                    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Report generation & delivery preferences</p>
                   </div>
                 </div>
 
@@ -358,19 +358,19 @@ const Settings = () => {
                       </div>
                       <div>
                         <p className="text-sm font-black text-slate-900">Fill Digital Lab Report</p>
-                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">
+                        <p className="text-[14px] font-bold text-slate-500 mt-0.5">
                           Digitally type test values and observations — generates a structured PDF report for the patient.
                         </p>
                         {userData.digitalReportEnabled && (
                           <div className="flex items-center gap-1 mt-1.5">
                             <CheckCircle2 size={10} className="text-teal-600" />
-                            <span className="text-[9px] font-black text-teal-600 uppercase tracking-wider">Active — reports will be generated digitally</span>
+                            <span className="text-[14px] font-black text-teal-600 uppercase tracking-wider">Active — reports will be generated digitally</span>
                           </div>
                         )}
                         {!userData.digitalReportEnabled && (
                           <div className="flex items-center gap-1 mt-1.5">
                             <AlertCircle size={10} className="text-slate-400" />
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Disabled — upload scanned reports manually</span>
+                            <span className="text-[14px] font-black text-slate-400 uppercase tracking-wider">Disabled — upload scanned reports manually</span>
                           </div>
                         )}
                       </div>
@@ -385,7 +385,7 @@ const Settings = () => {
                   {/* Info note */}
                   <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-2.5">
                     <Shield size={12} className="text-teal-500 mt-0.5 shrink-0" />
-                    <p className="text-[10px] font-bold text-slate-500 leading-relaxed">
+                    <p className="text-[14px] font-bold text-slate-500 leading-relaxed">
                       When enabled, lab staff can fill in test parameters directly in the portal. The system auto-generates a printable/shareable PDF with the lab's branding and the Authorized Signatory's name.
                     </p>
                   </div>
@@ -396,14 +396,14 @@ const Settings = () => {
               <div className="flex justify-end gap-3 pb-6">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-red-100 text-red-500 hover:bg-red-50 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-95"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-red-100 text-red-500 hover:bg-red-50 font-black text-[14px] uppercase tracking-widest rounded-xl transition-all active:scale-95"
                 >
                   <LogOut size={11} /> Sign Out
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || loading}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-teal-700 text-white font-black text-[9px] uppercase tracking-widest rounded-xl shadow-lg shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-teal-700 text-white font-black text-[14px] uppercase tracking-widest rounded-xl shadow-lg shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {saving ? <RefreshCcw size={11} className="animate-spin" /> : <Save size={11} />}
                   {saving ? 'Saving...' : 'Save All Changes'}

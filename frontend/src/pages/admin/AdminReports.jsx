@@ -136,7 +136,7 @@ const AdminReports = () => {
                 <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                                 Analytics Hub
                             </span>
                             {isSyncing && <div className="w-2 h-2 bg-teal-500 rounded-full animate-ping"></div>}
@@ -170,7 +170,7 @@ const AdminReports = () => {
                                 <button 
                                     onClick={() => fetchPreviewData()}
                                     disabled={loading || !dates.start || !dates.end}
-                                    className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-slate-800 transition-all disabled:opacity-30 active:scale-95"
+                                    className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-[14px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-slate-800 transition-all disabled:opacity-30 active:scale-95"
                                 >
                                     {loading ? <Loader2 size={14} className="animate-spin" /> : <CalendarSearch size={14} />}
                                     {loading ? 'Accessing...' : 'Review Intelligence'}
@@ -179,7 +179,7 @@ const AdminReports = () => {
                                 <button 
                                     onClick={handleDownload}
                                     disabled={isDownloading || !hasSearched}
-                                    className="w-full bg-teal-600 text-white py-3.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/10 disabled:opacity-30 active:scale-95"
+                                    className="w-full bg-teal-600 text-white py-3.5 rounded-xl font-black text-[14px] uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/10 disabled:opacity-30 active:scale-95"
                                 >
                                     {isDownloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                                     {isDownloading ? 'Generating...' : 'Export CSV Report'}
@@ -187,7 +187,7 @@ const AdminReports = () => {
                             </div>
                             
                             <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p className="text-[9px] font-bold text-slate-400 leading-normal uppercase tracking-wider">
+                                <p className="text-[14px] font-bold text-slate-400 leading-normal uppercase tracking-wider">
                                     Define a date range to unlock medical logs, staff productivity metrics, and duty cycles.
                                 </p>
                             </div>
@@ -197,11 +197,11 @@ const AdminReports = () => {
                         <div className="bg-slate-900 p-5 rounded-3xl text-white overflow-hidden relative group">
                             <div className="relative z-10">
                                 <h4 className="text-base font-black mb-0.5">Operational Health</h4>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Logs Processed</p>
+                                <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Logs Processed</p>
                                 <div className="text-3xl font-black text-teal-500 mb-1.5">
                                     {data.medicalRecords.length + data.sessions.length}+
                                 </div>
-                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                                <p className="text-[14px] font-bold text-slate-500 uppercase tracking-widest">
                                     {hasSearched ? `Range: ${dates.start} to ${dates.end}` : "Today's Clinical Activity"}
                                 </p>
                             </div>
@@ -248,7 +248,7 @@ const AdminReports = () => {
                                 ) : (
                                     <table className="w-full text-left border-separate border-spacing-y-4">
                                         <thead className="sticky top-0 bg-white z-10">
-                                            <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            <tr className="text-[14px] font-black uppercase tracking-widest text-slate-400">
                                                 {view === 'medical' ? (
                                                     <>
                                                         <th className="px-6 py-4">Patient Case</th>
@@ -275,14 +275,14 @@ const AdminReports = () => {
                                                 <tr key={item._id} className="group hover:scale-[1.005] transition-all duration-300">
                                                     <td className="px-6 py-6 bg-slate-50/50 rounded-l-[2rem] border-y border-l border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xs font-black text-slate-400 border border-slate-100 uppercase group-hover:text-teal-600 transition-colors">
+                                                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[14px] font-black text-slate-400 border border-slate-100 uppercase group-hover:text-teal-600 transition-colors">
                                                                 {(item.patientName || item.name || item.staffId?.name || '??').substring(0, 2)}
                                                             </div>
                                                             <div>
                                                                 <p className="font-black text-sm text-slate-900">
                                                                     {item.patientName || item.name || item.staffId?.name}
                                                                 </p>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">
                                                                     {item.patientPhone || item.role || item.staffId?.role}
                                                                 </p>
                                                             </div>
@@ -290,20 +290,20 @@ const AdminReports = () => {
                                                     </td>
                                                     <td className="px-6 py-6 bg-slate-50/50 border-y border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30">
                                                         {view === 'medical' ? (
-                                                            <span className="text-xs font-black text-teal-600">Dr. {item.doctorId?.name}</span>
+                                                            <span className="text-[14px] font-black text-teal-600">Dr. {item.doctorId?.name}</span>
                                                         ) : view === 'staff' ? (
                                                             <div className="flex items-center gap-2">
                                                                 <Timer size={14} className="text-slate-300" />
-                                                                <span className="text-xs font-black text-slate-700">{getAvgWorkTime(item._id)}</span>
+                                                                <span className="text-[14px] font-black text-slate-700">{getAvgWorkTime(item._id)}</span>
                                                             </div>
                                                         ) : (
                                                             <div className="flex flex-col gap-1 items-center">
-                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600 bg-white px-3 py-1 rounded-lg border border-slate-100">
+                                                                <div className="flex items-center gap-2 text-[14px] font-bold text-slate-600 bg-white px-3 py-1 rounded-lg border border-slate-100">
                                                                     <LogIn size={10} className="text-green-500" />
                                                                     {new Date(item.loginTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                                                 </div>
                                                                 {item.logoutTime && (
-                                                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                                                                    <div className="flex items-center gap-2 text-[14px] font-bold text-slate-400">
                                                                         <LogOut size={10} className="text-rose-400" />
                                                                         {new Date(item.logoutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                                                     </div>
@@ -313,11 +313,11 @@ const AdminReports = () => {
                                                     </td>
                                                     <td className="px-6 py-6 bg-slate-50/50 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-teal-100 group-hover:bg-teal-50/30 text-right">
                                                         {view === 'medical' ? (
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(item.visitDate).toLocaleDateString()}</span>
+                                                            <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest">{new Date(item.visitDate).toLocaleDateString()}</span>
                                                         ) : view === 'staff' ? (
                                                             <div className={`w-2.5 h-2.5 rounded-full inline-block ${item.isActive !== false ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`}></div>
                                                         ) : (
-                                                            <span className="text-xs font-black text-teal-600">
+                                                            <span className="text-[14px] font-black text-teal-600">
                                                                 {item.sessionDurationMinutes ? `${item.sessionDurationMinutes}m` : '--'}
                                                             </span>
                                                         )}
@@ -329,7 +329,7 @@ const AdminReports = () => {
                                                     <td colSpan="3" className="text-center py-32">
                                                         <div className="flex flex-col items-center opacity-20">
                                                             <ShieldCheck size={48} className="mb-4" />
-                                                            <p className="text-xs font-black uppercase tracking-widest">Vault Empty</p>
+                                                            <p className="text-[14px] font-black uppercase tracking-widest">Vault Empty</p>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -350,7 +350,7 @@ const AdminReports = () => {
 const TabBtn = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick}
-        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${active ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+        className={`px-8 py-3 rounded-xl text-[14px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${active ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
     >
         {icon} {label}
     </button>
@@ -358,10 +358,10 @@ const TabBtn = ({ active, onClick, icon, label }) => (
 
 const DateInput = ({ label, onChange }) => (
     <div className="group">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2.5 block mb-1.5 group-focus-within:text-teal-600 transition-colors">{label}</label>
+        <label className="text-[14px] font-black uppercase tracking-widest text-slate-400 ml-2.5 block mb-1.5 group-focus-within:text-teal-600 transition-colors">{label}</label>
         <input 
             type="date" 
-            className="w-full bg-slate-50 border border-slate-100 p-3 rounded-xl outline-none focus:border-teal-500 focus:bg-white text-xs font-bold transition-all shadow-sm"
+            className="w-full bg-slate-50 border border-slate-100 p-3 rounded-xl outline-none focus:border-teal-500 focus:bg-white text-[14px] font-bold transition-all shadow-sm"
             onChange={onChange}
         />
     </div>

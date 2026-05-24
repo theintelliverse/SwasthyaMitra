@@ -108,7 +108,7 @@ const Terms = () => {
                 </div>
                 <Link
                     to="/"
-                    className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-marigold transition-all"
+                    className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[14px] font-black uppercase tracking-widest hover:bg-marigold transition-all"
                 >
                     Back to Home
                 </Link>
@@ -117,7 +117,7 @@ const Terms = () => {
             <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1">
                 <div className="bg-white border border-sandstone rounded-3xl p-8 md:p-10 shadow-sm space-y-8">
                     <div className="rounded-2xl bg-parchment border border-sandstone/70 p-6 md:p-8">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">Legal</p>
+                        <p className="text-[14px] font-black uppercase tracking-widest text-khaki mb-2">Legal</p>
                         <h2 className="font-heading text-4xl md:text-5xl leading-tight italic mb-3">
                             Terms of <span className="text-marigold not-italic">Service</span>
                         </h2>
@@ -126,14 +126,14 @@ const Terms = () => {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-2 mt-5">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-teak bg-white border border-sandstone/70 rounded-full px-3 py-1">
+                            <span className="text-[14px] font-black uppercase tracking-widest text-teak bg-white border border-sandstone/70 rounded-full px-3 py-1">
                                 Last Updated: {lastUpdated}
                             </span>
                             {sections.map((section) => (
                                 <a
                                     key={section.id}
                                     href={`#terms-${section.id}`}
-                                    className="text-[10px] font-black uppercase tracking-widest text-khaki hover:text-teak bg-white/80 border border-sandstone/70 rounded-full px-3 py-1 transition-colors"
+                                    className="text-[14px] font-black uppercase tracking-widest text-khaki hover:text-teak bg-white/80 border border-sandstone/70 rounded-full px-3 py-1 transition-colors"
                                 >
                                     {section.title}
                                 </a>
@@ -147,7 +147,7 @@ const Terms = () => {
                                 key={item}
                                 className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-4"
                             >
-                                <p className="text-xs font-black uppercase tracking-widest text-teak">{item}</p>
+                                <p className="text-[14px] font-black uppercase tracking-widest text-teak">{item}</p>
                             </div>
                         ))}
                     </div>
@@ -166,17 +166,17 @@ const Terms = () => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-teak/80 via-teak/35 to-transparent"></div>
                         <div className="absolute top-4 left-4">
-                            <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                            <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1 rounded-full text-[14px] font-black uppercase tracking-widest">
                                 Terms Overview
                             </span>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
                             <div>
                                 <p className="text-white font-heading text-2xl md:text-3xl drop-shadow-lg">{activeImage.title}</p>
-                                <p className="text-white/90 text-xs md:text-sm font-semibold mt-1">Guidelines for safe and fair platform use</p>
+                                <p className="text-white/90 text-[14px] md:text-sm font-semibold mt-1">Guidelines for safe and fair platform use</p>
                             </div>
                         </div>
-                        <p className="absolute bottom-4 left-4 right-4 text-white text-xs md:text-sm font-black uppercase tracking-widest">
+                        <p className="absolute bottom-4 left-4 right-4 text-white text-[14px] md:text-sm font-black uppercase tracking-widest">
                             {activeImage.caption}
                         </p>
 
@@ -229,7 +229,7 @@ const Terms = () => {
                                     loading="lazy"
                                     referrerPolicy="no-referrer"
                                 />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-teak">{image.title}</p>
+                                <p className="text-[14px] font-black uppercase tracking-widest text-teak">{image.title}</p>
                             </button>
                         ))}
                     </div>
@@ -241,7 +241,7 @@ const Terms = () => {
                                 id={`terms-${section.id}`}
                                 className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6 hover:border-marigold/60 transition-colors"
                             >
-                                <p className="text-[10px] font-black uppercase tracking-widest text-khaki mb-2">
+                                <p className="text-[14px] font-black uppercase tracking-widest text-khaki mb-2">
                                     Section {index + 1}
                                 </p>
                                 <h3 className="font-heading text-2xl text-teak mb-2">{section.title}</h3>

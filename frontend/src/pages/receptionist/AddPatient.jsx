@@ -163,7 +163,7 @@ const AddPatient = () => {
         Swal.fire({
           icon: formData.isEmergency ? 'warning' : 'success',
           title: formData.isEmergency ? '🚨 Emergency Token Issued' : 'Token Generated Successfully',
-          html: `<p class="font-bold text-lg">Token Number: ${res.data.queueEntry?.tokenNumber || 'TK'}</p><p class="text-xs mt-2 text-slate-500">${formData.patientName} is now active in queue.</p>`,
+          html: `<p class="font-bold text-lg">Token Number: ${res.data.queueEntry?.tokenNumber || 'TK'}</p><p class="text-[14px] mt-2 text-slate-500">${formData.patientName} is now active in queue.</p>`,
           confirmButtonColor: '#0F766E',
           background: '#EEF6FA'
         });
@@ -207,16 +207,16 @@ const AddPatient = () => {
             <div>
               <button 
                 onClick={() => navigate('/receptionist/dashboard')}
-                className="flex items-center gap-2 text-[10px] font-bold text-khaki hover:text-marigold transition-colors mb-2 uppercase tracking-wider"
+                className="flex items-center gap-2 text-[14px] font-bold text-khaki hover:text-marigold transition-colors mb-2 uppercase tracking-wider"
               >
                 <ArrowLeft size={12} /> Back to Dashboard
               </button>
               <h1 className="text-2xl font-black tracking-tight text-teak leading-tight">Patient Entry Portal</h1>
-              <p className="text-xs text-khaki font-medium mt-1">Register walk-in patients and generate live queue tokens instantly.</p>
+              <p className="text-[14px] text-khaki font-medium mt-1">Register walk-in patients and generate live queue tokens instantly.</p>
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-marigold/10 text-marigold rounded-full text-[9px] font-black uppercase tracking-widest border border-marigold/10 flex items-center gap-2">
+              <span className="px-3 py-1 bg-marigold/10 text-marigold rounded-full text-[14px] font-black uppercase tracking-widest border border-marigold/10 flex items-center gap-2">
                 <Sparkles size={10} className="animate-pulse" /> Live Synchronization
               </span>
             </div>
@@ -236,7 +236,7 @@ const AddPatient = () => {
                     <User size={18} className="text-marigold" /> Basic Profile Info
                   </h2>
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-khaki uppercase tracking-widest">Emergency Priority?</span>
+                    <span className="text-[14px] font-black text-khaki uppercase tracking-widest">Emergency Priority?</span>
                     <button 
                       type="button" 
                       onClick={() => setFormData({ ...formData, isEmergency: !formData.isEmergency })}
@@ -250,12 +250,12 @@ const AddPatient = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Patient Full Name *</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Patient Full Name *</label>
                     <div className="relative">
                       <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
                       <input 
                         type="text" required placeholder="e.g. Sameer Dixit"
-                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                         value={formData.patientName}
                         onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
                       />
@@ -264,12 +264,12 @@ const AddPatient = () => {
 
                   {/* Phone */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Mobile Number *</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Mobile Number *</label>
                     <div className="relative">
                       <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" />
                       <input 
                         type="tel" required placeholder="10-digit mobile number"
-                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                        className="w-full pl-10 pr-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                         value={formData.patientPhone}
                         onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
                       />
@@ -278,10 +278,10 @@ const AddPatient = () => {
 
                   {/* Age */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Patient Age</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Patient Age</label>
                     <input 
                       type="number" placeholder="Age in years"
-                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                       value={formData.patientAge}
                       onChange={(e) => setFormData({ ...formData, patientAge: e.target.value })}
                     />
@@ -289,9 +289,9 @@ const AddPatient = () => {
 
                   {/* Gender */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Biological Gender</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Biological Gender</label>
                     <select 
-                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                       value={formData.patientGender}
                       onChange={(e) => setFormData({ ...formData, patientGender: e.target.value })}
                     >
@@ -303,9 +303,9 @@ const AddPatient = () => {
 
                   {/* Blood Group */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Blood Group</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Blood Group</label>
                     <select 
-                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                       value={formData.patientBloodGroup}
                       onChange={(e) => setFormData({ ...formData, patientBloodGroup: e.target.value })}
                     >
@@ -317,9 +317,9 @@ const AddPatient = () => {
 
                   {/* Visit Type */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-khaki ml-2">Visit Description</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Visit Description</label>
                     <select 
-                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-bold text-teak"
+                      className="w-full px-3 py-2.5 bg-parchment/30 border border-sandstone rounded-xl outline-none focus:border-marigold text-[14px] font-bold text-teak"
                       value={formData.visitType}
                       onChange={(e) => setFormData({ ...formData, visitType: e.target.value })}
                     >
@@ -337,37 +337,37 @@ const AddPatient = () => {
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">BP (eg. 120/80)</span>
+                      <span className="text-[14px] font-black uppercase tracking-widest text-khaki ml-1">BP (eg. 120/80)</span>
                       <input 
                         type="text" placeholder="120/80"
-                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-[14px] font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.bloodPressure}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, bloodPressure: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Pulse (bpm)</span>
+                      <span className="text-[14px] font-black uppercase tracking-widest text-khaki ml-1">Pulse (bpm)</span>
                       <input 
                         type="text" placeholder="72"
-                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-[14px] font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.pulseRate}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, pulseRate: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Temp (°F)</span>
+                      <span className="text-[14px] font-black uppercase tracking-widest text-khaki ml-1">Temp (°F)</span>
                       <input 
                         type="text" placeholder="98.6"
-                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-[14px] font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.temperature}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, temperature: e.target.value } })}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-khaki ml-1">Sugar (mg/dL)</span>
+                      <span className="text-[14px] font-black uppercase tracking-widest text-khaki ml-1">Sugar (mg/dL)</span>
                       <input 
                         type="text" placeholder="100"
-                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-xs font-bold text-teak placeholder:text-khaki/30"
+                        className="px-3 py-2 bg-teal-50/10 border border-teal-100 rounded-lg outline-none focus:border-teal-600 text-[14px] font-bold text-teak placeholder:text-khaki/30"
                         value={formData.vitals.sugarLevel}
                         onChange={(e) => setFormData({ ...formData, vitals: { ...formData.vitals, sugarLevel: e.target.value } })}
                       />
@@ -382,7 +382,7 @@ const AddPatient = () => {
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {loadingDoctors ? (
-                      <div className="py-2 text-center text-[10px] animate-pulse font-medium text-slate-400">Loading Doctors...</div>
+                      <div className="py-2 text-center text-[14px] animate-pulse font-medium text-slate-400">Loading Doctors...</div>
                     ) : (
                       doctors.map(doc => (
                         <div 
@@ -391,8 +391,8 @@ const AddPatient = () => {
                           className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${formData.doctorId === doc._id ? 'border-teal-600 bg-teal-50/20' : 'border-sandstone bg-parchment/10 hover:border-marigold'}`}
                         >
                           <div>
-                            <p className="text-xs font-black text-teak leading-tight">Dr. {doc.name}</p>
-                            <p className="text-[9px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
+                            <p className="text-[14px] font-black text-teak leading-tight">Dr. {doc.name}</p>
+                            <p className="text-[14px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
                           </div>
                           <div className={`w-2.5 h-2.5 rounded-full ${doc.isAvailable ? 'bg-green-500 shadow-sm' : 'bg-slate-200'}`} />
                         </div>
@@ -406,7 +406,7 @@ const AddPatient = () => {
                   <button 
                     type="submit"
                     disabled={submitting}
-                    className={`w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${formData.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold text-white hover:bg-teak'} disabled:opacity-50 flex items-center justify-center gap-2`}
+                    className={`w-full py-3.5 rounded-xl font-black text-[14px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${formData.isEmergency ? 'bg-red-600 text-white' : 'bg-marigold text-white hover:bg-teak'} disabled:opacity-50 flex items-center justify-center gap-2`}
                   >
                     {submitting ? (
                       <><RefreshCw size={12} className="animate-spin" /> Issuing Access Token...</>
@@ -425,7 +425,7 @@ const AddPatient = () => {
               <div className="bg-white border border-sandstone rounded-[2.5rem] p-8 shadow-sm space-y-6">
                 <div>
                   <h3 className="text-xl font-black text-slate-900 leading-none">Auto-Fill Sync</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Lookup patient digital locker</p>
+                  <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Lookup patient digital locker</p>
                 </div>
                 
                 <div className="space-y-4">
@@ -442,7 +442,7 @@ const AddPatient = () => {
                   <button 
                     onClick={handleSearchPatient}
                     disabled={searching}
-                    className="w-full py-4 bg-teak hover:bg-marigold text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                    className="w-full py-4 bg-teak hover:bg-marigold text-white rounded-2xl font-black text-[14px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                   >
                     {searching ? (
                       <RefreshCw size={14} className="animate-spin" />
@@ -456,8 +456,8 @@ const AddPatient = () => {
                 <div className="p-4 bg-teal-50/20 border border-teal-100 rounded-2xl flex items-start gap-3">
                   <ShieldCheck size={20} className="text-teal-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-black text-teal-800 uppercase tracking-wider">Locker Sync Enabled</p>
-                    <p className="text-[10px] text-teal-700 mt-1 leading-relaxed">If the patient has set up a SwasthyaMitra health locker, searching their phone will instantly pull and auto-fill details, saving reception setup time.</p>
+                    <p className="text-[14px] font-black text-teal-800 uppercase tracking-wider">Locker Sync Enabled</p>
+                    <p className="text-[14px] text-teal-700 mt-1 leading-relaxed">If the patient has set up a SwasthyaMitra health locker, searching their phone will instantly pull and auto-fill details, saving reception setup time.</p>
                   </div>
                 </div>
               </div>

@@ -87,12 +87,12 @@ const MedicalHistory = () => {
                   <div className="flex flex-col lg:flex-row justify-between gap-8 relative z-10">
                     <div className="flex-grow">
                       <div className="flex items-center gap-4 mb-4">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-white bg-teak px-4 py-1.5 rounded-full">
+                          <span className="text-[14px] font-black uppercase tracking-widest text-white bg-teak px-4 py-1.5 rounded-full">
                             Token #{record.tokenNumber}
                           </span>
                           <div className="flex items-center gap-2 text-khaki">
                              <Calendar size={14} />
-                             <span className="text-xs font-bold">
+                             <span className="text-[14px] font-bold">
                                 {new Date(record.visitDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                              </span>
                           </div>
@@ -104,7 +104,7 @@ const MedicalHistory = () => {
                         <div className="flex items-center gap-2 text-khaki text-sm font-bold">
                            <Phone size={14} /> {record.patientPhone}
                         </div>
-                        <div className="text-xs font-medium text-khaki/60">
+                        <div className="text-[14px] font-medium text-khaki/60">
                            Session: {record.duration || '--'} mins
                         </div>
                       </div>
@@ -117,7 +117,7 @@ const MedicalHistory = () => {
                       {/* Action Button: View Locker */}
                       <button 
                         onClick={() => setSelectedPatientPhone(record.patientPhone)}
-                        className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-marigold hover:text-teak transition-colors"
+                        className="mt-6 flex items-center gap-2 text-[14px] font-black uppercase tracking-[0.2em] text-marigold hover:text-teak transition-colors"
                       >
                         📂 Open Digital Health Locker →
                       </button>
@@ -125,14 +125,14 @@ const MedicalHistory = () => {
 
                     {/* Doctor Info Sidebar on Card */}
                     <div className="lg:w-64 shrink-0 flex flex-col justify-center bg-parchment/50 p-6 rounded-[2rem] border border-sandstone/30">
-                      <p className="text-[9px] font-black uppercase text-khaki tracking-widest mb-3">Physician In-Charge</p>
+                      <p className="text-[14px] font-black uppercase text-khaki tracking-widest mb-3">Physician In-Charge</p>
                       <div className="flex items-center gap-3">
                          <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center text-white font-heading">
                             {record.doctorId?.name?.charAt(0)}
                          </div>
                          <div>
                             <p className="font-bold text-sm text-teak leading-tight">Dr. {record.doctorId?.name}</p>
-                            <p className="text-[10px] text-khaki font-medium mt-0.5">{record.doctorId?.specialization}</p>
+                            <p className="text-[14px] text-khaki font-medium mt-0.5">{record.doctorId?.specialization}</p>
                          </div>
                       </div>
                     </div>

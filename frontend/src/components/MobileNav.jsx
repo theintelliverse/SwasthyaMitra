@@ -87,7 +87,7 @@ const MobileNav = ({ role = 'lab' }) => {
                 size={20}
                 className={`${active ? 'stroke-[2.5]' : 'stroke-2'}`}
               />
-              <span className={`text-[10px] font-semibold whitespace-nowrap ${
+              <span className={`text-[14px] font-semibold whitespace-nowrap ${
                 active ? 'text-teal-600' : 'text-gray-600'
               }`}>
                 {item.label}

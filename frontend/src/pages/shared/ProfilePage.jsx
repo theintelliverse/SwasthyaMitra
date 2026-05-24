@@ -103,7 +103,7 @@ const ProfilePage = () => {
     if (loading) return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4">
             <Loader size={32} className="text-teal-600 animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Secure Vault...</p>
+            <p className="text-[14px] font-black uppercase tracking-widest text-slate-400">Loading Secure Vault...</p>
         </div>
     );
 
@@ -123,7 +123,7 @@ const ProfilePage = () => {
                 <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="max-w-xl">
                         <div className="flex items-center gap-3 mb-4 animate-in fade-in slide-in-from-left-8 duration-700">
-                            <div className="px-4 py-1.5 bg-white/60 backdrop-blur-xl border border-white text-teal-700 rounded-full text-[9px] font-black uppercase tracking-[0.2em] shadow-sm flex items-center gap-2 hover:bg-white hover:shadow-md transition-all">
+                            <div className="px-4 py-1.5 bg-white/60 backdrop-blur-xl border border-white text-teal-700 rounded-full text-[14px] font-black uppercase tracking-[0.2em] shadow-sm flex items-center gap-2 hover:bg-white hover:shadow-md transition-all">
                                 <div className="relative flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
@@ -135,7 +135,7 @@ const ProfilePage = () => {
                             {role === 'patient' ? 'My Health Profile' : 'Professional Identity'} 
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-indigo-600 animate-pulse">.</span>
                         </h1>
-                        <p className="text-slate-500 font-bold text-[11px] md:text-xs leading-relaxed border-l-2 border-teal-400 pl-4 py-0.5 animate-in fade-in slide-in-from-left-12 duration-1000 delay-150 uppercase tracking-widest">
+                        <p className="text-slate-500 font-bold text-[14px] md:text-[14px] leading-relaxed border-l-2 border-teal-400 pl-4 py-0.5 animate-in fade-in slide-in-from-left-12 duration-1000 delay-150 uppercase tracking-widest">
                             {role === 'patient' ? 'Manage your medical baseline & preferences' : 'Update your clinical credentials & bio'}
                         </p>
                     </div>
@@ -167,11 +167,11 @@ const ProfilePage = () => {
                                         </div>
                                     </div>
                                     
-                                    <span className="px-4 py-1.5 bg-white/5 text-teal-400 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border border-white/10 mb-4 backdrop-blur-md shadow-inner">
+                                    <span className="px-4 py-1.5 bg-white/5 text-teal-400 rounded-full text-[14px] font-black uppercase tracking-[0.2em] border border-white/10 mb-4 backdrop-blur-md shadow-inner">
                                         {role.toUpperCase()} VERIFIED
                                     </span>
                                     <h1 className="text-2xl font-black text-white tracking-tighter mb-1.5">{user.name}</h1>
-                                    <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.15em] flex items-center justify-center gap-2">
+                                    <p className="text-slate-400 font-black text-[14px] uppercase tracking-[0.15em] flex items-center justify-center gap-2">
                                         <MapPin size={12} className="text-teal-400" /> 
                                         {role === 'patient' ? `Member since ${new Date(user.createdAt || Date.now()).getFullYear()}` : (user.specialization || "Clinical Associate")}
                                     </p>
@@ -181,7 +181,7 @@ const ProfilePage = () => {
                                     <div className="flex flex-col w-full gap-2 relative z-10">
                                         <button 
                                             onClick={() => setIsEditing(!isEditing)} 
-                                            className={`w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all border flex justify-center items-center gap-2.5 overflow-hidden relative group/btn ${isEditing ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'}`}
+                                            className={`w-full py-2.5 rounded-xl font-black text-[14px] uppercase tracking-[0.2em] transition-all border flex justify-center items-center gap-2.5 overflow-hidden relative group/btn ${isEditing ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'}`}
                                         >
                                             <div className="absolute inset-0 bg-white/5 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                                             <span className="relative z-10 flex items-center gap-2.5">
@@ -190,7 +190,7 @@ const ProfilePage = () => {
                                         </button>
                                         <button 
                                             onClick={handleLogout} 
-                                            className="w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all bg-transparent text-slate-500 border border-transparent hover:bg-white/5 hover:text-white flex justify-center items-center gap-2.5"
+                                            className="w-full py-2.5 rounded-xl font-black text-[14px] uppercase tracking-[0.2em] transition-all bg-transparent text-slate-500 border border-transparent hover:bg-white/5 hover:text-white flex justify-center items-center gap-2.5"
                                         >
                                             <LogOut size={14} /> Sign Out
                                         </button>
@@ -207,7 +207,7 @@ const ProfilePage = () => {
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-black text-slate-900 tracking-tight">Privacy Center</h4>
-                                            <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.15em] mt-1">Manage data</p>
+                                            <p className="text-slate-400 text-[14px] font-black uppercase tracking-[0.15em] mt-1">Manage data</p>
                                         </div>
                                     </div>
                                 </div>
@@ -218,7 +218,7 @@ const ProfilePage = () => {
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-black text-slate-900 tracking-tight">Access Logs</h4>
-                                            <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.15em] mt-1">Security events</p>
+                                            <p className="text-slate-400 text-[14px] font-black uppercase tracking-[0.15em] mt-1">Security events</p>
                                         </div>
                                     </div>
                                 </div>
@@ -235,7 +235,7 @@ const ProfilePage = () => {
                                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Profile Details</h3>
                                     </div>
                                     {isEditing && (
-                                        <button type="submit" disabled={saveLoading} className="hidden sm:flex px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all items-center gap-2.5 active:scale-95 disabled:opacity-50">
+                                        <button type="submit" disabled={saveLoading} className="hidden sm:flex px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-[14px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all items-center gap-2.5 active:scale-95 disabled:opacity-50">
                                             {saveLoading ? <Loader size={14} className="animate-spin text-teal-400" /> : <Save size={14} className="text-teal-400" />} Save Changes
                                         </button>
                                     )}
@@ -273,14 +273,14 @@ const ProfilePage = () => {
                                                 onChange={(val) => setUser({...user, age: val})} 
                                             />
                                             <div className="space-y-2 group">
-                                                <label className="text-[9px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] group-focus-within:text-teal-600 transition-colors">Gender Identity</label>
+                                                <label className="text-[14px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] group-focus-within:text-teal-600 transition-colors">Gender Identity</label>
                                                 <div className="relative">
                                                     <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors ${isEditing && 'group-focus-within:text-teal-600'}`}>
                                                         <UserCircle size={16} />
                                                     </div>
                                                     <select 
                                                         disabled={!isEditing}
-                                                        className="w-full pl-10 pr-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 focus:bg-white font-black text-xs text-slate-900 shadow-sm appearance-none disabled:opacity-60 disabled:bg-slate-50 transition-all duration-300"
+                                                        className="w-full pl-10 pr-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 focus:bg-white font-black text-[14px] text-slate-900 shadow-sm appearance-none disabled:opacity-60 disabled:bg-slate-50 transition-all duration-300"
                                                         value={user.gender || ''}
                                                         onChange={(e) => setUser({...user, gender: e.target.value})}
                                                     >
@@ -348,7 +348,7 @@ const ProfilePage = () => {
                                 </div>
 
                                 <div className="mt-10 space-y-3 group relative z-10">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] flex items-center gap-2 group-focus-within:text-teal-600 transition-colors">
+                                    <label className="text-[14px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] flex items-center gap-2 group-focus-within:text-teal-600 transition-colors">
                                         <BookOpen size={16} className="text-teal-500" /> 
                                         {role === 'patient' ? 'Personal Health Bio' : 'Professional Biography'}
                                     </label>
@@ -366,7 +366,7 @@ const ProfilePage = () => {
                                     <button 
                                         type="submit" 
                                         disabled={saveLoading}
-                                        className="w-full mt-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_15px_30px_rgba(15,23,42,0.2)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 relative z-10 overflow-hidden group/btn"
+                                        className="w-full mt-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-[14px] uppercase tracking-[0.25em] shadow-[0_15px_30px_rgba(15,23,42,0.2)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 relative z-10 overflow-hidden group/btn"
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 via-indigo-500/20 to-teal-500/20 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"></div>
                                         {saveLoading ? <Loader className="animate-spin text-teal-400" size={20} /> : <><Save size={20} className="text-teal-400" /> Save Clinical Changes</>}
@@ -383,7 +383,7 @@ const ProfilePage = () => {
 
 const ProfileInput = ({ icon, label, value, disabled, onChange, placeholder, type = "text" }) => (
     <div className="space-y-2 group relative">
-        <label className="text-[9px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] group-focus-within:text-teal-600 transition-colors">{label}</label>
+        <label className="text-[14px] font-black uppercase text-slate-400 ml-1 tracking-[0.2em] group-focus-within:text-teal-600 transition-colors">{label}</label>
         <div className="relative">
             <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors ${!disabled && 'group-focus-within:text-teal-600'}`}>
                 {icon}

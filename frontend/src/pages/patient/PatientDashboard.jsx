@@ -118,19 +118,19 @@ const PatientDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-black">Hello, {displayName.split(' ')[0]} <span className="inline-block">👋</span></p>
-              <p className="text-xs text-slate-400 mt-1">Your digital health records and wellness hub.</p>
+              <p className="text-[14px] text-slate-400 mt-1">Your digital health records and wellness hub.</p>
             </div>
-            <button onClick={() => navigate('/patient/locker')} className="bg-teal-600 text-white px-3 py-2 rounded-lg text-xs font-black">Digital Locker</button>
+            <button onClick={() => navigate('/patient/locker')} className="bg-teal-600 text-white px-3 py-2 rounded-lg text-[14px] font-black">Digital Locker</button>
           </div>
 
           <div className="mt-4 border-t pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Patient Name</p>
+                <p className="text-[14px] text-slate-400 uppercase tracking-wider">Patient Name</p>
                 <p className="font-black">{displayName}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Patient ID</p>
+                <p className="text-[14px] text-slate-400 uppercase tracking-wider">Patient ID</p>
                 <p className="font-black">{patientData?.phone || 'N/A'}</p>
               </div>
             </div>
@@ -140,45 +140,45 @@ const PatientDashboard = () => {
                 <div className="w-2 h-2 bg-green-500 rounded-full" />
                 <p className="text-sm font-black">Active</p>
               </div>
-              <div className="text-xs text-slate-500">Verified</div>
+              <div className="text-[14px] text-slate-500">Verified</div>
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-2 text-center">
             <div className="p-2 bg-slate-50 rounded-lg">
-              <p className="text-[10px] text-slate-400">Pulse</p>
+              <p className="text-[14px] text-slate-400">Pulse</p>
               <p className="font-black text-sm">{pulse}</p>
-              <p className="text-[10px] text-slate-400">bpm</p>
+              <p className="text-[14px] text-slate-400">bpm</p>
             </div>
             <div className="p-2 bg-slate-50 rounded-lg">
-              <p className="text-[10px] text-slate-400">Temp</p>
+              <p className="text-[14px] text-slate-400">Temp</p>
               <p className="font-black text-sm">{temp}</p>
-              <p className="text-[10px] text-slate-400">°C</p>
+              <p className="text-[14px] text-slate-400">°C</p>
             </div>
             <div className="p-2 bg-slate-50 rounded-lg">
-              <p className="text-[10px] text-slate-400">Weight</p>
+              <p className="text-[14px] text-slate-400">Weight</p>
               <p className="font-black text-sm">{weight}</p>
-              <p className="text-[10px] text-slate-400">kg</p>
+              <p className="text-[14px] text-slate-400">kg</p>
             </div>
             <div className="p-2 bg-slate-50 rounded-lg">
-              <p className="text-[10px] text-slate-400">BP</p>
+              <p className="text-[14px] text-slate-400">BP</p>
               <p className="font-black text-sm">{bp}</p>
-              <p className="text-[10px] text-slate-400">mmHg</p>
+              <p className="text-[14px] text-slate-400">mmHg</p>
             </div>
           </div>
 
           <div className="mt-4 border-t pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-black">Health Records</p>
-                <p className="text-[10px] text-slate-400">{reportsCount} Files</p>
+                <p className="text-[14px] font-black">Health Records</p>
+                <p className="text-[14px] text-slate-400">{reportsCount} Files</p>
               </div>
-              <button onClick={() => navigate('/patient/locker')} className="px-3 py-2 rounded-lg border border-slate-100 text-[10px] font-black">Open Health Locker</button>
+              <button onClick={() => navigate('/patient/locker')} className="px-3 py-2 rounded-lg border border-slate-100 text-[14px] font-black">Open Health Locker</button>
             </div>
           </div>
 
           <div className="mt-4 border-t pt-4">
-            <p className="text-xs font-black">Coming Up Next</p>
+            <p className="text-[14px] font-black">Coming Up Next</p>
             <p className="text-sm text-slate-600 mt-1">{upcomingAppointment ? `Appointment with Dr. ${upcomingAppointment.doctorName}` : 'Stay Proactive! Schedule your next routine check-up.'}</p>
             <div className="mt-3 flex gap-2">
               <button onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })} className="flex-1 bg-teal-600 text-white py-2 rounded-lg font-black text-sm">{upcomingAppointment ? 'Reschedule' : 'Book New Slot'}</button>
@@ -187,9 +187,9 @@ const PatientDashboard = () => {
         </div>
 
         <div className="bg-white p-4 rounded-2xl shadow-sm text-center">
-          <div className="text-xs text-slate-400 font-black uppercase">Search history & diagnosis...</div>
+          <div className="text-[14px] text-slate-400 font-black uppercase">Search history & diagnosis...</div>
           <div className="text-sm font-black mt-2">{filteredHistory.length} Total Visits</div>
-          {filteredHistory.length === 0 && <div className="text-xs text-slate-400 mt-2">No Medical</div>}
+          {filteredHistory.length === 0 && <div className="text-[14px] text-slate-400 mt-2">No Medical</div>}
         </div>
       </div>
     );
@@ -211,7 +211,7 @@ const PatientDashboard = () => {
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-teal-100">
+              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                 Patient Portal
               </span>
               {isSyncing && <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-ping"></div>}
@@ -219,13 +219,13 @@ const PatientDashboard = () => {
             <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               Hello, {displayName.split(' ')[0]} <span className="animate-bounce">👋</span>
             </h1>
-            <p className="text-slate-400 font-bold text-[10px] mt-0.5 uppercase tracking-wider">Your digital health records and wellness hub.</p>
+            <p className="text-slate-400 font-bold text-[14px] mt-0.5 uppercase tracking-wider">Your digital health records and wellness hub.</p>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={() => navigate('/patient/locker')}
-              className="px-3 py-2 bg-teal-600 text-white rounded-lg font-black text-[9px] uppercase tracking-widest shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all flex items-center gap-1.5"
+              className="px-3 py-2 bg-teal-600 text-white rounded-lg font-black text-[14px] uppercase tracking-widest shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all flex items-center gap-1.5"
             >
               <FolderHeart size={12} /> Digital Locker
             </button>
@@ -262,20 +262,20 @@ const PatientDashboard = () => {
                 </div>
 
                 <div className="mb-8">
-                  <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.25em] mb-1.5">Patient Name</p>
+                  <p className="text-[14px] font-black text-teal-500 uppercase tracking-[0.25em] mb-1.5">Patient Name</p>
                   <h3 className="text-xl font-black tracking-tight uppercase leading-tight">{displayName}</h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
                   <div>
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Patient ID</p>
-                    <p className="text-xs font-black text-white">{patientData?.phone || 'N/A'}</p>
+                    <p className="text-[14px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Patient ID</p>
+                    <p className="text-[14px] font-black text-white">{patientData?.phone || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Verify Status</p>
+                    <p className="text-[14px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Verify Status</p>
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                      <p className="text-xs font-black text-white">Active</p>
+                      <p className="text-[14px] font-black text-white">Active</p>
                     </div>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ const PatientDashboard = () => {
 
             {/* Health Vitals Preview */}
             <div className="bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm">
-              <h3 className="font-black text-xs text-slate-900 mb-2 flex items-center gap-1">
+              <h3 className="font-black text-[14px] text-slate-900 mb-2 flex items-center gap-1">
                 <Activity size={11} className="text-teal-600" /> Latest Vitals
               </h3>
 
@@ -296,7 +296,7 @@ const PatientDashboard = () => {
               </div>
 
               <div className="mt-2 p-1.5 bg-slate-50 rounded-md border border-slate-100">
-                <p className="text-[7px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
+                <p className="text-[14px] font-bold text-slate-400 leading-relaxed uppercase tracking-wider">
                   Vitals are recorded by clinical staff during your consultation. Track your baseline for better wellness.
                 </p>
               </div>
@@ -310,12 +310,12 @@ const PatientDashboard = () => {
               </div>
               <div className="flex items-end gap-1.5 mb-0.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tighter">{reportsCount}</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Files</span>
+                <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Files</span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Documents in Digital Locker</p>
+              <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mb-3">Documents in Digital Locker</p>
               <button
                 onClick={() => navigate('/patient/locker')}
-                className="w-full py-2 border-2 border-slate-100 rounded-lg font-black text-[9px] uppercase tracking-widest hover:border-teal-500 hover:text-teal-600 transition-all active:scale-95"
+                className="w-full py-2 border-2 border-slate-100 rounded-lg font-black text-[14px] uppercase tracking-widest hover:border-teal-500 hover:text-teal-600 transition-all active:scale-95"
               >
                 Open Health Locker
               </button>
@@ -331,13 +331,13 @@ const PatientDashboard = () => {
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="px-2.5 py-0.5 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border border-white/20">
+                    <span className="px-2.5 py-0.5 bg-white/20 rounded-full text-[14px] font-black uppercase tracking-[0.2em] border border-white/20">
                       Coming Up Next
                     </span>
                     <h3 className="text-lg font-black tracking-tight mt-2 mb-0.5">
                       {upcomingAppointment ? `Appointment with Dr. ${upcomingAppointment.doctorName}` : "Stay Proactive!"}
                     </h3>
-                    <p className="text-teal-100 font-bold text-[10px]">
+                    <p className="text-teal-100 font-bold text-[14px]">
                       {upcomingAppointment ? upcomingAppointment.clinicName : "Schedule your next routine check-up."}
                     </p>
                   </div>
@@ -350,25 +350,25 @@ const PatientDashboard = () => {
                   {upcomingAppointment ? (
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Date & Time</span>
+                        <span className="text-[14px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Date & Time</span>
                         <span className="text-sm font-black">{new Date(upcomingAppointment.appointmentDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       <div className="w-px h-6 bg-white/10 hidden md:block" />
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Status</span>
+                        <span className="text-[14px] font-black text-teal-200 uppercase tracking-widest mb-0.5">Status</span>
                         <div className="flex items-center gap-1">
                           <div className="w-1.5 h-1.5 bg-teal-300 rounded-full animate-ping" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Scheduled</span>
+                          <span className="text-[14px] font-black uppercase tracking-widest">Scheduled</span>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-teal-200 font-bold text-[10px] italic">"Prevention is better than cure. Book your slot today."</p>
+                    <p className="text-teal-200 font-bold text-[14px] italic">"Prevention is better than cure. Book your slot today."</p>
                   )}
 
                   <button
                     onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: upcomingAppointment } })}
-                    className="px-3.5 py-2 bg-white text-teal-600 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-white text-teal-600 rounded-lg font-black text-[14px] uppercase tracking-[0.2em] hover:bg-teal-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
                   >
                     <Plus size={11} /> {upcomingAppointment ? "Reschedule" : "Book New Slot"}
                   </button>
@@ -384,14 +384,14 @@ const PatientDashboard = () => {
                   <input
                     type="text"
                     placeholder="Search history & diagnosis..."
-                    className="w-full pl-8 pr-3 py-2 bg-white border border-slate-100 rounded-lg outline-none focus:border-teal-500 text-xs font-bold shadow-sm"
+                    className="w-full pl-8 pr-3 py-2 bg-white border border-slate-100 rounded-lg outline-none focus:border-teal-500 text-[14px] font-bold shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-100 rounded-md text-slate-400">
                   <History size={11} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">{filteredHistory.length} Total Visits</span>
+                  <span className="text-[14px] font-black uppercase tracking-widest">{filteredHistory.length} Total Visits</span>
                 </div>
               </div>
 
@@ -414,11 +414,11 @@ const PatientDashboard = () => {
                             <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                                  <span className="text-[14px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
                                     {new Date(visit.date || visit.visitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   </span>
                                   <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{visit.clinicName}</span>
+                                  <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest">{visit.clinicName}</span>
                                 </div>
                                 <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {visit.doctorName || visit.doctorId?.name}</h4>
                               </div>
@@ -439,19 +439,19 @@ const PatientDashboard = () => {
 
                             <div className="grid md:grid-cols-2 gap-2">
                               <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
-                                <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{visit.diagnosis || 'General Consultation'}</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
+                                <p className="text-[14px] font-bold text-slate-700 leading-relaxed">{visit.diagnosis || 'General Consultation'}</p>
                               </div>
                               <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
-                                <p className="text-[10px] font-bold text-slate-700 line-clamp-2">{visit.symptoms || 'None recorded'}</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
+                                <p className="text-[14px] font-bold text-slate-700 line-clamp-2">{visit.symptoms || 'None recorded'}</p>
                               </div>
                             </div>
 
                             {visit.medicines && visit.medicines.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-1">
                                 {visit.medicines.map((med, idx) => (
-                                  <span key={idx} className="px-2 py-0.5 bg-teal-50/50 text-teal-700 rounded-md text-[8px] font-black uppercase tracking-wider border border-teal-100/50">
+                                  <span key={idx} className="px-2 py-0.5 bg-teal-50/50 text-teal-700 rounded-md text-[14px] font-black uppercase tracking-wider border border-teal-100/50">
                                     {med.name}
                                   </span>
                                 ))}
@@ -478,21 +478,21 @@ const PatientDashboard = () => {
                             <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                                  <span className="text-[14px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
                                     {new Date(apt.appointmentDate || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   </span>
                                   <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{apt.clinicName || 'Clinic'}</span>
+                                  <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest">{apt.clinicName || 'Clinic'}</span>
                                 </div>
                                 <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {apt.doctorName || 'Doctor'}</h4>
                               </div>
-                              <div className="px-2 py-1 bg-teal-50 text-teal-600 rounded-md text-[8px] font-black uppercase tracking-widest border border-teal-100">
+                              <div className="px-2 py-1 bg-teal-50 text-teal-600 rounded-md text-[14px] font-black uppercase tracking-widest border border-teal-100">
                                 Scheduled
                               </div>
                             </div>
                             <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                              <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Reason / Symptoms</p>
-                              <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{apt.reason || 'General Consultation'}</p>
+                              <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Reason / Symptoms</p>
+                              <p className="text-[14px] font-bold text-slate-700 leading-relaxed">{apt.reason || 'General Consultation'}</p>
                             </div>
                           </div>
                         </div>
@@ -515,23 +515,23 @@ const PatientDashboard = () => {
                             <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2.5">
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                                  <span className="text-[14px] font-black text-teal-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-teal-100">
                                     {dummy.date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   </span>
                                   <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{dummy.clinic}</span>
+                                  <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest">{dummy.clinic}</span>
                                 </div>
                                 <h4 className="text-sm font-black text-slate-900 tracking-tight">Dr. {dummy.doctor}</h4>
                               </div>
                             </div>
                             <div className="grid md:grid-cols-2 gap-2">
                               <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
-                                <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{dummy.diagnosis}</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Diagnosis</p>
+                                <p className="text-[14px] font-bold text-slate-700 leading-relaxed">{dummy.diagnosis}</p>
                               </div>
                               <div className="p-2.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
-                                <p className="text-[10px] font-bold text-slate-700 line-clamp-2">{dummy.symptoms}</p>
+                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Symptoms</p>
+                                <p className="text-[14px] font-bold text-slate-700 line-clamp-2">{dummy.symptoms}</p>
                               </div>
                             </div>
                           </div>
@@ -555,7 +555,7 @@ const PatientDashboard = () => {
                 <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl"><FileText size={24} /></div>
                 <div>
                   <h3 className="font-black text-xl text-slate-900 tracking-tight">{previewFile.title}</h3>
-                  <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mt-1">Digital Health Record</p>
+                  <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mt-1">Digital Health Record</p>
                 </div>
               </div>
               <button onClick={() => setPreviewFile(null)} className="p-3 bg-slate-50 hover:bg-rose-50 rounded-2xl transition-all text-slate-400 hover:text-rose-500"><X size={24} /></button>
@@ -576,16 +576,16 @@ const PatientDashboard = () => {
             <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Secure Link</h3>
             <p className="text-sm font-bold text-slate-400 mb-8">This temporary link grants secure access to your medical file.</p>
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between overflow-hidden mb-8">
-              <code className="text-[10px] font-bold text-slate-400 truncate pr-4">{shareFile.fileUrl}</code>
+              <code className="text-[14px] font-bold text-slate-400 truncate pr-4">{shareFile.fileUrl}</code>
               <button
                 onClick={() => handleCopyLink(shareFile.fileUrl)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase transition-all shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-slate-900 text-white'}`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-black uppercase transition-all shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-slate-900 text-white'}`}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider">Locker Sync ID: {shareFile._id.substring(0, 12)}</p>
+            <p className="text-[14px] font-bold text-slate-400 text-center uppercase tracking-wider">Locker Sync ID: {shareFile._id.substring(0, 12)}</p>
           </div>
         </div>
       )}
@@ -606,7 +606,7 @@ const PatientDashboard = () => {
             </div>
 
             <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Your Patient Pass</h3>
-            <p className="text-xs font-bold text-slate-400 mb-8 uppercase tracking-widest">Scan at Clinic Desk to Check-In</p>
+            <p className="text-[14px] font-bold text-slate-400 mb-8 uppercase tracking-widest">Scan at Clinic Desk to Check-In</p>
 
             <div className="bg-slate-50 border border-slate-100 p-8 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
               <QRCodeSVG
@@ -621,7 +621,7 @@ const PatientDashboard = () => {
 
             <div className="space-y-1">
               <h4 className="font-black text-slate-900">{displayName}</h4>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">ID: {patientData?.phone || 'N/A'}</p>
+              <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">ID: {patientData?.phone || 'N/A'}</p>
             </div>
           </div>
         </div>
@@ -633,9 +633,9 @@ const PatientDashboard = () => {
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
             <div className="p-4 bg-slate-900 flex items-center justify-between">
               <div>
-                <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest mb-0.5">Consultation Record</p>
+                <p className="text-[14px] font-black text-teal-400 uppercase tracking-widest mb-0.5">Consultation Record</p>
                 <h3 className="text-sm font-black text-white tracking-tight">Dr. {selectedVisit.doctorName || selectedVisit.doctorId?.name}</h3>
-                <p className="text-[10px] text-slate-400 font-bold">{selectedVisit.clinicName}</p>
+                <p className="text-[14px] text-slate-400 font-bold">{selectedVisit.clinicName}</p>
               </div>
               <button onClick={() => setSelectedVisit(null)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all">
                 <X size={14} />
@@ -643,40 +643,40 @@ const PatientDashboard = () => {
             </div>
             <div className="px-4 py-2 bg-teal-50 border-b border-teal-100 flex items-center gap-2">
               <Calendar size={11} className="text-teal-600" />
-              <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest">
+              <span className="text-[14px] font-black text-teal-600 uppercase tracking-widest">
                 {new Date(selectedVisit.date || selectedVisit.visitDate).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
               </span>
             </div>
             <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnosis</p>
-                  <p className="text-xs font-bold text-slate-700 leading-relaxed">{selectedVisit.diagnosis || 'General Consultation'}</p>
+                  <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-1">Diagnosis</p>
+                  <p className="text-[14px] font-bold text-slate-700 leading-relaxed">{selectedVisit.diagnosis || 'General Consultation'}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Symptoms</p>
-                  <p className="text-xs font-bold text-slate-700 leading-relaxed">{selectedVisit.symptoms || 'None recorded'}</p>
+                  <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-1">Symptoms</p>
+                  <p className="text-[14px] font-bold text-slate-700 leading-relaxed">{selectedVisit.symptoms || 'None recorded'}</p>
                 </div>
               </div>
               {selectedVisit.notes && (
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">Doctor's Notes</p>
-                  <p className="text-xs font-bold text-slate-700 italic">"{selectedVisit.notes}"</p>
+                  <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-1">Doctor's Notes</p>
+                  <p className="text-[14px] font-bold text-slate-700 italic">"{selectedVisit.notes}"</p>
                 </div>
               )}
               {selectedVisit.medicines && selectedVisit.medicines.length > 0 && (
                 <div className="p-3 bg-slate-900 rounded-xl">
-                  <p className="text-[8px] font-black text-teal-400 uppercase tracking-widest mb-2">Prescribed Medicines</p>
+                  <p className="text-[14px] font-black text-teal-400 uppercase tracking-widest mb-2">Prescribed Medicines</p>
                   <div className="space-y-1.5">
                     {selectedVisit.medicines.map((med, idx) => (
                       <div key={idx} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
                         <div>
-                          <p className="text-xs font-black text-white">{med.name}</p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase">{med.time}</p>
+                          <p className="text-[14px] font-black text-white">{med.name}</p>
+                          <p className="text-[14px] font-bold text-slate-400 uppercase">{med.time}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs font-black text-teal-400">{med.amount}</p>
-                          <p className="text-[9px] font-bold text-slate-500">Total: {med.total}</p>
+                          <p className="text-[14px] font-black text-teal-400">{med.amount}</p>
+                          <p className="text-[14px] font-bold text-slate-500">Total: {med.total}</p>
                         </div>
                       </div>
                     ))}
@@ -685,15 +685,15 @@ const PatientDashboard = () => {
               )}
               {selectedVisit.vitals && Object.values(selectedVisit.vitals).some(v => v) && (
                 <div className="grid grid-cols-4 gap-1.5">
-                  {selectedVisit.vitals.pulseRate && <div className="p-2 bg-teal-50 rounded-lg border border-teal-100 text-center"><p className="text-[7px] font-black text-teal-600 uppercase">Pulse</p><p className="text-sm font-black text-teal-700">{selectedVisit.vitals.pulseRate}</p><p className="text-[6px] text-teal-500">bpm</p></div>}
-                  {selectedVisit.vitals.bloodPressure && <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 text-center"><p className="text-[7px] font-black text-rose-600 uppercase">BP</p><p className="text-sm font-black text-rose-700">{selectedVisit.vitals.bloodPressure}</p><p className="text-[6px] text-rose-500">mmHg</p></div>}
-                  {selectedVisit.vitals.temperature && <div className="p-2 bg-orange-50 rounded-lg border border-orange-100 text-center"><p className="text-[7px] font-black text-orange-600 uppercase">Temp</p><p className="text-sm font-black text-orange-700">{selectedVisit.vitals.temperature}</p><p className="text-[6px] text-orange-500">°C</p></div>}
-                  {selectedVisit.vitals.weight && <div className="p-2 bg-blue-50 rounded-lg border border-blue-100 text-center"><p className="text-[7px] font-black text-blue-600 uppercase">Weight</p><p className="text-sm font-black text-blue-700">{selectedVisit.vitals.weight}</p><p className="text-[6px] text-blue-500">kg</p></div>}
+                  {selectedVisit.vitals.pulseRate && <div className="p-2 bg-teal-50 rounded-lg border border-teal-100 text-center"><p className="text-[14px] font-black text-teal-600 uppercase">Pulse</p><p className="text-sm font-black text-teal-700">{selectedVisit.vitals.pulseRate}</p><p className="text-[14px] text-teal-500">bpm</p></div>}
+                  {selectedVisit.vitals.bloodPressure && <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 text-center"><p className="text-[14px] font-black text-rose-600 uppercase">BP</p><p className="text-sm font-black text-rose-700">{selectedVisit.vitals.bloodPressure}</p><p className="text-[14px] text-rose-500">mmHg</p></div>}
+                  {selectedVisit.vitals.temperature && <div className="p-2 bg-orange-50 rounded-lg border border-orange-100 text-center"><p className="text-[14px] font-black text-orange-600 uppercase">Temp</p><p className="text-sm font-black text-orange-700">{selectedVisit.vitals.temperature}</p><p className="text-[14px] text-orange-500">°C</p></div>}
+                  {selectedVisit.vitals.weight && <div className="p-2 bg-blue-50 rounded-lg border border-blue-100 text-center"><p className="text-[14px] font-black text-blue-600 uppercase">Weight</p><p className="text-sm font-black text-blue-700">{selectedVisit.vitals.weight}</p><p className="text-[14px] text-blue-500">kg</p></div>}
                 </div>
               )}
             </div>
             <div className="p-3 border-t border-slate-100 bg-slate-50">
-              <button onClick={() => setSelectedVisit(null)} className="w-full py-2 bg-slate-900 text-white rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95">Close</button>
+              <button onClick={() => setSelectedVisit(null)} className="w-full py-2 bg-slate-900 text-white rounded-lg font-black text-[14px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95">Close</button>
             </div>
           </div>
         </div>
@@ -715,11 +715,11 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
     <div className={`p-1.5 rounded-md border ${colors[color]} shadow-sm transition-all hover:scale-105 duration-300`}>
       <div className="flex items-center gap-0.5 mb-0.5">
         <div className={`p-0.5 rounded bg-white/50`}>{icon}</div>
-        <span className="text-[7px] font-black uppercase tracking-widest">{label}</span>
+        <span className="text-[14px] font-black uppercase tracking-widest">{label}</span>
       </div>
       <div className="flex items-baseline gap-0.5">
         <span className="text-sm font-black tracking-tight">{val}</span>
-        <span className="text-[6px] font-bold opacity-60 uppercase">{unit}</span>
+        <span className="text-[14px] font-bold opacity-60 uppercase">{unit}</span>
       </div>
     </div>
   );

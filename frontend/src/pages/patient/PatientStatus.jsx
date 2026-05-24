@@ -172,19 +172,19 @@ const PatientStatus = () => {
 
                     <button
                         onClick={() => fetchStatus(true)}
-                        className="w-full py-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-teal-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-4"
+                        className="w-full py-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-lg shadow-teal-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-4"
                     >
                         <RefreshCcw size={14} className={isSyncing ? 'animate-spin' : ''} /> Refresh Status
                     </button>
                     <button
                         onClick={handleCancel}
-                        className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
+                        className="text-[14px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
                     >
                         Cancel Request
                     </button>
                 </div>
 
-                <p className="text-center text-xs text-slate-400 mt-6">Live updates via SwasthyaMitra</p>
+                <p className="text-center text-[14px] text-slate-400 mt-6">Live updates via SwasthyaMitra</p>
             </div>
 
             <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} }`}</style>
@@ -203,7 +203,7 @@ const PatientStatus = () => {
                 <div className="text-7xl mb-6 animate-bounce">🎉</div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-400/20 border border-green-400/30 rounded-full mb-6">
                     <CheckCircle2 size={14} className="text-green-400" />
-                    <span className="text-green-300 text-xs font-black uppercase tracking-widest">Visit Complete</span>
+                    <span className="text-green-300 text-[14px] font-black uppercase tracking-widest">Visit Complete</span>
                 </div>
                 <h1 className="text-3xl font-black tracking-tight mb-4">All Done!</h1>
                 <p className="text-white/70 text-sm leading-relaxed mb-8">
@@ -242,17 +242,17 @@ const PatientStatus = () => {
                     <div className="flex items-center gap-2.5">
                         <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-400 animate-pulse' : socketConnected ? 'bg-green-500 shadow-md shadow-green-500/40' : 'bg-slate-300'}`} />
                         <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Connected</p>
-                            <p className="text-xs font-black text-slate-900 leading-tight mt-0.5">{status.clinicName || 'Clinic'}</p>
+                            <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest leading-none">Connected</p>
+                            <p className="text-[14px] font-black text-slate-900 leading-tight mt-0.5">{status.clinicName || 'Clinic'}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {isSyncing ? (
-                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                            <span className="text-[14px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1">
                                 <RefreshCcw size={10} className="animate-spin" /> Syncing
                             </span>
                         ) : (
-                            <span className="text-[9px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">
+                            <span className="text-[14px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">
                                 <Wifi size={10} /> Live
                             </span>
                         )}
@@ -270,8 +270,8 @@ const PatientStatus = () => {
                     <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 animate-in slide-in-from-top duration-500">
                         <AlertCircle size={18} className="text-amber-500 shrink-0" />
                         <div>
-                            <p className="text-xs font-black text-amber-700 uppercase tracking-wider">Doctor on Break</p>
-                            <p className="text-[10px] text-amber-600 font-medium mt-0.5">The doctor will resume shortly. Your position is held.</p>
+                            <p className="text-[14px] font-black text-amber-700 uppercase tracking-wider">Doctor on Break</p>
+                            <p className="text-[14px] text-amber-600 font-medium mt-0.5">The doctor will resume shortly. Your position is held.</p>
                         </div>
                     </div>
                 )}
@@ -292,11 +292,11 @@ const PatientStatus = () => {
                     <div className="relative z-10 p-8">
                         {/* Status pill */}
                         <div className="flex items-center justify-between mb-6">
-                            <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${isInConsultation ? 'text-teal-100' : 'text-slate-400'}`}>
+                            <div className={`flex items-center gap-2 text-[14px] font-black uppercase tracking-widest ${isInConsultation ? 'text-teal-100' : 'text-slate-400'}`}>
                                 <Hospital size={12} />
                                 My Queue Token
                             </div>
-                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isInConsultation
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[14px] font-black uppercase tracking-widest ${isInConsultation
                                 ? 'bg-white/20 text-white'
                                 : isEmergency
                                     ? 'bg-white/20 text-white'
@@ -321,7 +321,7 @@ const PatientStatus = () => {
                             <p className={`text-lg font-black tracking-tight ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-800'}`}>
                                 Namaste, {status.patientName?.split(' ')[0]} 🙏
                             </p>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isInConsultation || isEmergency ? 'text-white/60' : 'text-slate-400'}`}>
+                            <p className={`text-[14px] font-bold uppercase tracking-widest mt-1 ${isInConsultation || isEmergency ? 'text-white/60' : 'text-slate-400'}`}>
                                 Visit ID: {queueId?.slice(-8).toUpperCase()}
                             </p>
                         </div>
@@ -331,7 +331,7 @@ const PatientStatus = () => {
                             <div className={`rounded-2xl p-4 text-center ${isInConsultation || isEmergency ? 'bg-white/15' : 'bg-slate-50 border border-slate-100'}`}>
                                 <div className={`flex items-center justify-center gap-1.5 mb-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>
                                     <Users size={12} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Ahead</span>
+                                    <span className="text-[14px] font-black uppercase tracking-widest">Ahead</span>
                                 </div>
                                 <p className={`text-3xl font-black ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-900'}`}>
                                     {isInConsultation ? '0' : status.peopleAhead ?? '—'}
@@ -340,7 +340,7 @@ const PatientStatus = () => {
                             <div className={`rounded-2xl p-4 text-center ${isInConsultation || isEmergency ? 'bg-white/15' : 'bg-slate-50 border border-slate-100'}`}>
                                 <div className={`flex items-center justify-center gap-1.5 mb-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>
                                     <Clock size={12} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Est. Wait</span>
+                                    <span className="text-[14px] font-black uppercase tracking-widest">Est. Wait</span>
                                 </div>
                                 <p className={`text-3xl font-black ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-900'}`}>
                                     {isInConsultation ? '0' : status.estimatedWait ?? '—'}
@@ -353,7 +353,7 @@ const PatientStatus = () => {
                         {isInConsultation && (
                             <div className="mt-4 py-3 bg-white/20 rounded-2xl flex items-center justify-center gap-2 animate-in slide-in-from-bottom duration-500">
                                 <span className="w-2 h-2 bg-white rounded-full animate-ping" />
-                                <p className="text-white font-black text-xs uppercase tracking-widest">Please proceed to the doctor's cabin</p>
+                                <p className="text-white font-black text-[14px] uppercase tracking-widest">Please proceed to the doctor's cabin</p>
                             </div>
                         )}
                     </div>
@@ -363,8 +363,8 @@ const PatientStatus = () => {
                 {!isInConsultation && (
                     <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Queue Progress</p>
-                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">
+                            <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">Queue Progress</p>
+                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest">
                                 {status.peopleAhead === 0 ? "You're Next!" : `${status.peopleAhead} before you`}
                             </p>
                         </div>
@@ -377,15 +377,15 @@ const PatientStatus = () => {
                             />
                         </div>
                         <div className="flex justify-between mt-2">
-                            <span className="text-[9px] text-slate-300 font-bold">Start</span>
-                            <span className="text-[9px] text-slate-300 font-bold">Your Turn</span>
+                            <span className="text-[14px] text-slate-300 font-bold">Start</span>
+                            <span className="text-[14px] text-slate-300 font-bold">Your Turn</span>
                         </div>
                     </div>
                 )}
 
                 {/* ── LAST UPDATED ── */}
                 {lastUpdated && (
-                    <p className="text-center text-[10px] text-slate-400 font-medium">
+                    <p className="text-center text-[14px] text-slate-400 font-medium">
                         Last synced: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                 )}
@@ -397,11 +397,11 @@ const PatientStatus = () => {
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative z-10">
-                        <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                        <p className="text-[14px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
                             <ShieldCheck size={10} /> Personal Health Hub
                         </p>
                         <p className="text-base font-black tracking-tight">Health Locker</p>
-                        <p className="text-[10px] text-white/50 font-medium mt-0.5">Access prescriptions & lab reports</p>
+                        <p className="text-[14px] text-white/50 font-medium mt-0.5">Access prescriptions & lab reports</p>
                     </div>
                     <div className="relative z-10 w-11 h-11 bg-white/10 group-hover:bg-teal-500 rounded-2xl flex items-center justify-center transition-all">
                         <ArrowRight size={18} />

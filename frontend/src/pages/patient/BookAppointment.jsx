@@ -272,7 +272,7 @@ const BookAppointment = () => {
                     confirmButtonColor: '#0D9488',
                     customClass: {
                         popup: 'rounded-[2rem]',
-                        confirmButton: 'rounded-xl px-10 py-3 font-black uppercase text-[10px] tracking-widest'
+                        confirmButton: 'rounded-xl px-10 py-3 font-black uppercase text-[14px] tracking-widest'
                     }
                 }).then(() => navigate('/patient/dashboard'));
             }
@@ -294,20 +294,20 @@ const BookAppointment = () => {
                 <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                                 {step === 4 ? 'Final Review' : `Phase ${step} of 4`}
                             </span>
                         </div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                             Book Slot <span className="text-teal-600">.</span>
                         </h1>
-                        <p className="text-slate-400 font-bold text-[10px] mt-1 uppercase tracking-[0.2em]">Schedule your next clinical consultation.</p>
+                        <p className="text-slate-400 font-bold text-[14px] mt-1 uppercase tracking-[0.2em]">Schedule your next clinical consultation.</p>
                     </div>
 
                     {step > 1 && (
                         <button 
                             onClick={() => setStep(step - 1)}
-                            className="group flex items-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 font-black text-[10px] uppercase tracking-widest"
+                            className="group flex items-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 font-black text-[14px] uppercase tracking-widest"
                         >
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back
                         </button>
@@ -352,25 +352,25 @@ const BookAppointment = () => {
                                                 <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
                                                     <Building2 size={28} />
                                                 </div>
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-100">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-green-100">
                                                     <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" /> Available
                                                 </div>
                                             </div>
                                             <h3 className="text-xl font-black text-slate-900 tracking-tight mb-3 group-hover:text-teal-600 transition-colors">{clinic.name}</h3>
                                             <div className="space-y-3 mb-8">
-                                                <div className="flex items-start gap-3 text-slate-400 text-[10px] font-bold">
+                                                <div className="flex items-start gap-3 text-slate-400 text-[14px] font-bold">
                                                     <MapPin size={14} className="text-teal-500 shrink-0" /> {clinic.address}
                                                 </div>
-                                                <div className="flex items-center gap-3 text-slate-400 text-[10px] font-bold">
+                                                <div className="flex items-center gap-3 text-slate-400 text-[14px] font-bold">
                                                     <Phone size={14} className="text-teal-500 shrink-0" /> {clinic.contactPhone}
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-[10px] font-black uppercase">
+                                                    <span className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-[14px] font-black uppercase">
                                                         {clinic.doctorCount || '0'}
                                                     </span>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Specialists</span>
+                                                    <span className="text-[14px] font-black uppercase tracking-widest text-slate-400">Specialists</span>
                                                 </div>
                                                 <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
                                                     <ArrowRight size={18} />
@@ -396,13 +396,13 @@ const BookAppointment = () => {
                             <div className="bg-slate-900 p-10 rounded-[3rem] text-white flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12"><Activity size={180} /></div>
                                 <div className="relative z-10">
-                                    <p className="text-[9px] font-black text-teal-400 uppercase tracking-[0.3em] mb-3">Facility Confirmed</p>
+                                    <p className="text-[14px] font-black text-teal-400 uppercase tracking-[0.3em] mb-3">Facility Confirmed</p>
                                     <h3 className="text-3xl font-black tracking-tight">{getSelectedClinic()?.name}</h3>
-                                    <p className="text-slate-400 text-xs font-bold mt-2 flex items-center gap-2">
+                                    <p className="text-slate-400 text-[14px] font-bold mt-2 flex items-center gap-2">
                                         <MapPin size={14} className="text-teal-500" /> {getSelectedClinic()?.address}
                                     </p>
                                 </div>
-                                <button onClick={() => setStep(1)} className="relative z-10 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white font-black text-[10px] uppercase tracking-widest transition-all border border-white/10 backdrop-blur-md">
+                                <button onClick={() => setStep(1)} className="relative z-10 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white font-black text-[14px] uppercase tracking-widest transition-all border border-white/10 backdrop-blur-md">
                                     Switch Facility
                                 </button>
                             </div>
@@ -421,13 +421,13 @@ const BookAppointment = () => {
                                             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization}</p>
+                                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization}</p>
                                             <h3 className="text-2xl font-black text-slate-900 tracking-tight">Dr. {doctor.name}</h3>
                                             <div className="flex items-center gap-4 mt-6">
-                                                <div className="px-3 py-1 bg-slate-50 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                <div className="px-3 py-1 bg-slate-50 rounded-lg text-[14px] font-black text-slate-400 uppercase tracking-widest">
                                                     {doctor.experience || 0} Years Exp
                                                 </div>
-                                                <div className="px-3 py-1 bg-teal-50 rounded-lg text-[9px] font-black text-teal-600 uppercase tracking-widest">
+                                                <div className="px-3 py-1 bg-teal-50 rounded-lg text-[14px] font-black text-teal-600 uppercase tracking-widest">
                                                     Active
                                                 </div>
                                             </div>
@@ -452,9 +452,9 @@ const BookAppointment = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-black text-slate-900 text-sm">Rescheduling Visit</h4>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Select your new preferred slot below</p>
+                                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Select your new preferred slot below</p>
                                     </div>
-                                    <span className="shrink-0 px-2.5 py-1 bg-teal-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl">Active</span>
+                                    <span className="shrink-0 px-2.5 py-1 bg-teal-600 text-white text-[14px] font-black uppercase tracking-widest rounded-xl">Active</span>
                                 </div>
                             )}
 
@@ -467,12 +467,12 @@ const BookAppointment = () => {
                                         </div>
                                         <div>
                                             <h3 className="text-sm font-black text-slate-900">Choose Date</h3>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                            <p className="text-[14px] font-bold text-slate-400 uppercase tracking-wider">
                                                 Today: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-[9px] font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full uppercase tracking-widest border border-teal-100">14 Days</span>
+                                    <span className="text-[14px] font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full uppercase tracking-widest border border-teal-100">14 Days</span>
                                 </div>
 
                                 {/* Date Strip â€” tight, scrollable */}
@@ -489,7 +489,7 @@ const BookAppointment = () => {
                                                         : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white'
                                                 }`}
                                             >
-                                                <span className={`text-[9px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-300'}`}>
+                                                <span className={`text-[14px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-300'}`}>
                                                     {idx === 0 ? 'Today' : WEEKDAY_MAP[date.getDay()].slice(0, 3)}
                                                 </span>
                                                 <span className="text-lg font-black leading-none">{date.getDate()}</span>
@@ -517,7 +517,7 @@ const BookAppointment = () => {
                                             <button
                                                 key={mode}
                                                 onClick={() => setFormData({ ...formData, slotMode: mode, appointmentDate: '' })}
-                                                className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                className={`flex-1 py-2 rounded-lg text-[14px] font-black uppercase tracking-widest transition-all ${
                                                     formData.slotMode === mode
                                                         ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
                                                         : 'text-slate-400'
@@ -547,7 +547,7 @@ const BookAppointment = () => {
                                                                     : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-teal-200 hover:bg-white'
                                                             }`}
                                                         >
-                                                            <div className="text-[11px] font-black tracking-tight leading-none">
+                                                            <div className="text-[14px] font-black tracking-tight leading-none">
                                                                 {slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                                             </div>
                                                         </button>
@@ -556,8 +556,8 @@ const BookAppointment = () => {
                                             </div>
                                         ) : (
                                             <div className="py-10 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">
-                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No availability on this date</p>
-                                                <p className="text-[9px] text-slate-300 mt-1 font-medium">Try another date from the strip above.</p>
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[14px]">No availability on this date</p>
+                                                <p className="text-[14px] text-slate-300 mt-1 font-medium">Try another date from the strip above.</p>
                                             </div>
                                         )}
                                     </div>
@@ -588,7 +588,7 @@ const BookAppointment = () => {
                                             }`}
                                         >
                                             <h4 className="text-sm font-black mb-1">Morning Shift</h4>
-                                            <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
+                                            <p className={`text-[14px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
                                                 {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().breakStartTime}
                                             </p>
                                         </button>
@@ -615,7 +615,7 @@ const BookAppointment = () => {
                                             }`}
                                         >
                                             <h4 className="text-sm font-black mb-1">Afternoon Shift</h4>
-                                            <p className={`text-[10px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
+                                            <p className={`text-[14px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
                                                 {getClinicTimingConfig().breakEndTime} - {getClinicTimingConfig().closingTime}
                                             </p>
                                         </button>
@@ -626,14 +626,14 @@ const BookAppointment = () => {
                                 {formData.slotMode === 'manual' && (
                                     <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Selected Date</label>
+                                            <label className="text-[14px] font-black uppercase tracking-widest text-slate-400 ml-1">Selected Date</label>
                                             <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl font-black text-slate-900 text-sm flex items-center justify-between">
                                                 {selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 <Calendar size={16} className="text-teal-500" />
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Time</label>
+                                            <label className="text-[14px] font-black uppercase tracking-widest text-slate-400 ml-1">Select Time</label>
                                             <input
                                                 type="time"
                                                 className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-teal-500 font-black text-slate-900 text-sm"
@@ -653,7 +653,7 @@ const BookAppointment = () => {
                                         html: `
                                             <div class="text-left space-y-4 text-slate-600 font-sans mt-4">
                                                 <p>This estimate is dynamically computed using SwasthyaMitra's AI Engine based on:</p>
-                                                <ul class="list-disc pl-5 space-y-2 text-xs">
+                                                <ul class="list-disc pl-5 space-y-2 text-[14px]">
                                                     <li>Doctor's average consultation duration.</li>
                                                     <li>Today's active queue load &amp; scheduling density.</li>
                                                     <li>Statistical delay factor (~14 min per ahead patient).</li>
@@ -667,7 +667,7 @@ const BookAppointment = () => {
                                         confirmButtonText: 'Understood',
                                         customClass: {
                                             popup: 'rounded-[2rem]',
-                                            confirmButton: 'rounded-xl px-10 py-3 font-black uppercase text-[10px] tracking-widest'
+                                            confirmButton: 'rounded-xl px-10 py-3 font-black uppercase text-[14px] tracking-widest'
                                         }
                                     });
                                 }}
@@ -679,7 +679,7 @@ const BookAppointment = () => {
                                         <Activity size={18} />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-[9px] font-black text-teal-400 uppercase tracking-[0.2em]">Predictive Wait Intelligence</p>
+                                        <p className="text-[14px] font-black text-teal-400 uppercase tracking-[0.2em]">Predictive Wait Intelligence</p>
                                         <p className="text-white font-black text-base tracking-tight mt-0.5">
                                             Est. Wait: <span className="text-teal-300">{estimatedWaitTime || 15} Mins</span>
                                         </p>
@@ -725,7 +725,7 @@ const BookAppointment = () => {
                                                 setStep(4);
                                             }}
                                             disabled={!isValid}
-                                            className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-95"
+                                            className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-black text-[14px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-95"
                                         >
                                             {!formData.appointmentDate ? <><Clock size={16} /> Select a Slot First</> : !isValid ? <><Clock size={16} /> {errorMsg}</> : <><CheckCircle size={16} /> Verify Booking</>}
                                             {isValid && <ArrowRight size={16} />}
@@ -743,7 +743,7 @@ const BookAppointment = () => {
                                 <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                                     <div>
                                         <h3 className="font-black text-2xl text-slate-900 tracking-tight">Final Confirmation</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Review your visit details below</p>
+                                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Review your visit details below</p>
                                     </div>
                                     <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center border border-teal-100"><ShieldCheck size={24} /></div>
                                 </div>
@@ -779,13 +779,13 @@ const BookAppointment = () => {
                                         
                                         <div className="space-y-8">
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Consultation Type</label>
+                                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Consultation Type</label>
                                                 <div className="flex gap-4">
                                                     {['new', 'followup'].map(type => (
                                                         <button 
                                                             key={type}
                                                             onClick={() => setFormData({ ...formData, appointmentType: type })}
-                                                            className={`flex-1 py-4 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all ${formData.appointmentType === type ? 'border-teal-500 bg-teal-50 text-teal-600 shadow-md' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+                                                            className={`flex-1 py-4 rounded-2xl border-2 font-black text-[14px] uppercase tracking-widest transition-all ${formData.appointmentType === type ? 'border-teal-500 bg-teal-50 text-teal-600 shadow-md' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
                                                         >
                                                             {type} Visit
                                                         </button>
@@ -793,7 +793,7 @@ const BookAppointment = () => {
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Clinical Notes / Reason</label>
+                                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Clinical Notes / Reason</label>
                                                 <textarea 
                                                     className="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 text-sm font-bold resize-none shadow-inner"
                                                     rows="4"
@@ -806,7 +806,7 @@ const BookAppointment = () => {
                                     </div>
 
                                     {error && (
-                                        <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4 text-rose-600 text-[10px] font-black uppercase tracking-widest animate-in shake duration-500">
+                                        <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4 text-rose-600 text-[14px] font-black uppercase tracking-widest animate-in shake duration-500">
                                             <AlertCircle size={20} /> {error}
                                         </div>
                                     )}
@@ -814,7 +814,7 @@ const BookAppointment = () => {
                                     <button 
                                         onClick={handleConfirmBooking}
                                         disabled={loading}
-                                        className="w-full py-7 bg-teal-600 hover:bg-teal-700 text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-teal-600/30 flex items-center justify-center gap-5 transition-all active:scale-95 disabled:opacity-50"
+                                        className="w-full py-7 bg-teal-600 hover:bg-teal-700 text-white rounded-[2.5rem] font-black text-[14px] uppercase tracking-[0.3em] shadow-2xl shadow-teal-600/30 flex items-center justify-center gap-5 transition-all active:scale-95 disabled:opacity-50"
                                     >
                                         {loading ? <Loader className="animate-spin" size={24} /> : <><CheckCircle size={24} /> Finalize Appointment</>}
                                     </button>
@@ -833,10 +833,10 @@ const StepBar = ({ num, label, active, current }) => (
     <div className={`relative transition-all duration-700 ${active ? 'opacity-100' : 'opacity-30'}`}>
         <div className={`h-1.5 w-full rounded-full transition-all duration-700 ${active ? 'bg-teal-600 shadow-[0_0_15px_rgba(13,148,136,0.5)]' : 'bg-slate-200'}`} />
         <div className="mt-4 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[11px] transition-all duration-700 ${current ? 'bg-teal-600 text-white shadow-xl rotate-12' : active ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[14px] transition-all duration-700 ${current ? 'bg-teal-600 text-white shadow-xl rotate-12' : active ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
                 {active && !current ? <Check size={14} /> : num}
             </div>
-            <span className={`text-[9px] font-black uppercase tracking-widest ${current ? 'text-teal-600' : 'text-slate-400'}`}>{label}</span>
+            <span className={`text-[14px] font-black uppercase tracking-widest ${current ? 'text-teal-600' : 'text-slate-400'}`}>{label}</span>
         </div>
     </div>
 );
@@ -847,9 +847,9 @@ const ReviewItem = ({ icon, label, val, sub }) => (
             {icon}
         </div>
         <div>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+            <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
             <p className="text-lg font-black text-slate-900 leading-tight">{val || '---'}</p>
-            {sub && <p className="text-[10px] font-bold text-slate-400 mt-1">{sub}</p>}
+            {sub && <p className="text-[14px] font-bold text-slate-400 mt-1">{sub}</p>}
         </div>
     </div>
 );

@@ -336,7 +336,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                             <h2 className="text-2xl font-heading">{currentDoc.title || 'Diagnostic Report'}</h2>
-                            <span className="bg-marigold/30 text-marigold px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-marigold/50">
+                            <span className="bg-marigold/30 text-marigold px-3 py-1 rounded-full text-[14px] font-black uppercase tracking-wider border border-marigold/50">
                                 {currentIndex + 1} / {documents.length}
                             </span>
                         </div>
@@ -375,28 +375,28 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                                 <div className="text-center">
                                     <p className="text-white font-heading text-2xl mb-2">Loading Report</p>
                                     <p className="text-white/60 text-sm leading-relaxed">Fetching your {currentDoc.title || 'diagnostic report'} from secure storage...</p>
-                                    <p className="text-white/40 text-xs mt-3 font-mono">{imageUrl ? imageUrl.substring(0, 50) + '...' : 'Preparing...'}</p>
+                                    <p className="text-white/40 text-[14px] mt-3 font-mono">{imageUrl ? imageUrl.substring(0, 50) + '...' : 'Preparing...'}</p>
                                 </div>
 
                                 {/* Loading Progress Steps */}
                                 <div className="space-y-2 w-full pl-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-marigold flex items-center justify-center text-xs text-teak font-bold">✓</div>
-                                        <span className="text-xs text-white/70 uppercase tracking-wider">Connecting to vault</span>
+                                        <div className="w-6 h-6 rounded-full bg-marigold flex items-center justify-center text-[14px] text-teak font-bold">✓</div>
+                                        <span className="text-[14px] text-white/70 uppercase tracking-wider">Connecting to vault</span>
                                     </div>
                                     <div className="flex items-center gap-3 animate-pulse">
                                         <div className="w-6 h-6 rounded-full bg-marigold/50 border-2 border-marigold animate-spin"></div>
-                                        <span className="text-xs text-white/70 uppercase tracking-wider">Decrypting file</span>
+                                        <span className="text-[14px] text-white/70 uppercase tracking-wider">Decrypting file</span>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="w-6 h-6 rounded-full border-2 border-white/30"></div>
-                                        <span className="text-xs text-white/50 uppercase tracking-wider">Rendering image</span>
+                                        <span className="text-[14px] text-white/50 uppercase tracking-wider">Rendering image</span>
                                     </div>
                                 </div>
 
                                 <button
                                     onClick={() => { setLoading(false); handleImageError(); }}
-                                    className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs uppercase font-bold transition-all"
+                                    className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[14px] uppercase font-bold transition-all"
                                 >
                                     Skip / Mark as Error
                                 </button>
@@ -420,9 +420,9 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
 
                                 {/* Error Info Box */}
                                 <div className="bg-red-500/10 border-l-4 border-red-500 px-4 py-3 rounded-lg">
-                                    <p className="text-xs text-white/60 uppercase tracking-wider mb-1 font-black">Report Details</p>
+                                    <p className="text-[14px] text-white/60 uppercase tracking-wider mb-1 font-black">Report Details</p>
                                     <p className="text-sm text-white/80 break-all">{currentDoc.title}</p>
-                                    <p className="text-xs text-white/60 mt-2">{new Date(currentDoc.uploadedAt).toLocaleDateString('en-IN')}</p>
+                                    <p className="text-[14px] text-white/60 mt-2">{new Date(currentDoc.uploadedAt).toLocaleDateString('en-IN')}</p>
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 pt-4">

@@ -59,7 +59,7 @@ const QuickActionTile = ({ icon, label, color, onClick }) => (
     <div className={`p-4 rounded-2xl transition-all group-hover:scale-110 ${color}`}>
       {icon}
     </div>
-    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center leading-tight">
+    <span className="text-[14px] font-black text-gray-500 uppercase tracking-widest text-center leading-tight">
       {label}
     </span>
   </button>
@@ -83,21 +83,21 @@ const MetricCard = ({ title, value, change, icon, color }) => {
   return (
     <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col items-center md:items-start text-center md:text-left h-24 justify-center">
       <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full mb-1 md:mb-1.5 gap-1 md:gap-0">
-        <h3 className="hidden md:block text-[10px] font-black text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
+        <h3 className="hidden md:block text-[14px] font-black text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
         <div className={`p-1.5 rounded-lg shrink-0 ${colorMap[color] || 'bg-gray-50 text-gray-600'} group-hover:scale-110 transition-transform`}>
           {icon}
         </div>
       </div>
-      <h3 className="md:hidden text-[8px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
+      <h3 className="md:hidden text-[14px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
       <p className="text-sm md:text-2xl font-black text-gray-900 mb-0">{value}</p>
       {change && (
         <div className="hidden md:flex items-center gap-1 mt-0.5">
           <TrendingUp size={10} className={change.startsWith('+') ? 'text-green-500' : 'text-red-500'} />
-          <span className={`text-[9px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</span>
-          <span className="text-[10px] text-gray-400 hidden sm:inline">from yesterday</span>
+          <span className={`text-[14px] font-bold ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{change}</span>
+          <span className="text-[14px] text-gray-400 hidden sm:inline">from yesterday</span>
         </div>
       )}
-      {!change && <p className="hidden md:block text-[8px] text-gray-400 mt-0.5 uppercase tracking-widest font-black">Currently active</p>}
+      {!change && <p className="hidden md:block text-[14px] text-gray-400 mt-0.5 uppercase tracking-widest font-black">Currently active</p>}
     </div>
   );
 };
@@ -684,7 +684,7 @@ const DoctorDashboard = () => {
                 return `${g}, ${n.toLowerCase().startsWith('dr') ? n : `Dr. ${n}`}`;
               })()}
             </h1>
-            <p className="text-[10px] text-gray-400 mt-0.5 font-semibold hidden sm:block">
+            <p className="text-[14px] text-gray-400 mt-0.5 font-semibold hidden sm:block">
               {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           </div>
@@ -693,7 +693,7 @@ const DoctorDashboard = () => {
             {isSyncing && (
               <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 rounded-lg border border-teal-100">
                 <RefreshCw size={11} className="text-teal-600 animate-spin" />
-                <span className="text-[8px] font-bold text-teal-600 uppercase tracking-widest">Syncing</span>
+                <span className="text-[14px] font-bold text-teal-600 uppercase tracking-widest">Syncing</span>
               </div>
             )}
 
@@ -701,14 +701,14 @@ const DoctorDashboard = () => {
               <button onClick={() => setShowNotifications(!showNotifications)} className="w-9 h-9 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-all">
                 <Bell size={16} />
                 {reminders.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[7px] font-bold rounded-full border-2 border-white flex items-center justify-center">{reminders.length}</span>
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[14px] font-bold rounded-full border-2 border-white flex items-center justify-center">{reminders.length}</span>
                 )}
               </button>
               {showNotifications && (
                 <div className="absolute top-12 right-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-[100]">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold text-gray-900">Notifications</h4>
-                    <button onClick={() => setShowNotifications(false)} className="text-[10px] font-semibold text-teal-600">Dismiss</button>
+                    <h4 className="text-[14px] font-bold text-gray-900">Notifications</h4>
+                    <button onClick={() => setShowNotifications(false)} className="text-[14px] font-semibold text-teal-600">Dismiss</button>
                   </div>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {reminders.slice(0, 4).map((rem, i) => (
@@ -717,12 +717,12 @@ const DoctorDashboard = () => {
                           {rem.type === 'lab' ? <FlaskConical size={12} /> : rem.type === 'followup' ? <Calendar size={12} /> : <Bell size={12} />}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold text-gray-800 truncate">{rem.title}</p>
-                          <p className="text-[9px] text-gray-400 truncate">{rem.patientName}</p>
+                          <p className="text-[14px] font-semibold text-gray-800 truncate">{rem.title}</p>
+                          <p className="text-[14px] text-gray-400 truncate">{rem.patientName}</p>
                         </div>
                       </div>
                     ))}
-                    {reminders.length === 0 && <p className="text-center py-3 text-[10px] text-gray-400">No alerts</p>}
+                    {reminders.length === 0 && <p className="text-center py-3 text-[14px] text-gray-400">No alerts</p>}
                   </div>
                 </div>
               )}
@@ -732,15 +732,15 @@ const DoctorDashboard = () => {
               {localStorage.getItem('userImage') ? (
                 <img src={localStorage.getItem('userImage')} alt="Dr" className="w-8 h-8 rounded-lg border-2 border-white shadow-sm object-cover" />
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-[14px] shadow-sm">
                   {(localStorage.getItem('userName') || 'D').substring(0, 1).toUpperCase()}
                 </div>
               )}
               <div className="hidden lg:block">
-                <p className="text-xs font-bold text-gray-900 leading-tight">
+                <p className="text-[14px] font-bold text-gray-900 leading-tight">
                   {(() => { const n = localStorage.getItem('userName') || 'Doctor'; return n.toLowerCase().startsWith('dr') ? n : `Dr. ${n}`; })()}
                 </p>
-                <p className="text-[9px] text-gray-400 leading-tight">{localStorage.getItem('specialization') || 'Physician'}</p>
+                <p className="text-[14px] text-gray-400 leading-tight">{localStorage.getItem('specialization') || 'Physician'}</p>
               </div>
             </div>
           </div>
@@ -759,7 +759,7 @@ const DoctorDashboard = () => {
                     <ArrowLeft size={18} />
                   </button>
                   <h1 className="text-lg font-bold text-gray-900">Patient Overview</h1>
-                  <span className="hidden md:block text-xs text-gray-400">Dashboard &gt; Patients &gt; {activePatient?.patientName}</span>
+                  <span className="hidden md:block text-[14px] text-gray-400">Dashboard &gt; Patients &gt; {activePatient?.patientName}</span>
                 </div>
                 <div className="flex items-center gap-3">
                 </div>
@@ -774,19 +774,19 @@ const DoctorDashboard = () => {
                    <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
                         <h2 className="text-base font-bold text-gray-900 leading-none">{activePatient?.patientName}</h2>
-                        <span className="px-1.5 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-[9px] font-bold flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> In Consultation</span>
+                        <span className="px-1.5 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-[14px] font-bold flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> In Consultation</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[9px] text-gray-500 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 text-[14px] text-gray-500 mb-1">
                          <span>{patientData?.patientId || 'N/A'}</span>•<span>{patientData?.age ? `${patientData.age} yrs` : 'N/A'}</span>•<span>{patientData?.gender || 'N/A'}</span>•<span>{patientData?.dob ? new Date(patientData.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-4 text-[10px] text-gray-600">
+                      <div className="flex flex-wrap items-center gap-4 text-[14px] text-gray-600">
                          <div className="flex items-center gap-1"><Phone size={12} className="text-gray-400"/> {activePatient?.patientPhone || patientData?.phone || 'N/A'}</div>
                          <div className="flex items-center gap-1"><Mail size={12} className="text-gray-400"/> {patientData?.email || 'N/A'}</div>
                          <div className="flex items-center gap-1"><MapPin size={12} className="text-gray-400"/> {patientData?.address || 'N/A'}</div>
                       </div>
                    </div>
                    
-                   <div className="flex flex-wrap lg:grid lg:grid-cols-2 gap-2 text-[10px] border-t lg:border-t-0 lg:border-l border-gray-100 pt-2 lg:pt-0 lg:pl-4 w-full lg:w-[320px] flex-shrink-0">
+                   <div className="flex flex-wrap lg:grid lg:grid-cols-2 gap-2 text-[14px] border-t lg:border-t-0 lg:border-l border-gray-100 pt-2 lg:pt-0 lg:pl-4 w-full lg:w-[320px] flex-shrink-0">
                       <div>
                         <p className="text-gray-400 mb-1">Blood Group</p>
                         <p className="font-bold text-gray-900">{patientData?.bloodGroup || 'N/A'}</p>
@@ -802,12 +802,12 @@ const DoctorDashboard = () => {
                         return (
                           <div className="col-span-2 mt-1 pt-1 border-t border-gray-100">
                             <div className="flex justify-between items-center mb-0.5">
-                               <p className="text-gray-400 text-[9px]">
+                               <p className="text-gray-400 text-[14px]">
                                   {prevNote ? `Previous Private Note (${new Date(prevNote.date).toLocaleDateString('en-GB')})` : 'Previous Private Note'}
                                </p>
-                               <button onClick={() => setShowHistoryLocker(true)} className="text-[9px] font-bold text-teal-600 hover:underline">View All</button>
+                               <button onClick={() => setShowHistoryLocker(true)} className="text-[14px] font-bold text-teal-600 hover:underline">View All</button>
                             </div>
-                            <p className="font-medium text-gray-700 italic line-clamp-1 max-w-sm text-[9px]">
+                            <p className="font-medium text-gray-700 italic line-clamp-1 max-w-sm text-[14px]">
                                {prevNote ? `"${prevNote.symptoms}"` : "No previous notes recorded by you."}
                             </p>
                           </div>
@@ -817,8 +817,8 @@ const DoctorDashboard = () => {
                 </div>
                 
                 <div className="flex border-t border-gray-100 px-4">
-                   <button className="px-6 py-1.5 border-b-2 border-teal-600 text-teal-600 text-xs font-bold flex items-center gap-2"><Layout size={14}/> Overview</button>
-                   <button onClick={() => setShowHistoryLocker(true)} className="px-6 py-1.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-xs font-bold flex items-center gap-2"><History size={14}/> History</button>
+                   <button className="px-6 py-1.5 border-b-2 border-teal-600 text-teal-600 text-[14px] font-bold flex items-center gap-2"><Layout size={14}/> Overview</button>
+                   <button onClick={() => setShowHistoryLocker(true)} className="px-6 py-1.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-[14px] font-bold flex items-center gap-2"><History size={14}/> History</button>
                 </div>
               </div>
 
@@ -828,30 +828,30 @@ const DoctorDashboard = () => {
                  {/* Private Notes */}
                  <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-4">
-                       <h3 className="text-xs font-bold text-gray-900">Doctor's Private Notes</h3>
+                       <h3 className="text-[14px] font-bold text-gray-900">Doctor's Private Notes</h3>
                        <div className="flex gap-2 items-center">
                          {('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && (
                            <button type="button" onClick={handleStartDictation}
-                             className={`flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
+                             className={`flex items-center gap-1 px-2 py-1 rounded-md text-[14px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
                              <Mic size={10} className={isDictating ? 'animate-bounce' : ''} />
                              {isDictating ? 'Listening...' : 'Dictate'}
                            </button>
                          )}
-                         <button className="text-[10px] font-bold text-gray-500 hover:text-teal-600 flex items-center gap-1"><Edit3 size={12}/> Edit Notes</button>
+                         <button className="text-[14px] font-bold text-gray-500 hover:text-teal-600 flex items-center gap-1"><Edit3 size={12}/> Edit Notes</button>
                        </div>
                     </div>
                     <div className="flex items-start gap-1.5 mb-2">
                        <Lock size={10} className="text-orange-400 mt-0.5" />
-                       <p className="text-[9px] font-semibold text-orange-400/80">These notes are only visible to you.</p>
+                       <p className="text-[14px] font-semibold text-orange-400/80">These notes are only visible to you.</p>
                     </div>
                     <textarea 
-                       className="w-full flex-grow min-h-[80px] bg-[#FFFAF0] border border-orange-100/50 rounded-xl p-2.5 text-xs text-gray-800 outline-none focus:border-orange-200 transition-colors resize-none"
+                       className="w-full flex-grow min-h-[80px] bg-[#FFFAF0] border border-orange-100/50 rounded-xl p-2.5 text-[14px] text-gray-800 outline-none focus:border-orange-200 transition-colors resize-none"
                        placeholder="Patient has recurring headaches and elevated BP. Advised lifestyle changes..."
                        value={notes}
                        onChange={(e) => setNotes(e.target.value)}
                     />
                     <div className="flex justify-end mt-2">
-                       <button onClick={handleSaveNote} className="px-3 py-1 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md text-[9px] font-bold transition-colors flex items-center gap-1 shadow-sm">
+                       <button onClick={handleSaveNote} className="px-3 py-1 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
                           <Save size={10}/> Store Note
                        </button>
                     </div>
@@ -860,7 +860,7 @@ const DoctorDashboard = () => {
                  {/* Vitals */}
                  <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-3">
-                       <h3 className="text-xs font-bold text-gray-900">Vitals</h3>
+                       <h3 className="text-[14px] font-bold text-gray-900">Vitals</h3>
                        <button onClick={() => { setVitalsInput({
                           bloodPressure: patientData?.vitals?.[0]?.bloodPressure || '',
                           sugarLevel: patientData?.vitals?.[0]?.sugarLevel || '',
@@ -868,7 +868,7 @@ const DoctorDashboard = () => {
                           spO2: patientData?.vitals?.[0]?.spO2 || '',
                           weight: patientData?.vitals?.[0]?.weight || '',
                           temperature: patientData?.vitals?.[0]?.temperature || ''
-                       }); setShowVitalsModal(true); }} className="text-[9px] font-bold text-teal-600 hover:underline">Edit</button>
+                       }); setShowVitalsModal(true); }} className="text-[14px] font-bold text-teal-600 hover:underline">Edit</button>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-1.5 flex-grow" onClick={() => { setVitalsInput({
@@ -882,70 +882,70 @@ const DoctorDashboard = () => {
                        <div className="flex items-center justify-between bg-[#F8FBFA] rounded-md px-2 py-1.5 border border-teal-50 hover:bg-teal-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Heart size={10} className="text-teal-500" />
-                             <span className="text-[9px] font-semibold text-gray-500">BP</span>
+                             <span className="text-[14px] font-semibold text-gray-500">BP</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.bloodPressure || '--/--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">mmHg</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.bloodPressure || '--/--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">mmHg</span>
                           </div>
                        </div>
                        
                        <div className="flex items-center justify-between bg-[#FAFAFF] rounded-md px-2 py-1.5 border border-indigo-50 hover:bg-indigo-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Droplets size={10} className="text-indigo-400" />
-                             <span className="text-[9px] font-semibold text-gray-500">Sugar</span>
+                             <span className="text-[14px] font-semibold text-gray-500">Sugar</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.sugarLevel || '--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">mg/dL</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.sugarLevel || '--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">mg/dL</span>
                           </div>
                        </div>
                        
                        <div className="flex items-center justify-between bg-[#FFF8F8] rounded-md px-2 py-1.5 border border-red-50 hover:bg-red-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Activity size={10} className="text-red-400" />
-                             <span className="text-[9px] font-semibold text-gray-500">Pulse</span>
+                             <span className="text-[14px] font-semibold text-gray-500">Pulse</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.pulseRate || '--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">bpm</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.pulseRate || '--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">bpm</span>
                           </div>
                        </div>
                        
                        <div className="flex items-center justify-between bg-[#F0FAFF] rounded-md px-2 py-1.5 border border-blue-50 hover:bg-blue-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Wind size={10} className="text-blue-400" />
-                             <span className="text-[9px] font-semibold text-gray-500">SpO2</span>
+                             <span className="text-[14px] font-semibold text-gray-500">SpO2</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.spO2 || '--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">%</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.spO2 || '--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">%</span>
                           </div>
                        </div>
                        
                        <div className="flex items-center justify-between bg-[#FFFBF0] rounded-md px-2 py-1.5 border border-amber-50 hover:bg-amber-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Lock size={10} className="text-amber-500" />
-                             <span className="text-[9px] font-semibold text-gray-500">Weight</span>
+                             <span className="text-[14px] font-semibold text-gray-500">Weight</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.weight || '--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">kg</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.weight || '--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">kg</span>
                           </div>
                        </div>
                        
                        <div className="flex items-center justify-between bg-[#FFF4F6] rounded-md px-2 py-1.5 border border-pink-50 hover:bg-pink-50/50 transition-colors cursor-pointer">
                           <div className="flex items-center gap-1.5">
                              <Thermometer size={10} className="text-pink-400" />
-                             <span className="text-[9px] font-semibold text-gray-500">Temp</span>
+                             <span className="text-[14px] font-semibold text-gray-500">Temp</span>
                           </div>
                           <div className="text-right">
-                             <span className="text-[10px] font-black text-gray-900">{patientData?.vitals?.[0]?.temperature || '--'}</span>
-                             <span className="text-[8px] text-gray-400 ml-0.5">°F</span>
+                             <span className="text-[14px] font-black text-gray-900">{patientData?.vitals?.[0]?.temperature || '--'}</span>
+                             <span className="text-[14px] text-gray-400 ml-0.5">°F</span>
                           </div>
                        </div>
                     </div>
-                    <p className="text-[8px] text-gray-400 mt-2 text-center">{patientData?.vitals?.[0]?.recordedAt ? new Date(patientData.vitals[0].recordedAt).toLocaleString() : 'N/A'}</p>
+                    <p className="text-[14px] text-gray-400 mt-2 text-center">{patientData?.vitals?.[0]?.recordedAt ? new Date(patientData.vitals[0].recordedAt).toLocaleString() : 'N/A'}</p>
                  </div>
 
                  {/* Lab Reports */}
@@ -955,18 +955,18 @@ const DoctorDashboard = () => {
                        {patientData?.documents?.length > 0 ? patientData.documents.slice(0, 3).map((rep, i) => (
                           <div key={i} className="flex justify-between items-start sm:items-center pb-2 border-b border-gray-50 last:border-0 last:pb-0">
                              <div className="flex-1 min-w-0 pr-2">
-                                <p className="text-[10px] font-bold text-gray-800 truncate">{rep.title || 'Diagnostic Report'}</p>
-                                <p className="text-[9px] text-gray-400">{new Date(rep.uploadedAt).toLocaleDateString()}</p>
+                                <p className="text-[14px] font-bold text-gray-800 truncate">{rep.title || 'Diagnostic Report'}</p>
+                                <p className="text-[14px] text-gray-400">{new Date(rep.uploadedAt).toLocaleDateString()}</p>
                              </div>
                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <span className="px-2 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded text-[8px] font-bold">Available</span>
-                                <button onClick={() => window.open(rep.fileUrl, '_blank')} className="text-[8px] font-bold text-red-500 hover:underline flex items-center gap-1"><FileText size={10}/> PDF</button>
+                                <span className="px-2 py-0.5 bg-green-50 text-green-600 border border-green-100 rounded text-[14px] font-bold">Available</span>
+                                <button onClick={() => window.open(rep.fileUrl, '_blank')} className="text-[14px] font-bold text-red-500 hover:underline flex items-center gap-1"><FileText size={10}/> PDF</button>
                              </div>
                           </div>
-                       )) : <p className="text-[10px] text-gray-400 text-center py-4 border-2 border-dashed border-gray-50 rounded-xl flex-grow flex items-center justify-center">No reports available</p>}
+                       )) : <p className="text-[14px] text-gray-400 text-center py-4 border-2 border-dashed border-gray-50 rounded-xl flex-grow flex items-center justify-center">No reports available</p>}
                     </div>
                     {patientData?.documents?.length > 3 && (
-                       <button onClick={() => setShowHistoryLocker(true)} className="text-[10px] font-bold text-teal-600 mt-3 text-left flex items-center gap-1 hover:underline">View All Reports <ArrowRight size={10}/></button>
+                       <button onClick={() => setShowHistoryLocker(true)} className="text-[14px] font-bold text-teal-600 mt-3 text-left flex items-center gap-1 hover:underline">View All Reports <ArrowRight size={10}/></button>
                     )}
                  </div>
 
@@ -979,15 +979,15 @@ const DoctorDashboard = () => {
                  <div className="w-full xl:w-[70%]">
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 h-full flex flex-col">
                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="text-xs font-bold text-gray-900">Current Prescription</h3>
+                          <h3 className="text-[14px] font-bold text-gray-900">Current Prescription</h3>
                           <div className="flex gap-2">
-                             <button type="button" onClick={() => setShowTemplatesModal(true)} className="px-2.5 py-1.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded-md hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                             <button type="button" onClick={() => setShowTemplatesModal(true)} className="px-2.5 py-1.5 bg-indigo-50 text-indigo-600 text-[14px] font-bold rounded-md hover:bg-indigo-100 transition-colors flex items-center gap-1">
                                 <Layout size={10}/> Templates
                              </button>
                              <button 
                                 type="button" 
                                 onClick={() => setMedicines([...medicines, { name: '', strength: '', whenToTake: '', beforeAfter: '', duration: '', instructions: '' }])}
-                                className="px-3 py-1.5 bg-teal-600 text-white text-[9px] font-bold rounded-md shadow hover:bg-teal-700 transition-colors flex items-center gap-1"
+                                className="px-3 py-1.5 bg-teal-600 text-white text-[14px] font-bold rounded-md shadow hover:bg-teal-700 transition-colors flex items-center gap-1"
                              >
                                 <Plus size={12}/> New Medicine
                              </button>
@@ -995,7 +995,7 @@ const DoctorDashboard = () => {
                        </div>
                        
                        <div className="overflow-x-auto flex-grow">
-                          <table className="w-full text-left text-[10px] min-w-[700px]">
+                          <table className="w-full text-left text-[14px] min-w-[700px]">
                              <thead>
                                 <tr className="border-b border-gray-100 text-gray-400">
                                    <th className="pb-2 font-semibold">Medicine Name</th>
@@ -1023,7 +1023,7 @@ const DoctorDashboard = () => {
                                 ))}
                                 {medicines.length === 0 && (
                                    <tr>
-                                      <td colSpan="7" className="py-8 text-center text-gray-400 text-xs font-medium border-2 border-dashed border-gray-100 rounded-xl mt-4 block w-full box-border">No medicines prescribed yet</td>
+                                      <td colSpan="7" className="py-8 text-center text-gray-400 text-[14px] font-medium border-2 border-dashed border-gray-100 rounded-xl mt-4 block w-full box-border">No medicines prescribed yet</td>
                                    </tr>
                                 )}
                              </tbody>
@@ -1037,10 +1037,10 @@ const DoctorDashboard = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex-grow">
                        <div className="flex justify-between items-center mb-3">
                           <h3 className="text-sm font-bold text-gray-900">Follow Up</h3>
-                          <button className="text-[10px] font-bold text-teal-600 hover:underline">Schedule</button>
+                          <button className="text-[14px] font-bold text-teal-600 hover:underline">Schedule</button>
                        </div>
                        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
-                          <p className="text-[10px] text-gray-400 w-full text-center py-1">No follow-up scheduled.</p>
+                          <p className="text-[14px] text-gray-400 w-full text-center py-1">No follow-up scheduled.</p>
                        </div>
                     </div>
 
@@ -1050,8 +1050,8 @@ const DoctorDashboard = () => {
                           {isProcessing ? 'Saving...' : 'Complete Consultation'}
                        </button>
                        <div className="flex gap-3">
-                          <button onClick={handleReferToLab} className="flex-1 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-xl font-bold text-xs hover:bg-teal-100 transition-all shadow-sm flex items-center justify-center gap-1.5"><Plus size={14}/> New Test</button>
-                          <button onClick={handleSaveDraft} className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all shadow-sm">Save Draft</button>
+                          <button onClick={handleReferToLab} className="flex-1 py-2.5 bg-teal-50 border border-teal-200 text-teal-700 rounded-xl font-bold text-[14px] hover:bg-teal-100 transition-all shadow-sm flex items-center justify-center gap-1.5"><Plus size={14}/> New Test</button>
+                          <button onClick={handleSaveDraft} className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-[14px] hover:bg-gray-50 transition-all shadow-sm">Save Draft</button>
                        </div>
                     </div>
                  </div>
@@ -1079,7 +1079,7 @@ const DoctorDashboard = () => {
                       {c.icon}
                     </div>
                     <p className="text-base md:text-xl font-extrabold text-gray-900 leading-none">{c.value}</p>
-                    <p className="text-[7px] md:text-[10px] font-semibold text-gray-400 mt-0.5 truncate"><span className="md:hidden">{c.label}</span><span className="hidden md:inline">{c.full}</span></p>
+                    <p className="text-[14px] md:text-[14px] font-semibold text-gray-400 mt-0.5 truncate"><span className="md:hidden">{c.label}</span><span className="hidden md:inline">{c.full}</span></p>
                   </div>
                 ))}
               </div>
@@ -1091,12 +1091,12 @@ const DoctorDashboard = () => {
                   <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-bold text-gray-900">Today's Queue</h2>
-                      <span className="flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-600 text-[7px] font-bold uppercase rounded-full tracking-wider border border-green-100">
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-600 text-[14px] font-bold uppercase rounded-full tracking-wider border border-green-100">
                         <span className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-teal-500 animate-ping' : 'bg-green-500'}`} />
                         {isSyncing ? 'Sync' : 'Live'}
                       </span>
                     </div>
-                    <button onClick={() => navigate('/doctor/appointments')} className="text-[10px] font-bold text-teal-600 hover:text-teal-700">Full Schedule</button>
+                    <button onClick={() => navigate('/doctor/appointments')} className="text-[14px] font-bold text-teal-600 hover:text-teal-700">Full Schedule</button>
                   </div>
 
                   <div className="px-4 pt-1.5 flex gap-0.5 border-b border-gray-100">
@@ -1107,9 +1107,9 @@ const DoctorDashboard = () => {
                       { id: 'Completed', label: 'Done', count: queue.filter(p => p.status === 'Completed').length }
                     ].map((tab) => (
                       <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                        className={`px-2.5 py-2 text-[10px] font-bold transition-all relative ${activeTab === tab.id ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                        className={`px-2.5 py-2 text-[14px] font-bold transition-all relative ${activeTab === tab.id ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'}`}>
                         {tab.label}
-                        <span className={`ml-1 text-[8px] px-1 py-0.5 rounded ${activeTab === tab.id ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-400'}`}>{tab.count}</span>
+                        <span className={`ml-1 text-[14px] px-1 py-0.5 rounded ${activeTab === tab.id ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-400'}`}>{tab.count}</span>
                         {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-teal-500 rounded-t" />}
                       </button>
                     ))}
@@ -1119,7 +1119,7 @@ const DoctorDashboard = () => {
                     {filteredQueue.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-10 text-center">
                         <Users size={24} className="text-gray-200 mb-2" />
-                        <p className="text-xs font-semibold text-gray-400">No patients in queue</p>
+                        <p className="text-[14px] font-semibold text-gray-400">No patients in queue</p>
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-50">
@@ -1132,28 +1132,28 @@ const DoctorDashboard = () => {
                               } else if (patient.status === 'In-Consultation') { setActivePatient(patient); setIsConsultationMode(true); }
                             }}
                             className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-teal-50/30 transition-all cursor-pointer group">
-                            <span className="text-[10px] font-bold text-gray-300 w-4 text-center shrink-0">{idx + 1}</span>
-                            <span className="text-[10px] font-semibold text-gray-400 w-14 shrink-0 hidden sm:block">
+                            <span className="text-[14px] font-bold text-gray-300 w-4 text-center shrink-0">{idx + 1}</span>
+                            <span className="text-[14px] font-semibold text-gray-400 w-14 shrink-0 hidden sm:block">
                               {new Date(patient.appointmentDate || patient.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center text-teal-600 font-bold text-[9px] border border-teal-100 shrink-0 group-hover:from-teal-500 group-hover:to-cyan-500 group-hover:text-white transition-all">
+                              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center text-teal-600 font-bold text-[14px] border border-teal-100 shrink-0 group-hover:from-teal-500 group-hover:to-cyan-500 group-hover:text-white transition-all">
                                 {(patient.patientName || 'UP').substring(0, 2).toUpperCase()}
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                  <p className="text-[11px] font-semibold text-gray-900 leading-tight truncate">{patient.patientName}</p>
+                                  <p className="text-[14px] font-semibold text-gray-900 leading-tight truncate">{patient.patientName}</p>
                                   {(patient.currentStage === 'Lab-Pending' || patient.currentStage === 'Lab-Processing') && (
                                     <FlaskConical size={11} className="text-blue-500 animate-pulse shrink-0" title="Patient in Lab" />
                                   )}
                                 </div>
-                                <p className="text-[9px] text-gray-400 truncate">
+                                <p className="text-[14px] text-gray-400 truncate">
                                   {patient.reason || 'General'} - {patient.tokenNumber}
                                   {patient.estimatedWait !== undefined && ` · Est: ${patient.estimatedWait}m`}
                                 </p>
                               </div>
                             </div>
-                            <span className={`shrink-0 px-2 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider hidden md:block ${
+                            <span className={`shrink-0 px-2 py-0.5 rounded text-[14px] font-bold uppercase tracking-wider hidden md:block ${
                               patient.status === 'In-Consultation' ? 'bg-green-50 text-green-600 border border-green-100' :
                               patient.currentStage === 'Lab-Pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
                               patient.currentStage === 'Lab-Completed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' :
@@ -1165,20 +1165,20 @@ const DoctorDashboard = () => {
                             <div className="shrink-0">
                               {patient.status === 'Waiting' ? (
                                 patient.currentStage === 'Lab-Pending' ? (
-                                  <span className="px-2 py-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[8px] font-bold">At Lab</span>
+                                  <span className="px-2 py-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[14px] font-bold">At Lab</span>
                                 ) : (
                                   <button onClick={(e) => { e.stopPropagation(); handleStartConsultation(patient); }}
-                                    className={`px-3 py-1 text-white rounded-lg text-[8px] font-bold shadow-sm transition-all active:scale-95 ${patient.currentStage === 'Lab-Completed' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-teal-600 hover:bg-teal-700'}`}>
+                                    className={`px-3 py-1 text-white rounded-lg text-[14px] font-bold shadow-sm transition-all active:scale-95 ${patient.currentStage === 'Lab-Completed' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-teal-600 hover:bg-teal-700'}`}>
                                     {patient.currentStage === 'Lab-Completed' ? 'Resume' : 'Start'}
                                   </button>
                                 )
                               ) : patient.status === 'In-Consultation' ? (
                                 <button onClick={(e) => { e.stopPropagation(); setActivePatient(patient); setIsConsultationMode(true); }}
-                                  className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[8px] font-bold shadow-sm transition-all active:scale-95 animate-pulse">Resume</button>
+                                  className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[14px] font-bold shadow-sm transition-all active:scale-95 animate-pulse">Resume</button>
                               ) : patient.status === 'Pending-Approval' ? (
-                                <span className="px-2 py-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[8px] font-bold">Pending</span>
+                                <span className="px-2 py-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[14px] font-bold">Pending</span>
                               ) : (
-                                <span className="text-[9px] text-gray-300">{patient.status}</span>
+                                <span className="text-[14px] text-gray-300">{patient.status}</span>
                               )}
                             </div>
                           </div>
@@ -1188,8 +1188,8 @@ const DoctorDashboard = () => {
                   </div>
 
                   <div className="px-4 py-2 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <span className="text-[9px] font-bold text-gray-400">{queue.length} in queue</span>
-                    <span className="text-[9px] font-bold text-gray-400">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                    <span className="text-[14px] font-bold text-gray-400">{queue.length} in queue</span>
+                    <span className="text-[14px] font-bold text-gray-400">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                   </div>
                 </div>
 
@@ -1204,23 +1204,23 @@ const DoctorDashboard = () => {
                       {/* Top row: title + break count */}
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h3 className="text-xs font-bold tracking-tight flex items-center gap-1.5">
+                          <h3 className="text-[14px] font-bold tracking-tight flex items-center gap-1.5">
                             <Coffee size={12} className={isOnBreak ? 'text-teal-300 animate-bounce' : 'text-white/50'} />
                             {isOnBreak ? 'On Break' : 'Take a Break'}
                           </h3>
-                          <p className="text-[8px] text-white/40 mt-0.5">
+                          <p className="text-[14px] text-white/40 mt-0.5">
                             {isOnBreak ? 'Queue paused · patients notified' : 'Short breaks improve focus'}
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5">
                           {breaksTaken > 0 && (
-                            <span className="text-[7px] font-black bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                            <span className="text-[14px] font-black bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                               {breaksTaken}×
                             </span>
                           )}
                           <div className="text-right">
-                            <p className="text-[7px] font-bold text-white/30 uppercase tracking-wider">{isOnBreak ? 'Break' : 'Working'}</p>
-                            <p className={`text-xs font-black ${isOnBreak ? 'text-teal-300' : 'text-white/70'}`}>
+                            <p className="text-[14px] font-bold text-white/30 uppercase tracking-wider">{isOnBreak ? 'Break' : 'Working'}</p>
+                            <p className={`text-[14px] font-black ${isOnBreak ? 'text-teal-300' : 'text-white/70'}`}>
                               {isOnBreak && breakCountdown > 0
                                 ? `${String(Math.floor(breakCountdown / 60)).padStart(2,'0')}:${String(breakCountdown % 60).padStart(2,'0')}`
                                 : elapsedWorkTime}
@@ -1258,7 +1258,7 @@ const DoctorDashboard = () => {
                             <button
                               key={m}
                               onClick={() => setSelectedBreakMins(m)}
-                              className={`flex-1 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
+                              className={`flex-1 py-1 rounded-lg text-[14px] font-black uppercase tracking-wider transition-all border ${
                                 selectedBreakMins === m
                                   ? 'bg-teal-500/25 border-teal-400/50 text-teal-300'
                                   : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
@@ -1273,7 +1273,7 @@ const DoctorDashboard = () => {
                       {/* CTA button */}
                       <button
                         onClick={handleToggleBreak}
-                        className={`w-full py-2 rounded-lg font-black text-[10px] uppercase tracking-wider transition-all active:scale-[0.97] ${
+                        className={`w-full py-2 rounded-lg font-black text-[14px] uppercase tracking-wider transition-all active:scale-[0.97] ${
                           isOnBreak
                             ? 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400/30'
                             : 'bg-white/10 hover:bg-white/18 text-white/80 border border-white/10 hover:border-white/20'
@@ -1287,10 +1287,10 @@ const DoctorDashboard = () => {
 
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 flex-1 flex flex-col" style={{ minHeight: '180px' }}>
                     <div className="flex justify-between items-center mb-2.5">
-                      <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                      <h3 className="text-[14px] font-bold text-gray-900 flex items-center gap-1.5">
                         <Bell size={13} className="text-orange-400" /> Reminders
                       </h3>
-                      <button onClick={() => navigate('/doctor/appointments')} className="text-[9px] font-bold text-teal-600">View All</button>
+                      <button onClick={() => navigate('/doctor/appointments')} className="text-[14px] font-bold text-teal-600">View All</button>
                     </div>
                     <div className="space-y-1.5 flex-grow overflow-y-auto">
                       {reminders.map((rem, idx) => (
@@ -1299,15 +1299,15 @@ const DoctorDashboard = () => {
                             {rem.type === 'lab' ? <FlaskConical size={12} /> : rem.type === 'followup' ? <Calendar size={12} /> : rem.type === 'prescription' ? <FileText size={12} /> : <Bell size={12} />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] font-semibold text-gray-800 truncate">{rem.title}</p>
-                            <p className="text-[8px] text-gray-400 truncate">{rem.patientName}</p>
+                            <p className="text-[14px] font-semibold text-gray-800 truncate">{rem.title}</p>
+                            <p className="text-[14px] text-gray-400 truncate">{rem.patientName}</p>
                           </div>
                         </div>
                       ))}
                       {reminders.length === 0 && (
                         <div className="flex-1 flex flex-col items-center justify-center py-5">
                           <Bell className="text-gray-200 mb-1.5" size={18} />
-                          <p className="text-[9px] font-bold text-gray-300">No reminders</p>
+                          <p className="text-[14px] font-bold text-gray-300">No reminders</p>
                         </div>
                       )}
                     </div>
@@ -1319,10 +1319,10 @@ const DoctorDashboard = () => {
               {queue.filter(a => a.visitType === 'Appointment').length > 0 && (
                 <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                    <h2 className="text-[14px] font-bold text-gray-900 flex items-center gap-1.5">
                       <Calendar size={14} className="text-teal-600" /> Scheduled Appointments
                     </h2>
-                    <button onClick={() => navigate('/doctor/appointments')} className="text-[10px] font-bold text-teal-600 flex items-center gap-1">Calendar <ArrowRight size={10} /></button>
+                    <button onClick={() => navigate('/doctor/appointments')} className="text-[14px] font-bold text-teal-600 flex items-center gap-1">Calendar <ArrowRight size={10} /></button>
                   </div>
                   <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-hide">
                     {queue.filter(app => app.visitType === 'Appointment').map((app, idx, arr) => (
@@ -1332,10 +1332,10 @@ const DoctorDashboard = () => {
                           app.status === 'In-Consultation' ? 'bg-green-500' : app.status === 'Waiting' ? 'bg-orange-400' : app.status === 'Completed' ? 'bg-blue-500' : 'bg-gray-300'
                         }`} />
                         <div>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{new Date(app.appointmentDate || app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                          <p className="text-xs font-semibold text-gray-900 leading-tight">{app.patientName}</p>
-                          <p className="text-[9px] text-gray-400 mb-1.5">{app.reason || 'Consultation'}</p>
-                          <span className={`px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider ${
+                          <p className="text-[14px] font-bold text-gray-400 uppercase tracking-wider">{new Date(app.appointmentDate || app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-[14px] font-semibold text-gray-900 leading-tight">{app.patientName}</p>
+                          <p className="text-[14px] text-gray-400 mb-1.5">{app.reason || 'Consultation'}</p>
+                          <span className={`px-1.5 py-0.5 rounded text-[14px] font-bold uppercase tracking-wider ${
                             app.status === 'In-Consultation' ? 'bg-green-50 text-green-600' : app.status === 'Waiting' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
                           }`}>{app.status}</span>
                         </div>
@@ -1401,27 +1401,27 @@ const DoctorDashboard = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Blood Pressure (mmHg)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">Blood Pressure (mmHg)</label>
                   <input type="text" value={vitalsInput.bloodPressure} onChange={(e) => setVitalsInput({ ...vitalsInput, bloodPressure: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="120/80" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Sugar (mg/dL)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">Sugar (mg/dL)</label>
                   <input type="text" value={vitalsInput.sugarLevel} onChange={(e) => setVitalsInput({ ...vitalsInput, sugarLevel: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="90" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Pulse (bpm)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">Pulse (bpm)</label>
                   <input type="text" value={vitalsInput.pulseRate} onChange={(e) => setVitalsInput({ ...vitalsInput, pulseRate: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="75" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">SpO2 (%)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">SpO2 (%)</label>
                   <input type="text" value={vitalsInput.spO2} onChange={(e) => setVitalsInput({ ...vitalsInput, spO2: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="98" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Weight (kg)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">Weight (kg)</label>
                   <input type="text" value={vitalsInput.weight} onChange={(e) => setVitalsInput({ ...vitalsInput, weight: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="70" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Temp (°F)</label>
+                  <label className="text-[14px] font-bold text-gray-700 block mb-1">Temp (°F)</label>
                   <input type="text" value={vitalsInput.temperature} onChange={(e) => setVitalsInput({ ...vitalsInput, temperature: e.target.value })} className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none" placeholder="98.6" />
                 </div>
               </div>
@@ -1444,7 +1444,7 @@ const DoctorDashboard = () => {
               </div>
               <form onSubmit={handleCreateAppointment} className="space-y-6">
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Patient Name</label>
+                  <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Patient Name</label>
                   <input
                     required
                     type="text"
@@ -1455,7 +1455,7 @@ const DoctorDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
+                  <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
                   <input
                     required
                     type="tel"
@@ -1466,7 +1466,7 @@ const DoctorDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Visit Type</label>
+                  <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Visit Type</label>
                   <select
                     className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                     value={newAppointment.visitType}
@@ -1491,7 +1491,7 @@ const DoctorDashboard = () => {
               <div className="flex justify-between items-center mb-8">
                 <div>
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight">Clinical Templates</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Pre-defined prescription protocols</p>
+                  <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Pre-defined prescription protocols</p>
                 </div>
                 <button onClick={() => setShowTemplatesModal(false)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
                   <X size={20} />
@@ -1548,7 +1548,7 @@ const DoctorDashboard = () => {
                                 timer: 2000
                               });
                             }}
-                            className="px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-indigo-700 transition-all"
+                            className="px-3 py-1.5 bg-indigo-600 text-white text-[14px] font-black uppercase rounded-lg hover:bg-indigo-700 transition-all"
                           >
                             Apply to Prescription
                           </button>
@@ -1562,9 +1562,9 @@ const DoctorDashboard = () => {
                         </button>
                       </div>
                     </div>
-                    <p className="text-xs font-bold text-slate-500 leading-relaxed mb-2">{template.drugs}</p>
+                    <p className="text-[14px] font-bold text-slate-500 leading-relaxed mb-2">{template.drugs}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">
+                      <span className="text-[14px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">
                         {template.instruction}
                       </span>
                     </div>
@@ -1623,7 +1623,7 @@ const DoctorDashboard = () => {
               <form onSubmit={handleCreatePatient} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
+                    <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
                     <input
                       required
                       type="text"
@@ -1634,7 +1634,7 @@ const DoctorDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Gender</label>
+                    <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Gender</label>
                     <select
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
                       value={newPatient.gender}
@@ -1646,7 +1646,7 @@ const DoctorDashboard = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Age</label>
+                    <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Age</label>
                     <input
                       required
                       type="number"
@@ -1658,7 +1658,7 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
+                  <label className="block text-[14px] font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
                   <input
                     required
                     type="tel"

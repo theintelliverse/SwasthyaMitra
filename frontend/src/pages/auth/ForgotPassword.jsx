@@ -68,7 +68,7 @@ const ForgotPassword = () => {
                         <LockKeyhole size={28} />
                     </div>
                     <h1 className="text-2xl font-heading text-teak">Reset Password</h1>
-                    <p className="text-khaki text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+                    <p className="text-khaki text-[14px] font-black uppercase tracking-[0.2em] mt-1">
                         Staff Account Recovery
                     </p>
                 </header>
@@ -78,7 +78,7 @@ const ForgotPassword = () => {
 
                     {/* Clinic Code */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">
+                        <label className="text-[14px] font-black uppercase text-khaki ml-2 tracking-widest">
                             Clinic Code *
                         </label>
                         <div className="relative">
@@ -97,7 +97,7 @@ const ForgotPassword = () => {
 
                     {/* Email */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">
+                        <label className="text-[14px] font-black uppercase text-khaki ml-2 tracking-widest">
                             Email Address *
                         </label>
                         <div className="relative">
@@ -112,7 +112,7 @@ const ForgotPassword = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <p className="text-xs text-khaki mt-2 ml-2">
+                        <p className="text-[14px] text-khaki mt-2 ml-2">
                             We'll send a password reset link to this email.
                         </p>
                     </div>
@@ -151,7 +151,7 @@ const ForgotPassword = () => {
 
                 {/* Help Text */}
                 <div className="mt-8 pt-6 border-t border-sandstone/50 text-center">
-                    <p className="text-[9px] text-khaki font-black uppercase tracking-tighter">
+                    <p className="text-[14px] text-khaki font-black uppercase tracking-tighter">
                         Reset link expires in 1 hour
                     </p>
                 </div>

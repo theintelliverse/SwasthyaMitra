@@ -94,7 +94,7 @@ const RegisterClinic = () => {
           {/* Left Sidebar - Information */}
           <div className="lg:col-span-2 bg-teak p-6 lg:p-8 text-parchment flex flex-col justify-between">
             <div>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-saffron/80">Onboarding</span>
+              <span className="text-[14px] font-black uppercase tracking-[0.2em] text-saffron/80">Onboarding</span>
               <h2 className="text-3xl font-heading mt-2 mb-3 leading-tight">Register Your <br />Medical Facility</h2>
               <p className="text-parchment/70 text-sm leading-relaxed mb-4 font-medium italic">
                 "Modernizing Indian healthcare, one clinic at a time."
@@ -103,7 +103,7 @@ const RegisterClinic = () => {
               <ul className="space-y-2">
                 {['Multi-role Staff Management', 'AI Wait-time Prediction', 'WhatsApp Notifications'].map((item, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-sm font-semibold">
-                    <div className="w-5 h-5 rounded-full bg-marigold flex items-center justify-center text-[10px] text-white">✓</div>
+                    <div className="w-5 h-5 rounded-full bg-marigold flex items-center justify-center text-[14px] text-white">✓</div>
                     {item}
                   </li>
                 ))}
@@ -111,7 +111,7 @@ const RegisterClinic = () => {
             </div>
 
             <div className="mt-6 pt-6 border-t border-parchment/10">
-              <p className="text-xs text-parchment/50 font-medium">Already registered?</p>
+              <p className="text-[14px] text-parchment/50 font-medium">Already registered?</p>
               <button
                 onClick={() => navigate('/login')}
                 className="text-saffron font-bold hover:text-white transition-colors mt-1"
@@ -127,11 +127,11 @@ const RegisterClinic = () => {
 
               {/* Section 1: Clinic Info */}
               <div className="space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Clinic Information</h3>
+                <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Clinic Information</h3>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Name</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Name</label>
                     <input
                       type="text" required placeholder="City Care Hospital"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold"
@@ -139,7 +139,7 @@ const RegisterClinic = () => {
                     />
                   </div>
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Code (Unique)</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Code (Unique)</label>
                     <input
                       type="text" required placeholder="e.g. CITY01"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold uppercase"
@@ -149,7 +149,7 @@ const RegisterClinic = () => {
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Full Address</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Full Address</label>
                   <input
                     type="text" required placeholder="Street, Sector, City, State"
                     className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
@@ -160,11 +160,11 @@ const RegisterClinic = () => {
 
               {/* Section 2: Admin Info */}
               <div className="space-y-3 pt-2">
-                <h3 className="text-xs font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Admin Account</h3>
+                <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Admin Account</h3>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
                     <input
                       type="text" required placeholder="Dr. Haraprasad"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
@@ -172,7 +172,7 @@ const RegisterClinic = () => {
                     />
                   </div>
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Contact Phone</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Contact Phone</label>
                     <input
                       type="tel" required placeholder="+91 XXXXX XXXXX"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
@@ -182,7 +182,7 @@ const RegisterClinic = () => {
                 </div>
 
                 <div className="space-y-0.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Admin Email</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Email</label>
                   <input
                     type="email" required placeholder="admin@clinic.com"
                     className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
@@ -192,7 +192,7 @@ const RegisterClinic = () => {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Password</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Password</label>
                     <input
                       type="password" required placeholder="••••••••"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
@@ -200,7 +200,7 @@ const RegisterClinic = () => {
                     />
                   </div>
                   <div className="space-y-0.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Confirm Password</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Confirm Password</label>
                     <input
                       type="password" required placeholder="••••••••"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"

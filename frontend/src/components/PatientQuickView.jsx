@@ -95,7 +95,7 @@ const PatientQuickView = ({ phone, onClose }) => {
               </div>
               <div>
                 <h2 className="text-3xl font-heading text-teak">{patientData.name}</h2>
-                <p className="text-[10px] font-black uppercase tracking-widest text-khaki">Digital Health Locker • {phone}</p>
+                <p className="text-[14px] font-black uppercase tracking-widest text-khaki">Digital Health Locker • {phone}</p>
               </div>
             </div>
             <button
@@ -149,7 +149,7 @@ const PatientQuickView = ({ phone, onClose }) => {
             <section>
               <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <FileText className="text-marigold" size={20} />
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-khaki">Clinical Reports & Imaging</h3>
+                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-khaki">Clinical Reports & Imaging</h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {patientData.documents && patientData.documents.length > 0 ? (
@@ -165,8 +165,8 @@ const PatientQuickView = ({ phone, onClose }) => {
                           <FileText size={18} className="hidden md:block" />
                         </div>
                         <div className="max-w-[140px] md:max-w-none">
-                          <p className="text-xs md:text-sm font-bold text-teak truncate">{doc.title}</p>
-                          <p className="text-[8px] font-black text-khaki uppercase">{doc.fileType}</p>
+                          <p className="text-[14px] md:text-sm font-bold text-teak truncate">{doc.title}</p>
+                          <p className="text-[14px] font-black text-khaki uppercase">{doc.fileType}</p>
                         </div>
                       </div>
                       <Eye size={16} className="text-marigold group-hover:scale-125 transition-transform flex-shrink-0" />
@@ -184,14 +184,14 @@ const PatientQuickView = ({ phone, onClose }) => {
             <section>
               <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <Calendar className="text-marigold" size={20} />
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-khaki">Vitals History Logs</h3>
+                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-khaki">Vitals History Logs</h3>
               </div>
               <div className="bg-white border border-sandstone rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-sm p-4 md:p-0">
                 {/* Desktop View Table */}
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left">
                     <thead className="bg-parchment border-b border-sandstone">
-                      <tr className="text-[9px] font-black uppercase tracking-widest text-khaki">
+                      <tr className="text-[14px] font-black uppercase tracking-widest text-khaki">
                         <th className="p-6">Captured Date</th>
                         <th className="p-6">BP (Syst/Diast)</th>
                         <th className="p-6">Pulse</th>
@@ -202,12 +202,12 @@ const PatientQuickView = ({ phone, onClose }) => {
                       {patientData.vitals.map((v, i) => (
                         <tr key={i} className="hover:bg-parchment/50 transition-colors">
                           <td className="p-6 text-sm font-bold text-teak">{new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                          <td className="p-6 text-sm text-teak">{v.bloodPressure} <span className="text-[10px] text-khaki">mmHg</span></td>
-                          <td className="p-6 text-sm text-teak">{v.pulseRate} <span className="text-[10px] text-khaki">bpm</span></td>
+                          <td className="p-6 text-sm text-teak">{v.bloodPressure} <span className="text-[14px] text-khaki">mmHg</span></td>
+                          <td className="p-6 text-sm text-teak">{v.pulseRate} <span className="text-[14px] text-khaki">bpm</span></td>
                           <td className="p-6">
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-bold text-teak">{v.weight} kg</span>
-                              <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[10px] font-black rounded-lg">BMI: {v.bmi}</span>
+                              <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[14px] font-black rounded-lg">BMI: {v.bmi}</span>
                             </div>
                           </td>
                         </tr>
@@ -221,25 +221,25 @@ const PatientQuickView = ({ phone, onClose }) => {
                   {patientData.vitals.map((v, i) => (
                     <div key={i} className="bg-parchment/30 p-4 rounded-xl border border-sandstone/50 space-y-2.5">
                       <div className="flex justify-between items-center pb-2 border-b border-sandstone/30">
-                        <span className="text-xs font-bold text-teak">
+                        <span className="text-[14px] font-bold text-teak">
                           {new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </span>
-                        <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[9px] font-black rounded-lg">
+                        <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[14px] font-black rounded-lg">
                           BMI: {v.bmi}
                         </span>
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-white p-2 rounded-lg border border-sandstone/20">
-                          <p className="text-[8px] font-black text-khaki uppercase tracking-widest">BP</p>
-                          <p className="text-xs font-bold text-teak mt-0.5">{v.bloodPressure || '--'}</p>
+                          <p className="text-[14px] font-black text-khaki uppercase tracking-widest">BP</p>
+                          <p className="text-[14px] font-bold text-teak mt-0.5">{v.bloodPressure || '--'}</p>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-sandstone/20">
-                          <p className="text-[8px] font-black text-khaki uppercase tracking-widest">Pulse</p>
-                          <p className="text-xs font-bold text-teak mt-0.5">{v.pulseRate ? `${v.pulseRate} bpm` : '--'}</p>
+                          <p className="text-[14px] font-black text-khaki uppercase tracking-widest">Pulse</p>
+                          <p className="text-[14px] font-bold text-teak mt-0.5">{v.pulseRate ? `${v.pulseRate} bpm` : '--'}</p>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-sandstone/20">
-                          <p className="text-[8px] font-black text-khaki uppercase tracking-widest">Weight</p>
-                          <p className="text-xs font-bold text-teak mt-0.5">{v.weight ? `${v.weight} kg` : '--'}</p>
+                          <p className="text-[14px] font-black text-khaki uppercase tracking-widest">Weight</p>
+                          <p className="text-[14px] font-bold text-teak mt-0.5">{v.weight ? `${v.weight} kg` : '--'}</p>
                         </div>
                       </div>
                     </div>
@@ -250,7 +250,7 @@ const PatientQuickView = ({ phone, onClose }) => {
           </div>
 
           {/* --- Footer Note --- */}
-          <div className="p-4 md:p-6 bg-teak text-parchment/60 text-[10px] font-medium text-center uppercase tracking-widest">
+          <div className="p-4 md:p-6 bg-teak text-parchment/60 text-[14px] font-medium text-center uppercase tracking-widest">
             Authorized Clinical Access Only • All interactions are logged
           </div>
         </div>
@@ -273,7 +273,7 @@ const SummaryCard = ({ label, val, onChange, onBlur, unit, icon, color = "text-t
   <div className="bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-sandstone shadow-sm flex flex-col justify-between h-full">
     <div className="flex items-center gap-1.5 mb-1.5">
       <div className="text-marigold opacity-50 shrink-0">{icon}</div>
-      <p className="text-[8px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
+      <p className="text-[14px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
     </div>
     <div className="flex items-center gap-1 bg-parchment/30 rounded-xl px-2 py-1.5 border border-transparent focus-within:border-marigold focus-within:bg-white transition-all">
       <input
@@ -281,10 +281,10 @@ const SummaryCard = ({ label, val, onChange, onBlur, unit, icon, color = "text-t
         value={val}
         onChange={onChange}
         onBlur={onBlur}
-        className={`w-full bg-transparent outline-none border-none text-xs md:text-sm font-bold ${color}`}
+        className={`w-full bg-transparent outline-none border-none text-[14px] md:text-sm font-bold ${color}`}
         placeholder="--"
       />
-      <span className="text-[8px] font-black text-khaki uppercase shrink-0">{unit}</span>
+      <span className="text-[14px] font-black text-khaki uppercase shrink-0">{unit}</span>
     </div>
   </div>
 );

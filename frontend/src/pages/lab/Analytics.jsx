@@ -25,12 +25,12 @@ const AnalyticsMetricCard = ({ title, value, icon, color }) => {
   return (
     <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col items-center md:items-start text-center md:text-left h-24 justify-center min-w-[70px]">
       <div className="flex flex-col md:flex-row justify-between items-center md:items-start w-full mb-1 md:mb-1.5 gap-1 md:gap-0">
-        <h3 className="hidden md:block text-[10px] font-black text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
+        <h3 className="hidden md:block text-[14px] font-black text-gray-400 uppercase tracking-widest flex-1 text-left leading-tight pr-2">{title}</h3>
         <div className={`p-1.5 rounded-lg shrink-0 ${colorMap[color]} group-hover:scale-110 transition-transform`}>
           {icon}
         </div>
       </div>
-      <h3 className="md:hidden text-[8px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
+      <h3 className="md:hidden text-[14px] font-black text-gray-400 uppercase tracking-widest w-full mb-0.5 leading-tight">{shortTitle}</h3>
       <p className="text-sm md:text-2xl font-black text-gray-900 mb-0">{value}</p>
     </div>
   );

@@ -100,7 +100,7 @@ const ResetPassword = () => {
                         <CheckCircle size={28} />
                     </div>
                     <h1 className="text-2xl font-heading text-teak">Create New Password</h1>
-                    <p className="text-khaki text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+                    <p className="text-khaki text-[14px] font-black uppercase tracking-[0.2em] mt-1">
                         Secure Your Account
                     </p>
                 </header>
@@ -110,7 +110,7 @@ const ResetPassword = () => {
 
                     {/* New Password */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">
+                        <label className="text-[14px] font-black uppercase text-khaki ml-2 tracking-widest">
                             New Password *
                         </label>
                         <div className="relative">
@@ -132,12 +132,12 @@ const ResetPassword = () => {
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
-                        <p className="text-xs text-khaki mt-1 ml-2">Minimum 6 characters</p>
+                        <p className="text-[14px] text-khaki mt-1 ml-2">Minimum 6 characters</p>
                     </div>
 
                     {/* Confirm Password */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase text-khaki ml-2 tracking-widest">
+                        <label className="text-[14px] font-black uppercase text-khaki ml-2 tracking-widest">
                             Confirm Password *
                         </label>
                         <div className="relative">

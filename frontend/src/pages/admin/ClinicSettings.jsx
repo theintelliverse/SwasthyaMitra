@@ -109,7 +109,7 @@ const ClinicSettings = () => {
             </div>
             <div>
               <h1 className="font-heading text-2xl leading-none">Clinic Profile</h1>
-              <p className="text-[10px] font-black uppercase tracking-widest text-khaki mt-1">Configure Global Facility Settings</p>
+              <p className="text-[14px] font-black uppercase tracking-widest text-khaki mt-1">Configure Global Facility Settings</p>
             </div>
           </div>
         </header>
@@ -124,7 +124,7 @@ const ClinicSettings = () => {
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Clinic Name */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Display Name</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Display Name</label>
                       <div className="relative">
                         <Building size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
@@ -138,7 +138,7 @@ const ClinicSettings = () => {
 
                     {/* Clinic Code */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Unique Gateway Code</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Unique Gateway Code</label>
                       <div className="relative">
                         <QrCode size={16} className="absolute left-5 top-4.5 text-sandstone" />
                         <input
@@ -148,7 +148,7 @@ const ClinicSettings = () => {
                           onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
                         />
                       </div>
-                      <p className="text-[9px] text-khaki ml-2 flex items-center gap-1 italic">
+                      <p className="text-[14px] text-khaki ml-2 flex items-center gap-1 italic">
                         <AlertCircle size={10} /> Affects your public check-in URL.
                       </p>
                     </div>
@@ -156,7 +156,7 @@ const ClinicSettings = () => {
 
                   {/* Contact Number */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Verified Contact Number</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Verified Contact Number</label>
                     <div className="relative">
                       <Phone size={16} className="absolute left-5 top-4.5 text-sandstone" />
                       <input
@@ -171,7 +171,7 @@ const ClinicSettings = () => {
 
                   {/* Physical Address */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Address</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Address</label>
                     <div className="relative">
                       <MapPin size={16} className="absolute left-5 top-4.5 text-sandstone" />
                       <textarea
@@ -185,7 +185,7 @@ const ClinicSettings = () => {
 
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Opening Time</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Opening Time</label>
                       <input
                         type="time"
                         className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
@@ -194,7 +194,7 @@ const ClinicSettings = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Closing Time</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Closing Time</label>
                       <input
                         type="time"
                         className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
@@ -206,7 +206,7 @@ const ClinicSettings = () => {
 
                   <div className="grid md:grid-cols-3 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Break Start</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Break Start</label>
                       <input
                         type="time"
                         className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
@@ -215,7 +215,7 @@ const ClinicSettings = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Break End</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Break End</label>
                       <input
                         type="time"
                         className="w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-medium text-teak"
@@ -224,7 +224,7 @@ const ClinicSettings = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Slot (Minutes)</label>
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Slot (Minutes)</label>
                       <input
                         type="number"
                         min="10"
@@ -237,7 +237,7 @@ const ClinicSettings = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Working Days</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Working Days</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {weekdayOptions.map((day) => {
                         const selected = formData.workingDays.includes(day);
@@ -251,20 +251,20 @@ const ClinicSettings = () => {
                                 : [...formData.workingDays, day];
                               setFormData({ ...formData, workingDays: nextDays });
                             }}
-                            className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${selected ? 'bg-teak text-white border-teak' : 'bg-parchment text-khaki border-sandstone hover:border-marigold'}`}
+                            className={`px-4 py-3 rounded-xl border text-[14px] font-black uppercase tracking-widest transition-all ${selected ? 'bg-teak text-white border-teak' : 'bg-parchment text-khaki border-sandstone hover:border-marigold'}`}
                           >
                             {day.slice(0, 3)}
                           </button>
                         );
                       })}
                     </div>
-                    <p className="text-[9px] text-khaki italic ml-2">Quick Slots will be shown only on selected days.</p>
+                    <p className="text-[14px] text-khaki italic ml-2">Quick Slots will be shown only on selected days.</p>
                   </div>
 
                   <div className="pt-6">
                     <button
                       type="submit"
-                      className="w-full md:w-auto px-12 py-5 bg-marigold text-white rounded-2xl font-bold uppercase text-[11px] tracking-widest hover:bg-teak transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
+                      className="w-full md:w-auto px-12 py-5 bg-marigold text-white rounded-2xl font-bold uppercase text-[14px] tracking-widest hover:bg-teak transition-all shadow-xl shadow-marigold/20 active:scale-95 flex items-center justify-center gap-3"
                     >
                       <Save size={18} /> Update Facility Details
                     </button>
@@ -282,7 +282,7 @@ const ClinicSettings = () => {
                     <ClinicQR clinicCode={formData.clinicCode} clinicName={formData.name} />
                   </div>
                 </div>
-                <p className="mt-4 text-[9px] text-khaki leading-relaxed text-center px-4 font-medium italic">
+                <p className="mt-4 text-[14px] text-khaki leading-relaxed text-center px-4 font-medium italic">
                   This QR code allows patients to join your queue instantly from their mobile devices.
                 </p>
               </div>
@@ -292,12 +292,12 @@ const ClinicSettings = () => {
                   <ShieldAlert size={20} />
                   <h4 className="font-heading text-lg">Danger Zone</h4>
                 </div>
-                <p className="text-red-600/70 text-[10px] mb-6 font-bold uppercase tracking-tight">
+                <p className="text-red-600/70 text-[14px] mb-6 font-bold uppercase tracking-tight">
                   Deactivation will freeze all active queues and staff access.
                 </p>
                 <button
                   type="button"
-                  className="w-full py-4 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                  className="w-full py-4 bg-white border border-red-200 text-red-600 rounded-xl text-[14px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
                   onClick={() => Swal.fire('Security Protocol', 'Facility deactivation requires administrative override. Please contact support.', 'info')}
                 >
                   Request Termination

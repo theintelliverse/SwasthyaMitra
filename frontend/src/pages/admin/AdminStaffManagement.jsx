@@ -195,8 +195,8 @@ const AdminStaffManagement = () => {
             <div>
               <h1 className="text-5xl font-heading mb-2">Staff Roster</h1>
               <div className="flex gap-4 mt-4">
-                <button onClick={() => setActiveView('active')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Current Team</button>
-                <button onClick={() => setActiveView('archived')} className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Past Staff</button>
+                <button onClick={() => setActiveView('active')} className={`text-[14px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Current Team</button>
+                <button onClick={() => setActiveView('archived')} className={`text-[14px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Past Staff</button>
               </div>
             </div>
             <button
@@ -231,7 +231,7 @@ const AdminStaffManagement = () => {
                 <InputGroup label="Access Token" type="password" placeholder="Temporary Password" onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">Assigned Role</label>
+                  <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Assigned Role</label>
                   <select
                     className="px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak"
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -247,7 +247,7 @@ const AdminStaffManagement = () => {
                 )}
 
                 <div className="flex items-end">
-                  <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-teak text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-marigold transition-all disabled:opacity-50">
+                  <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-teak text-white rounded-2xl font-black uppercase text-[14px] tracking-[0.2em] hover:bg-marigold transition-all disabled:opacity-50">
                     {isSubmitting ? 'Syncing...' : 'Authorize Access'}
                   </button>
                 </div>
@@ -281,20 +281,20 @@ const AdminStaffManagement = () => {
                     {member.isActive !== false ? (
                       <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-lg">
                         <div className={`w-1.5 h-1.5 rounded-full ${member.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
-                        <span className="text-[8px] font-black uppercase text-green-700">{member.isAvailable ? 'Live' : 'On Break'}</span>
+                        <span className="text-[14px] font-black uppercase text-green-700">{member.isAvailable ? 'Live' : 'On Break'}</span>
                       </div>
                     ) : (
-                      <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[8px] font-black uppercase">Archived</span>
+                      <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[14px] font-black uppercase">Archived</span>
                     )}
                   </div>
 
                   <h3 className="text-2xl font-heading text-teak mb-1">{member.name}</h3>
-                  <p className="text-[10px] font-black text-marigold uppercase tracking-widest mb-6">
+                  <p className="text-[14px] font-black text-marigold uppercase tracking-widest mb-6">
                     {member.role === 'doctor' ? member.specialization : member.role === 'lab' ? 'Diagnostics' : 'Reception'}
                   </p>
 
                   <div className="pt-6 border-t border-sandstone/50 flex items-center justify-between">
-                    <span className="text-[9px] font-bold text-khaki truncate max-w-[120px]">{member.email}</span>
+                    <span className="text-[14px] font-bold text-khaki truncate max-w-[120px]">{member.email}</span>
                     <div className="flex gap-1">
                       {activeView === 'active' && (
                         <>
@@ -334,7 +334,7 @@ const StatBox = ({ icon, label, val }) => (
       {icon}
     </div>
     <div className="min-w-0">
-      <p className="text-[8px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
+      <p className="text-[14px] font-black uppercase tracking-widest text-khaki truncate">{label}</p>
       <p className="text-base md:text-xl font-heading text-teak leading-none mt-0.5">{val}</p>
     </div>
   </div>
@@ -342,7 +342,7 @@ const StatBox = ({ icon, label, val }) => (
 
 const InputGroup = ({ label, type, placeholder, onChange }) => (
   <div className="flex flex-col gap-2">
-    <label className="text-[10px] font-black uppercase tracking-widest text-khaki ml-2">{label}</label>
+    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">{label}</label>
     <input
       type={type} placeholder={placeholder} required
       className="px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all placeholder:text-sandstone placeholder:font-normal text-sm"

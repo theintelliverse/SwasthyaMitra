@@ -104,13 +104,13 @@ const ClinicAnalytics = () => {
           <div className="flex items-center gap-4">
             <div className={`w-3 h-3 rounded-full ${isSyncing ? 'bg-marigold animate-ping' : 'bg-green-500'}`}></div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-khaki">Operational Status</p>
+              <p className="text-[14px] font-black uppercase tracking-widest text-khaki">Operational Status</p>
               <h2 className="text-sm font-bold text-teak">{isSyncing ? 'Nodes Synchronizing...' : 'Satellite Link Active'}</h2>
             </div>
           </div>
           <button
             onClick={() => fetchAnalytics(false)}
-            className="flex items-center gap-2 px-4 py-2 bg-parchment border border-sandstone rounded-xl text-[10px] font-black uppercase tracking-widest text-khaki hover:text-marigold transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-parchment border border-sandstone rounded-xl text-[14px] font-black uppercase tracking-widest text-khaki hover:text-marigold transition-all"
           >
             <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} /> Force Refresh
           </button>
@@ -120,7 +120,7 @@ const ClinicAnalytics = () => {
           <header className="mb-12">
             <h2 className="text-5xl font-heading mb-3 text-teak">{clinicInfo.name} Overview</h2>
             <div className="flex items-center gap-3">
-              <span className="bg-teak text-parchment px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">ID: {clinicInfo.code}</span>
+              <span className="bg-teak text-parchment px-3 py-1 rounded-lg text-[14px] font-black uppercase tracking-widest">ID: {clinicInfo.code}</span>
               <p className="text-khaki font-medium italic">Live patient density and resource distribution.</p>
             </div>
           </header>
@@ -137,7 +137,7 @@ const ClinicAnalytics = () => {
               <div className="flex justify-between items-center mb-12">
                 <div>
                   <h3 className="font-heading text-2xl mb-1">Traffic Density</h3>
-                  <p className="text-[10px] text-khaki font-black uppercase tracking-widest">Live Consultation Patterns</p>
+                  <p className="text-[14px] text-khaki font-black uppercase tracking-widest">Live Consultation Patterns</p>
                 </div>
               </div>
 
@@ -148,7 +148,7 @@ const ClinicAnalytics = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between mt-8 text-[10px] font-black uppercase text-khaki px-6 tracking-[0.4em] opacity-60">
+              <div className="flex justify-between mt-8 text-[14px] font-black uppercase text-khaki px-6 tracking-[0.4em] opacity-60">
                 <span>09:00</span><span>Real-Time Peak</span><span>21:00</span>
               </div>
             </div>
@@ -162,11 +162,11 @@ const ClinicAnalytics = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-[10px] font-black text-khaki uppercase tracking-widest mb-1">Staff on Break</p>
+                      <p className="text-[14px] font-black text-khaki uppercase tracking-widest mb-1">Staff on Break</p>
                       <p className={`font-heading text-3xl ${stats.staffOnBreak > 0 ? 'text-red-500' : 'text-teak'}`}>{stats.staffOnBreak}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-black text-khaki uppercase tracking-widest mb-1">Active Rate</p>
+                      <p className="text-[14px] font-black text-khaki uppercase tracking-widest mb-1">Active Rate</p>
                       <p className="text-xl font-heading text-marigold">
                         {Math.round((stats.onDutyStaff / (stats.onDutyStaff + stats.staffOnBreak || 1)) * 100)}%
                       </p>
@@ -183,8 +183,8 @@ const ClinicAnalytics = () => {
               <div className="bg-teak p-8 rounded-[3rem] text-parchment shadow-2xl relative overflow-hidden group">
                 <h3 className="font-heading text-xl mb-6 white ">System Shortcuts</h3>
                 <div className="space-y-3 relative z-10">
-                  <button onClick={() => navigate('/admin/staff-management')} className="w-full py-4 bg-white/5 hover:bg-marigold hover:text-teak border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Staff Roster <ArrowRight size={12} className="inline ml-1" /></button>
-                  <button onClick={() => navigate('/admin/settings')} className="w-full py-4 bg-white/5 hover:bg-marigold hover:text-teak border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">General Settings <ArrowRight size={12} className="inline ml-1" /></button>
+                  <button onClick={() => navigate('/admin/staff-management')} className="w-full py-4 bg-white/5 hover:bg-marigold hover:text-teak border border-white/10 rounded-2xl text-[14px] font-black uppercase tracking-widest transition-all">Staff Roster <ArrowRight size={12} className="inline ml-1" /></button>
+                  <button onClick={() => navigate('/admin/settings')} className="w-full py-4 bg-white/5 hover:bg-marigold hover:text-teak border border-white/10 rounded-2xl text-[14px] font-black uppercase tracking-widest transition-all">General Settings <ArrowRight size={12} className="inline ml-1" /></button>
                 </div>
                 <Settings className="absolute -bottom-6 -right-6 text-marigold/10" size={120} />
               </div>
@@ -202,7 +202,7 @@ const InsightCard = ({ label, value, icon, color, pulse }) => (
     <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:-translate-y-1 ${pulse ? 'animate-pulse' : ''}`}>
       {icon}
     </div>
-    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-khaki mb-1 group-hover:text-teak">{label}</p>
+    <p className="text-[14px] font-black uppercase tracking-[0.2em] text-khaki mb-1 group-hover:text-teak">{label}</p>
     <p className="text-4xl font-heading text-teak">{value}</p>
   </div>
 );

@@ -110,7 +110,7 @@ const Templates = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Clinical Templates</h1>
-              <p className="text-slate-500 flex items-center gap-2 font-medium text-xs">
+              <p className="text-slate-500 flex items-center gap-2 font-medium text-[14px]">
                 <ClipboardList size={14} className="text-indigo-500" />
                 Manage and standardize your clinical protocols and medication sets
               </p>
@@ -123,7 +123,7 @@ const Templates = () => {
                   placeholder="Protocol name or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-xs w-full md:w-56 shadow-sm transition-all"
+                  className="pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-[14px] w-full md:w-56 shadow-sm transition-all"
                 />
               </div>
               <button 
@@ -141,7 +141,7 @@ const Templates = () => {
                <button 
                  key={cat}
                  onClick={() => setSearchTerm(cat)}
-                 className={`px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                 className={`px-3 py-2 rounded-xl border text-[14px] font-black uppercase tracking-widest transition-all ${
                    searchTerm === cat 
                     ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
                     : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-100 hover:text-indigo-600'
@@ -169,7 +169,7 @@ const Templates = () => {
                 <p className="text-slate-500 max-w-xs mx-auto text-sm">Create pre-defined medication sets for common conditions to speed up your workflow.</p>
                 <button 
                   onClick={handleCreate}
-                  className="mt-8 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                  className="mt-8 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
                 >
                   Add Your First Template
                 </button>
@@ -199,14 +199,14 @@ const Templates = () => {
                        </div>
                        
                        <div className="mb-4 relative z-10">
-                          <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-full mb-2 inline-block">
+                          <span className="text-[14px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-full mb-2 inline-block">
                              {t.category}
                           </span>
                           <h4 className="text-lg font-black text-slate-900 mb-1 group-hover:text-indigo-600 transition-colors">{t.name}</h4>
-                          <p className="text-xs font-bold text-slate-500 leading-relaxed line-clamp-2">{t.drugs}</p>
+                          <p className="text-[14px] font-bold text-slate-500 leading-relaxed line-clamp-2">{t.drugs}</p>
                        </div>
  
-                       <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest py-3 border-t border-slate-50 mt-1">
+                       <div className="flex items-center justify-between text-[14px] font-black uppercase tracking-widest py-3 border-t border-slate-50 mt-1">
                           <div className="flex items-center gap-1.5 text-slate-400">
                              <RefreshCw size={12} className="text-indigo-500" />
                              {t.instruction}

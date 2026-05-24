@@ -46,7 +46,7 @@ const Unauthorized = () => {
         </div>
 
         {/* Help Note */}
-        <p className="mt-12 text-[10px] font-black uppercase tracking-[0.2em] text-khaki/50">
+        <p className="mt-12 text-[14px] font-black uppercase tracking-[0.2em] text-khaki/50">
           Security Protocol: Multi-Tenant Role Isolation Active
         </p>
       </div>

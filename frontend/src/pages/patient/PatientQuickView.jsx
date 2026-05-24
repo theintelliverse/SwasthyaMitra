@@ -67,7 +67,7 @@ const PatientQuickView = ({ phone, onClose }) => {
             </div>
             <div>
               <h2 className="text-2xl font-heading text-teak">{patient?.name}</h2>
-              <p className="text-[10px] font-black uppercase tracking-widest text-khaki">
+              <p className="text-[14px] font-black uppercase tracking-widest text-khaki">
                 {patient?.age || '??'} yrs • {patient?.gender || 'N/A'} • {patient?.bloodGroup || 'O+'}
                 {isSyncing && <span className="ml-3 text-marigold animate-pulse">● Syncing Live</span>}
               </p>
@@ -108,7 +108,7 @@ const PatientQuickView = ({ phone, onClose }) => {
               {patient?.vitals?.length > 0 ? (
                 [...patient.vitals].reverse().map((v, i) => (
                   <div key={i} className="bg-white border border-sandstone p-6 rounded-[2rem] shadow-sm grid grid-cols-2 md:grid-cols-4 gap-6 relative transition-all hover:border-marigold animate-in slide-in-from-bottom-2">
-                    <div className="absolute top-4 right-6 flex items-center gap-1 text-[8px] font-black text-khaki uppercase">
+                    <div className="absolute top-4 right-6 flex items-center gap-1 text-[14px] font-black text-khaki uppercase">
                       <Calendar size={10} /> {new Date(v.recordedAt).toLocaleDateString()}
                     </div>
                     <VitalItem label="Blood Pressure" val={v.bloodPressure} unit="mmHg" />
@@ -131,9 +131,9 @@ const PatientQuickView = ({ phone, onClose }) => {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h4 className="font-heading text-lg text-teak">Dr. {record.doctorName}</h4>
-                        <p className="text-[9px] font-black text-khaki uppercase tracking-widest">{record.clinicName}</p>
+                        <p className="text-[14px] font-black text-khaki uppercase tracking-widest">{record.clinicName}</p>
                       </div>
-                      <span className="text-[10px] font-bold text-marigold bg-marigold/10 px-3 py-1 rounded-full">
+                      <span className="text-[14px] font-bold text-marigold bg-marigold/10 px-3 py-1 rounded-full">
                         {new Date(record.date).toLocaleDateString()}
                       </span>
                     </div>
@@ -159,7 +159,7 @@ const PatientQuickView = ({ phone, onClose }) => {
                       </div>
                       <div>
                         <h4 className="font-bold text-sm text-teak">{doc.title}</h4>
-                        <p className="text-[9px] font-black text-khaki uppercase">{doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                        <p className="text-[14px] font-black text-khaki uppercase">{doc.fileType} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="p-3 bg-parchment hover:bg-marigold hover:text-white rounded-xl text-khaki transition-all">
@@ -177,7 +177,7 @@ const PatientQuickView = ({ phone, onClose }) => {
         </div>
 
         <div className="px-8 py-4 bg-white border-t border-sandstone text-center">
-          <p className="text-[9px] font-black text-khaki uppercase tracking-widest">
+          <p className="text-[14px] font-black text-khaki uppercase tracking-widest">
             🔒 Data secured via Appointory Clinical Vault
           </p>
         </div>
@@ -191,7 +191,7 @@ const PatientQuickView = ({ phone, onClose }) => {
 const TabButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${active ? 'text-marigold border-b-2 border-marigold bg-marigold/5' : 'text-khaki hover:text-teak'}`}
+    className={`flex-1 py-4 text-[14px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${active ? 'text-marigold border-b-2 border-marigold bg-marigold/5' : 'text-khaki hover:text-teak'}`}
   >
     {icon} {label}
   </button>
@@ -199,8 +199,8 @@ const TabButton = ({ active, onClick, icon, label }) => (
 
 const VitalItem = ({ label, val, unit }) => (
   <div>
-    <p className="text-[8px] font-black text-khaki uppercase mb-1">{label}</p>
-    <p className="font-bold text-teak text-sm">{val || '--'} <span className="text-[8px] opacity-40 font-bold">{unit}</span></p>
+    <p className="text-[14px] font-black text-khaki uppercase mb-1">{label}</p>
+    <p className="font-bold text-teak text-sm">{val || '--'} <span className="text-[14px] opacity-40 font-bold">{unit}</span></p>
   </div>
 );
 

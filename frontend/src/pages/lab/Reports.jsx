@@ -139,10 +139,10 @@ const Reports = () => {
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnostic Test</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Completion Date</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Patient Details</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Diagnostic Test</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Completion Date</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -150,18 +150,18 @@ const Reports = () => {
                         <tr key={report._id} className="hover:bg-gray-50/80 transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center text-xs font-bold">
+                              <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center text-[14px] font-bold">
                                 {report.patientName.substring(0, 2).toUpperCase()}
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900">{report.patientName}</div>
-                                <div className="text-[10px] text-gray-400">ID: {report._id.substring(18)}</div>
+                                <div className="text-[14px] text-gray-400">ID: {report._id.substring(18)}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm font-medium text-gray-700">{report.requiredTest}</div>
-                            <div className="text-[10px] text-teal-600 font-bold uppercase tracking-widest">Diagnostic</div>
+                            <div className="text-[14px] text-teal-600 font-bold uppercase tracking-widest">Diagnostic</div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -172,7 +172,7 @@ const Reports = () => {
                           <td className="px-6 py-4 text-right">
                             <button 
                               onClick={() => handleDownloadReport(report)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs font-bold text-gray-700 hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm"
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-md text-[14px] font-bold text-gray-700 hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm"
                             >
                               <Download size={14} /> Download PDF
                             </button>
@@ -194,22 +194,22 @@ const Reports = () => {
                           </div>
                           <div>
                             <h4 className="text-sm font-bold text-gray-900">{report.patientName}</h4>
-                            <span className="text-[10px] text-gray-400 font-mono">ID: {report._id.substring(18)}</span>
+                            <span className="text-[14px] text-gray-400 font-mono">ID: {report._id.substring(18)}</span>
                           </div>
                         </div>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[14px] font-bold bg-green-50 text-green-700 border border-green-100">
                           <FileCheck size={10} /> Completed
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
+                      <div className="grid grid-cols-2 gap-4 text-[14px] text-gray-600">
                         <div>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">Diagnostic Test</span>
+                          <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">Diagnostic Test</span>
                           <span className="font-semibold text-gray-800">{report.requiredTest}</span>
-                          <span className="text-[10px] text-teal-600 font-bold uppercase tracking-widest block mt-0.5">Diagnostic</span>
+                          <span className="text-[14px] text-teal-600 font-bold uppercase tracking-widest block mt-0.5">Diagnostic</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">Completed Date</span>
+                          <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">Completed Date</span>
                           <span className="font-semibold text-gray-800 flex items-center justify-end gap-1.5 mt-0.5">
                             <Calendar size={12} className="text-gray-400" />
                             {new Date(report.updatedAt || report.createdAt).toLocaleDateString()}
@@ -220,7 +220,7 @@ const Reports = () => {
                       <div className="pt-3 border-t border-gray-50">
                         <button 
                           onClick={() => handleDownloadReport(report)}
-                          className="w-full inline-flex items-center justify-center gap-2 py-2 bg-teal-600 text-white hover:bg-teal-700 rounded-xl text-xs font-bold transition-all shadow-md shadow-teal-600/10 active:scale-[0.98]"
+                          className="w-full inline-flex items-center justify-center gap-2 py-2 bg-teal-600 text-white hover:bg-teal-700 rounded-xl text-[14px] font-bold transition-all shadow-md shadow-teal-600/10 active:scale-[0.98]"
                         >
                           <Download size={14} /> Download PDF Report
                         </button>

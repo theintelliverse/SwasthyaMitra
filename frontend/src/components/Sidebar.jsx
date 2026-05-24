@@ -128,7 +128,7 @@ const Sidebar = ({ role = 'lab' }) => {
               <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1">
                 {clinicName.split(' ')[0]}<span className="text-teal-600">.</span>
               </h1>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Healthcare OS</p>
+              <p className="text-[14px] font-bold text-gray-400 uppercase tracking-widest">Healthcare OS</p>
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@ const Sidebar = ({ role = 'lab' }) => {
                 {userName.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-0.5">
+                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">
                   {userRole === 'doctor' ? 'Doctor' : userRole === 'lab' ? 'Laboratory' : userRole === 'patient' ? 'Patient' : userRole}
                 </p>
                 <p className="text-sm font-black text-gray-900 truncate tracking-tight leading-tight group-hover/card:text-teal-600 transition-colors">
@@ -181,7 +181,7 @@ const Sidebar = ({ role = 'lab' }) => {
                     return name;
                   })()}
                 </p>
-                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5 truncate">
+                <p className="text-[14px] font-bold text-gray-400 uppercase mt-0.5 truncate">
                   {userRole === 'doctor' 
                     ? (userEducation || userSpecialization || 'Chief Physician')
                     : (userSpecialization || (userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Wellness Member' : 'Staff Member'))}
@@ -192,11 +192,11 @@ const Sidebar = ({ role = 'lab' }) => {
             <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 group-hover/card:bg-teal-50 transition-colors">
               <div className="flex items-center gap-2">
                 <Activity size={14} className="text-teal-600" />
-                <span className="text-[10px] font-bold text-gray-500">Live Sync</span>
+                <span className="text-[14px] font-bold text-gray-500">Live Sync</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] font-black text-green-600 uppercase">Online</span>
+                <span className="text-[14px] font-black text-green-600 uppercase">Online</span>
               </div>
             </div>
           </div>
@@ -220,7 +220,7 @@ const Sidebar = ({ role = 'lab' }) => {
                 <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-teal-50 scale-110' : ''}`}>
                   {item.icon}
                 </div>
-                <span className={`text-[8px] font-black mt-1 uppercase tracking-widest truncate w-full text-center ${isActive ? 'text-teal-600' : 'text-gray-400'}`}>
+                <span className={`text-[14px] font-black mt-1 uppercase tracking-widest truncate w-full text-center ${isActive ? 'text-teal-600' : 'text-gray-400'}`}>
                   {item.name.split(' ')[0]}
                 </span>
               </>
@@ -235,7 +235,7 @@ const Sidebar = ({ role = 'lab' }) => {
           <div className="flex justify-between items-center mb-5">
             <div>
               <h3 className="text-base font-black text-slate-900 tracking-tight">Quick Actions</h3>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Patient Wellness Tools</p>
+              <p className="text-[14px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Patient Wellness Tools</p>
             </div>
             <button onClick={() => setShowQuickActions(false)} className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
               <X size={16} />
@@ -270,7 +270,7 @@ const Sidebar = ({ role = 'lab' }) => {
 
             <a 
               href="tel:+919876543210" 
-              className="col-span-2 mt-2 w-full flex items-center justify-center gap-2.5 px-4 py-4 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 text-center"
+              className="col-span-2 mt-2 w-full flex items-center justify-center gap-2.5 px-4 py-4 bg-red-50 text-red-600 rounded-xl font-black text-[14px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 text-center"
             >
               <Bell size={14} className="animate-bounce" />
               Emergency Support
@@ -298,7 +298,7 @@ const QuickActionTile = ({ icon, label, color, onClick }) => (
     className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-2 transition-all hover:scale-[1.03] active:scale-95 cursor-pointer ${color}`}
   >
     <div className="p-2 rounded-lg bg-white/80 shadow-sm">{icon}</div>
-    <span className="text-[9px] font-black uppercase tracking-wider leading-tight">{label}</span>
+    <span className="text-[14px] font-black uppercase tracking-wider leading-tight">{label}</span>
   </button>
 );
 

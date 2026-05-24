@@ -60,7 +60,7 @@ const Contact = () => {
                 </div>
                 <Link
                     to="/"
-                    className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-marigold transition-all"
+                    className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[14px] font-black uppercase tracking-widest hover:bg-marigold transition-all"
                 >
                     Back to Home
                 </Link>
@@ -74,7 +74,7 @@ const Contact = () => {
                     <div className="absolute inset-0 bg-teak/55"></div>
 
                     <div className="relative bg-transparent border border-parchment/90 rounded-3xl p-6 md:p-8 backdrop-blur-lg shadow-2xl shadow-teak/40">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-parchment mb-2">Support</p>
+                        <p className="text-[14px] font-black uppercase tracking-widest text-parchment mb-2">Support</p>
                         <h2 className="font-heading text-4xl leading-tight italic mb-2 text-parchment drop-shadow-sm">
                             Contact <span className="text-marigold not-italic">Us</span>
                         </h2>
@@ -85,7 +85,7 @@ const Contact = () => {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid md:grid-cols-2 gap-5">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-parchment/95">Full Name</label>
+                                    <label className="text-[14px] font-black uppercase tracking-widest text-parchment/95">Full Name</label>
                                     <input
                                         type="text"
                                         name="name"
@@ -98,7 +98,7 @@ const Contact = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-parchment/95">Email Address</label>
+                                    <label className="text-[14px] font-black uppercase tracking-widest text-parchment/95">Email Address</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -112,7 +112,7 @@ const Contact = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-parchment/95">Subject</label>
+                                <label className="text-[14px] font-black uppercase tracking-widest text-parchment/95">Subject</label>
                                 <input
                                     type="text"
                                     name="subject"
@@ -125,7 +125,7 @@ const Contact = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-parchment/95">Message</label>
+                                <label className="text-[14px] font-black uppercase tracking-widest text-parchment/95">Message</label>
                                 <textarea
                                     name="message"
                                     rows="6"
@@ -149,7 +149,7 @@ const Contact = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="min-w-44 px-8 py-3 bg-teak border border-parchment/40 text-parchment rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-saffron hover:border-parchment/60 hover:shadow-lg hover:shadow-black/30 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                                className="min-w-44 px-8 py-3 bg-teak border border-parchment/40 text-parchment rounded-xl font-black uppercase tracking-widest text-[14px] hover:bg-saffron hover:border-parchment/60 hover:shadow-lg hover:shadow-black/30 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                             >
                                 {loading ? (
                                     <span className="inline-flex items-center gap-2">

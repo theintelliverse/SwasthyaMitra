@@ -110,7 +110,7 @@ const ClinicTVDisplay = () => {
       <div className="relative z-10">
         <div className="w-24 h-24 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-8" />
         <h1 className="text-4xl font-black text-white tracking-tighter mb-2">Healthcare OS</h1>
-        <p className="text-teal-500 font-black uppercase tracking-[0.3em] text-xs">Initializing Neural Link</p>
+        <p className="text-teal-500 font-black uppercase tracking-[0.3em] text-[14px]">Initializing Neural Link</p>
       </div>
     </div>
   );
@@ -133,11 +133,11 @@ const ClinicTVDisplay = () => {
             <div>
               <h1 className="text-5xl font-black tracking-tighter leading-none">{clinicName}</h1>
               <div className="flex items-center gap-3 mt-2">
-                <p className="text-teal-500 font-black uppercase tracking-[0.5em] text-[10px]">Digital Waiting Room Control</p>
+                <p className="text-teal-500 font-black uppercase tracking-[0.5em] text-[14px]">Digital Waiting Room Control</p>
                 <div className="w-1 h-1 bg-white/10 rounded-full" />
                 <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg border border-white/5">
                   <Users size={12} className="text-teal-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-teal-400">
+                  <span className="text-[14px] font-black uppercase tracking-widest text-teal-400">
                     Queue Dashboard: {doctors.reduce((acc, doc) => acc + (doc.queueCount || 0), 0)}
                   </span>
                 </div>
@@ -150,7 +150,7 @@ const ClinicTVDisplay = () => {
             </p>
             <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
               <Wifi size={14} className="text-green-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Secure Sync Active</span>
+              <span className="text-[14px] font-black uppercase tracking-widest text-white/40">Secure Sync Active</span>
             </div>
           </div>
         </header>
@@ -169,13 +169,13 @@ const ClinicTVDisplay = () => {
                   <Stethoscope size={24} />
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className={`px-4 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${doc.isAvailable ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                  <div className={`px-4 py-1.5 rounded-full flex items-center gap-2 text-[14px] font-black uppercase tracking-widest ${doc.isAvailable ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${doc.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
                     {doc.isAvailable ? 'Online' : 'Away'}
                   </div>
                   {doc.isAvailable && (
                     <div className="bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-xl flex items-center gap-2">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-teal-500/60">Queue</span>
+                      <span className="text-[14px] font-black uppercase tracking-widest text-teal-500/60">Queue</span>
                       <span className="text-sm font-black text-teal-400">{doc.queueCount || 0}</span>
                     </div>
                   )}
@@ -183,11 +183,11 @@ const ClinicTVDisplay = () => {
               </div>
 
               <h3 className="text-3xl font-black tracking-tight mb-1 group-hover:text-teal-400 transition-colors">Dr. {doc.name}</h3>
-              <p className="text-white/40 font-bold text-xs uppercase tracking-[0.2em] mb-12">{doc.specialization}</p>
+              <p className="text-white/40 font-bold text-[14px] uppercase tracking-[0.2em] mb-12">{doc.specialization}</p>
 
               <div className="mt-auto flex justify-between items-center pt-8 border-t border-white/5">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Availability</span>
+                  <span className="text-[14px] font-black text-white/20 uppercase tracking-widest">Availability</span>
                   <span className="text-sm font-black text-white/80">{doc.isAvailable ? 'Consulting Now' : 'Duty Concluded'}</span>
                 </div>
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-teal-500/20 group-hover:translate-x-2 transition-all">
@@ -199,7 +199,7 @@ const ClinicTVDisplay = () => {
         </div>
 
         <footer className="mt-auto pt-10 text-center opacity-20 relative z-10">
-          <p className="text-[10px] font-black uppercase tracking-[0.5em]">Powered by Appointory • v2.0 Cinematic Edition</p>
+          <p className="text-[14px] font-black uppercase tracking-[0.5em]">Powered by Appointory • v2.0 Cinematic Edition</p>
         </footer>
       </div>
     );
@@ -229,7 +229,7 @@ const ClinicTVDisplay = () => {
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tighter leading-none mb-1">Dr. {selectedDoc.name}</h1>
-              <p className="text-teal-500 font-black uppercase tracking-[0.2em] text-[10px]">Clinical Specialist • {selectedDoc.specialization}</p>
+              <p className="text-teal-500 font-black uppercase tracking-[0.2em] text-[14px]">Clinical Specialist • {selectedDoc.specialization}</p>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ const ClinicTVDisplay = () => {
             <p className="text-3xl font-black tracking-tighter tabular-nums leading-none mb-1">
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <div className="flex items-center justify-end gap-2 text-teal-500/40 font-black uppercase text-[9px] tracking-widest">
+            <div className="flex items-center justify-end gap-2 text-teal-500/40 font-black uppercase text-[14px] tracking-widest">
               <Signal size={10} className="text-green-500" />
               Live Transmission
             </div>
@@ -296,7 +296,7 @@ const ClinicTVDisplay = () => {
             </div>
             <div className="flex flex-col items-end">
               <span className="text-xl font-black text-teal-500 tabular-nums leading-none">{waitingPatients.length}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/30 mt-1">Lounge Queue</span>
+              <span className="text-[14px] font-black uppercase tracking-widest text-white/30 mt-1">Lounge Queue</span>
             </div>
           </div>
 
@@ -313,7 +313,7 @@ const ClinicTVDisplay = () => {
                       <div>
                         <p className="text-lg font-black tracking-tighter truncate max-w-[280px] group-hover:text-teal-400 transition-colors leading-tight">{p.patientName}</p>
                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${
+                          <span className={`text-[14px] font-black uppercase tracking-widest ${
                             p.currentStage === 'Lab-Completed' ? 'text-green-400' : 
                             (p.currentStage && p.currentStage.includes('Lab') ? 'text-yellow-400' : 
                             (p.isEmergency ? 'text-red-400' : 'text-white/30'))
@@ -323,11 +323,11 @@ const ClinicTVDisplay = () => {
                             (p.isEmergency ? 'High Priority' : 'Regular'))}
                           </span>
                           <div className="w-1 h-1 bg-white/10 rounded-full" />
-                          <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Verified</span>
+                          <span className="text-[14px] font-black text-white/30 uppercase tracking-widest">Verified</span>
                           {p.estimatedWait != null && (
                             <>
                               <div className="w-1 h-1 bg-white/10 rounded-full" />
-                              <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait}m</span>
+                              <span className="text-[14px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait}m</span>
                             </>
                           )}
                         </div>
@@ -345,7 +345,7 @@ const ClinicTVDisplay = () => {
                       <div className="h-4 w-32 bg-white/10 rounded-full"></div>
                       <div className="h-2 w-24 bg-white/5 rounded-full"></div>
                     </div>
-                    <div className="text-[9px] font-black text-white/10 uppercase tracking-widest border border-white/10 px-2 py-1 rounded-md border-dashed">
+                    <div className="text-[14px] font-black text-white/10 uppercase tracking-widest border border-white/10 px-2 py-1 rounded-md border-dashed">
                       Empty Slot
                     </div>
                   </div>
@@ -358,7 +358,7 @@ const ClinicTVDisplay = () => {
           <div className="p-6 bg-teal-600 text-white overflow-hidden relative border-t border-teal-500">
             <div className="absolute top-0 left-0 bottom-0 w-40 bg-gradient-to-r from-teal-600 to-transparent z-10" />
             <div className="absolute top-0 right-0 bottom-0 w-40 bg-gradient-to-l from-teal-600 to-transparent z-10" />
-            <p className="text-xs font-black uppercase tracking-[0.4em] animate-marquee whitespace-nowrap inline-block pr-[100%]">
+            <p className="text-[14px] font-black uppercase tracking-[0.4em] animate-marquee whitespace-nowrap inline-block pr-[100%]">
               Verify your patient ID at reception • Keep your Digital Locker QR code ready • Results synced automatically to your profile • Maintain clinical silence
             </p>
           </div>

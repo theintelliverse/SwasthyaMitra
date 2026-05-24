@@ -126,7 +126,7 @@ const Appointments = () => {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-teal-500 text-xs font-black uppercase tracking-wider text-slate-700 shadow-sm transition-all w-full sm:w-48 cursor-pointer"
+                  className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-teal-500 text-[14px] font-black uppercase tracking-wider text-slate-700 shadow-sm transition-all w-full sm:w-48 cursor-pointer"
                 />
               </div>
               <div className="relative w-full sm:w-auto">
@@ -154,7 +154,7 @@ const Appointments = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`px-6 py-2.5 rounded-2xl text-[14px] font-black uppercase tracking-wider transition-all ${
                   activeTab === tab 
                     ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' 
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
@@ -190,7 +190,7 @@ const Appointments = () => {
                   >
                     {/* Status Badge */}
                     <div className="absolute top-0 right-0 p-4">
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      <div className={`px-3 py-1 rounded-full text-[14px] font-black uppercase tracking-widest ${
                         app.status === 'In-Consultation' ? 'bg-orange-50 text-orange-600 border border-orange-100' :
                         app.status === 'Completed' ? 'bg-green-50 text-green-600 border border-green-100' :
                         app.isEmergency ? 'bg-red-50 text-red-600 border border-red-100 animate-pulse' :
@@ -208,7 +208,7 @@ const Appointments = () => {
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-lg font-black text-slate-900 truncate pr-16">{app.patientName || 'Unknown Patient'}</h3>
-                        <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <p className="text-[14px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <Clock size={12} />
                           {app.visitType === 'Appointment' ? 'Slot: ' : 'Registered: '}
                           {app.visitType === 'Appointment' && app.appointmentDate 
@@ -226,8 +226,8 @@ const Appointments = () => {
                            <Activity size={14} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Reason for Visit</p>
-                          <p className="text-xs font-bold text-slate-700 truncate">{app.requiredTest || 'Routine Consultation'}</p>
+                          <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Reason for Visit</p>
+                          <p className="text-[14px] font-bold text-slate-700 truncate">{app.requiredTest || 'Routine Consultation'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 text-sm">
@@ -235,8 +235,8 @@ const Appointments = () => {
                            <User size={14} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Queue Token</p>
-                          <p className="text-xs font-bold text-slate-700">#{app.tokenNumber}</p>
+                          <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Queue Token</p>
+                          <p className="text-[14px] font-bold text-slate-700">#{app.tokenNumber}</p>
                         </div>
                       </div>
                     </div>
@@ -245,21 +245,21 @@ const Appointments = () => {
                       {app.status === 'Completed' ? (
                         <button 
                           disabled
-                          className="flex-1 py-3 bg-slate-100 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest cursor-not-allowed"
+                          className="flex-1 py-3 bg-slate-100 text-slate-400 rounded-2xl text-[14px] font-black uppercase tracking-widest cursor-not-allowed"
                         >
                           Completed
                         </button>
                       ) : app.status === 'In-Consultation' ? (
                         <button 
                           onClick={() => navigate('/doctor/dashboard')}
-                          className="flex-1 py-3 bg-orange-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-600/20"
+                          className="flex-1 py-3 bg-orange-500 text-white rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-600/20"
                         >
                           Resume Session
                         </button>
                       ) : (
                         <button 
                           onClick={() => handleStartSession(app._id)}
-                          className="flex-1 py-3 bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
+                          className="flex-1 py-3 bg-teal-600 text-white rounded-2xl text-[14px] font-black uppercase tracking-widest hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-600/20"
                         >
                           Start Session
                         </button>

@@ -382,7 +382,7 @@ const AdminDashboard = () => {
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-teal-100">
+                <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
                   Clinic Administrator
                 </span>
                 {isSyncing && <RefreshCw size={14} className="text-teal-500 animate-spin" />}
@@ -392,7 +392,7 @@ const AdminDashboard = () => {
               </h1>
               <p className="text-slate-500 font-bold flex items-center gap-2">
                 Operational Command Hub for <span className="text-teal-600">{clinicName}</span>
-                <span className="bg-slate-100 px-2.5 py-0.5 rounded-lg text-[10px] font-black text-slate-400">ID: {clinicCode}</span>
+                <span className="bg-slate-100 px-2.5 py-0.5 rounded-lg text-[14px] font-black text-slate-400">ID: {clinicCode}</span>
               </p>
             </div>
 
@@ -407,19 +407,19 @@ const AdminDashboard = () => {
                 </div>
                 <div className="text-left">
                   <div className="flex items-center gap-1.5 leading-none">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
-                    <span className="px-1.5 py-0.2 bg-emerald-500/10 text-[8px] font-black text-emerald-600 rounded">
+                    <span className="text-[14px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
+                    <span className="px-1.5 py-0.2 bg-emerald-500/10 text-[14px] font-black text-emerald-600 rounded">
                       {stats.revenueChange}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
                     <span className="text-base font-black text-slate-800 leading-none">₹{stats.revenue.toLocaleString('en-IN')}</span>
-                    <span className="text-[8px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
+                    <span className="text-[14px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
                       Consults: ₹{stats.consultFees} · Labs: ₹{stats.labFees}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[14px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                   Live Sync
                 </div>
@@ -427,7 +427,7 @@ const AdminDashboard = () => {
 
               <button 
                 onClick={handleShare}
-                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-black text-[10px] text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 shadow-sm group"
+                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-black text-[14px] text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 shadow-sm group"
               >
                 <Share2 size={16} className="text-teal-500 group-hover:rotate-12 transition-transform" />
                 Live Monitor Link
@@ -497,16 +497,16 @@ const AdminDashboard = () => {
                  <div className="flex justify-between items-center mb-6">
                     <div>
                        <h3 className="text-lg md:text-xl font-black text-slate-900">Patient Traffic Density</h3>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time walk-in frequency</p>
+                       <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time walk-in frequency</p>
                     </div>
                     <div className="flex gap-2">
                        <button 
                          onClick={() => setTrafficTimeframe('today')}
-                         className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-colors ${trafficTimeframe === 'today' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                         className={`px-3 py-1 rounded-lg text-[14px] font-black uppercase transition-colors ${trafficTimeframe === 'today' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
                        >Today</button>
                        <button 
                          onClick={() => setTrafficTimeframe('week')}
-                         className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-colors ${trafficTimeframe === 'week' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                         className={`px-3 py-1 rounded-lg text-[14px] font-black uppercase transition-colors ${trafficTimeframe === 'week' ? 'bg-teal-50 text-teal-600' : 'text-slate-400 hover:bg-slate-50'}`}
                        >Week</button>
                     </div>
                  </div>
@@ -545,28 +545,28 @@ const AdminDashboard = () => {
                      className="p-3 md:p-3.5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 flex flex-col items-center justify-center text-center group hover:bg-indigo-600 transition-all duration-300"
                    >
                       <UserPlus size={18} className="text-indigo-600 group-hover:text-white transition-colors mb-1.5" />
-                      <p className="text-[9px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest leading-none">Add Staff</p>
+                      <p className="text-[14px] font-black text-indigo-900 group-hover:text-white uppercase tracking-widest leading-none">Add Staff</p>
                    </button>
                    <button 
                      onClick={() => navigate('/admin/reports')}
                      className="p-3 md:p-3.5 bg-teal-50/50 rounded-2xl border border-teal-100/50 flex flex-col items-center justify-center text-center group hover:bg-teal-600 transition-all duration-300"
                    >
                       <FileSpreadsheet size={18} className="text-teal-600 group-hover:text-white transition-colors mb-1.5" />
-                      <p className="text-[9px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Reports</p>
+                      <p className="text-[14px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Reports</p>
                    </button>
                    <button 
                      onClick={() => navigate('/receptionist/dashboard?fromAdmin=true')}
                      className="p-3 md:p-3.5 bg-rose-50/50 rounded-2xl border border-rose-100/50 flex flex-col items-center justify-center text-center group hover:bg-rose-600 transition-all duration-300"
                    >
                       <Layout size={18} className="text-rose-600 group-hover:text-white transition-colors mb-1.5" />
-                      <p className="text-[9px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest leading-none">Front Desk</p>
+                      <p className="text-[14px] font-black text-rose-900 group-hover:text-white uppercase tracking-widest leading-none">Front Desk</p>
                    </button>
                    <button 
                      onClick={() => window.open(publicDisplayUrl, '_blank')}
                      className="p-3 md:p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100/50 flex flex-col items-center justify-center text-center group hover:bg-sky-600 transition-all duration-300"
                    >
                       <Tv size={18} className="text-sky-600 group-hover:text-white transition-colors mb-1.5" />
-                      <p className="text-[9px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
+                      <p className="text-[14px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
                    </button>
                  </div>
               </div>
@@ -575,18 +575,18 @@ const AdminDashboard = () => {
               <div className="bg-white p-4 md:p-5 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="flex justify-between items-center mb-3.5">
                    <h3 className="text-base md:text-lg font-black text-slate-900">Staff Duty Roster</h3>
-                   <button onClick={() => navigate('/admin/staff-management')} className="text-[9px] font-black text-teal-600 uppercase tracking-widest hover:underline">Manage</button>
+                   <button onClick={() => navigate('/admin/staff-management')} className="text-[14px] font-black text-teal-600 uppercase tracking-widest hover:underline">Manage</button>
                 </div>
                 <div className="space-y-2.5 md:space-y-3">
                    {recentStaffActivity.map((staff, idx) => (
                      <div key={idx} className="flex items-center justify-between group">
                         <div className="flex items-center gap-2.5">
-                           <div className="w-7 h-7 md:w-8 md:h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-[10px] md:text-xs uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                           <div className="w-7 h-7 md:w-8 md:h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center font-bold text-[14px] md:text-[14px] uppercase group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                               {staff.name.substring(0, 2)}
                            </div>
                            <div>
-                              <p className="text-xs font-black text-slate-900 leading-none mb-1">{staff.name}</p>
-                              <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">{staff.role}</p>
+                              <p className="text-[14px] font-black text-slate-900 leading-none mb-1">{staff.name}</p>
+                              <p className="text-[14px] md:text-[14px] font-bold text-slate-400 uppercase tracking-widest leading-none">{staff.role}</p>
                            </div>
                         </div>
                         <div className={`w-2 h-2 rounded-full ${staff.isAvailable ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`} />
@@ -595,7 +595,7 @@ const AdminDashboard = () => {
                    {recentStaffActivity.length === 0 && (
                      <div className="text-center py-4">
                         <AlertCircle size={22} className="mx-auto text-slate-100 mb-1.5" />
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
+                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">No staff registered</p>
                      </div>
                    )}
                 </div>
@@ -605,12 +605,12 @@ const AdminDashboard = () => {
               <div className="bg-slate-900 p-4 md:p-5 rounded-3xl text-white relative overflow-hidden">
                  <div className="relative z-10">
                     <h4 className="text-sm md:text-base font-black mb-0.5">System Health</h4>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-3">Global Sync Status</p>
+                    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mb-3">Global Sync Status</p>
                     <div className="flex items-center gap-3">
                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div className="h-full bg-teal-500 rounded-full w-[98.8%]" />
                        </div>
-                       <span className="text-xs font-black text-teal-500">98.8%</span>
+                       <span className="text-[14px] font-black text-teal-500">98.8%</span>
                     </div>
                  </div>
                  <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/10 blur-2xl rounded-full -mr-12 -mt-12" />
@@ -761,18 +761,18 @@ const RevenueModal = ({
               <TrendingUp className="text-emerald-500" size={24} />
               Clinical Revenue Settings
             </h2>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Manage billing rates, rules & pharmacy inventory</p>
+            <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manage billing rates, rules & pharmacy inventory</p>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setActiveTab('billing')}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'billing' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+              className={`px-4 py-2 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all ${activeTab === 'billing' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
             >
               Billing Config
             </button>
             <button 
               onClick={() => setActiveTab('inventory')}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'inventory' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+              className={`px-4 py-2 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all ${activeTab === 'inventory' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
             >
               Pharmacy Inventory
             </button>
@@ -823,11 +823,11 @@ const RevenueModal = ({
                 </div>
 
                 <div className="bg-teal-50/50 border border-teal-100/60 p-4 rounded-2xl">
-                  <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <h4 className="text-[14px] font-black text-teal-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     <Clock size={14} />
                     Queue Management Wait Factor
                   </h4>
-                  <p className="text-[10px] text-teal-600 font-bold leading-normal mb-3">
+                  <p className="text-[14px] text-teal-600 font-bold leading-normal mb-3">
                     Adjust how many minutes are allocated per patient in queue to calculate dynamic waiting times.
                   </p>
                   <div className="flex items-center gap-4">
@@ -839,7 +839,7 @@ const RevenueModal = ({
                       onChange={(e) => handleConfigChange('avgWaitFactor', Number(e.target.value))}
                       className="flex-1 accent-teal-600"
                     />
-                    <span className="px-3 py-1 bg-white border border-teal-200 text-teal-700 rounded-xl font-black text-xs shrink-0">
+                    <span className="px-3 py-1 bg-white border border-teal-200 text-teal-700 rounded-xl font-black text-[14px] shrink-0">
                       {config.avgWaitFactor} mins/pat
                     </span>
                   </div>
@@ -848,7 +848,7 @@ const RevenueModal = ({
                 <div className="flex items-center gap-3 pt-4">
                   <button 
                     onClick={saveConfig}
-                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-600/10 active:scale-95 transition-all"
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-[14px] uppercase tracking-widest shadow-lg shadow-emerald-600/10 active:scale-95 transition-all"
                   >
                     Save Operational Rules
                   </button>
@@ -858,16 +858,16 @@ const RevenueModal = ({
               {/* Right Sidebar: Stats Breakdown */}
               <div className="lg:col-span-2 space-y-6 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
                 <div>
-                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Today's Total</h3>
+                  <h3 className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-1">Today's Total</h3>
                   <div className="text-3xl font-black text-slate-900">₹{stats.revenue.toLocaleString('en-IN')}</div>
-                  <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-emerald-600">
+                  <div className="flex items-center gap-1 mt-1 text-[14px] font-bold text-emerald-600">
                     <span className="px-1.5 py-0.2 bg-emerald-50 rounded">{stats.revenueChange}</span>
                     <span>Vs Yesterday</span>
                   </div>
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-slate-200/60">
-                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Revenue Breakdown</h4>
+                  <h4 className="text-[14px] font-black text-slate-800 uppercase tracking-wider">Revenue Breakdown</h4>
                   
                   <BreakdownBar 
                     label="Consultations" 
@@ -896,10 +896,10 @@ const RevenueModal = ({
                   
                   <div className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between mt-6">
                     <div>
-                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Stream</h5>
-                      <p className="text-xs font-bold text-slate-800 mt-0.5">Real-time Connection</p>
+                      <h5 className="text-[14px] font-black text-slate-400 uppercase tracking-wider">Active Stream</h5>
+                      <p className="text-[14px] font-bold text-slate-800 mt-0.5">Real-time Connection</p>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[9px] font-black text-emerald-600 uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[14px] font-black text-emerald-600 uppercase tracking-wider">
                       <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                       Live Syncing
                     </div>
@@ -918,20 +918,20 @@ const RevenueModal = ({
                     placeholder="Search medicine..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:border-teal-500 transition-all"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-[14px] font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:border-teal-500 transition-all"
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-teal-600/10 active:scale-95"
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-[14px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-teal-600/10 active:scale-95"
                   >
                     <Plus size={14} />
                     {showAddForm ? 'Cancel' : 'Add Item'}
                   </button>
                   <button 
                     onClick={resetInventory}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all"
                   >
                     Reset Inventory
                   </button>
@@ -942,42 +942,42 @@ const RevenueModal = ({
               {showAddForm && (
                 <form onSubmit={handleAddMedicine} className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-4 items-end animate-in slide-in-from-top-3 duration-250">
                   <div className="md:col-span-2">
-                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Medicine Name</label>
+                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Medicine Name</label>
                     <input 
                       type="text" 
                       required 
                       placeholder="e.g. Ibuprofen 400mg"
                       value={newMed.name}
                       onChange={(e) => setNewMed({...newMed, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Initial Stock</label>
+                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Initial Stock</label>
                     <input 
                       type="number" 
                       required
                       min="1" 
                       value={newMed.stock}
                       onChange={(e) => setNewMed({...newMed, stock: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Unit Price (₹)</label>
+                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Unit Price (₹)</label>
                     <input 
                       type="number" 
                       required
                       min="1" 
                       value={newMed.unitPrice}
                       onChange={(e) => setNewMed({...newMed, unitPrice: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
                   <div className="md:col-span-4 flex justify-end">
                     <button 
                       type="submit"
-                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider"
+                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[14px] font-black uppercase tracking-wider"
                     >
                       Save to Inventory
                     </button>
@@ -998,15 +998,15 @@ const RevenueModal = ({
                         <div>
                           <span className="text-sm font-black text-slate-800 block">{item.name}</span>
                           {isLowStock && (
-                            <span className="inline-block mt-1 px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
+                            <span className="inline-block mt-1 px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-[14px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
                           )}
                         </div>
                         {editingIndex === idx ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-500">₹</span>
+                            <span className="text-[14px] font-bold text-slate-500">₹</span>
                             <input 
                               type="number"
-                              className="w-16 px-1.5 py-1 border border-slate-300 rounded text-xs font-black outline-none focus:border-teal-500"
+                              className="w-16 px-1.5 py-1 border border-slate-300 rounded text-[14px] font-black outline-none focus:border-teal-500"
                               value={tempPrice}
                               onChange={(e) => setTempPrice(e.target.value)}
                             />
@@ -1031,7 +1031,7 @@ const RevenueModal = ({
                       </div>
                       
                       <div>
-                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5">
+                        <div className="flex items-center justify-between text-[14px] font-bold text-slate-500 mb-1.5">
                           <span>{item.stock} Units</span>
                           <span>Min: {item.minStock}</span>
                         </div>
@@ -1046,11 +1046,11 @@ const RevenueModal = ({
                           className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all flex items-center gap-1.5"
                         >
                           <Trash2 size={16} /> 
-                          <span className="text-[10px] font-black uppercase tracking-wider">Remove</span>
+                          <span className="text-[14px] font-black uppercase tracking-wider">Remove</span>
                         </button>
                         <button 
                           onClick={() => restockMed(idx)}
-                          className="px-4 py-2 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-xs font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-xl transition-all active:scale-95"
+                          className="px-4 py-2 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[14px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-xl transition-all active:scale-95"
                         >
                           Restock (+50)
                         </button>
@@ -1069,7 +1069,7 @@ const RevenueModal = ({
               <div className="hidden md:block border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    <tr className="bg-slate-50 text-[14px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       <th className="p-4">Item Name</th>
                       <th className="p-4">Stock Level</th>
                       <th className="p-4">Unit Price</th>
@@ -1085,13 +1085,13 @@ const RevenueModal = ({
                       return (
                         <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4">
-                            <span className="text-xs font-black text-slate-800 block">{item.name}</span>
+                            <span className="text-[14px] font-black text-slate-800 block">{item.name}</span>
                             {isLowStock && (
-                              <span className="inline-block mt-1 px-1.5 py-0.2 bg-rose-50 border border-rose-100 text-[8px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
+                              <span className="inline-block mt-1 px-1.5 py-0.2 bg-rose-50 border border-rose-100 text-[14px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
                             )}
                           </td>
                           <td className="p-4 w-1/3">
-                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1.5">
+                            <div className="flex items-center justify-between text-[14px] font-bold text-slate-500 mb-1.5">
                               <span>{item.stock} Units</span>
                               <span>Min: {item.minStock}</span>
                             </div>
@@ -1102,10 +1102,10 @@ const RevenueModal = ({
                           <td className="p-4">
                             {editingIndex === idx ? (
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-bold text-slate-500">₹</span>
+                                <span className="text-[14px] font-bold text-slate-500">₹</span>
                                 <input 
                                   type="number"
-                                  className="w-16 px-1.5 py-0.8 border border-slate-300 rounded text-xs font-black outline-none focus:border-teal-500"
+                                  className="w-16 px-1.5 py-0.8 border border-slate-300 rounded text-[14px] font-black outline-none focus:border-teal-500"
                                   value={tempPrice}
                                   onChange={(e) => setTempPrice(e.target.value)}
                                 />
@@ -1118,7 +1118,7 @@ const RevenueModal = ({
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-black text-slate-800">₹{item.unitPrice}</span>
+                                <span className="text-[14px] font-black text-slate-800">₹{item.unitPrice}</span>
                                 <button 
                                   onClick={() => startEditing(idx, item.unitPrice)}
                                   className="p-1 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-all"
@@ -1132,7 +1132,7 @@ const RevenueModal = ({
                             <div className="flex items-center justify-end gap-2">
                               <button 
                                 onClick={() => restockMed(idx)}
-                                className="px-2.5 py-1 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[10px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-lg transition-all active:scale-95"
+                                className="px-2.5 py-1 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[14px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-lg transition-all active:scale-95"
                               >
                                 Restock (+50)
                               </button>
@@ -1149,7 +1149,7 @@ const RevenueModal = ({
                     })}
                     {filteredInventory.length === 0 && (
                       <tr>
-                        <td colSpan="4" className="text-center py-8 text-slate-400 font-bold text-xs">
+                        <td colSpan="4" className="text-center py-8 text-slate-400 font-bold text-[14px]">
                           No matching medicines found in inventory.
                         </td>
                       </tr>
@@ -1167,9 +1167,9 @@ const RevenueModal = ({
 
 const ConfigField = ({ label, value, onChange, icon }) => (
   <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors">
-    <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">{label}</label>
+    <label className="text-[14px] font-black uppercase text-slate-400 block mb-2">{label}</label>
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">{icon}</span>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-black text-slate-400">{icon}</span>
       <input 
         type="number" 
         value={value}
@@ -1182,11 +1182,11 @@ const ConfigField = ({ label, value, onChange, icon }) => (
 
 const BreakdownBar = ({ label, amount, percentage, color }) => (
   <div className="space-y-1.5">
-    <div className="flex justify-between items-center text-[11px] font-bold text-slate-600">
+    <div className="flex justify-between items-center text-[14px] font-bold text-slate-600">
       <span>{label}</span>
       <div className="flex items-center gap-1.5">
         <span className="font-black text-slate-800">₹{amount.toLocaleString('en-IN')}</span>
-        <span className="text-[9px] text-slate-400">({percentage}%)</span>
+        <span className="text-[14px] text-slate-400">({percentage}%)</span>
       </div>
     </div>
     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -1215,10 +1215,10 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
     >
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
+          <span className="text-[14px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
           <span className="text-xl font-bold text-slate-900 leading-none">{value}</span>
           {subtitle && (
-            <span className="text-[8px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
+            <span className="text-[14px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
           )}
         </div>
         <div className="shrink-0 scale-90">
@@ -1226,10 +1226,10 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
         </div>
       </div>
       <div className="flex items-center justify-between mt-auto">
-        <span className={`px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${trendBg} ${change === 'Live' ? 'animate-pulse' : ''}`}>
+        <span className={`px-1.5 py-0.5 rounded-lg text-[14px] font-black uppercase tracking-widest ${trendBg} ${change === 'Live' ? 'animate-pulse' : ''}`}>
           {change}
         </span>
-        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Live Sync</span>
+        <span className="text-[14px] font-black text-slate-300 uppercase tracking-widest leading-none">Live Sync</span>
       </div>
       <div className={`absolute bottom-0 right-0 w-8 h-8 bg-${color}-500/5 rounded-full blur-sm group-hover:scale-150 transition-transform`} />
     </div>
@@ -1238,14 +1238,14 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
 
 const ConfigInput = ({ label, value, onChange }) => (
   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">{label}</label>
+    <label className="text-[14px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">{label}</label>
     <div className="relative">
-      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[14px] font-black text-slate-400">₹</span>
       <input 
         type="number" 
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full bg-white border border-slate-200/60 pl-6 pr-2 py-1.5 rounded-lg text-xs font-black text-slate-900 outline-none focus:border-teal-500 transition-colors"
+        className="w-full bg-white border border-slate-200/60 pl-6 pr-2 py-1.5 rounded-lg text-[14px] font-black text-slate-900 outline-none focus:border-teal-500 transition-colors"
       />
     </div>
   </div>

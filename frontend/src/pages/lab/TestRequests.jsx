@@ -87,11 +87,11 @@ const TestRequests = () => {
                   <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Required Test</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Patient</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Required Test</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[14px] font-bold text-gray-500 uppercase tracking-wider">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -99,10 +99,10 @@ const TestRequests = () => {
                         <tr key={req._id} className="hover:bg-gray-50/80 transition-colors">
                           <td className="px-6 py-4">
                             <div className="font-semibold text-gray-900">{req.patientName}</div>
-                            <div className="text-xs text-gray-500">{req.patientPhone}</div>
+                            <div className="text-[14px] text-gray-500">{req.patientPhone}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[14px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
                               {req.requiredTest || 'General Diagnostic'}
                             </span>
                           </td>
@@ -110,7 +110,7 @@ const TestRequests = () => {
                             {new Date(req.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4">
-                            <div className={`flex items-center gap-2 text-xs font-bold ${
+                            <div className={`flex items-center gap-2 text-[14px] font-bold ${
                               req.currentStage === 'Lab-Completed' ? 'text-green-600' : 
                               req.currentStage === 'Lab-Pending' ? 'text-blue-600' : 'text-amber-600'
                             }`}>
@@ -137,9 +137,9 @@ const TestRequests = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="text-sm font-bold text-gray-900">{req.patientName}</h4>
-                          <span className="text-xs text-gray-500">{req.patientPhone}</span>
+                          <span className="text-[14px] text-gray-500">{req.patientPhone}</span>
                         </div>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[14px] font-bold ${
                           req.currentStage === 'Lab-Completed' ? 'bg-green-50 text-green-700 border border-green-100' : 
                           req.currentStage === 'Lab-Pending' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 
                           'bg-amber-50 text-amber-700 border border-amber-100'
@@ -150,19 +150,19 @@ const TestRequests = () => {
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-xs text-gray-600">
+                      <div className="flex justify-between items-center text-[14px] text-gray-600">
                         <div>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Required Test</span>
+                          <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block">Required Test</span>
                           <span className="font-semibold text-gray-800">{req.requiredTest || 'General Diagnostic'}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Requested Date</span>
+                          <span className="text-[14px] font-bold text-gray-400 uppercase tracking-widest block">Requested Date</span>
                           <span className="font-semibold text-gray-800">{new Date(req.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
 
                       <div className="flex justify-end pt-2 border-t border-gray-50">
-                        <button className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-xs font-bold transition-all active:scale-95">
+                        <button className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-[14px] font-bold transition-all active:scale-95">
                           <Eye size={12} />
                           Details
                         </button>
