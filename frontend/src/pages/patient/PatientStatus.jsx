@@ -9,6 +9,7 @@ import {
     RefreshCcw, Activity, Zap, AlertCircle, Heart, Wifi, WifiOff,
     CheckCircle2, Stethoscope, Timer, Users, Sparkles, Hospital
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL, {
@@ -142,6 +143,11 @@ const PatientStatus = () => {
     ═══════════════════════════════════════════ */
     if (isPending) return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50/30 flex items-center justify-center p-5 font-sans">
+            <SEO 
+                title="Pending Check-in Approval" 
+                description="Your check-in request is being processed. Live queue tracking will start shortly." 
+                url={`/patient/status?id=${queueId}`} 
+            />
             <div className="w-full max-w-sm">
                 {/* Card */}
                 <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100/80 p-10 text-center">
@@ -196,6 +202,11 @@ const PatientStatus = () => {
     ═══════════════════════════════════════════ */
     if (isCompleted || (!status && !loading)) return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 flex items-center justify-center p-5 font-sans relative overflow-hidden">
+            <SEO 
+                title="Consultation Completed" 
+                description="Your clinic consultation has been completed. View prescriptions and reports in your Health Locker." 
+                url={`/patient/status?id=${queueId}`} 
+            />
             <Blob className="w-96 h-96 bg-teal-500/40 -top-20 -right-20" />
             <Blob className="w-80 h-80 bg-cyan-400/30 bottom-10 left-0" />
 
@@ -225,6 +236,11 @@ const PatientStatus = () => {
     return (
         <div className="min-h-screen font-sans text-slate-900 relative overflow-hidden"
             style={{ background: isInConsultation ? 'linear-gradient(135deg,#f0fdf9,#ccfbf1,#f0fdfa)' : '#f8fafc' }}>
+            <SEO 
+                title={`Live Queue Status - Token ${status?.tokenNumber || ''}`} 
+                description={`Track your live queue position in real-time at ${status?.clinicName || 'your local clinic'}. Estimated wait time: ${status?.estimatedWait || '0'} minutes.`} 
+                url={`/patient/status?id=${queueId}`} 
+            />
 
             {/* BG Blobs */}
             {isInConsultation && (

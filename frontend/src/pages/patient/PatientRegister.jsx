@@ -6,6 +6,7 @@ import {
     User, Phone, Heart, Users, ArrowRight, ArrowLeft, RefreshCw, 
     Eye, EyeOff, Lock, CheckCircle, Activity, ShieldCheck, Zap
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -177,6 +178,11 @@ const PatientRegister = () => {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
+            <SEO 
+                title="Patient Registration" 
+                description="Sign up for a secure SwasthyaMitra patient account. Track queues, view appointments, and manage your health records." 
+                url="/patient/register" 
+            />
             <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">
                 {/* Left Side - Info Panel */}
                 <div className="w-full md:w-5/12 bg-slate-900 p-10 text-white flex flex-col justify-between relative overflow-hidden">

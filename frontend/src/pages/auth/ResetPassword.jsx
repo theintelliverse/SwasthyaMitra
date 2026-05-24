@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LockKeyhole, Eye, EyeOff, ArrowRight, RefreshCw, ArrowLeft, CheckCircle } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -89,6 +90,11 @@ const ResetPassword = () => {
 
     return (
         <div className="min-h-screen bg-parchment text-teak flex flex-col items-center justify-center p-6 font-body">
+            <SEO 
+                title="Reset Password | Secure Staff Recovery" 
+                description="Securely reset your Appointory clinic staff account password." 
+                url="/reset-password" 
+            />
             <div className="w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl p-10 border border-sandstone/50 relative overflow-hidden">
 
                 {/* Decorative Accent */}

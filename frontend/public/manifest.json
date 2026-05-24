@@ -136,7 +136,7 @@
       "name": "Health Locker",
       "short_name": "My Health",
       "description": "View and manage your medical records securely",
-      "url": "/patient/health-locker",
+      "url": "/patient/locker",
       "icons": [
         {
           "src": "/og-image.svg",

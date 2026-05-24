@@ -358,13 +358,118 @@ const LandingPage = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  const schemaData = {
+  const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "MedicalOrganization",
     "name": "Appointory",
     "description": "Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.",
-    "url": "https://appointory.com",
-    "logo": "https://appointory.com/og-image.svg"
+    "url": "https://appointory.in",
+    "logo": "https://appointory.in/og-image.svg"
+  };
+
+  const softwareAppSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Appointory",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web Browser, Android, iOS",
+    "url": "https://appointory.in/",
+    "image": "https://appointory.in/og-image.svg",
+    "description": "A comprehensive MERN-stack clinic management system with real-time queueing, lab referrals, and secure patient health records.",
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "INR",
+      "price": "0",
+      "pricingModel": "FreemiumPricing"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "500"
+    },
+    "featureList": [
+      "Real-time queue management with Socket.io",
+      "Role-based dashboards for clinic staff",
+      "OTP-secured patient digital health locker",
+      "Instant lab referral and result synchronization",
+      "Unified timeline for visits and reports",
+      "WhatsApp notifications",
+      "AI wait-time prediction",
+      "Multi-role staff management"
+    ],
+    "availability": "https://schema.org/InStock"
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://appointory.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Features",
+        "item": "https://appointory.in/#features"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "About",
+        "item": "https://appointory.in/#about"
+      }
+    ]
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Appointory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Appointory is a real-time clinical management and digital health locker platform that helps clinics streamline operations and patients securely access their medical records. It features live queue tracking, lab referrals, OTP-secured access, and role-based dashboards for staff."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who can use Appointory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Appointory is designed for clinic administrators, doctors, receptionists, lab technicians, and patients. Each role has a customized interface tailored to their specific workflow and responsibilities."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are patient records secured in Appointory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Patient records in Appointory are protected through OTP authentication for access to the digital health locker. Sensitive medical information is encrypted and patients have full control over their records with secure view and share capabilities."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Appointory support WhatsApp notifications?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Appointory supports WhatsApp notifications to keep patients and staff informed about queue status, lab results, and appointments in real-time."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can Appointory predict wait times?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Appointory includes AI-powered wait-time prediction that helps manage patient expectations and optimize clinic scheduling."
+        }
+      }
+    ]
   };
 
   return (
@@ -373,8 +478,8 @@ const LandingPage = () => {
         title="Care without the Waiting Room"
         description="Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time."
         url="/"
+        schemaMarkup={[organizationSchema, softwareAppSchema, breadcrumbSchema, faqSchema]}
       />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-7xl mx-auto border-b border-sandstone/30">
         <div className="flex items-center gap-2.5">
@@ -1274,7 +1379,7 @@ const LandingPage = () => {
                           {/* Animated signature drawing */}
                           <div className="w-20 h-10 flex items-center justify-center bg-white/60 border border-emerald-200/50 rounded-lg p-1">
                             {signatureImg ? (
-                              <img src={signatureImg} alt="Doc Signature" className="w-16 h-8 object-contain" />
+                              <img src={signatureImg} alt="Doc Signature" loading="lazy" className="w-16 h-8 object-contain" />
                             ) : (
                               <svg className="w-16 h-8 text-emerald-700" viewBox="0 0 100 50" fill="none">
                                 <motion.path
@@ -1650,7 +1755,7 @@ const LandingPage = () => {
                     </div>
                     <div className="w-24 h-10 border border-dashed border-emerald-300 bg-white rounded-lg flex items-center justify-center p-1.5 overflow-hidden">
                       {signatureImg ? (
-                        <img src={signatureImg} alt="Doctor Signature" className="w-full h-full object-contain" />
+                        <img src={signatureImg} alt="Doctor Signature" loading="lazy" className="w-full h-full object-contain" />
                       ) : (
                         <svg className="w-16 h-8 text-emerald-700" viewBox="0 0 100 50" fill="none">
                           <path

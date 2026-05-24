@@ -1,6 +1,9 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import SEO from './SEO';
+
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   
@@ -18,8 +21,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // 3. If everything is fine, show the page
-  return children;
+  // 3. If everything is fine, show the page with noindex SEO tags to avoid bot indexation
+  return (
+    <>
+      <SEO noindex={true} />
+      {children}
+    </>
+  );
 };
 
 export default ProtectedRoute;

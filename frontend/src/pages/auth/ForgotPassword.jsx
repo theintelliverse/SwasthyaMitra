@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Mail, LockKeyhole, Hash, ArrowRight, RefreshCw, ArrowLeft } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -57,6 +58,11 @@ const ForgotPassword = () => {
 
     return (
         <div className="min-h-screen bg-parchment text-teak flex flex-col items-center justify-center p-6 font-body">
+            <SEO 
+                title="Forgot Password | Staff Recovery" 
+                description="Recover your Appointory clinic staff or administrative account securely." 
+                url="/forgot-password" 
+            />
             <div className="w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl p-10 border border-sandstone/50 relative overflow-hidden">
 
                 {/* Decorative Accent */}

@@ -1,44 +1,75 @@
 # Appointory SEO Robot Configuration
-# Version 1.0
+# Version 2.0
 # Generated for appointory.in
 
-# Block bad bots and crawlers
+# 1. Block Bad Bots & aggressive crawlers
 User-agent: MJ12bot
-Disallow: /
-
+User-agent: DotBot
+User-agent: MojeekBot
 User-agent: AhrefsBot
-Disallow: /
-
 User-agent: SemrushBot
 User-agent: SemrushBot-SA
 Disallow: /
 
-User-agent: DotBot
+# 2. Block AI scraper bots from training on SwasthyaMitra data
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: Anthropic-ai
+User-agent: CCBot
+User-agent: Google-Extended
+User-agent: Omgilibot
+User-agent: Omgili
+User-agent: cohere-ai
+User-agent: PerplexityBot
 Disallow: /
 
-User-agent: MojeekBot
-Disallow: /
-
+# 3. Allow YandexBot (limited)
 User-agent: YandexBot
 Disallow: /admin
 Disallow: /doctor
 Disallow: /patient
 Disallow: /receptionist
 Disallow: /lab
+Disallow: /api
+Allow: /
 
-# Allow all legitimate indexing
+# 4. Allow Baiduspider (limited)
+User-agent: Baiduspider
+Disallow: /admin
+Disallow: /doctor
+Disallow: /patient
+Disallow: /receptionist
+Disallow: /lab
+Disallow: /api
+Allow: /
+
+# 5. Allow Googlebot (fully allowed, but excluding private areas and raw JSON)
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/
+Disallow: /patient/
+Disallow: /receptionist/
+Disallow: /lab/
 Disallow: /*.json$
 Crawl-delay: 0
 
+# 6. Allow Bingbot
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/
+Disallow: /patient/
+Disallow: /receptionist/
+Disallow: /lab/
 Disallow: /*.json$
 Crawl-delay: 1
 
+# 7. Default rules for all other search engines (Yahoo, DuckDuckGo, Ask, etc.)
 User-agent: *
 Allow: /
 Disallow: /api/
@@ -52,9 +83,9 @@ Disallow: /*?*=
 Crawl-delay: 1
 Request-rate: 30/60
 
-# Sitemap locations
-Sitemap: https://www.appointory.in/sitemap.xml
-Sitemap: https://www.appointory.in/sitemap-index.xml
+# Sitemap location
+Sitemap: https://appointory.in/sitemap.xml
+Sitemap: https://appointory.in/sitemap-index.xml
 
 # Allow crawling of common static assets
 Allow: /*.css$

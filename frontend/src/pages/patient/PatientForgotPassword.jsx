@@ -6,6 +6,7 @@ import {
     Smartphone, ArrowRight, RefreshCw, ArrowLeft, 
     ShieldCheck, Lock, Eye, EyeOff, Activity, CheckCircle
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -109,6 +110,11 @@ const PatientForgotPassword = () => {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
+            <SEO 
+                title="Patient Password Recovery" 
+                description="Securely recover your SwasthyaMitra patient account credentials using SMS OTP verification." 
+                url="/patient/forgot-password" 
+            />
             <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">
                 {/* Left Side - Security Panel */}
                 <div className="w-full md:w-5/12 bg-slate-900 p-10 text-white flex flex-col justify-between relative overflow-hidden">

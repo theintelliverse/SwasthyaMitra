@@ -6,6 +6,7 @@ import {
     Phone, User, Stethoscope, ShieldCheck, ArrowRight, 
     RefreshCw, Activity, CheckCircle, MapPin, Search
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -131,6 +132,11 @@ const PatientCheckIn = () => {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
+            <SEO 
+                title={`${clinicName ? clinicName : 'Clinic'} Self Check-in`} 
+                description={`Join the live patient queue at ${clinicName || 'your local clinic'} contactless by scanning the QR code and verifying via OTP.`}
+                url={`/patient/checkin${clinicCode ? `?code=${clinicCode}` : ''}`} 
+            />
             <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">
                 
                 {/* Left Panel - Clinic Info */}
