@@ -16,8 +16,8 @@ const Footer = () => {
           {/* Column 1: Branding & Philosophy */}
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#2D9B6F] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/10">
-                <span className="text-white font-heading text-xl font-bold">A</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/10 overflow-hidden">
+                <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <span className="font-heading text-xl font-black tracking-tight text-white block">

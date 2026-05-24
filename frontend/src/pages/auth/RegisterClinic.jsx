@@ -83,8 +83,8 @@ const RegisterClinic = () => {
       <div className="flex-grow w-full max-w-7xl px-6 py-6 flex flex-col items-center">
         {/* Brand Header */}
         <div className="flex items-center gap-3 mb-4 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20 group-hover:rotate-12 transition-transform">
-            <span className="text-white font-heading text-2xl">A</span>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20 group-hover:rotate-12 transition-transform overflow-hidden">
+            <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="font-heading text-2xl tracking-tight">Appointory</h1>
         </div>

@@ -378,8 +378,8 @@ const LandingPage = () => {
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-7xl mx-auto border-b border-sandstone/30">
         <div className="flex items-center gap-2.5">
-          <div className="w-8.5 h-8.5 bg-marigold rounded-xl flex items-center justify-center shadow-md shadow-marigold/20">
-            <span className="text-white font-heading text-xl">A</span>
+          <div className="w-8.5 h-8.5 rounded-xl flex items-center justify-center shadow-md shadow-marigold/20 overflow-hidden">
+            <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="font-heading text-base sm:text-xl tracking-tight font-black text-teak">
             Appointory

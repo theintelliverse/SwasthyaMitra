@@ -121,8 +121,8 @@ const Sidebar = ({ role = 'lab' }) => {
             onClick={() => navigate(`/${userRole}/dashboard`)}
             className="flex items-center gap-4 group cursor-pointer"
           >
-            <div className="w-12 h-12 bg-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/20 group-hover:rotate-6 transition-all duration-300">
-              <ShieldCheck size={26} className="text-white" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/20 group-hover:rotate-6 transition-all duration-300 overflow-hidden">
+              <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1">
