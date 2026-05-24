@@ -18,6 +18,21 @@ const MOCK_CLINICS = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
+
+  // SEO Effect
+  useEffect(() => {
+    document.title = "Appointory | Care without the Waiting Room";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.';
+      document.head.appendChild(meta);
+    }
+  }, []);
+
   const [clinicsQueues, setClinicsQueues] = useState(MOCK_CLINICS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -357,8 +372,18 @@ const LandingPage = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "MedicalOrganization",
+    "name": "Appointory",
+    "description": "Automated queues, WhatsApp status alerts, and your own Secure Health Locker. Digital healthcare that respects your time.",
+    "url": "https://appointory.com",
+    "logo": "https://appointory.com/og-image.svg"
+  };
+
   return (
     <div className="min-h-screen bg-parchment font-body text-teak">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-7xl mx-auto border-b border-sandstone/30">
         <div className="flex items-center gap-2.5">
@@ -373,12 +398,14 @@ const LandingPage = () => {
         <div className="flex items-center gap-4 sm:gap-5">
           <a
             href="#features"
+            aria-label="Learn how Appointory works"
             className="text-[9.5px] font-black uppercase tracking-widest hover:text-marigold transition-colors hidden md:block"
           >
             How it works
           </a>
           <button
             onClick={() => navigate('/login')}
+            aria-label="Staff Portal Login"
             className="px-5 py-2 bg-teak text-parchment rounded-full text-[9.5px] font-black uppercase tracking-widest hover:bg-marigold transition-all shadow-md active:scale-95 cursor-pointer"
           >
             Staff Portal
