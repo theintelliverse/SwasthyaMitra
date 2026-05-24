@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Footer from '../components/Footer';
@@ -78,30 +78,54 @@ const LandingPage = () => {
   const [isStepHovered, setIsStepHovered] = useState(false);
 
   // --- CONNECTED SIMULATION STATES ---
+  const [selectedClinicIdx, setSelectedClinicIdx] = useState(0);
+
   // Step 1: Check-in States
   const [checkInState, setCheckInState] = useState('camera'); // 'camera' | 'form' | 'success'
   const [phoneNum, setPhoneNum] = useState('');
   const [checkInLoading, setCheckInLoading] = useState(false);
   const [checkedInPhone, setCheckedInPhone] = useState('');
+  const [cardFlipped, setCardFlipped] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Step 2: Live Queue States
-  const [queuePos, setQueuePos] = useState(3); // 3: 3rd, 2: 2nd, 1: Next, 0: Seeing Doctor
+  const [queuePos, setQueuePos] = useState(3); // 3: Checkin Desk, 2: Vitals Station, 1: Waiting Room, 0: Seeing Doctor
   const [showNotification, setShowNotification] = useState(false);
   const [notificationText, setNotificationText] = useState('');
 
   // Step 3: Consultation States
-  const [vitals, setVitals] = useState({ bp: '120/80', pulse: '76', temp: '98.6' });
+  const [vitals, setVitals] = useState({ bpSystolic: 120, bpDiastolic: 80, pulse: 76, temp: 98.6 });
   const [activeComplaint, setActiveComplaint] = useState('Fever & Cough');
   const [meds, setMeds] = useState(['Paracetamol 650mg', 'Cough Syrup']);
   const [uploadState, setUploadState] = useState('idle'); // 'idle' | 'uploading' | 'uploaded'
+  const [signatureImg, setSignatureImg] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const canvasRef = useRef(null);
 
   // Step 4: Secure Vault States
   const [otpInput, setOtpInput] = useState('');
   const [vaultLocked, setVaultLocked] = useState(true);
+  const [isShaking, setIsShaking] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState({});
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Collapsible Tech Specs index
   const [expandedTech, setExpandedTech] = useState(null);
+
+  // Grand Stepper Tracker computation
+  const questProgress = useMemo(() => {
+    let stepsCompleted = 0;
+    if (checkedInPhone || checkInState === 'success') stepsCompleted = 1;
+    if (stepsCompleted === 1 && queuePos < 3) stepsCompleted = 2;
+    if (stepsCompleted === 2 && uploadState === 'uploaded') stepsCompleted = 3;
+    if (stepsCompleted === 3 && !vaultLocked) {
+      stepsCompleted = 4;
+      if (Object.values(downloadProgress).some(v => v === 'done')) {
+        stepsCompleted = 5;
+      }
+    }
+    return stepsCompleted;
+  }, [checkInState, checkedInPhone, queuePos, uploadState, vaultLocked, downloadProgress]);
 
   // Auto-play timer for How It Works step selection
   useEffect(() => {
@@ -210,25 +234,23 @@ const LandingPage = () => {
     setTimeout(() => setShowNotification(false), 5000);
   };
 
-  const handleVitalClick = (type, e) => {
-    e.stopPropagation();
+  const adjustVital = (type, increment, e) => {
+    if (e) e.stopPropagation();
     setVitals(prev => {
-      if (type === 'bp') {
-        const bplist = ['120/80', '125/82', '145/95', '118/78'];
-        const curIndex = bplist.indexOf(prev.bp);
-        const nextBP = bplist[(curIndex + 1) % bplist.length];
-        return { ...prev, bp: nextBP };
+      if (type === 'bpSystolic') {
+        const val = Math.max(80, Math.min(200, prev.bpSystolic + (increment ? 5 : -5)));
+        return { ...prev, bpSystolic: val };
+      } else if (type === 'bpDiastolic') {
+        const val = Math.max(50, Math.min(130, prev.bpDiastolic + (increment ? 5 : -5)));
+        return { ...prev, bpDiastolic: val };
       } else if (type === 'pulse') {
-        const pulselist = ['76', '82', '108', '72'];
-        const curIndex = pulselist.indexOf(prev.pulse);
-        const nextPulse = pulselist[(curIndex + 1) % pulselist.length];
-        return { ...prev, pulse: nextPulse };
-      } else {
-        const templist = ['98.6', '99.4', '101.5', '98.2'];
-        const curIndex = templist.indexOf(prev.temp);
-        const nextTemp = templist[(curIndex + 1) % templist.length];
-        return { ...prev, temp: nextTemp };
+        const val = Math.max(40, Math.min(180, prev.pulse + (increment ? 4 : -4)));
+        return { ...prev, pulse: val };
+      } else if (type === 'temp') {
+        const val = Math.max(95, Math.min(106, Math.round((prev.temp + (increment ? 0.2 : -0.2)) * 10) / 10));
+        return { ...prev, temp: val };
       }
+      return prev;
     });
   };
 
@@ -236,13 +258,13 @@ const LandingPage = () => {
     e.stopPropagation();
     setActiveComplaint(complaint);
     if (complaint === 'Fever & Cough') {
-      setVitals({ bp: '118/78', pulse: '88', temp: '101.2' });
+      setVitals({ bpSystolic: 118, bpDiastolic: 78, pulse: 88, temp: 101.2 });
       setMeds(['Paracetamol 650mg', 'Cough Syrup (Ascoril)']);
     } else if (complaint === 'Hypertension') {
-      setVitals({ bp: '145/95', pulse: '84', temp: '98.6' });
+      setVitals({ bpSystolic: 145, bpDiastolic: 95, pulse: 84, temp: 98.6 });
       setMeds(['Amlodipine 5mg', 'Telmisartan 40mg']);
     } else {
-      setVitals({ bp: '120/80', pulse: '72', temp: '98.6' });
+      setVitals({ bpSystolic: 120, bpDiastolic: 80, pulse: 72, temp: 98.6 });
       setMeds(['Multivitamins (Zincovit)', 'Vitamin C Chewable']);
     }
     setUploadState('idle');
@@ -266,10 +288,15 @@ const LandingPage = () => {
 
   const handleSignAndUpload = (e) => {
     e.stopPropagation();
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const dataUrl = canvas.toDataURL();
+      setSignatureImg(dataUrl);
+    }
     setUploadState('uploading');
     setTimeout(() => {
       setUploadState('uploaded');
-    }, 1000);
+    }, 1200);
   };
 
   const handleOtpVerify = (e) => {
@@ -277,8 +304,8 @@ const LandingPage = () => {
     if (otpInput === '1234') {
       setVaultLocked(false);
     } else {
-      alert('Incorrect OTP code. Enter 1234 to simulate access.');
-      setOtpInput('');
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 600);
     }
   };
 
@@ -294,6 +321,130 @@ const LandingPage = () => {
         setDownloadProgress(prev => ({ ...prev, [filename]: 'done' }));
       }
     }, 150);
+  };
+
+  const jumpToQuestStep = (stepIdx, e) => {
+    if (e) e.stopPropagation();
+    
+    if (stepIdx === 0) {
+      setCheckInState('camera');
+      setCheckedInPhone('');
+      setPhoneNum('');
+      setCardFlipped(false);
+      setQueuePos(3);
+      setUploadState('idle');
+      setVaultLocked(true);
+      setOtpInput('');
+      setDownloadProgress({});
+      setActiveStep(0);
+    } else if (stepIdx === 1) {
+      setCheckInState('success');
+      setCheckedInPhone('92658 39482');
+      setCardFlipped(false);
+      setQueuePos(3);
+      setUploadState('idle');
+      setVaultLocked(true);
+      setDownloadProgress({});
+      setActiveStep(0);
+    } else if (stepIdx === 2) {
+      setCheckInState('success');
+      setCheckedInPhone('92658 39482');
+      setQueuePos(1);
+      setUploadState('idle');
+      setVaultLocked(true);
+      setDownloadProgress({});
+      setActiveStep(1);
+      setNotificationText(`🚨 Token T-08 is NEXT in line! Please proceed to doctor chamber.`);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 5000);
+    } else if (stepIdx === 3) {
+      setCheckInState('success');
+      setCheckedInPhone('92658 39482');
+      setQueuePos(0);
+      setUploadState('idle');
+      setVaultLocked(true);
+      setDownloadProgress({});
+      setActiveStep(2);
+    } else if (stepIdx === 4) {
+      setCheckInState('success');
+      setCheckedInPhone('92658 39482');
+      setQueuePos(0);
+      setUploadState('uploaded');
+      setVaultLocked(false);
+      setDownloadProgress({});
+      setActiveStep(3);
+    }
+  };
+
+  // Canvas drawing handlers
+  const startDrawing = (e) => {
+    e.stopPropagation();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    e.stopPropagation();
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.strokeStyle = '#047857';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+  };
+
+  const stopDrawing = (e) => {
+    if (e) e.stopPropagation();
+    setIsDrawing(false);
+  };
+
+  const clearSignature = (e) => {
+    if (e) e.stopPropagation();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setSignatureImg(null);
+  };
+
+  const autoSign = (e) => {
+    if (e) e.stopPropagation();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#047857';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(10, 20);
+    ctx.bezierCurveTo(20, 5, 25, 30, 30, 10);
+    ctx.bezierCurveTo(35, 2, 40, 20, 45, 15);
+    ctx.moveTo(52, 20);
+    ctx.bezierCurveTo(56, 8, 60, 24, 64, 15);
+    ctx.bezierCurveTo(68, 12, 72, 25, 76, 20);
+    ctx.bezierCurveTo(78, 15, 80, 24, 82, 18);
+    ctx.bezierCurveTo(84, 12, 88, 25, 92, 20);
+    ctx.stroke();
+    const dataUrl = canvas.toDataURL();
+    setSignatureImg(dataUrl);
   };
 
   // Stagger animation variants for Step 4 files list
@@ -531,7 +682,7 @@ const LandingPage = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 space-y-2">
+          <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8 space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-marigold/10 text-marigold rounded-full border border-marigold/20">
               <span className="text-[10px] font-black uppercase tracking-widest">HOW IT WORKS</span>
             </div>
@@ -544,6 +695,61 @@ const LandingPage = () => {
             </p>
           </div>
 
+          {/* Grand Stepper Tracker Timeline */}
+          <div className="max-w-xl mx-auto mb-10 bg-gradient-to-br from-white to-parchment/35 border-2 border-sandstone shadow-md p-4 rounded-[1.5rem] text-center">
+            <div className="flex justify-between items-center text-[8.5px] font-black uppercase text-teak/60 mb-3 px-1">
+              <span>DEMO PLAYGROUND QUEST</span>
+              <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full font-black shadow-sm tracking-wider">
+                {questProgress * 20}% COMPLETED
+              </span>
+            </div>
+            
+            <div className="relative flex justify-between items-center w-full px-4">
+              <div className="absolute left-6 right-6 h-0.5 bg-sandstone/25 top-1/2 -translate-y-1/2 -z-10"></div>
+              <motion.div 
+                className="absolute left-6 h-0.5 bg-gradient-to-r from-teal-500 via-indigo-500 to-rose-500 top-1/2 -translate-y-1/2 -z-10"
+                animate={{ width: `${questProgress * 22}%` }}
+                transition={{ duration: 0.4 }}
+              ></motion.div>
+              
+              {['Scan QR', 'ABHA Linked', 'Queue Turn', 'Consult Rx', 'Locker Get'].map((label, stepIdx) => {
+                const isPassed = questProgress >= stepIdx;
+                const isActive = questProgress === stepIdx;
+                const emojis = ['📱', '🪪', '🚶', '🩺', '🔐'];
+                return (
+                  <div key={label} className="flex flex-col items-center relative group">
+                    {/* Hover Tooltip */}
+                    <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-900 text-white text-[7px] px-1.5 py-0.5 rounded shadow-md pointer-events-none whitespace-nowrap z-40">
+                      Jump to: {label}
+                    </div>
+
+                    <span className="text-[10.5px] mb-1 select-none leading-none">{emojis[stepIdx]}</span>
+                    <motion.div
+                      whileHover={{ scale: 1.35 }}
+                      onClick={(e) => jumpToQuestStep(stepIdx, e)}
+                      animate={{
+                        scale: isActive ? 1.3 : 1,
+                        backgroundColor: isActive ? '#f59e0b' : isPassed ? '#10b981' : '#f3f4f6',
+                        borderColor: isActive ? '#d97706' : isPassed ? '#059669' : '#cbd5e1',
+                        boxShadow: isActive 
+                          ? '0px 0px 12px rgba(245, 158, 11, 0.6)' 
+                          : isPassed 
+                            ? '0px 0px 8px rgba(16, 185, 129, 0.3)' 
+                            : 'none'
+                      }}
+                      className="w-5 h-5 rounded-full border flex items-center justify-center text-[7.5px] font-black text-white shadow-sm cursor-pointer"
+                    >
+                      {isPassed && stepIdx < questProgress ? '✓' : stepIdx + 1}
+                    </motion.div>
+                    <span className={`text-[7px] mt-1.5 font-black uppercase tracking-wider ${isActive ? 'text-marigold' : isPassed ? 'text-teak' : 'text-khaki/60'}`}>
+                      {label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Workflow Step Grid */}
           <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative"
@@ -554,32 +760,32 @@ const LandingPage = () => {
               {
                 step: "01",
                 icon: "📸",
-                title: "Scan & Check-In",
-                desc: "Scan the clinic QR code. Enter your mobile number to link your health files instantly.",
+                title: "Contactless QR Check-In",
+                desc: "Scan the clinic's unique QR code to link your profile. The system instantly verifies your identity via ABDM-compliant ABHA gateway registry, securely retrieving your demographics or auto-linking a digital health locker in under 10 seconds.",
                 accent: "bg-teal-50 text-teal-600 border-teal-100/50",
                 badge: "Takes 10s",
               },
               {
                 step: "02",
                 icon: "⏳",
-                title: "Track Live Queue",
-                desc: "Receive instant text alerts and a live tracking link. Monitor your token turn on your phone.",
+                title: "Live Queue & SMS Tracking",
+                desc: "Receive an encrypted live token link and automated WhatsApp reminders. Our dynamic polling engine computes consultation velocity, showing your real-time position in line, estimated wait times, and active token callouts.",
                 accent: "bg-indigo-50 text-indigo-600 border-indigo-100/50",
                 badge: "Live Updates",
               },
               {
                 step: "03",
                 icon: "🩺",
-                title: "Smart Consultation",
-                desc: "Consult with your doctor who writes cloud prescriptions, while vitals are logged by staff.",
+                title: "Real-time Cloud Consultation",
+                desc: "Consult with clinicians who update FHIR-standard electronic medical records. Staff record vital signs (BP, Pulse, Temperature) in the background while the doctor compiles digital prescriptions signed with secure authentication keys.",
                 accent: "bg-emerald-50 text-emerald-600 border-emerald-100/50",
                 badge: "Zero Waiting",
               },
               {
                 step: "04",
                 icon: "🔐",
-                title: "Secure Health Vault",
-                desc: "Access your lifelong prescriptions and reports securely via OTP vault anywhere, anytime.",
+                title: "Secure Lifetime Vault",
+                desc: "Access a lifelong personal health locker protected by multi-factor OTP verification. Securely download prescriptions, lab reports, and vitals trend history, fully sealed with military-grade AES-256 cryptographic encryption.",
                 accent: "bg-rose-50 text-rose-600 border-rose-100/50",
                 badge: "100% Secure",
               }
@@ -639,24 +845,55 @@ const LandingPage = () => {
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
-                            className="flex flex-col items-center justify-center space-y-2 h-full"
+                            className="flex flex-col justify-between h-full"
                           >
-                            <div className="relative w-11 h-11 border border-dashed border-teal-500 rounded-lg flex items-center justify-center bg-white/80 overflow-hidden">
-                              <div className="absolute inset-0 bg-teal-500/5 flex flex-col items-center justify-center">
+                            <div className="flex gap-1 items-center justify-between w-full mb-1">
+                              <label className="text-[7.5px] font-black uppercase text-teal-700 tracking-wider">Target Clinic:</label>
+                              <select 
+                                value={selectedClinicIdx}
+                                onChange={(e) => setSelectedClinicIdx(Number(e.target.value))}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white border border-sandstone/30 rounded text-[7.5px] py-0.2 px-1 focus:outline-none text-teak font-bold"
+                              >
+                                {clinicsQueues.slice(0, 4).map((c, i) => (
+                                  <option key={c.id} value={i}>{c.name.split(' ')[0]}</option>
+                                ))}
+                              </select>
+                            </div>
+                            
+                            <div className="flex flex-col items-center justify-center space-y-1.5 py-0.5">
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsScanning(true);
+                                  setTimeout(() => {
+                                    setIsScanning(false);
+                                    setCheckInState('form');
+                                  }, 800);
+                                }}
+                                className="relative w-11 h-11 border border-dashed border-teal-500 rounded-lg flex items-center justify-center bg-teal-955/90 overflow-hidden cursor-pointer shadow-sm hover:scale-105 transition-transform"
+                              >
+                                {isScanning && (
+                                  <motion.div 
+                                    initial={{ opacity: 1 }}
+                                    animate={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-white z-20"
+                                  />
+                                )}
+                                <div className="absolute top-0.5 left-0.5 w-1.5 h-1.5 border-t border-l border-teal-400" />
+                                <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 border-t border-r border-teal-400" />
+                                <div className="absolute bottom-0.5 left-0.5 w-1.5 h-1.5 border-b border-l border-teal-400" />
+                                <div className="absolute bottom-0.5 right-0.5 w-1.5 h-1.5 border-b border-r border-teal-400" />
+                                
                                 <motion.div
-                                  animate={{ y: [-20, 20] }}
-                                  transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.5, ease: "easeInOut" }}
-                                  className="w-full h-0.5 bg-teal-500 absolute left-0"
+                                  animate={{ y: [-15, 30, -15] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                                  className="w-full h-0.5 bg-emerald-400 absolute left-0 shadow-[0_0_4px_#34d399]"
                                 ></motion.div>
                                 <span className="text-[14px]">📸</span>
                               </div>
+                              <span className="text-[7.5px] text-khaki font-black uppercase tracking-wider text-center">Click QR to Scan</span>
                             </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setCheckInState('form'); }}
-                              className="px-2.5 py-1 bg-teal-600 text-white text-[9.5px] font-black uppercase tracking-wider rounded shadow-sm hover:bg-teal-700 transition-all cursor-pointer"
-                            >
-                              Scan Clinic QR
-                            </button>
                           </motion.div>
                         )}
 
@@ -729,20 +966,64 @@ const LandingPage = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             className="flex flex-col justify-between h-full"
                           >
-                            <div className="flex items-center gap-2">
-                              <div className="w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center text-[10px] text-white">✓</div>
-                              <div>
-                                <p className="text-[11px] font-bold text-teak">Locker Linked!</p>
-                                <p className="text-[9px] text-khaki font-black uppercase tracking-wider">Patient: Dhruvil Patel</p>
-                              </div>
+                            <div 
+                              onClick={(e) => { e.stopPropagation(); setCardFlipped(!cardFlipped); }}
+                              className="relative w-full h-[95px] cursor-pointer"
+                              style={{ perspective: 1000 }}
+                            >
+                              <motion.div
+                                animate={{ rotateY: cardFlipped ? 180 : 0 }}
+                                transition={{ duration: 0.6, ease: "easeInOut" }}
+                                style={{ transformStyle: "preserve-3d" }}
+                                className="w-full h-full relative"
+                              >
+                                {/* Front of ID Card */}
+                                <div 
+                                  className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-lg p-2 flex flex-col justify-between shadow-sm"
+                                  style={{ backfaceVisibility: "hidden" }}
+                                >
+                                  <div className="flex justify-between items-center border-b border-white/20 pb-0.5">
+                                    <span className="text-[6.5px] font-black tracking-widest uppercase">Bharat Digital Health Card</span>
+                                    <span className="text-[6px] bg-white/20 px-1 py-0.2 rounded font-mono">ABDM</span>
+                                  </div>
+                                  <div className="flex gap-2 items-center my-0.5">
+                                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px]">👤</div>
+                                    <div className="text-left leading-none">
+                                      <div className="text-[8.5px] font-bold">Dhruvil Patel</div>
+                                      <div className="text-[6.5px] text-white/70 font-mono mt-0.5">dhruvil@abha</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between items-end text-[6.5px] text-white/80">
+                                    <div>
+                                      <p className="text-[5px] text-white/50 leading-none">ABHA ID</p>
+                                      <p className="font-mono leading-none mt-0.5">91-4820-3948-2948</p>
+                                    </div>
+                                    <span className="text-[8.5px] text-emerald-400 font-bold">✓ VERIFIED</span>
+                                  </div>
+                                </div>
+
+                                {/* Back of ID Card */}
+                                <div 
+                                  className="absolute inset-0 bg-gradient-to-br from-teal-800 to-emerald-950 text-white rounded-lg p-2 flex flex-col justify-between shadow-sm text-left"
+                                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                                >
+                                  <div className="border-b border-white/10 pb-0.5 flex justify-between">
+                                    <span className="text-[6px] font-black uppercase text-emerald-400">Cryptographic Node Info</span>
+                                    <span className="text-[5.5px] text-emerald-400">SYNCED</span>
+                                  </div>
+                                  <div className="space-y-0.5 text-[6px] font-mono py-0.5 leading-snug">
+                                    <div><span className="text-emerald-400">HASH:</span> <span className="text-white/85">SHA256:0x39a1bc9aef</span></div>
+                                    <div><span className="text-emerald-400">LOCKER:</span> <span className="text-white/85">AES-255 GCM Encrypted</span></div>
+                                    <div><span className="text-emerald-400">TIMESTAMP:</span> <span className="text-white/85">24-MAY-2026 13:50</span></div>
+                                    <div><span className="text-emerald-400">GATEWAY:</span> <span className="text-white/85">Appointory ABDM node v2</span></div>
+                                  </div>
+                                  <p className="text-[5.5px] text-white/40 text-center uppercase tracking-wider">Click card to view front</p>
+                                </div>
+                              </motion.div>
                             </div>
-                            <div className="bg-white/60 border border-teal-100/50 px-2 py-1 rounded text-[9.5px] space-y-0.5">
-                              <div className="flex justify-between"><span className="text-khaki">ID:</span> <span className="font-bold text-teak">SM-92658</span></div>
-                              <div className="flex justify-between"><span className="text-khaki">Locker Status:</span> <span className="font-bold text-teal-600">Active</span></div>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setCheckInState('camera'); setPhoneNum(''); setCheckedInPhone(''); }}
-                              className="text-[9px] text-teal-700 underline font-black tracking-wider text-right cursor-pointer"
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setCheckInState('camera'); setPhoneNum(''); setCheckedInPhone(''); setCardFlipped(false); }}
+                              className="text-[8.5px] text-teal-700 underline font-black tracking-wider text-right cursor-pointer"
                             >
                               Reset Check-in
                             </button>
@@ -757,18 +1038,27 @@ const LandingPage = () => {
                     <div className="mt-3.5 bg-indigo-50/20 border border-indigo-100/50 rounded-xl p-2.5 flex flex-col justify-between h-[155px] relative text-left overflow-hidden">
                       <AnimatePresence>
                         {showNotification && (
-                          <motion.div
-                            initial={{ y: -35, opacity: 0 }}
+                          <motion.div 
+                            initial={{ y: -50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -35, opacity: 0 }}
-                            className="absolute top-0 left-0 right-0 z-30 bg-teal-600 text-white text-[9.5px] px-2 py-2 shadow-md flex items-center gap-1.5"
+                            exit={{ y: -50, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            className="absolute top-1 left-1 right-1 z-35 bg-[#075e54] text-white rounded-lg p-2 shadow-lg flex items-start gap-2 text-[9px] border-l-4 border-[#25d366]"
                           >
-                            <span className="font-black uppercase">Appointory Live:</span>
-                            <span className="truncate flex-1 font-medium">{notificationText.replace('💬 Appointory: ', '').replace('🚨 Appointory: ', '').replace('🩺 Appointory: ', '')}</span>
+                            <span className="text-xs">💬</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center mb-0.5">
+                                <span className="font-bold text-[#25d366]">Appointory WhatsApp</span>
+                                <span className="text-[6.5px] text-white/60">Now</span>
+                              </div>
+                              <p className="font-medium text-white/90 leading-tight text-[8px]">
+                                {notificationText.replace('💬 Appointory: ', '').replace('🚨 Appointory: ', '').replace('🩺 Appointory: ', '')}
+                              </p>
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
-
+                      
                       <div className="flex justify-between items-center text-[9px]">
                         <span className="font-black text-indigo-600 uppercase tracking-wider">Live Tracker</span>
                         <span className="flex items-center gap-0.5 text-emerald-600 font-bold">
@@ -777,55 +1067,86 @@ const LandingPage = () => {
                         </span>
                       </div>
 
-                      {/* Horizontal Queue Milestones */}
-                      <div className="flex justify-between items-center relative my-1 px-1">
-                        <div className="absolute left-0 right-0 h-0.5 bg-sandstone/20 top-1/2 -translate-y-1/2 -z-10"></div>
-                        <motion.div
-                          className="absolute left-0 h-0.5 bg-indigo-500 top-1/2 -translate-y-1/2 -z-10"
-                          animate={{ width: `${(3 - queuePos) * 33.3}%` }}
-                          transition={{ duration: 0.4 }}
-                        ></motion.div>
-                        {['Check-In', 'Vitals', 'Waiting', 'Doctor'].map((milestone, mIdx) => {
-                          const isActiveM = (3 - queuePos) === mIdx;
-                          const isPassedM = (3 - queuePos) >= mIdx;
-                          return (
-                            <div key={milestone} className="flex flex-col items-center">
-                              <motion.div
-                                animate={{
-                                  scale: isActiveM ? 1.2 : 1,
-                                  backgroundColor: isActiveM ? '#4f46e5' : isPassedM ? '#6366f1' : '#cbd5e1'
+                      {/* Interactive SVG Queue Map */}
+                      <div className="bg-white/60 border border-sandstone/15 rounded-lg p-1.5 my-0.5 text-center">
+                        <svg className="w-full h-8" viewBox="0 0 160 30">
+                          <path d="M 20 15 L 140 15" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                          {[
+                            { name: 'Reg', x: 20 },
+                            { name: 'Vit', x: 60 },
+                            { name: 'Wait', x: 100 },
+                            { name: 'Doc', x: 140 }
+                          ].map((station, sIdx) => {
+                            const isPatientHere = (3 - queuePos) === sIdx;
+                            const isPassed = (3 - queuePos) >= sIdx;
+                            return (
+                              <g key={station.name}>
+                                <circle 
+                                  cx={station.x} 
+                                  cy={15} 
+                                  r="4" 
+                                  fill={isPatientHere ? '#4f46e5' : isPassed ? '#818cf8' : '#e2e8f0'} 
+                                  stroke={isPatientHere ? '#312e81' : '#cbd5e1'}
+                                  strokeWidth="1"
+                                />
+                                <text 
+                                  x={station.x} 
+                                  y={26} 
+                                  textAnchor="middle" 
+                                  fontSize="5px" 
+                                  fontWeight="black" 
+                                  fill={isPatientHere ? '#4f46e5' : '#94a3b8'}
+                                >
+                                  {station.name}
+                                </text>
+                              </g>
+                            );
+                          })}
+                          
+                          {(() => {
+                            const mapCoords = [20, 60, 100, 140];
+                            const cxVal = mapCoords[3 - queuePos] || 20;
+                            return (
+                              <motion.circle
+                                cx={cxVal}
+                                cy={15}
+                                r="3"
+                                fill="#fbbf24"
+                                stroke="#d97706"
+                                strokeWidth="1"
+                                animate={{ 
+                                  cx: cxVal, 
+                                  scale: [1, 1.2, 1],
+                                  y: [15, 11, 15]
                                 }}
-                                className="w-2 h-2 rounded-full flex-shrink-0"
-                              ></motion.div>
-                              <span className={`text-[5px] mt-0.5 font-bold uppercase ${isActiveM ? 'text-indigo-600' : 'text-khaki'}`}>
-                                {milestone}
-                              </span>
-                            </div>
-                          );
-                        })}
+                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                              />
+                            );
+                          })()}
+                        </svg>
                       </div>
-
-                      <div className="text-center my-0.5">
+                      
+                      <div className="text-center my-0.2">
                         <AnimatePresence mode="popLayout">
-                          <motion.span
+                          <motion.span 
                             key={queuePos}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
-                            className="block text-[14px] font-heading font-black text-teak leading-none"
+                            className="block text-[12px] font-heading font-black text-teak leading-none"
                           >
                             Token T-08
                           </motion.span>
                         </AnimatePresence>
-                        <span className="text-[9.5px] text-khaki font-black uppercase tracking-wider mt-0.5 block">
+                        <span className="text-[8.5px] text-khaki font-black uppercase tracking-wider block leading-none mt-0.5">
                           {queuePos === 3 && 'Position: 3rd in Line'}
                           {queuePos === 2 && 'Position: 2nd in Line'}
                           {queuePos === 1 && '🚨 Next in Line!'}
                           {queuePos === 0 && '🩺 Seeing Doctor'}
                         </span>
                       </div>
-
-                      <div className="flex justify-between items-center text-[9.5px] bg-white/70 border border-sandstone/10 px-2 py-1 rounded">
+                      
+                      <div className="flex justify-between items-center text-[9px] bg-white/70 border border-sandstone/10 px-2 py-0.5 rounded leading-none">
                         <span className="text-khaki font-medium">Est. Wait:</span>
                         <span className="font-bold text-indigo-600">
                           {queuePos === 3 && '~ 15 Mins'}
@@ -834,17 +1155,17 @@ const LandingPage = () => {
                           {queuePos === 0 && '0 Mins (Now)'}
                         </span>
                       </div>
-
-                      <div className="flex gap-1.5 pt-1.5">
-                        <button
+                      
+                      <div className="flex gap-1.5 pt-1">
+                        <button 
                           onClick={handleTriggerSms}
-                          className="w-1/2 border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-center"
+                          className="w-1/2 border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-[9px] font-black uppercase py-1 rounded cursor-pointer text-center"
                         >
                           Alert Me
                         </button>
-                        <button
+                        <button 
                           onClick={handleQueueProgress}
-                          className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-center"
+                          className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-black uppercase py-1 rounded cursor-pointer text-center"
                         >
                           Next Turn
                         </button>
@@ -858,43 +1179,100 @@ const LandingPage = () => {
                       {uploadState !== 'uploaded' ? (
                         <>
                           <div className="grid grid-cols-3 gap-1">
-                            <div
-                              onClick={(e) => handleVitalClick('bp', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/bp relative"
-                            >
-                              <div className="text-[8px] font-black uppercase text-khaki font-black">BP</div>
-                              <div className={`text-[10.5px] font-bold ${vitals.bp.startsWith('145') ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.bp}</div>
-                              {/* BP range tooltip on hover */}
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/bp:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
-                                {vitals.bp.startsWith('145') ? '🚨 High BP!' : 'BP is Normal'}
+                            {/* BP box */}
+                            <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
+                              <div className="text-[7.5px] font-black uppercase text-khaki leading-none">BP</div>
+                              <div className={`text-[10px] font-black leading-none my-1 ${vitals.bpSystolic >= 140 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                                {vitals.bpSystolic}/{vitals.bpDiastolic}
+                              </div>
+                              <div className="flex justify-center gap-0.5">
+                                <button 
+                                  onClick={(e) => adjustVital('bpSystolic', true, e)} 
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  +
+                                </button>
+                                <button 
+                                  onClick={(e) => adjustVital('bpSystolic', false, e)} 
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  -
+                                </button>
                               </div>
                             </div>
-                            <div
-                              onClick={(e) => handleVitalClick('pulse', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/pulse relative"
-                            >
-                              <div className="text-[8px] font-black uppercase text-khaki font-black">Pulse</div>
-                              <div className={`text-[10.5px] font-bold ${Number(vitals.pulse) > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.pulse}</div>
-                              {/* Pulse range tooltip */}
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/pulse:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
-                                {Number(vitals.pulse) > 100 ? '🚨 Tachycardia!' : 'Pulse Normal'}
+
+                            {/* Pulse box */}
+                            <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
+                              <div className="text-[7.5px] font-black uppercase text-khaki leading-none">Pulse</div>
+                              <div className={`text-[10px] font-black leading-none my-1 ${vitals.pulse > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                                {vitals.pulse}
+                              </div>
+                              <div className="flex justify-center gap-0.5">
+                                <button 
+                                  onClick={(e) => adjustVital('pulse', true, e)} 
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  +
+                                </button>
+                                <button 
+                                  onClick={(e) => adjustVital('pulse', false, e)} 
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  -
+                                </button>
                               </div>
                             </div>
-                            <div
-                              onClick={(e) => handleVitalClick('temp', e)}
-                              className="bg-white/80 border border-sandstone/10 rounded p-1 cursor-pointer text-center hover:bg-emerald-50/50 hover:border-emerald-300 transition-colors group/temp relative"
-                            >
-                              <div className="text-[8px] font-black uppercase text-khaki font-black">Temp</div>
-                              <div className={`text-[10.5px] font-bold ${Number(vitals.temp) > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>{vitals.temp}</div>
-                              {/* Temp tooltip */}
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/temp:block bg-slate-800 text-white text-[6.5px] px-1 py-0.5 rounded shadow-md w-16 pointer-events-none text-center">
-                                {Number(vitals.temp) > 100 ? '🚨 Fever Alert!' : 'Temp Normal'}
+
+                            {/* Temp box */}
+                            <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
+                              <div className="text-[7.5px] font-black uppercase text-khaki leading-none">Temp</div>
+                              <div className={`text-[10px] font-black leading-none my-1 ${vitals.temp >= 100.0 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                                {vitals.temp}
+                              </div>
+                              <div className="flex justify-center gap-0.5">
+                                <button 
+                                  onClick={(e) => adjustVital('temp', true, e)} 
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  +
+                                </button>
+                                <button 
+                                  onClick={(e) => adjustVital('temp', false, e)} 
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[8px] font-black rounded flex items-center justify-center cursor-pointer"
+                                >
+                                  -
+                                </button>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex gap-1 items-center justify-between text-[9px] py-1">
-                            <span className="font-bold text-khaki">Rx Complaint:</span>
+                          {/* ECG Pulsing Wave Sparkline */}
+                          <div className="flex justify-between items-center text-[7.5px] bg-slate-900 text-emerald-400 p-1 rounded font-mono my-1 border border-slate-950 leading-none">
+                            <div className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                              <span>ECG</span>
+                            </div>
+                            <svg className={`w-16 h-3 ${vitals.pulse > 100 ? 'text-rose-500' : 'text-emerald-400'}`} viewBox="0 0 100 20" fill="none">
+                              <motion.path
+                                d="M0,10 L20,10 L25,3 L30,17 L35,10 L50,10 L55,3 L60,17 L65,10 L80,10 L85,3 L90,17 L95,10 L100,10"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeDasharray="100"
+                                animate={{ strokeDashoffset: [100, 0] }}
+                                transition={{ 
+                                  repeat: Infinity, 
+                                  duration: vitals.pulse > 100 ? 0.8 : 1.8, 
+                                  ease: "linear" 
+                                }}
+                              />
+                            </svg>
+                            <span>{vitals.pulse > 100 ? 'TACHY' : 'SINUS'}</span>
+                          </div>
+
+                          <div className="flex gap-1 items-center justify-between text-[9px] py-0.5 leading-none">
+                            <span className="font-bold text-khaki">Complaint:</span>
                             <div className="flex gap-1">
                               {['Fever', 'High BP', 'Checkup'].map((lbl) => {
                                 const val = lbl === 'Fever' ? 'Fever & Cough' : lbl === 'High BP' ? 'Hypertension' : 'General Checkup';
@@ -902,7 +1280,7 @@ const LandingPage = () => {
                                   <button
                                     key={lbl}
                                     onClick={(e) => handleComplaintChange(val, e)}
-                                    className={`px-1 py-0.2 rounded border text-[8px] font-black uppercase cursor-pointer ${activeComplaint === val
+                                    className={`px-1 py-0.2 rounded border text-[7.5px] font-black uppercase cursor-pointer ${activeComplaint === val
                                         ? 'bg-emerald-600 text-white border-emerald-600'
                                         : 'bg-white border-sandstone/20 text-teak'
                                       }`}
@@ -914,24 +1292,38 @@ const LandingPage = () => {
                             </div>
                           </div>
 
-                          <div className="flex justify-between items-center text-[8px] bg-white/70 border border-sandstone/10 p-1.5 rounded">
+                          {/* Medicine Pills list */}
+                          <div className="flex justify-between items-center text-[7.5px] bg-white/70 border border-sandstone/10 p-1 rounded">
                             <div className="min-w-0 max-w-[65%]">
-                              <div className="font-bold text-emerald-700 uppercase tracking-wider text-[8px]">Active Rx</div>
-                              <div className="truncate text-[10.5px] font-bold text-teak">
-                                {meds.join(', ')}
+                              <div className="font-bold text-emerald-700 uppercase tracking-wider text-[7px] leading-none">Prescription</div>
+                              <div className="flex flex-wrap gap-0.5 mt-0.5 overflow-hidden max-h-[14px]">
+                                <AnimatePresence>
+                                  {meds.map((med) => (
+                                    <motion.span
+                                      key={med}
+                                      layout
+                                      initial={{ opacity: 0, scale: 0.8, x: -5 }}
+                                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                                      exit={{ opacity: 0, scale: 0.8, x: 5 }}
+                                      className="bg-emerald-100 text-emerald-800 text-[6.5px] font-black px-1 py-0.2 rounded"
+                                    >
+                                      {med.split(' ')[0]}
+                                    </motion.span>
+                                  ))}
+                                </AnimatePresence>
                               </div>
                             </div>
                             <div className="flex gap-1 flex-shrink-0">
-                              <button
+                              <button 
                                 onClick={handleAddMed}
-                                className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[8px] cursor-pointer"
+                                className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-1 py-0.2 rounded text-[7.5px] cursor-pointer"
                               >
                                 +Add
                               </button>
                               {meds.length > 0 && (
-                                <button
+                                <button 
                                   onClick={(e) => handleRemoveMed(meds.length - 1, e)}
-                                  className="bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-1.5 py-0.5 rounded text-[8px] cursor-pointer"
+                                  className="bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-1 py-0.2 rounded text-[7.5px] cursor-pointer"
                                 >
                                   -Del
                                 </button>
@@ -939,29 +1331,67 @@ const LandingPage = () => {
                             </div>
                           </div>
 
-                          <button
+                          {/* Doctor scribble signature board */}
+                          <div className="bg-white/80 border border-sandstone/15 rounded p-1 text-center my-0.5">
+                            <div className="flex justify-between items-center text-[7.5px] font-black text-khaki mb-0.5 px-0.5">
+                              <span>Draw Doctor Signature</span>
+                              <div className="flex gap-1">
+                                <button 
+                                  onClick={autoSign} 
+                                  className="text-[7.5px] text-indigo-600 font-bold hover:underline cursor-pointer"
+                                >
+                                  Auto Fill
+                                </button>
+                                <button 
+                                  onClick={clearSignature} 
+                                  className="text-[7.5px] text-rose-600 font-bold hover:underline cursor-pointer"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+                            <canvas
+                              ref={canvasRef}
+                              width="150"
+                              height="30"
+                              onMouseDown={startDrawing}
+                              onMouseMove={draw}
+                              onMouseUp={stopDrawing}
+                              onMouseLeave={stopDrawing}
+                              onTouchStart={startDrawing}
+                              onTouchMove={draw}
+                              onTouchEnd={stopDrawing}
+                              className="w-full h-8 bg-parchment/40 border border-dashed border-emerald-300 rounded cursor-crosshair"
+                            />
+                          </div>
+
+                          <button 
                             onClick={handleSignAndUpload}
                             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase py-1 rounded cursor-pointer text-center animate-pulse"
                           >
-                            {uploadState === 'uploading' ? 'Uploading Cloud Record...' : 'Sign & Upload to Vault'}
+                            Sign & Upload to Vault
                           </button>
                         </>
                       ) : (
                         <div className="flex flex-col justify-center items-center h-full space-y-1.5 text-center">
                           {/* Animated signature drawing */}
                           <div className="w-20 h-10 flex items-center justify-center bg-white/60 border border-emerald-200/50 rounded-lg p-1">
-                            <svg className="w-16 h-8 text-emerald-700" viewBox="0 0 100 50" fill="none">
-                              <motion.path
-                                d="M 10 30 C 30 10, 40 45, 50 15 C 60 -5, 75 35, 90 25 M 35 25 L 85 25"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                initial={{ pathLength: 0 }}
-                                animate={{ pathLength: 1 }}
-                                transition={{ duration: 1.2, ease: "easeInOut" }}
-                              />
-                            </svg>
+                            {signatureImg ? (
+                              <img src={signatureImg} alt="Doc Signature" className="w-16 h-8 object-contain" />
+                            ) : (
+                              <svg className="w-16 h-8 text-emerald-700" viewBox="0 0 100 50" fill="none">
+                                <motion.path 
+                                  d="M 10 30 C 30 10, 40 45, 50 15 C 60 -5, 75 35, 90 25 M 35 25 L 85 25" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2.5" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                  initial={{ pathLength: 0 }}
+                                  animate={{ pathLength: 1 }}
+                                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                                />
+                              </svg>
+                            )}
                           </div>
                           <div className="space-y-0.2">
                             <p className="text-[11px] font-bold text-teak">Prescription Signed & Sent ✓</p>
@@ -969,7 +1399,7 @@ const LandingPage = () => {
                               Linked to patient Secure Vault locker.
                             </p>
                           </div>
-                          <button
+                          <button 
                             onClick={(e) => { e.stopPropagation(); setUploadState('idle'); }}
                             className="text-[9px] text-emerald-700 font-black uppercase tracking-wider underline cursor-pointer"
                           >
@@ -982,17 +1412,21 @@ const LandingPage = () => {
 
                   {/* STEP 4 SIMULATOR */}
                   {idx === 3 && (
-                    <div className="mt-3.5 bg-rose-50/20 border border-rose-100/50 rounded-xl p-2.5 flex flex-col justify-between h-[155px] overflow-hidden text-left">
+                    <motion.div 
+                      animate={isShaking ? { x: [-8, 8, -6, 6, -4, 4, 0] } : { x: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className={`mt-3.5 bg-rose-50/20 border rounded-xl p-2.5 flex flex-col justify-between h-[155px] overflow-hidden text-left ${isShaking ? 'border-rose-500 shadow-lg shadow-rose-100' : 'border-rose-100/50'}`}
+                    >
                       {vaultLocked ? (
                         <div className="flex flex-col justify-between h-full py-0.5">
                           <div className="flex justify-between items-center text-[9px]">
                             <span className="font-black text-rose-600 uppercase tracking-wider">Secured Vault</span>
                             <span className="text-[8.5px] text-khaki font-bold">Hint OTP: 1234</span>
                           </div>
-
+                          
                           {/* OTP Display Field */}
-                          <div className="bg-white/80 border border-sandstone/30 rounded px-2 py-0.5 text-center text-[10px] font-mono tracking-widest text-rose-700 h-5.5 flex items-center justify-center">
-                            {otpInput.padEnd(4, '•').split('').join(' ')}
+                          <div className={`bg-white/80 border rounded px-2 py-0.5 text-center text-[10px] font-mono tracking-widest h-5.5 flex items-center justify-center ${isShaking ? 'border-rose-500 text-rose-600 bg-rose-50/50 font-black animate-pulse' : 'border-sandstone/30 text-rose-700'}`}>
+                            {isShaking ? "INVALID OTP" : otpInput.padEnd(4, '•').split('').join(' ')}
                           </div>
 
                           {/* Virtual OTP Clickable Keypad */}
@@ -1034,7 +1468,7 @@ const LandingPage = () => {
                         <div className="flex flex-col justify-between h-full">
                           <div className="flex justify-between items-center text-[9px]">
                             <span className="font-bold text-emerald-600">✓ Vault Unlocked</span>
-                            <button
+                            <button 
                               onClick={(e) => { e.stopPropagation(); setVaultLocked(true); setOtpInput(''); }}
                               className="text-rose-600 hover:text-rose-700 font-black uppercase tracking-wider text-[8px] cursor-pointer"
                             >
@@ -1042,33 +1476,41 @@ const LandingPage = () => {
                             </button>
                           </div>
 
-                          <motion.div
+                          <motion.div 
                             variants={listContainer}
                             initial="hidden"
                             animate="show"
                             className="space-y-1 my-0.5 max-h-[82px] overflow-y-auto pr-0.5 scrollbar-thin"
                           >
                             {/* Dynamic Prescription File */}
-                            <motion.div
+                            <motion.div 
                               variants={listItem}
                               className="bg-white/80 border border-sandstone/10 px-2 py-1 rounded flex justify-between items-center text-[9.5px]"
                             >
                               <div className="truncate max-w-[65%]">
                                 <span className="font-bold text-teak block truncate">
-                                  {uploadState === 'uploaded' ? `Rx_${activeComplaint.replace(' & ', '_')}.pdf` : 'Rx_CityCare_CCC01.pdf'}
+                                  {uploadState === 'uploaded' ? `Rx_${activeComplaint.replace(' & ', '_').replace(' ', '')}.pdf` : 'Rx_CCC01_CityCare.pdf'}
                                 </span>
                                 <span className="text-[8px] text-khaki font-medium">
                                   {uploadState === 'uploaded' ? `${meds.length} Medicines Linked` : 'Consultation File'}
                                 </span>
                               </div>
                               {downloadProgress['Rx'] === 'done' ? (
-                                <span className="text-[8.5px] text-emerald-600 font-bold">Saved ✓</span>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[8.5px] text-emerald-600 font-bold">Saved ✓</span>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
+                                    className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8px] font-black px-1 py-0.2 rounded cursor-pointer leading-none"
+                                  >
+                                    View
+                                  </button>
+                                </div>
                               ) : downloadProgress['Rx'] !== undefined ? (
                                 <div className="w-10 bg-sandstone/30 h-1.5 rounded overflow-hidden">
                                   <div className="bg-rose-600 h-full transition-all duration-200" style={{ width: `${downloadProgress['Rx']}%` }}></div>
                                 </div>
                               ) : (
-                                <button
+                                <button 
                                   onClick={(e) => handleDownload('Rx', e)}
                                   className="text-[9px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
                                 >
@@ -1078,7 +1520,7 @@ const LandingPage = () => {
                             </motion.div>
 
                             {/* Lab Report File */}
-                            <motion.div
+                            <motion.div 
                               variants={listItem}
                               className="bg-white/80 border border-sandstone/10 px-2 py-1 rounded flex justify-between items-center text-[9.5px]"
                             >
@@ -1093,7 +1535,7 @@ const LandingPage = () => {
                                   <div className="bg-rose-600 h-full transition-all duration-200" style={{ width: `${downloadProgress['Labs']}%` }}></div>
                                 </div>
                               ) : (
-                                <button
+                                <button 
                                   onClick={(e) => handleDownload('Labs', e)}
                                   className="text-[9px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
                                 >
@@ -1107,11 +1549,11 @@ const LandingPage = () => {
                           <div className="flex items-center justify-between text-[8px] bg-rose-50/50 border border-rose-100 p-0.5 rounded">
                             <span className="text-khaki font-bold">BP Trend (7d)</span>
                             <svg className="w-16 h-2 text-rose-500" viewBox="0 0 60 10" fill="none">
-                              <motion.path
-                                d="M0,5 L10,6 L20,3 L30,7 L40,4 L50,6 L60,3"
-                                stroke="currentColor"
-                                strokeWidth="1.2"
-                                strokeLinecap="round"
+                              <motion.path 
+                                d="M0,5 L10,6 L20,3 L30,7 L40,4 L50,6 L60,3" 
+                                stroke="currentColor" 
+                                strokeWidth="1.2" 
+                                strokeLinecap="round" 
                                 strokeLinejoin="round"
                                 initial={{ pathLength: 0 }}
                                 animate={{ pathLength: 1 }}
@@ -1124,7 +1566,7 @@ const LandingPage = () => {
                           </div>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Behind the scenes specs link (collapsible accordion) */}
@@ -1144,7 +1586,7 @@ const LandingPage = () => {
                         ▼
                       </motion.span>
                     </button>
-
+                    
                     <AnimatePresence>
                       {expandedTech === idx && (
                         <motion.div
@@ -1166,7 +1608,7 @@ const LandingPage = () => {
                               <>
                                 <div className="flex justify-between"><span className="font-bold text-indigo-700">Sync:</span> <span className="text-khaki">WebSockets + HTTP backup polling</span></div>
                                 <div className="flex justify-between"><span className="font-bold text-indigo-700">WhatsApp Engine:</span> <span className="text-khaki">Twilio Programmable Messaging APIs</span></div>
-                                <div className="flex justify-between"><span className="font-bold text-indigo-700">Range:</span> <span className="text-khaki">Average consultation wait-time calculator</span></div>
+                                <div className="flex justify-between"><span className="font-bold text-indigo-700">Range:</span> <span className="text-khaki">Average wait-time estimation algorithm</span></div>
                               </>
                             )}
                             {idx === 2 && (
@@ -1203,6 +1645,152 @@ const LandingPage = () => {
             })}
           </div>
         </div>
+
+        {/* Secure Lightbox Modal Overlay */}
+        <AnimatePresence>
+          {isLightboxOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-[2rem] border border-sandstone shadow-2xl w-full max-w-lg overflow-hidden flex flex-col text-teak font-body"
+              >
+                {/* Lightbox Header */}
+                <div className="bg-gradient-to-r from-emerald-700 to-teal-800 text-white px-5 py-3.5 flex justify-between items-center">
+                  <div>
+                    <h4 className="font-heading font-black text-sm uppercase tracking-wider">Secure Health Vault Viewer</h4>
+                    <p className="text-[9px] text-emerald-200 font-mono">Encrypted Envelope: SHA-256 Verified</p>
+                  </div>
+                  <button 
+                    onClick={() => setIsLightboxOpen(false)}
+                    className="w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Document Content Area */}
+                <div className="p-6 overflow-y-auto space-y-4 max-h-[380px] bg-parchment/15 text-left text-[11px] leading-relaxed">
+                  {/* Doctor Header */}
+                  <div className="border-b border-sandstone/30 pb-3 flex justify-between items-start">
+                    <div>
+                      <h3 className="font-heading font-black text-[15px] text-emerald-950">
+                        {clinicsQueues[selectedClinicIdx]?.name || 'City Care Clinic'}
+                      </h3>
+                      <p className="text-[9.5px] text-khaki font-medium mt-0.5">Code: {clinicsQueues[selectedClinicIdx]?.clinicCode || 'CCC01'} | ABDM Facility ID: NH-98251</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">EHR FHIR v4.0</span>
+                    </div>
+                  </div>
+
+                  {/* Patient Details */}
+                  <div className="grid grid-cols-2 gap-3 text-[10.5px] bg-white border border-sandstone/10 p-2.5 rounded-xl">
+                    <div><span className="text-khaki font-bold">Patient Name:</span> <span className="font-black text-teak">{checkedInPhone ? 'Dhruvil Patel' : 'Rahul Sharma'}</span></div>
+                    <div><span className="text-khaki font-bold">ABHA Address:</span> <span className="font-mono font-bold text-teal-700">dhruvil@abha</span></div>
+                    <div><span className="text-khaki font-bold">Mobile Link:</span> <span className="font-mono">{checkedInPhone || '98765 43210'}</span></div>
+                    <div><span className="text-khaki font-bold">Consult Date:</span> <span className="font-mono font-medium">24 May 2026</span></div>
+                  </div>
+
+                  {/* Vitals Log */}
+                  <div>
+                    <h5 className="font-heading font-black text-[11px] text-emerald-800 uppercase tracking-wider mb-1.5">Vitals Logged</h5>
+                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                      <div className="bg-white border border-sandstone/15 p-1.5 rounded-lg">
+                        <p className="text-khaki font-bold text-[8px] uppercase">Blood Pressure</p>
+                        <p className="font-extrabold text-teak mt-0.5">{vitals.bpSystolic}/{vitals.bpDiastolic}</p>
+                      </div>
+                      <div className="bg-white border border-sandstone/15 p-1.5 rounded-lg">
+                        <p className="text-khaki font-bold text-[8px] uppercase">Pulse Rate</p>
+                        <p className="font-extrabold text-teak mt-0.5">{vitals.pulse} bpm</p>
+                      </div>
+                      <div className="bg-white border border-sandstone/15 p-1.5 rounded-lg">
+                        <p className="text-khaki font-bold text-[8px] uppercase">Body Temp</p>
+                        <p className="font-extrabold text-teak mt-0.5">{vitals.temp}°F</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Complaint and Rx Medicines */}
+                  <div className="space-y-2">
+                    <div>
+                      <h5 className="font-heading font-black text-[11px] text-emerald-800 uppercase tracking-wider mb-0.5">Primary Diagnosis</h5>
+                      <p className="font-bold text-teak text-[11px]">{activeComplaint}</p>
+                    </div>
+                    
+                    <div>
+                      <h5 className="font-heading font-black text-[11px] text-emerald-800 uppercase tracking-wider mb-1.5">Prescribed Medicines</h5>
+                      <div className="border border-sandstone/20 rounded-xl overflow-hidden bg-white">
+                        <table className="w-full text-left text-[10px]">
+                          <thead>
+                            <tr className="bg-sandstone/10 border-b border-sandstone/20 text-khaki font-black uppercase text-[7.5px]">
+                              <th className="px-3 py-1.5">S.No</th>
+                              <th className="px-3 py-1.5">Medicine Name</th>
+                              <th className="px-3 py-1.5 text-right">Instructions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {meds.map((med, mIdx) => (
+                              <tr key={med} className="border-b border-sandstone/10 last:border-none">
+                                <td className="px-3 py-2 font-mono text-[9px]">{mIdx + 1}</td>
+                                <td className="px-3 py-2 font-black text-teak">{med}</td>
+                                <td className="px-3 py-2 text-right font-medium text-khaki">Once Daily (After Meals)</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signature Footer */}
+                  <div className="border-t border-dashed border-sandstone/30 pt-3.5 flex justify-between items-center">
+                    <div>
+                      <p className="text-[7px] text-khaki uppercase font-bold tracking-widest">Digitally Signed EHR</p>
+                      <p className="font-black text-[10px] text-teal-850">Dr. Anita Gupta</p>
+                      <p className="text-[7.5px] text-khaki font-medium">Registered Medical Practitioner</p>
+                    </div>
+                    <div className="w-24 h-10 border border-dashed border-emerald-300 bg-white rounded-lg flex items-center justify-center p-1.5 overflow-hidden">
+                      {signatureImg ? (
+                        <img src={signatureImg} alt="Doctor Signature" className="w-full h-full object-contain" />
+                      ) : (
+                        <svg className="w-16 h-8 text-emerald-700" viewBox="0 0 100 50" fill="none">
+                          <path 
+                            d="M 10 30 C 30 10, 40 45, 50 15 C 60 -5, 75 35, 90 25 M 35 25 L 85 25" 
+                            stroke="currentColor" 
+                            strokeWidth="2.5" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lightbox Footer Actions */}
+                <div className="bg-sandstone/10 border-t border-sandstone/25 px-5 py-3 flex justify-between items-center gap-3">
+                  <span className="text-[9.5px] text-khaki font-black uppercase tracking-wider">AES-256 Decrypted File</span>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => window.print()}
+                      className="px-3 py-1 border border-sandstone text-teak rounded-lg font-black text-[9px] hover:bg-white cursor-pointer uppercase tracking-wider"
+                    >
+                      Print
+                    </button>
+                    <button 
+                      onClick={() => setIsLightboxOpen(false)}
+                      className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-black text-[9px] hover:bg-emerald-700 cursor-pointer uppercase tracking-wider shadow-sm"
+                    >
+                      Close Viewer
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </section>
 
       <Footer />
