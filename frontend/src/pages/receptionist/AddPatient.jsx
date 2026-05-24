@@ -199,7 +199,7 @@ const AddPatient = () => {
     <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
       <Sidebar role="receptionist" />
       
-      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-0">
         <main className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full flex-grow space-y-8">
           
           {/* Header */}

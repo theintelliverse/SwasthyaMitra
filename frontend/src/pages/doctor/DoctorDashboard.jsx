@@ -747,7 +747,7 @@ const DoctorDashboard = () => {
         </nav>
 
         {/* MAIN CONTENT */}
-        <main className="flex-grow p-3 md:p-5 overflow-y-auto">
+        <main className="flex-grow p-3 pb-32 md:p-5 md:pb-5 overflow-y-auto">
           <div className={isConsultationMode ? "w-full" : "max-w-5xl mx-auto w-full"}>
           {isConsultationMode ? (
             /* CONSULTATION MODE */

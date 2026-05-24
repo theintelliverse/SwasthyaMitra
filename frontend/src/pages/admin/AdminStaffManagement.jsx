@@ -188,7 +188,7 @@ const AdminStaffManagement = () => {
     <div className="flex min-h-screen bg-parchment font-body text-teak">
       <Sidebar role="admin" />
 
-      <div className="flex-grow flex flex-col h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col h-screen overflow-y-auto pb-32 lg:pb-0">
         <main className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full flex-grow">
 
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">

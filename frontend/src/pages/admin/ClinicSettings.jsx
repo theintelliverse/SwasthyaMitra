@@ -100,7 +100,7 @@ const ClinicSettings = () => {
       {/* --- Sidebar Integrated --- */}
       <Sidebar role="admin" />
 
-      <div className="flex-grow flex flex-col h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col h-screen overflow-y-auto pb-32 lg:pb-0">
         {/* --- Header Section --- */}
         <header className="bg-white border-b border-sandstone px-8 py-6 sticky top-0 z-30 shadow-sm">
           <div className="max-w-6xl mx-auto flex items-center gap-4">

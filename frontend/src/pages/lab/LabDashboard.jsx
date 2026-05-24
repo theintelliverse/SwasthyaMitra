@@ -771,7 +771,7 @@ const LabDashboard = () => {
     <div className="flex min-h-screen bg-gray-50 font-body text-gray-900 flex-col md:flex-row">
       <Sidebar role="lab" />
 
-      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-0">
         {/* Top Navigation */}
         <nav className="bg-white border-b border-gray-200 px-3 md:px-5 py-3 flex justify-between items-center gap-4 shadow-sm sticky top-0 z-30">
           <div className="flex items-center gap-4 flex-1">

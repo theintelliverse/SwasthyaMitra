@@ -118,7 +118,7 @@ const ProfilePage = () => {
             
             <Sidebar role={role} />
             
-            <div className="flex-grow p-4 md:p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full pb-24 md:pb-10 relative z-10">
+            <div className="flex-grow p-4 md:p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full pb-32 md:pb-10 relative z-10">
                 {/* Top Navigation */}
                 <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="max-w-xl">

@@ -131,7 +131,7 @@ const AdminReports = () => {
         <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
             <Sidebar role="admin" />
             
-            <div className="flex-grow p-6 lg:p-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
+            <div className="flex-grow p-6 pb-32 lg:p-10 lg:pb-10 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
                 {/* Header Section */}
                 <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
                     <div>

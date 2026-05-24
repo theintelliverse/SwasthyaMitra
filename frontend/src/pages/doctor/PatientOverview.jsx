@@ -143,7 +143,7 @@ const PatientOverview = () => {
           </div>
         </header>
 
-        <div className="flex-grow p-8 overflow-y-auto space-y-8 max-w-[1600px] mx-auto w-full">
+        <div className="flex-grow p-8 pb-32 lg:pb-8 overflow-y-auto space-y-8 max-w-[1600px] mx-auto w-full">
           
           {/* Patient Profile Header Card */}
           <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden">

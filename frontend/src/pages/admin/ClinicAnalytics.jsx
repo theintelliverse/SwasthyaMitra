@@ -99,7 +99,7 @@ const ClinicAnalytics = () => {
     <div className="flex min-h-screen bg-parchment font-body text-teak">
       <Sidebar role="admin" />
 
-      <div className="flex-grow flex flex-col h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col h-screen overflow-y-auto pb-32 lg:pb-0">
         <nav className="bg-white border-b border-sandstone px-8 py-4 shadow-sm sticky top-0 z-30 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className={`w-3 h-3 rounded-full ${isSyncing ? 'bg-marigold animate-ping' : 'bg-green-500'}`}></div>

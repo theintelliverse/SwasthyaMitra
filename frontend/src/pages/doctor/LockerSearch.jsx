@@ -38,7 +38,7 @@ const LockerSearch = () => {
     <div className="flex min-h-screen bg-parchment font-body text-teak">
       <Sidebar role="doctor" />
       
-      <div className="flex-grow flex flex-col h-screen overflow-y-auto">
+      <div className="flex-grow flex flex-col h-screen overflow-y-auto pb-32 lg:pb-0">
         <main className="p-8 lg:p-20 max-w-4xl mx-auto w-full flex flex-col items-center justify-center min-h-full">
           
           {/* Top Icon with Morning Glow */}

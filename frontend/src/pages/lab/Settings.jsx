@@ -139,7 +139,7 @@ const Settings = () => {
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
       <Sidebar role="lab" />
 
-      <div className="flex-grow overflow-y-auto h-screen">
+      <div className="flex-grow overflow-y-auto h-screen pb-32 lg:pb-0">
         {/* Hero Header */}
         <div className="bg-slate-900 px-4 lg:px-8 pt-6 pb-8 relative overflow-hidden">
           <div className="absolute inset-0 opacity-5">
