@@ -169,26 +169,26 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-16 sm:pb-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 sm:pt-3 pb-16 sm:pb-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div className="space-y-6 sm:space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-saffron/15 rounded-full border border-saffron/30">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-marigold opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-marigold"></span>
             </span>
-            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-teak/80">
+            <span className="text-[7.2px] sm:text-[8.1px] font-black uppercase tracking-widest text-teak/80">
               Transforming Healthcare across Bharat
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-heading leading-tight italic tracking-tight">
+          <h2 className="text-[27px] sm:text-[43px] lg:text-[64px] font-heading leading-tight italic tracking-tight">
             Care without the <br />
             <span className="text-marigold not-italic font-black">
               Waiting Room.
             </span>
           </h2>
 
-          <p className="text-base sm:text-lg text-khaki max-w-lg leading-relaxed font-medium">
+          <p className="text-[14px] sm:text-[16px] text-khaki max-w-lg leading-relaxed font-medium">
             Automated queues, WhatsApp status alerts, and your own
             <span className="text-teak font-bold"> Secure Health Locker</span>.
             Digital healthcare that respects your time.
@@ -198,7 +198,7 @@ const LandingPage = () => {
             {/* PRIMARY CTA: STAFF LOGIN */}
             <button
               onClick={() => navigate('/login')}
-              className="px-8 py-4 bg-marigold text-white rounded-2xl font-bold text-lg shadow-xl shadow-marigold/30 hover:-translate-y-1 transition-all active:scale-95"
+              className="px-8 py-4 bg-marigold text-white rounded-2xl font-bold text-[16px] shadow-xl shadow-marigold/30 hover:-translate-y-1 transition-all active:scale-95"
             >
               Staff Dashboard
             </button>
@@ -206,14 +206,14 @@ const LandingPage = () => {
             {/* SECONDARY CTA: PATIENT HISTORY LOCKER */}
             <button
               onClick={() => navigate('/patient/login')}
-              className="px-8 py-4 bg-white border-2 border-sandstone rounded-2xl font-bold text-lg hover:border-marigold transition-all"
+              className="px-8 py-4 bg-white border-2 border-sandstone rounded-2xl font-bold text-[16px] hover:border-marigold transition-all"
             >
               View My Health Records
             </button>
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-            <p className="text-xs sm:text-sm font-medium text-khaki">
+            <p className="text-[11px] sm:text-[12.5px] font-medium text-khaki">
               Are you a clinic owner?{' '}
               <button
                 onClick={() => navigate('/register-clinic')}
@@ -222,7 +222,7 @@ const LandingPage = () => {
                 Create Admin Account
               </button>
             </p>
-            <p className="text-xs sm:text-sm font-medium text-khaki">
+            <p className="text-[11px] sm:text-[12.5px] font-medium text-khaki">
               New to Appointory?{' '}
               <button
                 onClick={() => navigate('/patient/register')}
@@ -234,13 +234,13 @@ const LandingPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 grayscale opacity-70">
-            <p className="text-[9px] font-black uppercase tracking-widest">
+            <p className="text-[8px] font-black uppercase tracking-widest">
               Powered by
             </p>
             <div className="h-px w-8 bg-sandstone"></div>
-            <span className="font-heading text-xs sm:text-sm">Twilio</span>
-            <span className="font-heading text-xs sm:text-sm">MERN Stack</span>
-            <span className="font-heading text-xs sm:text-sm">Appointory</span>
+            <span className="font-heading text-[11px] sm:text-[12.5px]">Twilio</span>
+            <span className="font-heading text-[11px] sm:text-[12.5px]">MERN Stack</span>
+            <span className="font-heading text-[11px] sm:text-[12.5px]">Appointory</span>
           </div>
         </div>
 
@@ -251,16 +251,16 @@ const LandingPage = () => {
           <div className="relative bg-white border border-sandstone p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-2xl">
             <div className="flex justify-between items-center mb-6 sm:mb-8 px-1 sm:px-2">
               <div>
-                <h3 className="font-heading text-lg sm:text-xl font-black">Appointory Network</h3>
-                <p className="text-[9px] sm:text-[10px] text-khaki font-black uppercase tracking-widest mt-0.5">
+                <h3 className="font-heading text-[16px] sm:text-[18px] font-black">Appointory Network</h3>
+                <p className="text-[8px] sm:text-[9px] text-khaki font-black uppercase tracking-widest mt-0.5">
                   Live Clinic Status
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl sm:text-3xl font-heading font-black text-marigold">
+                <p className="text-[21px] sm:text-[27px] font-heading font-black text-marigold">
                   #{String(clinicsQueues.filter(c => c.isReal).length || 4).padStart(2, '0')}
                 </p>
-                <p className="text-[8px] sm:text-[9px] font-black text-khaki uppercase tracking-widest mt-0.5">
+                <p className="text-[7px] sm:text-[8px] font-black text-khaki uppercase tracking-widest mt-0.5">
                   Active Facilities
                 </p>
               </div>
@@ -297,18 +297,18 @@ const LandingPage = () => {
                           }`}
                         ></div>
                         <div className="min-w-0">
-                          <p className={`text-sm sm:text-base font-bold truncate ${
+                          <p className={`text-[12.5px] sm:text-[14.5px] font-bold truncate ${
                             hasActiveToken ? 'text-teak' : 'text-khaki'
                           }`}>
                             {clinic.name}
                           </p>
-                          <p className="text-[8px] sm:text-[9px] text-khaki font-medium">
+                          <p className="text-[7px] sm:text-[8px] text-khaki font-medium">
                             Code: {clinic.clinicCode}
                           </p>
                         </div>
                       </div>
 
-                      <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest bg-sandstone/20 px-2 sm:px-3 py-1 rounded-lg flex-shrink-0">
+                      <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest bg-sandstone/20 px-2 sm:px-3 py-1 rounded-lg flex-shrink-0">
                         {hasActiveToken ? `Token ${clinic.activeToken}` : 'Ready'}
                       </span>
                     </div>
@@ -320,15 +320,15 @@ const LandingPage = () => {
             {/* Footer */}
             <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-teak rounded-2xl sm:rounded-3xl text-parchment flex justify-between items-center shadow-lg">
               <div>
-                <p className="text-[8px] sm:text-[9px] font-black uppercase text-parchment/60 tracking-widest mb-1">
+                <p className="text-[7px] sm:text-[8px] font-black uppercase text-parchment/60 tracking-widest mb-1">
                   Queue Efficiency
                 </p>
-                <p className="font-heading text-base sm:text-lg font-black">
+                <p className="font-heading text-[14px] sm:text-[16px] font-black">
                   98% On-Time Care
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                <span className="text-lg sm:text-2xl">📊</span>
+                <span className="text-[16px] sm:text-[21px]">📊</span>
               </div>
             </div>
           </div>
