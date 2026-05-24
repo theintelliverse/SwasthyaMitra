@@ -166,7 +166,7 @@ const RegisterClinic = () => {
                   <div className="space-y-0.5">
                     <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
                     <input
-                      type="text" required placeholder="Dr. Haraprasad"
+                      type="text" required placeholder="Dr. Jal"
                       className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
                       onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
                     />

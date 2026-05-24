@@ -507,7 +507,7 @@ const LandingPage = () => {
             <div className="flex justify-between items-center mb-4 sm:mb-6 px-1">
               <div>
                 <h3 className="font-heading text-[14.5px] sm:text-[16.5px] font-black">Appointory Network</h3>
-                <p className="text-[14px] sm:text-[14px] text-khaki font-black uppercase tracking-widest mt-0.5">
+                <p className="text-[11.5px] sm:text-[11.5px] text-khaki font-black uppercase tracking-widest mt-0.5">
                   Live Clinic Status
                 </p>
               </div>
@@ -550,11 +550,11 @@ const LandingPage = () => {
                             }`}
                         ></div>
                         <div className="min-w-0">
-                          <p className={`text-[11.5px] sm:text-[14px] font-bold truncate ${hasActiveToken ? 'text-teak' : 'text-khaki'
+                          <p className={`text-[11.5px] sm:text-[11.5px] font-bold truncate ${hasActiveToken ? 'text-teak' : 'text-khaki'
                             }`}>
                             {clinic.name}
                           </p>
-                          <p className="text-[14px] sm:text-[14px] text-khaki font-medium">
+                          <p className="text-[11.5px] sm:text-[11.5px] text-khaki font-medium">
                             Code: {clinic.clinicCode}
                           </p>
                         </div>
@@ -572,7 +572,7 @@ const LandingPage = () => {
             {/* Footer */}
             <div className="mt-4 sm:mt-6 p-3 sm:p-4.5 bg-teak rounded-xl sm:rounded-2xl text-parchment flex justify-between items-center shadow-md">
               <div>
-                <p className="text-[14px] sm:text-[14px] font-black uppercase text-parchment/60 tracking-widest mb-0.5">
+                <p className="text-[11.5px] sm:text-[11.5px] font-black uppercase text-parchment/60 tracking-widest mb-0.5">
                   Queue Efficiency
                 </p>
                 <p className="font-heading text-[12.5px] sm:text-[14.5px] font-black">
@@ -580,7 +580,7 @@ const LandingPage = () => {
                 </p>
               </div>
               <div className="h-8.5 w-8.5 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
-                <span className="text-[14px] sm:text-[18px]">📊</span>
+                <span className="text-[11.5px] sm:text-[18px]">📊</span>
               </div>
             </div>
           </div>
@@ -596,13 +596,13 @@ const LandingPage = () => {
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8 space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-marigold/10 text-marigold rounded-full border border-marigold/20">
-              <span className="text-[14px] font-black uppercase tracking-widest">HOW IT WORKS</span>
+              <span className="text-[11.5px] font-black uppercase tracking-widest">HOW IT WORKS</span>
             </div>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-heading leading-tight italic text-teak">
               A Seamless Digital Journey for <br className="hidden sm:inline" />
               <span className="text-marigold not-italic font-black">Clinics & Patients</span>
             </h3>
-            <p className="text-[14px] sm:text-[14.5px] text-khaki font-medium leading-relaxed max-w-lg mx-auto">
+            <p className="text-[11.5px] sm:text-[14.5px] text-khaki font-medium leading-relaxed max-w-lg mx-auto">
               Appointory connects check-in, live queue status, consultation details, and secure health locker files in real-time.
             </p>
           </div>
@@ -637,7 +637,7 @@ const LandingPage = () => {
                     >
                       {isPassed && stepIdx < questProgress ? '✓' : stepIdx + 1}
                     </motion.div>
-                    <span className={`text-[14px] mt-1 font-black uppercase tracking-wider ${isActive ? 'text-marigold' : isPassed ? 'text-teak' : 'text-khaki/60'}`}>
+                    <span className={`text-[11.5px] mt-1 font-black uppercase tracking-wider ${isActive ? 'text-marigold' : isPassed ? 'text-teak' : 'text-khaki/60'}`}>
                       {label}
                     </span>
                   </div>
@@ -717,7 +717,7 @@ const LandingPage = () => {
                     </motion.div>
 
                     {/* Benefit badge */}
-                    <span className="inline-block text-[14px] font-black uppercase tracking-wider bg-sandstone/25 px-1.5 py-0.5 rounded mb-1 text-teak/70">
+                    <span className="inline-block text-[11.5px] font-black uppercase tracking-wider bg-sandstone/25 px-1.5 py-0.5 rounded mb-1 text-teak/70">
                       {s.badge}
                     </span>
 
@@ -727,7 +727,7 @@ const LandingPage = () => {
                     </h4>
 
                     {/* Step Desc */}
-                    <p className="text-[11.5px] sm:text-[14px] text-khaki leading-relaxed font-medium">
+                    <p className="text-[11.5px] sm:text-[11.5px] text-khaki leading-relaxed font-medium">
                       {s.desc}
                     </p>
                   </div>
@@ -787,7 +787,7 @@ const LandingPage = () => {
                                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                                   className="w-full h-0.5 bg-emerald-400 absolute left-0 shadow-[0_0_4px_#34d399]"
                                 ></motion.div>
-                                <span className="text-[14px]">📸</span>
+                                <span className="text-[11.5px]">📸</span>
                               </div>
                               <span className="text-[7.5px] text-khaki font-black uppercase tracking-wider text-center">Click QR to Scan</span>
                             </div>
@@ -813,8 +813,8 @@ const LandingPage = () => {
                               <>
                                 <div className="space-y-1">
                                   <div className="flex justify-between items-center">
-                                    <label className="text-[14px] font-black uppercase text-teal-700 tracking-wider">Phone Number</label>
-                                    <span className={`text-[14px] font-bold ${phoneNum.length === 10 ? 'text-emerald-600' : 'text-khaki'}`}>
+                                    <label className="text-[11.5px] font-black uppercase text-teal-700 tracking-wider">Phone Number</label>
+                                    <span className={`text-[11.5px] font-bold ${phoneNum.length === 10 ? 'text-emerald-600' : 'text-khaki'}`}>
                                       {phoneNum.length}/10
                                     </span>
                                   </div>
@@ -824,7 +824,7 @@ const LandingPage = () => {
                                     onChange={(e) => setPhoneNum(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     placeholder="Enter mobile number"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full bg-white border border-sandstone/30 rounded px-2 py-1 text-[14px] focus:outline-none focus:border-teal-500"
+                                    className="w-full bg-white border border-sandstone/30 rounded px-2 py-1 text-[11.5px] focus:outline-none focus:border-teal-500"
                                   />
                                 </div>
                                 <div className="flex gap-1.5 pt-1.5">
@@ -881,18 +881,18 @@ const LandingPage = () => {
                                 >
                                   <div className="flex justify-between items-center border-b border-white/20 pb-0.5">
                                     <span className="text-[6.5px] font-black tracking-widest uppercase">Bharat Digital Health Card</span>
-                                    <span className="text-[14px] bg-white/20 px-1 py-0.2 rounded font-mono">ABDM</span>
+                                    <span className="text-[11.5px] bg-white/20 px-1 py-0.2 rounded font-mono">ABDM</span>
                                   </div>
                                   <div className="flex gap-2 items-center my-0.5">
-                                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[14px]">👤</div>
+                                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[11.5px]">👤</div>
                                     <div className="text-left leading-none">
-                                      <div className="text-[8.5px] font-bold">Dhruvil Patel</div>
+                                      <div className="text-[8.5px] font-bold">Dhruvil Thummar</div>
                                       <div className="text-[6.5px] text-white/70 font-mono mt-0.5">dhruvil@abha</div>
                                     </div>
                                   </div>
                                   <div className="flex justify-between items-end text-[6.5px] text-white/80">
                                     <div>
-                                      <p className="text-[14px] text-white/50 leading-none">ABHA ID</p>
+                                      <p className="text-[11.5px] text-white/50 leading-none">ABHA ID</p>
                                       <p className="font-mono leading-none mt-0.5">91-4820-3948-2948</p>
                                     </div>
                                     <span className="text-[8.5px] text-emerald-400 font-bold">✓ VERIFIED</span>
@@ -905,10 +905,10 @@ const LandingPage = () => {
                                   style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                                 >
                                   <div className="border-b border-white/10 pb-0.5 flex justify-between">
-                                    <span className="text-[14px] font-black uppercase text-emerald-400">Cryptographic Node Info</span>
+                                    <span className="text-[11.5px] font-black uppercase text-emerald-400">Cryptographic Node Info</span>
                                     <span className="text-[5.5px] text-emerald-400">SYNCED</span>
                                   </div>
-                                  <div className="space-y-0.5 text-[14px] font-mono py-0.5 leading-snug">
+                                  <div className="space-y-0.5 text-[11.5px] font-mono py-0.5 leading-snug">
                                     <div><span className="text-emerald-400">HASH:</span> <span className="text-white/85">SHA256:0x39a1bc9aef</span></div>
                                     <div><span className="text-emerald-400">LOCKER:</span> <span className="text-white/85">AES-255 GCM Encrypted</span></div>
                                     <div><span className="text-emerald-400">TIMESTAMP:</span> <span className="text-white/85">24-MAY-2026 13:50</span></div>
@@ -940,15 +940,15 @@ const LandingPage = () => {
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: -50, opacity: 0 }}
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                            className="absolute top-1 left-1 right-1 z-35 bg-[#075e54] text-white rounded-lg p-2 shadow-lg flex items-start gap-2 text-[14px] border-l-4 border-[#25d366]"
+                            className="absolute top-1 left-1 right-1 z-35 bg-[#075e54] text-white rounded-lg p-2 shadow-lg flex items-start gap-2 text-[11.5px] border-l-4 border-[#25d366]"
                           >
-                            <span className="text-[14px]">💬</span>
+                            <span className="text-[8.5px]">💬</span>
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-center mb-0.5">
                                 <span className="font-bold text-[#25d366]">Appointory WhatsApp</span>
                                 <span className="text-[6.5px] text-white/60">Now</span>
                               </div>
-                              <p className="font-medium text-white/90 leading-tight text-[14px]">
+                              <p className="font-medium text-white/90 leading-tight text-[11.5px]">
                                 {notificationText.replace('💬 Appointory: ', '').replace('🚨 Appointory: ', '').replace('🩺 Appointory: ', '')}
                               </p>
                             </div>
@@ -956,7 +956,7 @@ const LandingPage = () => {
                         )}
                       </AnimatePresence>
 
-                      <div className="flex justify-between items-center text-[14px]">
+                      <div className="flex justify-between items-center text-[11.5px]">
                         <span className="font-black text-indigo-600 uppercase tracking-wider">Live Tracker</span>
                         <span className="flex items-center gap-0.5 text-emerald-600 font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
@@ -1030,7 +1030,7 @@ const LandingPage = () => {
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
-                            className="block text-[14px] font-heading font-black text-teak leading-none"
+                            className="block text-[11.5px] font-heading font-black text-teak leading-none"
                           >
                             Token T-08
                           </motion.span>
@@ -1043,7 +1043,7 @@ const LandingPage = () => {
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[14px] bg-white/70 border border-sandstone/10 px-2 py-0.5 rounded leading-none">
+                      <div className="flex justify-between items-center text-[11.5px] bg-white/70 border border-sandstone/10 px-2 py-0.5 rounded leading-none">
                         <span className="text-khaki font-medium">Est. Wait:</span>
                         <span className="font-bold text-indigo-600">
                           {queuePos === 3 && '~ 15 Mins'}
@@ -1056,13 +1056,13 @@ const LandingPage = () => {
                       <div className="flex gap-1.5 pt-1">
                         <button
                           onClick={handleTriggerSms}
-                          className="w-1/2 border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-[14px] font-black uppercase py-1 rounded cursor-pointer text-center"
+                          className="w-1/2 border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-[11.5px] font-black uppercase py-1 rounded cursor-pointer text-center"
                         >
                           Alert Me
                         </button>
                         <button
                           onClick={handleQueueProgress}
-                          className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white text-[14px] font-black uppercase py-1 rounded cursor-pointer text-center"
+                          className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11.5px] font-black uppercase py-1 rounded cursor-pointer text-center"
                         >
                           Next Turn
                         </button>
@@ -1079,19 +1079,19 @@ const LandingPage = () => {
                             {/* BP box */}
                             <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
                               <div className="text-[7.5px] font-black uppercase text-khaki leading-none">BP</div>
-                              <div className={`text-[14px] font-black leading-none my-1 ${vitals.bpSystolic >= 140 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                              <div className={`text-[11.5px] font-black leading-none my-1 ${vitals.bpSystolic >= 140 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
                                 {vitals.bpSystolic}/{vitals.bpDiastolic}
                               </div>
                               <div className="flex justify-center gap-0.5">
                                 <button
                                   onClick={(e) => adjustVital('bpSystolic', true, e)}
-                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[8.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   +
                                 </button>
                                 <button
                                   onClick={(e) => adjustVital('bpSystolic', false, e)}
-                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[8.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   -
                                 </button>
@@ -1101,19 +1101,19 @@ const LandingPage = () => {
                             {/* Pulse box */}
                             <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
                               <div className="text-[7.5px] font-black uppercase text-khaki leading-none">Pulse</div>
-                              <div className={`text-[14px] font-black leading-none my-1 ${vitals.pulse > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                              <div className={`text-[11.5px] font-black leading-none my-1 ${vitals.pulse > 100 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
                                 {vitals.pulse}
                               </div>
                               <div className="flex justify-center gap-0.5">
                                 <button
                                   onClick={(e) => adjustVital('pulse', true, e)}
-                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   +
                                 </button>
                                 <button
                                   onClick={(e) => adjustVital('pulse', false, e)}
-                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   -
                                 </button>
@@ -1123,19 +1123,19 @@ const LandingPage = () => {
                             {/* Temp box */}
                             <div className="bg-white/80 border border-sandstone/10 rounded p-1 text-center relative flex flex-col justify-between">
                               <div className="text-[7.5px] font-black uppercase text-khaki leading-none">Temp</div>
-                              <div className={`text-[14px] font-black leading-none my-1 ${vitals.temp >= 100.0 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
+                              <div className={`text-[11.5px] font-black leading-none my-1 ${vitals.temp >= 100.0 ? 'text-rose-600 animate-pulse font-black' : 'text-teak'}`}>
                                 {vitals.temp}
                               </div>
                               <div className="flex justify-center gap-0.5">
                                 <button
                                   onClick={(e) => adjustVital('temp', true, e)}
-                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   +
                                 </button>
                                 <button
                                   onClick={(e) => adjustVital('temp', false, e)}
-                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[14px] font-black rounded flex items-center justify-center cursor-pointer"
+                                  className="w-3 h-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11.5px] font-black rounded flex items-center justify-center cursor-pointer"
                                 >
                                   -
                                 </button>
@@ -1168,7 +1168,7 @@ const LandingPage = () => {
                             <span>{vitals.pulse > 100 ? 'TACHY' : 'SINUS'}</span>
                           </div>
 
-                          <div className="flex gap-1 items-center justify-between text-[14px] py-0.5 leading-none">
+                          <div className="flex gap-1 items-center justify-between text-[8.5px] py-0.5 leading-none">
                             <span className="font-bold text-khaki">Complaint:</span>
                             <div className="flex gap-1">
                               {['Fever', 'High BP', 'Checkup'].map((lbl) => {
@@ -1192,7 +1192,7 @@ const LandingPage = () => {
                           {/* Medicine Pills list */}
                           <div className="flex justify-between items-center text-[7.5px] bg-white/70 border border-sandstone/10 p-1 rounded">
                             <div className="min-w-0 max-w-[65%]">
-                              <div className="font-bold text-emerald-700 uppercase tracking-wider text-[14px] leading-none">Prescription</div>
+                              <div className="font-bold text-emerald-700 uppercase tracking-wider text-[8.5px] leading-none">Prescription</div>
                               <div className="flex flex-wrap gap-0.5 mt-0.5 overflow-hidden max-h-[14px]">
                                 <AnimatePresence>
                                   {meds.map((med) => (
@@ -1291,14 +1291,14 @@ const LandingPage = () => {
                             )}
                           </div>
                           <div className="space-y-0.2">
-                            <p className="text-[14px] font-bold text-teak">Prescription Signed & Sent ✓</p>
-                            <p className="text-[14px] text-khaki font-medium">
+                            <p className="text-[11.5px] font-bold text-teak">Prescription Signed & Sent ✓</p>
+                            <p className="text-[7.5px] text-khaki font-medium">
                               Linked to patient Secure Vault locker.
                             </p>
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); setUploadState('idle'); }}
-                            className="text-[14px] text-emerald-700 font-black uppercase tracking-wider underline cursor-pointer"
+                            className="text-[7.5px] text-emerald-700 font-black uppercase tracking-wider underline cursor-pointer"
                           >
                             Edit prescription
                           </button>
@@ -1316,13 +1316,13 @@ const LandingPage = () => {
                     >
                       {vaultLocked ? (
                         <div className="flex flex-col justify-between h-full py-0.5">
-                          <div className="flex justify-between items-center text-[14px]">
+                          <div className="flex justify-between items-center text-[11.5px]">
                             <span className="font-black text-rose-600 uppercase tracking-wider">Secured Vault</span>
                             <span className="text-[8.5px] text-khaki font-bold">Hint OTP: 1234</span>
                           </div>
 
                           {/* OTP Display Field */}
-                          <div className={`bg-white/80 border rounded px-2 py-0.5 text-center text-[14px] font-mono tracking-widest h-5.5 flex items-center justify-center ${isShaking ? 'border-rose-500 text-rose-600 bg-rose-50/50 font-black animate-pulse' : 'border-sandstone/30 text-rose-700'}`}>
+                          <div className={`bg-white/80 border rounded px-2 py-0.5 text-center text-[11.5px] font-mono tracking-widest h-5.5 flex items-center justify-center ${isShaking ? 'border-rose-500 text-rose-600 bg-rose-50/50 font-black animate-pulse' : 'border-sandstone/30 text-rose-700'}`}>
                             {isShaking ? "INVALID OTP" : otpInput.padEnd(4, '•').split('').join(' ')}
                           </div>
 
@@ -1333,7 +1333,7 @@ const LandingPage = () => {
                                 key={num}
                                 whileTap={{ scale: 0.85 }}
                                 onClick={(e) => { e.stopPropagation(); if (otpInput.length < 4) setOtpInput(prev => prev + num); }}
-                                className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[14px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
+                                className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[11.5px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
                               >
                                 {num}
                               </motion.button>
@@ -1348,7 +1348,7 @@ const LandingPage = () => {
                             <motion.button
                               whileTap={{ scale: 0.85 }}
                               onClick={(e) => { e.stopPropagation(); if (otpInput.length < 4) setOtpInput(prev => prev + '0'); }}
-                              className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[14px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
+                              className="bg-white border border-sandstone/25 rounded w-5 h-4 flex items-center justify-center text-[11.5px] font-black hover:bg-rose-50 cursor-pointer shadow-sm text-teak"
                             >
                               0
                             </motion.button>
@@ -1363,11 +1363,11 @@ const LandingPage = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col justify-between h-full">
-                          <div className="flex justify-between items-center text-[14px]">
+                          <div className="flex justify-between items-center text-[11.5px]">
                             <span className="font-bold text-emerald-600">✓ Vault Unlocked</span>
                             <button
                               onClick={(e) => { e.stopPropagation(); setVaultLocked(true); setOtpInput(''); }}
-                              className="text-rose-600 hover:text-rose-700 font-black uppercase tracking-wider text-[14px] cursor-pointer"
+                              className="text-rose-600 hover:text-rose-700 font-black uppercase tracking-wider text-[11.5px] cursor-pointer"
                             >
                               Lock Vault
                             </button>
@@ -1388,7 +1388,7 @@ const LandingPage = () => {
                                 <span className="font-bold text-teak block truncate">
                                   {uploadState === 'uploaded' ? `Rx_${activeComplaint.replace(' & ', '_').replace(' ', '')}.pdf` : 'Rx_CCC01_CityCare.pdf'}
                                 </span>
-                                <span className="text-[14px] text-khaki font-medium">
+                                <span className="text-[11.5px] text-khaki font-medium">
                                   {uploadState === 'uploaded' ? `${meds.length} Medicines Linked` : 'Consultation File'}
                                 </span>
                               </div>
@@ -1397,7 +1397,7 @@ const LandingPage = () => {
                                   <span className="text-[8.5px] text-emerald-600 font-bold">Saved ✓</span>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-                                    className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[14px] font-black px-1 py-0.2 rounded cursor-pointer leading-none"
+                                    className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11.5px] font-black px-1 py-0.2 rounded cursor-pointer leading-none"
                                   >
                                     View
                                   </button>
@@ -1409,7 +1409,7 @@ const LandingPage = () => {
                               ) : (
                                 <button
                                   onClick={(e) => handleDownload('Rx', e)}
-                                  className="text-[14px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
+                                  className="text-[11.5px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
                                 >
                                   Get
                                 </button>
@@ -1423,7 +1423,7 @@ const LandingPage = () => {
                             >
                               <div className="truncate max-w-[65%]">
                                 <span className="font-bold text-teak block truncate">Lab_BloodTest.pdf</span>
-                                <span className="text-[14px] text-khaki font-medium">CBC & Diabetes | 24 May</span>
+                                <span className="text-[11.5px] text-khaki font-medium">CBC & Diabetes | 24 May</span>
                               </div>
                               {downloadProgress['Labs'] === 'done' ? (
                                 <span className="text-[8.5px] text-emerald-600 font-bold">Saved ✓</span>
@@ -1434,7 +1434,7 @@ const LandingPage = () => {
                               ) : (
                                 <button
                                   onClick={(e) => handleDownload('Labs', e)}
-                                  className="text-[14px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
+                                  className="text-[11.5px] text-rose-600 font-black uppercase tracking-wider cursor-pointer hover:underline"
                                 >
                                   Get
                                 </button>
@@ -1443,7 +1443,7 @@ const LandingPage = () => {
                           </motion.div>
 
                           {/* SVG Vitals Trend Sparkline with path animation */}
-                          <div className="flex items-center justify-between text-[14px] bg-rose-50/50 border border-rose-100 p-0.5 rounded">
+                          <div className="flex items-center justify-between text-[11.5px] bg-rose-50/50 border border-rose-100 p-0.5 rounded">
                             <span className="text-khaki font-bold">BP Trend (7d)</span>
                             <svg className="w-16 h-2 text-rose-500" viewBox="0 0 60 10" fill="none">
                               <motion.path
