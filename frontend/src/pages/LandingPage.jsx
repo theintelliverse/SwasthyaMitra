@@ -734,7 +734,7 @@ const LandingPage = () => {
 
                   {/* STEP 1 SIMULATOR */}
                   {idx === 0 && (
-                    <div className="mt-3.5 bg-teal-50/20 border border-teal-100/50 rounded-xl p-2.5 flex flex-col justify-between h-[155px] text-left">
+                    <div className="mt-3.5 bg-teal-50/20 border border-teal-100/50 rounded-xl p-2.5 flex flex-col justify-between min-h-[195px] text-left">
                       <AnimatePresence mode="wait">
                         {checkInState === 'camera' && (
                           <motion.div
@@ -932,7 +932,7 @@ const LandingPage = () => {
 
                   {/* STEP 2 SIMULATOR */}
                   {idx === 1 && (
-                    <div className="mt-3.5 bg-indigo-50/20 border border-indigo-100/50 rounded-xl p-2.5 flex flex-col justify-between h-[155px] relative text-left overflow-hidden">
+                    <div className="mt-3.5 bg-indigo-50/20 border border-indigo-100/50 rounded-xl p-2.5 flex flex-col justify-between min-h-[195px] relative text-left overflow-hidden">
                       <AnimatePresence>
                         {showNotification && (
                           <motion.div
@@ -1072,7 +1072,7 @@ const LandingPage = () => {
 
                   {/* STEP 3 SIMULATOR */}
                   {idx === 2 && (
-                    <div className="mt-3.5 bg-emerald-50/20 border border-emerald-100/50 rounded-xl p-2.5 flex flex-col justify-between h-[155px] overflow-hidden text-left">
+                    <div className="mt-3.5 bg-emerald-50/20 border border-emerald-100/50 rounded-xl p-2.5 flex flex-col justify-between min-h-[195px] overflow-hidden text-left">
                       {uploadState !== 'uploaded' ? (
                         <>
                           <div className="grid grid-cols-3 gap-1">
@@ -1312,7 +1312,7 @@ const LandingPage = () => {
                     <motion.div
                       animate={isShaking ? { x: [-8, 8, -6, 6, -4, 4, 0] } : { x: 0 }}
                       transition={{ duration: 0.5 }}
-                      className={`mt-3.5 bg-rose-50/20 border rounded-xl p-2.5 flex flex-col justify-between h-[155px] overflow-hidden text-left ${isShaking ? 'border-rose-500 shadow-lg shadow-rose-100' : 'border-rose-100/50'}`}
+                      className={`mt-3.5 bg-rose-50/20 border rounded-xl p-2.5 flex flex-col justify-between min-h-[195px] overflow-hidden text-left ${isShaking ? 'border-rose-500 shadow-lg shadow-rose-100' : 'border-rose-100/50'}`}
                     >
                       {vaultLocked ? (
                         <div className="flex flex-col justify-between h-full py-0.5">
