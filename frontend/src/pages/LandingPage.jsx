@@ -212,25 +212,44 @@ const LandingPage = () => {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-            <p className="text-[11px] sm:text-[12.5px] font-medium text-khaki">
-              Are you a clinic owner?{' '}
-              <button
-                onClick={() => navigate('/register-clinic')}
-                className="text-marigold font-black hover:underline underline-offset-4"
-              >
-                Create Admin Account
+          <div className="grid sm:grid-cols-2 gap-3 pt-3 max-w-lg">
+            {/* CLINIC OWNER CARD */}
+            <div 
+              onClick={() => navigate('/register-clinic')}
+              className="group cursor-pointer bg-white/60 hover:bg-white border border-sandstone/30 hover:border-marigold p-3.5 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-black uppercase text-marigold tracking-wider">For Clinics</span>
+                  <span className="text-xs group-hover:scale-110 transition-transform duration-300">🏥</span>
+                </div>
+                <p className="text-[10px] text-khaki leading-normal font-medium">
+                  Register your facility to manage patient queues, bookings, and digital records.
+                </p>
+              </div>
+              <button className="text-[10px] font-black text-teak mt-2.5 flex items-center gap-1 group-hover:text-marigold transition-colors">
+                Setup Clinic Account <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
               </button>
-            </p>
-            <p className="text-[11px] sm:text-[12.5px] font-medium text-khaki">
-              New to Appointory?{' '}
-              <button
-                onClick={() => navigate('/patient/register')}
-                className="font-black text-marigold hover:underline underline-offset-4"
-              >
-                Create Account
+            </div>
+
+            {/* PATIENT CARD */}
+            <div 
+              onClick={() => navigate('/patient/register')}
+              className="group cursor-pointer bg-white/60 hover:bg-white border border-sandstone/30 hover:border-marigold p-3.5 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-black uppercase text-marigold tracking-wider">For Patients</span>
+                  <span className="text-xs group-hover:scale-110 transition-transform duration-300">🩺</span>
+                </div>
+                <p className="text-[10px] text-khaki leading-normal font-medium">
+                  Sign up to track live wait times, receive WhatsApp alerts, and store medical history.
+                </p>
+              </div>
+              <button className="text-[10px] font-black text-teak mt-2.5 flex items-center gap-1 group-hover:text-marigold transition-colors">
+                Create Free Account <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
               </button>
-            </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 grayscale opacity-70">
