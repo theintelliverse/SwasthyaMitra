@@ -73,6 +73,17 @@ const LandingPage = () => {
   const [clinicsQueues, setClinicsQueues] = useState(MOCK_CLINICS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
+  const [activeStep, setActiveStep] = useState(0);
+  const [isStepHovered, setIsStepHovered] = useState(false);
+
+  // Auto-play timer for How It Works step selection
+  useEffect(() => {
+    if (isStepHovered) return;
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isStepHovered]);
 
   // Fetch live queues from backend
   useEffect(() => {
@@ -355,87 +366,193 @@ const LandingPage = () => {
       </main>
 
       {/* Feature / How It Works Section */}
-      <section className="bg-white border-y border-sandstone py-16 sm:py-24 relative overflow-hidden" id="features">
+      <section className="bg-white border-y border-sandstone py-12 sm:py-16 relative overflow-hidden" id="features">
         {/* Soft background decor */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-marigold/5 rounded-full blur-3xl -z-10" />
         <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-96 h-96 bg-saffron/5 rounded-full blur-3xl -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 space-y-4">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-marigold/10 text-marigold rounded-full border border-marigold/20">
-              <span className="text-[9px] font-black uppercase tracking-widest">HOW IT WORKS</span>
+              <span className="text-[8px] font-black uppercase tracking-widest">HOW IT WORKS</span>
             </div>
-            <h3 className="text-3xl sm:text-4xl md:text-5xl font-heading leading-tight italic text-teak">
+            <h3 className="text-2xl sm:text-4xl font-heading leading-tight italic text-teak">
               A Seamless Digital Journey for <br className="hidden sm:inline" />
               <span className="text-marigold not-italic font-black">Clinics & Patients</span>
             </h3>
-            <p className="text-sm sm:text-base text-khaki font-medium leading-relaxed">
-              SwasthyaMitra connects every touchpoint of your clinic consult in real-time,
-              giving patients full control of their health record history.
+            <p className="text-xs sm:text-sm text-khaki font-medium leading-relaxed max-w-xl mx-auto">
+              Appointory connects check-in, live queue status, consultation details, and secure health locker files in real-time.
             </p>
           </div>
 
           {/* Workflow Step Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          <div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative"
+            onMouseEnter={() => setIsStepHovered(true)}
+            onMouseLeave={() => setIsStepHovered(false)}
+          >
             {[
               {
                 step: "01",
                 icon: "📸",
-                title: "Contactless QR Desk Check-in",
-                desc: "Scan the clinic's QR code on entry. Automatically fill your demographics or link your secure digital locker using your mobile number.",
-                accent: "bg-teal-50 text-teal-600 border-teal-100/50"
+                title: "Scan & Check-In",
+                desc: "Scan the QR code at the desk and verify your number. Your details link instantly.",
+                accent: "bg-teal-50 text-teal-600 border-teal-100/50",
+                badge: "Takes 10s",
+                dashboard: (
+                  <div className="mt-4 bg-teal-50/30 border border-teal-100 rounded-xl p-2.5 flex flex-col items-center justify-center space-y-1.5 h-24 overflow-hidden">
+                    <div className="w-7 h-7 border border-dashed border-teal-500 rounded flex items-center justify-center bg-white">
+                      <span className="text-[8px] font-black text-teal-600">QR</span>
+                    </div>
+                    <div className="w-full text-center space-y-0.5">
+                      <div className="text-[8px] font-bold text-teak bg-white border border-sandstone/20 px-2 py-0.5 rounded inline-block">
+                        +91 92658 09XXX
+                      </div>
+                      <div className="text-[7px] text-teal-600 font-bold flex items-center justify-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-teal-500 animate-ping"></span>
+                        Details Linked
+                      </div>
+                    </div>
+                  </div>
+                )
               },
               {
                 step: "02",
                 icon: "⏳",
-                title: "Live Token Queue Tracking",
-                desc: "Receive an instant live queue status link. Monitor your wait segment directly on your phone or on TV cabinet displays with WhatsApp alerts.",
-                accent: "bg-indigo-50 text-indigo-600 border-indigo-100/50"
+                title: "Track Live Queue",
+                desc: "Get SMS updates and a live link. Track your ticket number and wait time on your phone.",
+                accent: "bg-indigo-50 text-indigo-600 border-indigo-100/50",
+                badge: "Live Updates",
+                dashboard: (
+                  <div className="mt-4 bg-indigo-50/30 border border-indigo-100 rounded-xl p-2.5 flex flex-col justify-between h-24 overflow-hidden">
+                    <div className="flex justify-between items-center text-[7px]">
+                      <span className="font-black text-indigo-600 uppercase">Live Queue</span>
+                      <span className="bg-emerald-500 w-1.5 h-1.5 rounded-full animate-pulse"></span>
+                    </div>
+                    <div className="text-center my-0.5">
+                      <span className="block text-sm font-heading font-black text-teak leading-none">Token P-08</span>
+                      <span className="text-[7px] text-khaki font-medium">Position: 3rd in Line</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[7px] bg-white border border-sandstone/10 px-1.5 py-0.5 rounded">
+                      <span className="text-khaki font-medium">Est. Wait:</span>
+                      <span className="font-bold text-indigo-600">~ 15 Mins</span>
+                    </div>
+                  </div>
+                )
               },
               {
                 step: "03",
                 icon: "🩺",
-                title: "Real-time Medical Consultation",
-                desc: "Consult with doctors who write cloud prescriptions, while clinic staff captures vitals and uploads lab reports seamlessly in the background.",
-                accent: "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                title: "Consultation Details",
+                desc: "Your doctor saves digital prescription info while staff inputs your body vitals.",
+                accent: "bg-emerald-50 text-emerald-600 border-emerald-100/50",
+                badge: "Zero Waiting",
+                dashboard: (
+                  <div className="mt-4 bg-emerald-50/30 border border-emerald-100 rounded-xl p-2 flex flex-col justify-between h-24 overflow-hidden space-y-1">
+                    <div className="grid grid-cols-2 gap-1 text-[7px]">
+                      <div className="bg-white border border-sandstone/10 px-1 py-0.5 rounded flex justify-between">
+                        <span className="text-khaki">BP:</span>
+                        <span className="font-bold text-teak">120/80</span>
+                      </div>
+                      <div className="bg-white border border-sandstone/10 px-1 py-0.5 rounded flex justify-between">
+                        <span className="text-khaki">Pulse:</span>
+                        <span className="font-bold text-teak">72bpm</span>
+                      </div>
+                    </div>
+                    <div className="bg-white border border-sandstone/15 p-1 rounded space-y-0.5 text-left">
+                      <div className="text-[6px] font-black text-emerald-600 uppercase">Prescription Info</div>
+                      <div className="text-[7px] font-bold text-teak truncate">Amoxicillin 500mg (1-0-1)</div>
+                    </div>
+                  </div>
+                )
               },
               {
                 step: "04",
                 icon: "🔐",
-                title: "Secure Lifetime Health Locker",
-                desc: "Access your clinical history, medical prescriptions, and diagnostic documents securely via OTP-based vault access anywhere, anytime.",
-                accent: "bg-rose-50 text-rose-600 border-rose-100/50"
+                title: "Secure Vault",
+                desc: "Unlock your lifetime prescriptions and lab records securely using text OTP.",
+                accent: "bg-rose-50 text-rose-600 border-rose-100/50",
+                badge: "100% Secure",
+                dashboard: (
+                  <div className="mt-4 bg-rose-50/30 border border-rose-100 rounded-xl p-2 flex flex-col justify-between h-24 overflow-hidden">
+                    <div className="flex justify-between items-center text-[7px]">
+                      <span className="font-black text-rose-600 uppercase">OTP Locker</span>
+                      <span className="text-emerald-600 font-bold">🔒 Encrypted</span>
+                    </div>
+                    <div className="space-y-1 my-0.5">
+                      <div className="bg-white border border-sandstone/10 px-1.5 py-0.5 rounded flex justify-between items-center text-[7px]">
+                        <span className="truncate max-w-[80px] font-medium text-teak">Prescription.pdf</span>
+                        <span className="text-[6.5px] text-rose-600 font-black">GET</span>
+                      </div>
+                      <div className="bg-white border border-sandstone/10 px-1.5 py-0.5 rounded flex justify-between items-center text-[7px]">
+                        <span className="truncate max-w-[80px] font-medium text-teak">Lab_Report.pdf</span>
+                        <span className="text-[6.5px] text-rose-600 font-black">GET</span>
+                      </div>
+                    </div>
+                  </div>
+                )
               }
-            ].map((s, idx) => (
-              <div
-                key={idx}
-                className="group bg-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-sandstone hover:border-marigold hover:shadow-[0_15px_40px_rgba(45,155,111,0.08)] transition-all duration-300 relative flex flex-col justify-between"
-              >
-                <div className="absolute top-6 right-8 text-5xl font-black text-sandstone/30 group-hover:text-marigold/10 transition-colors select-none">
-                  {s.step}
-                </div>
-
-                <div>
-                  <div className={`w-14 h-14 rounded-2xl ${s.accent} border flex items-center justify-center text-2xl shadow-sm mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    {s.icon}
+            ].map((s, idx) => {
+              const isActive = activeStep === idx;
+              
+              return (
+                <div
+                  key={idx}
+                  onMouseEnter={() => setActiveStep(idx)}
+                  className={`group bg-white p-5 rounded-[1.5rem] border transition-all duration-500 relative flex flex-col justify-between cursor-pointer ${
+                    isActive 
+                      ? 'border-marigold shadow-lg scale-[1.02] bg-parchment/20' 
+                      : 'border-sandstone hover:border-marigold/40 opacity-70 hover:opacity-90'
+                  }`}
+                >
+                  {/* Step Number Badge */}
+                  <div className={`absolute top-4 right-6 text-2xl font-black transition-colors duration-500 ${
+                    isActive ? 'text-marigold/20' : 'text-sandstone/20'
+                  } select-none`}>
+                    {s.step}
                   </div>
 
-                  <h4 className="font-heading text-lg text-teak font-black tracking-tight mb-3">
-                    {s.title}
-                  </h4>
+                  <div>
+                    {/* Icon block */}
+                    <div className={`w-10 h-10 rounded-xl ${s.accent} border flex items-center justify-center text-xl shadow-sm mb-3.5 transition-transform duration-500 ${
+                      isActive ? 'scale-110 rotate-3' : 'group-hover:scale-105'
+                    }`}>
+                      {s.icon}
+                    </div>
 
-                  <p className="text-sm text-khaki leading-relaxed font-medium">
-                    {s.desc}
-                  </p>
-                </div>
+                    {/* Benefit badge */}
+                    <span className="inline-block text-[7.5px] font-black uppercase tracking-wider bg-sandstone/20 px-1.5 py-0.5 rounded mb-1 text-teak/70">
+                      {s.badge}
+                    </span>
 
-                {idx < 3 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 rounded-full bg-parchment border border-sandstone/60 flex items-center justify-center text-xs text-khaki font-black z-10 select-none">
+                    {/* Step Title */}
+                    <h4 className="font-heading text-sm text-teak font-black tracking-tight mb-1">
+                      {s.title}
+                    </h4>
+
+                    {/* Step Desc */}
+                    <p className="text-[9.5px] text-khaki leading-normal font-medium">
+                      {s.desc}
+                    </p>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Integrated Mini Dashboard */}
+                  {s.dashboard}
+
+                  {/* Desktop connector arrows/dots */}
+                  {idx < 3 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-4 -translate-y-1/2 z-10 select-none pointer-events-none">
+                      <span className={`text-base font-bold transition-colors duration-500 ${
+                        isActive ? 'text-marigold animate-pulse' : 'text-sandstone/60'
+                      }`}>
+                        ➔
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
