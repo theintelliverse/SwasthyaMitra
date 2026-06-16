@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
@@ -102,11 +102,20 @@ const MetricCard = ({ title, value, change, icon, color }) => {
   );
 };
 
+const formatWaitTime = (val) => {
+  if (!val) return '0 mins';
+  const s = String(val).trim();
+  // Already has a unit suffix — return as is
+  if (/[a-zA-Z]/.test(s)) return s;
+  // Plain number — append 'mins'
+  return `${s} mins`;
+};
+
 const DoctorDashboard = () => {
   const [stats, setStats] = useState({
     scheduled: 0,
     inConsultation: 0,
-    avgWaitTime: localStorage.getItem('avgWaitTime') || '0 mins',
+    avgWaitTime: formatWaitTime(localStorage.getItem('avgWaitTime')),
     pendingFollowUps: 0
   });
   const [queue, setQueue] = useState([]);
@@ -238,7 +247,55 @@ const DoctorDashboard = () => {
   const clinicId = localStorage.getItem('clinicId');
   const doctorId = localStorage.getItem('userId');
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.applyTemplate && activePatient && isConsultationMode) {
+      const template = location.state.applyTemplate;
+      setDiagnosis(template.name);
+      // Convert drugs string to medicines array
+      const drugList = template.drugs.split(',').map(d => {
+        const trimmed = d.trim();
+        // Match standard dosages like 500mg, 5ml, 10mg, 1g, 10mcg
+        const dosageMatch = trimmed.match(/(\d+(?:\.\d+)?\s*(?:mg|g|ml|mcg|tab|caps|tabs))\b/i);
+        let name = trimmed;
+        let amount = '';
+        if (dosageMatch) {
+          amount = dosageMatch[1];
+          name = trimmed.replace(dosageMatch[1], '').trim();
+        }
+        return {
+          name: name,
+          time: template.instruction || '',
+          amount: amount,
+          total: ''
+        };
+      });
+      setMedicines(drugList);
+      
+      // Clear navigation state so it doesn't re-apply
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `Applied Template: ${template.name}`,
+        showConfirmButton: false,
+        timer: 3000
+      });
+    } else if (location.state?.applyTemplate) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Start Consultation First',
+        text: 'Please start a consultation with a patient first to apply this protocol.',
+        confirmButtonColor: '#0d9488'
+      });
+      // Clear navigation state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, activePatient, isConsultationMode, location.pathname, navigate]);
 
   const filteredQueue = queue.filter(p => {
     const matchesSearch = p.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -263,7 +320,7 @@ const DoctorDashboard = () => {
         const backendStats = res.data.data.stats || { scheduled: 0, inConsultation: 0, avgWaitTime: '0 mins', pendingFollowUps: 0 };
         setStats({
           ...backendStats,
-          avgWaitTime: localStorage.getItem('avgWaitTime') || backendStats.avgWaitTime || '0 mins'
+          avgWaitTime: formatWaitTime(localStorage.getItem('avgWaitTime') || backendStats.avgWaitTime)
         });
         setQueue(res.data.data.queue || []);
         setReminders(res.data.data.reminders || []);
@@ -1064,15 +1121,15 @@ const DoctorDashboard = () => {
               {/* Metric Strip - single row on all screens */}
               <div className="grid grid-cols-4 gap-1.5 md:gap-3">
                 {[
-                  { label: 'Appts', full: 'Appointments', value: stats.scheduled, grad: 'from-teal-500 to-cyan-500', icon: <Calendar size={12} className="md:hidden" /> },
-                  { label: 'Consult', full: 'In Consult', value: stats.inConsultation, grad: 'from-blue-500 to-indigo-500', icon: <Stethoscope size={12} className="md:hidden" /> },
-                  { label: 'Wait', full: 'Avg. Wait', value: stats.avgWaitTime, grad: 'from-violet-500 to-purple-500', icon: <Clock size={12} className="md:hidden" /> },
-                  { label: 'Follow', full: 'Follow-ups', value: stats.pendingFollowUps, grad: 'from-orange-500 to-amber-500', icon: <ClipboardList size={12} className="md:hidden" /> }
+                  { label: 'Appts', full: 'Appointments', value: stats.scheduled, grad: 'from-teal-500 to-cyan-500', icon: <Calendar size={12} />, desktopIcon: <Calendar size={16} /> },
+                  { label: 'Consult', full: 'In Consult', value: stats.inConsultation, grad: 'from-blue-500 to-indigo-500', icon: <Stethoscope size={12} />, desktopIcon: <Stethoscope size={16} /> },
+                  { label: 'Wait', full: 'Avg. Wait', value: stats.avgWaitTime, grad: 'from-violet-500 to-purple-500', icon: <Clock size={12} />, desktopIcon: <Clock size={16} /> },
+                  { label: 'Follow', full: 'Follow-ups', value: stats.pendingFollowUps, grad: 'from-orange-500 to-amber-500', icon: <ClipboardList size={12} />, desktopIcon: <ClipboardList size={16} /> }
                 ].map((c) => (
                   <div key={c.label} className="bg-white rounded-lg md:rounded-xl border border-gray-100 px-2 py-2 md:p-3.5 hover:shadow-md transition-all group text-center md:text-left">
                     <div className="hidden md:flex items-center justify-between mb-2.5">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${c.grad} flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform`}>
-                        <Calendar size={16} />
+                        {c.desktopIcon}
                       </div>
                     </div>
                     <div className={`md:hidden w-6 h-6 rounded-md bg-gradient-to-br ${c.grad} flex items-center justify-center text-white mx-auto mb-1`}>

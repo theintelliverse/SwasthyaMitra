@@ -4,7 +4,7 @@ import { ShieldCheck, Activity } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#1A3C34] text-white border-t border-teal-800/40 pt-16 pb-8 mt-auto relative overflow-hidden">
+    <footer className="w-full bg-[#1A3C34] text-white border-t border-teal-800/40 pt-16 pb-24 md:pb-8 mt-auto relative overflow-hidden">
       {/* Visual Accent Glows */}
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -z-10" />
       <div className="absolute top-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -z-10" />

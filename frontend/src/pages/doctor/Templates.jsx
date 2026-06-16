@@ -16,29 +16,53 @@ import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import Swal from 'sweetalert2';
 
+const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/$/, '');
+
 const Templates = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load from localStorage for now, since there's no backend endpoint yet
-    const savedTemplates = localStorage.getItem('doctor_templates');
-    if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
-    } else {
-      // Default templates if none exist
-      const defaults = [
-        { id: 1, name: 'Viral Fever Protocol', drugs: 'Paracetamol 500mg, Vitamin C, Zinc', instruction: 'Post meals', category: 'General' },
-        { id: 2, name: 'Acute Hypertension', drugs: 'Amlodipine 5mg, Telmisartan 40mg', instruction: 'Once daily (Morning)', category: 'Cardio' },
-        { id: 3, name: 'General Cough/Cold', drugs: 'Levocetirizine 5mg, Montelukast, Cough Syrup', instruction: 'Before bed', category: 'General' },
-        { id: 4, name: 'Type 2 Diabetes Control', drugs: 'Metformin 500mg, Glimepiride 1mg', instruction: 'Twice daily', category: 'Endocrine' }
-      ];
-      setTemplates(defaults);
-      localStorage.setItem('doctor_templates', JSON.stringify(defaults));
-    }
-    setLoading(false);
+    const fetchTemplates = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_URL}/api/staff/templates`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.success) {
+          setTemplates(res.data.data);
+        } else {
+          loadLocalStorageFallback();
+        }
+      } catch (err) {
+        console.error("Error fetching templates:", err);
+        loadLocalStorageFallback();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const loadLocalStorageFallback = () => {
+      const savedTemplates = localStorage.getItem('doctor_templates');
+      if (savedTemplates) {
+        setTemplates(JSON.parse(savedTemplates));
+      } else {
+        const defaults = [
+          { id: 1, name: 'Viral Fever Protocol', drugs: 'Paracetamol 500mg, Vitamin C, Zinc', instruction: 'Post meals', category: 'General' },
+          { id: 2, name: 'Acute Hypertension', drugs: 'Amlodipine 5mg, Telmisartan 40mg', instruction: 'Once daily (Morning)', category: 'Cardio' },
+          { id: 3, name: 'General Cough/Cold', drugs: 'Levocetirizine 5mg, Montelukast, Cough Syrup', instruction: 'Before bed', category: 'General' },
+          { id: 4, name: 'Type 2 Diabetes Control', drugs: 'Metformin 500mg, Glimepiride 1mg', instruction: 'Twice daily', category: 'Endocrine' }
+        ];
+        setTemplates(defaults);
+        localStorage.setItem('doctor_templates', JSON.stringify(defaults));
+      }
+    };
+
+    fetchTemplates();
   }, []);
 
   const handleDelete = (id) => {
@@ -50,12 +74,73 @@ const Templates = () => {
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
       confirmButtonText: 'Yes, Delete'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        const updated = templates.filter(t => t.id !== id);
-        setTemplates(updated);
-        localStorage.setItem('doctor_templates', JSON.stringify(updated));
-        Swal.fire('Deleted!', 'Template removed successfully.', 'success');
+        try {
+          const token = localStorage.getItem('token');
+          await axios.delete(`${API_URL}/api/staff/templates/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const updated = templates.filter(t => t._id !== id && t.id !== id);
+          setTemplates(updated);
+          localStorage.setItem('doctor_templates', JSON.stringify(updated));
+          Swal.fire('Deleted!', 'Template removed successfully.', 'success');
+        } catch (err) {
+          console.error("Error deleting template:", err);
+          const updated = templates.filter(t => t._id !== id && t.id !== id);
+          setTemplates(updated);
+          localStorage.setItem('doctor_templates', JSON.stringify(updated));
+          Swal.fire('Deleted!', 'Template removed from local library.', 'success');
+        }
+      }
+    });
+  };
+
+  const handleEdit = (template) => {
+    Swal.fire({
+      title: 'Edit Clinical Template',
+      html: `
+        <div class="space-y-4">
+          <input id="t-name" class="swal2-input w-full" placeholder="Protocol Name (e.g. Migraine)" value="${template.name}">
+          <input id="t-category" class="swal2-input w-full" placeholder="Category (e.g. Neurology)" value="${template.category || ''}">
+          <textarea id="t-drugs" class="swal2-textarea w-full" placeholder="Medicines (separate with commas)">${template.drugs}</textarea>
+          <input id="t-instr" class="swal2-input w-full" placeholder="General Instructions" value="${template.instruction || ''}">
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Save Changes',
+      confirmButtonColor: '#0d9488',
+      preConfirm: () => {
+        const name = document.getElementById('t-name').value;
+        const drugs = document.getElementById('t-drugs').value;
+        const instr = document.getElementById('t-instr').value;
+        const category = document.getElementById('t-category').value || 'General';
+        if (!name || !drugs) return Swal.showValidationMessage('Name and Drugs are required');
+        return { name, drugs, instruction: instr, category };
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const templateId = template._id || template.id;
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.put(`${API_URL}/api/staff/templates/${templateId}`, result.value, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data.success) {
+            const updatedT = res.data.data;
+            const updated = templates.map(t => (t._id === templateId || t.id === templateId) ? updatedT : t);
+            setTemplates(updated);
+            localStorage.setItem('doctor_templates', JSON.stringify(updated));
+            Swal.fire('Saved!', 'Template updated successfully.', 'success');
+          }
+        } catch (err) {
+          console.error("Error updating template:", err);
+          const updated = templates.map(t => (t._id === templateId || t.id === templateId) ? { ...t, ...result.value } : t);
+          setTemplates(updated);
+          localStorage.setItem('doctor_templates', JSON.stringify(updated));
+          Swal.fire('Saved!', 'Template updated in local library.', 'success');
+        }
       }
     });
   };
@@ -83,22 +168,47 @@ const Templates = () => {
         if (!name || !drugs) return Swal.showValidationMessage('Name and Drugs are required');
         return { name, drugs, instruction: instr, category };
       }
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        const newT = { id: Date.now(), ...result.value };
-        const updated = [...templates, newT];
-        setTemplates(updated);
-        localStorage.setItem('doctor_templates', JSON.stringify(updated));
-        Swal.fire('Saved!', 'New template added to library.', 'success');
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.post(`${API_URL}/api/staff/templates`, result.value, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data.success) {
+            const newT = res.data.data;
+            const updated = [...templates, newT];
+            setTemplates(updated);
+            localStorage.setItem('doctor_templates', JSON.stringify(updated));
+            Swal.fire('Saved!', 'New template added to library.', 'success');
+          }
+        } catch (err) {
+          console.error("Error creating template:", err);
+          const newT = { id: Date.now(), ...result.value };
+          const updated = [...templates, newT];
+          setTemplates(updated);
+          localStorage.setItem('doctor_templates', JSON.stringify(updated));
+          Swal.fire('Saved!', 'Template added to local library.', 'success');
+        }
       }
     });
   };
 
-  const filteredTemplates = templates.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.drugs.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTemplates = templates.filter(t => {
+    const tCategory = (t.category || '').toLowerCase();
+    const tName = (t.name || '').toLowerCase();
+    const tDrugs = (t.drugs || '').toLowerCase();
+
+    const matchesCategory = selectedCategory 
+      ? tCategory === selectedCategory.toLowerCase()
+      : true;
+    const matchesSearch = searchTerm
+      ? tName.includes(searchTerm.toLowerCase()) || 
+        tCategory.includes(searchTerm.toLowerCase()) ||
+        tDrugs.includes(searchTerm.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
@@ -138,17 +248,17 @@ const Templates = () => {
           {/* Categories Grid (Optional Visual) */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
              {['General', 'Cardio', 'Neuro', 'Endocrine', 'Pediatric', 'ENT'].map(cat => (
-               <button 
-                 key={cat}
-                 onClick={() => setSearchTerm(cat)}
-                 className={`px-3 py-2 rounded-xl border text-[14px] font-black uppercase tracking-widest transition-all ${
-                   searchTerm === cat 
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
-                    : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-100 hover:text-indigo-600'
-                 }`}
-               >
-                 {cat}
-               </button>
+                <button 
+                  key={cat}
+                  onClick={() => setSelectedCategory(selectedCategory === cat ? '' : cat)}
+                  className={`px-3 py-2 rounded-xl border text-[14px] font-black uppercase tracking-widest transition-all ${
+                    selectedCategory === cat 
+                     ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
+                     : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-100 hover:text-indigo-600'
+                  }`}
+                >
+                  {cat}
+                </button>
              ))}
           </div>
 
@@ -177,7 +287,7 @@ const Templates = () => {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {filteredTemplates.map((t) => (
-                    <div key={t.id} className="bg-white border border-slate-100 p-5 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                    <div key={t._id || t.id} className="bg-white border border-slate-100 p-5 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                        {/* Background Accent */}
                        <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-50/50 rounded-bl-[3rem] -mr-6 -mt-6 group-hover:scale-110 transition-transform"></div>
                        
@@ -186,11 +296,14 @@ const Templates = () => {
                              <FileText size={20} />
                           </div>
                           <div className="flex gap-2">
-                             <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                             <button 
+                                onClick={() => handleEdit(t)}
+                                className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                             >
                                 <Edit3 size={14} />
                              </button>
                              <button 
-                                onClick={() => handleDelete(t.id)}
+                                onClick={() => handleDelete(t._id || t.id)}
                                 className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-red-600 hover:bg-red-50 transition-all"
                              >
                                 <Trash2 size={14} />
@@ -212,7 +325,7 @@ const Templates = () => {
                              {t.instruction}
                           </div>
                           <button 
-                            onClick={() => navigate('/doctor/dashboard')}
+                            onClick={() => navigate('/doctor/dashboard', { state: { applyTemplate: t } })}
                             className="flex items-center gap-1 text-indigo-600 hover:translate-x-1 transition-transform"
                           >
                              Use Protocol <ChevronRight size={12} />

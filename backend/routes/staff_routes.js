@@ -86,4 +86,11 @@ router.get(
     authorize('admin'), 
     adminController.downloadClinicReport
 );
+
+// --- 📁 CLINICAL TEMPLATES ---
+router.get('/templates', authorize('doctor', 'admin'), staffController.getClinicalTemplates);
+router.post('/templates', authorize('doctor', 'admin'), staffController.createClinicalTemplate);
+router.put('/templates/:templateId', authorize('doctor', 'admin'), staffController.updateClinicalTemplate);
+router.delete('/templates/:templateId', authorize('doctor', 'admin'), staffController.deleteClinicalTemplate);
+
 module.exports = router;
