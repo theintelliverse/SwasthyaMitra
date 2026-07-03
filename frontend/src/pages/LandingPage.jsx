@@ -491,7 +491,7 @@ const LandingPage = () => {
           </h1>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-5">
+        <div className="flex items-center gap-2 sm:gap-3">
           <a
             href="#features"
             aria-label="Learn how Appointory works"
@@ -499,6 +499,13 @@ const LandingPage = () => {
           >
             How it works
           </a>
+          <button
+            onClick={() => navigate('/lab/login')}
+            aria-label="Lab Portal Login"
+            className="px-4 py-2 border border-blue-200 text-blue-700 bg-blue-50 rounded-full text-[9.5px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer hidden sm:block"
+          >
+            🔬 Lab Portal
+          </button>
           <button
             onClick={() => navigate('/login')}
             aria-label="Staff Portal Login"
@@ -553,7 +560,7 @@ const LandingPage = () => {
             </button>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-2.5 pt-2 max-w-md">
+          <div className="grid sm:grid-cols-3 gap-2.5 pt-2 max-w-xl">
             {/* CLINIC OWNER CARD */}
             <div
               onClick={() => navigate('/register-clinic')}
@@ -589,6 +596,25 @@ const LandingPage = () => {
               </div>
               <button className="text-[9.5px] font-black text-teak mt-2 flex items-center gap-1 group-hover:text-marigold transition-colors">
                 Create Free Account <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+              </button>
+            </div>
+
+            {/* INDEPENDENT LAB CARD */}
+            <div
+              onClick={() => navigate('/lab/login')}
+              className="group cursor-pointer bg-blue-50/60 hover:bg-blue-50 border border-blue-100/50 hover:border-blue-400 p-3 rounded-[1.25rem] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[9.5px] font-black uppercase text-blue-600 tracking-wider">For Labs</span>
+                  <span className="text-[14px] group-hover:scale-110 transition-transform duration-300">🔬</span>
+                </div>
+                <p className="text-[9.5px] text-khaki leading-snug font-medium">
+                  Independent diagnostic labs can connect with clinics and receive test requests directly.
+                </p>
+              </div>
+              <button className="text-[9.5px] font-black text-blue-600 mt-2 flex items-center gap-1 group-hover:text-blue-800 transition-colors">
+                Lab Portal Login <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
               </button>
             </div>
           </div>

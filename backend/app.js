@@ -37,6 +37,7 @@ const queueRoutes = require('./routes/queue_routes');
 const clinicroutes = require('./routes/clinic_routes');
 const callRoutes = require('./routes/call_routes');
 const labRoutes = require('./routes/lab_routes');
+const labConnectionRoutes = require('./routes/lab_connection_routes');
 
 const app = express();
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
@@ -238,6 +239,7 @@ app.use('/api/queue', queueRoutes);
 app.use('/api/clinic', clinicroutes);
 app.use('/api/call', callRoutes);
 app.use('/api/lab', labRoutes);
+app.use('/api/lab-connect', labConnectionRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

@@ -270,7 +270,7 @@ const Login = () => {
               </div>
             </form>
 
-            <div className="mt-8 text-center pt-6 border-t border-sandstone/30">
+            <div className="mt-8 text-center pt-6 border-t border-sandstone/30 space-y-3">
               <p className="text-[14px] text-khaki font-medium">
                 New facility?{' '}
                 <button
@@ -280,6 +280,14 @@ const Login = () => {
                   Create an account
                 </button>
               </p>
+              <button
+                onClick={() => navigate('/lab/login')}
+                className="flex items-center gap-2 mx-auto text-[13px] font-bold transition-colors hover:opacity-80"
+                style={{ color: '#1B6CA8' }}
+              >
+                <span>🔬</span>
+                Independent Lab? Sign in to Lab Portal
+              </button>
             </div>
           </div>
 
