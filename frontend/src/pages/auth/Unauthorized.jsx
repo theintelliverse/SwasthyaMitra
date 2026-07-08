@@ -1,12 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
+
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const Unauthorized = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
+      <SEO title="Access Restricted" description="Access restricted due to insufficient permissions." noindex={true} />
       <div className="flex-grow flex flex-col justify-center items-center px-6 text-center">
 
         {/* Visual Icon */}

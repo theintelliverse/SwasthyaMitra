@@ -7,6 +7,7 @@ import {
   ArrowLeft, Monitor, Clock, RefreshCw, Zap,
   Activity, ShieldCheck, Volume2, Info, Wifi, Signal
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -118,6 +119,11 @@ const ClinicTVDisplay = () => {
   if (!selectedDoc) {
     return (
       <div className="min-h-screen bg-[#0F172A] p-12 font-body text-white selection:bg-teal-500 relative overflow-hidden flex flex-col">
+        <SEO 
+          title={`${clinicName} - Live Clinic TV Display`} 
+          description={`Live queue status, doctor availability, and patient tracking for ${clinicName}.`} 
+          url={`/display/${clinicCode}`} 
+        />
         {/* Cinematic Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-teal-500/10 blur-[160px] rounded-full -mr-96 -mt-96 animate-pulse" />
@@ -210,6 +216,11 @@ const ClinicTVDisplay = () => {
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white flex flex-col font-body overflow-hidden relative">
+      <SEO 
+        title={`${selectedDoc ? 'Dr. ' + selectedDoc.name + ' | ' : ''}${clinicName} - Live Clinic TV Display`} 
+        description={`Live queue status, doctor availability, and patient tracking for ${clinicName}.`} 
+        url={`/display/${clinicCode}`} 
+      />
       {/* Dynamic Aura Background */}
       <div className={`absolute inset-0 transition-colors duration-1000 ${activePatient?.isEmergency ? 'bg-red-950/40' : 'bg-[#0F172A]'}`} />
       <div className={`absolute top-0 left-0 w-full h-full bg-gradient-to-br from-teal-600/10 via-transparent to-indigo-600/10 pointer-events-none transition-opacity duration-1000 ${activePatient?.isEmergency ? 'opacity-0' : 'opacity-100'}`} />

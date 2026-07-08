@@ -7,6 +7,7 @@ import {
     MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck, GraduationCap, Briefcase
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const MAX_BOOKING_DAYS = 14;
@@ -287,6 +288,7 @@ const BookAppointment = () => {
 
     return (
         <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+            <SEO title="Book Appointment" noindex={true} />
             <Sidebar role="patient" />
             
             <div className="flex-grow p-6 pb-32 lg:p-10 lg:pb-10 overflow-y-auto h-screen custom-scrollbar max-w-6xl mx-auto w-full">

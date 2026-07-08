@@ -10,6 +10,7 @@ import {
   Droplet, Heart, Weight, Pill, Zap, Thermometer, Droplets, ArrowUpRight, Search, Database
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
@@ -73,6 +74,7 @@ const HealthLocker = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+      <SEO title="Health Locker" noindex={true} />
       <Sidebar role="patient" />
       
       <div className="flex-grow p-3 pb-32 lg:p-4 lg:pb-4 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">

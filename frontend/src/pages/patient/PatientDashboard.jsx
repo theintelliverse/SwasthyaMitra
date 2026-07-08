@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import { QRCodeSVG } from 'qrcode.react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL, {
@@ -204,6 +205,7 @@ const PatientDashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+      <SEO title="Patient Dashboard" noindex={true} />
       <Sidebar role="patient" />
 
       <div className="flex-grow p-3 pb-32 lg:p-4 lg:pb-4 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
