@@ -324,10 +324,16 @@ const ClinicTVDisplay = () => {
                           </span>
                           <div className="w-1 h-1 bg-white/10 rounded-full" />
                           <span className="text-[14px] font-black text-white/30 uppercase tracking-widest">Verified</span>
-                          {p.estimatedWait != null && (
+                           {p.estimatedWait != null && (
                             <>
                               <div className="w-1 h-1 bg-white/10 rounded-full" />
                               <span className="text-[14px] font-black text-teal-400 uppercase tracking-widest">Est. Wait: {p.estimatedWait}m</span>
+                            </>
+                          )}
+                          {p.predictedTurnTime && (
+                            <>
+                              <div className="w-1 h-1 bg-white/10 rounded-full" />
+                              <span className="text-[14px] font-black text-emerald-400 uppercase tracking-widest">Turn: {p.predictedTurnTime}</span>
                             </>
                           )}
                         </div>
