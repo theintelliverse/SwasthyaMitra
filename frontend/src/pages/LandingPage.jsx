@@ -563,7 +563,7 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-3 gap-2.5 pt-2 max-w-xl">
             {/* CLINIC OWNER CARD */}
             <div
-              onClick={() => navigate('/register-clinic')}
+              onClick={() => navigate('/login')}
               className="group cursor-pointer bg-white/60 hover:bg-white border border-sandstone/30 hover:border-marigold p-3 rounded-[1.25rem] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between"
             >
               <div>
@@ -572,11 +572,11 @@ const LandingPage = () => {
                   <span className="text-[14px] group-hover:scale-110 transition-transform duration-300">🏥</span>
                 </div>
                 <p className="text-[9.5px] text-khaki leading-snug font-medium">
-                  Register your facility to manage patient queues, bookings, and digital records.
+                  Login to manage patient queues, bookings, staff panels, and digital records.
                 </p>
               </div>
               <button className="text-[9.5px] font-black text-teak mt-2 flex items-center gap-1 group-hover:text-marigold transition-colors">
-                Setup Clinic Account <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                Clinic Staff Login <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
               </button>
             </div>
 

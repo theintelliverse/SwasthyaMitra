@@ -4,7 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { 
     Building2, Stethoscope, Calendar, ArrowRight, ArrowLeft,
-    MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck
+    MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck, GraduationCap, Briefcase
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 
@@ -409,33 +409,62 @@ const BookAppointment = () => {
 
                             <div className="grid md:grid-cols-2 gap-8">
                                 {doctors.map(doctor => (
-                                    <button
+                                    <div
                                         key={doctor._id}
-                                        onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
-                                        className="bg-white p-8 rounded-[3rem] border border-slate-100 text-left hover:border-teal-500 hover:shadow-2xl transition-all group flex items-center gap-8"
+                                        className="bg-white p-8 rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-500 hover:shadow-2xl transition-all group flex flex-col justify-between"
                                     >
-                                        <div className="relative">
-                                            <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-[2.5rem] flex items-center justify-center text-slate-400 text-3xl font-black group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500 shadow-xl">
-                                                {doctor.name?.charAt(0)}
-                                            </div>
-                                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-[14px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization}</p>
-                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Dr. {doctor.name}</h3>
-                                            <div className="flex items-center gap-4 mt-6">
-                                                <div className="px-3 py-1 bg-slate-50 rounded-lg text-[14px] font-black text-slate-400 uppercase tracking-widest">
-                                                    {doctor.experience || 0} Years Exp
+                                        <div>
+                                            <div className="flex items-start gap-6 mb-6">
+                                                <div className="relative shrink-0">
+                                                    <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-[2rem] flex items-center justify-center text-slate-400 text-3xl font-black group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                                                        {doctor.name?.charAt(0)}
+                                                    </div>
+                                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
                                                 </div>
-                                                <div className="px-3 py-1 bg-teal-50 rounded-lg text-[14px] font-black text-teal-600 uppercase tracking-widest">
-                                                    Active
+                                                <div className="flex-grow min-w-0">
+                                                    <p className="text-[14px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization || 'General Practitioner'}</p>
+                                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight truncate">Dr. {doctor.name}</h3>
+                                                    {doctor.education && (
+                                                        <p className="text-sm font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                                                            <GraduationCap size={14} className="text-teal-500 shrink-0" /> {doctor.education}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
+
+                                            {doctor.bio && (
+                                                <p className="text-[14px] text-slate-600 italic line-clamp-2 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100/50 mb-6">
+                                                    "{doctor.bio}"
+                                                </p>
+                                            )}
+
+                                            <div className="grid grid-cols-2 gap-2 text-[14px] font-semibold text-slate-500 mb-6">
+                                                <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                    <Briefcase size={14} className="text-teal-500" /> {doctor.experience || 0} Yrs Exp
+                                                </div>
+                                                <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                    <Clock size={14} className="text-teal-500" /> Active
+                                                </div>
+                                                {doctor.clinicLocation && (
+                                                    <div className="col-span-2 flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                        <MapPin size={14} className="text-teal-500 shrink-0" /> Room: {doctor.clinicLocation}
+                                                    </div>
+                                                )}
+                                                {doctor.clinicContact && (
+                                                    <div className="col-span-2 flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                        <Phone size={14} className="text-teal-500 shrink-0" /> Call: {doctor.clinicContact}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-teal-50 group-hover:text-teal-600 transition-all">
-                                            <ArrowRight size={22} />
-                                        </div>
-                                    </button>
+
+                                        <button
+                                            onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
+                                            className="w-full py-4 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 group-hover:shadow-md active:scale-95"
+                                        >
+                                            Select Doctor <ArrowRight size={16} />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>

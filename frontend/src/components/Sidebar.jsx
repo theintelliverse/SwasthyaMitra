@@ -72,6 +72,7 @@ const Sidebar = ({ role = 'lab' }) => {
       receptionist: [
         { name: 'Reception Hub', path: '/receptionist/dashboard', icon: <Users size={20} /> },
         { name: 'Add Patient', path: '/receptionist/add', icon: <Activity size={20} /> },
+        { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
       ],
       lab: [
         { name: 'Dashboard', path: '/lab/dashboard', icon: <LayoutDashboard size={20} /> },
@@ -200,6 +201,15 @@ const Sidebar = ({ role = 'lab' }) => {
               </div>
             </div>
           </div>
+
+          {/* Sign Out Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-[13px] uppercase tracking-widest border border-red-100 transition-all active:scale-95 group/logout"
+          >
+            <LogOut size={16} className="group-hover/logout:rotate-12 transition-transform" />
+            Sign Out
+          </button>
 
         </div>
       </aside>

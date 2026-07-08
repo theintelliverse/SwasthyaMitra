@@ -303,6 +303,7 @@ const DoctorDashboard = () => {
     if (!matchesSearch) return false;
 
     if (activeTab === 'All') return true;
+    if (activeTab === 'Pending') return !p.isApproved || p.status === 'Pending-Approval';
     if (activeTab === 'Waiting') return p.status === 'Waiting';
     if (activeTab === 'In') return p.status === 'In-Consultation';
     if (activeTab === 'Completed') return p.status === 'Completed';
@@ -483,6 +484,27 @@ const DoctorDashboard = () => {
       loadConsultationData();
     }
   }, [activePatient, isConsultationMode, token]);
+
+  const handleApprovePatient = async (patient) => {
+    try {
+      const res = await axios.patch(`${API_URL}/api/queue/approve/${patient._id}`, { isEmergency: false }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Patient Approved & Assigned Token!',
+          showConfirmButton: false,
+          timer: 3000
+        });
+        fetchDashboardData(false);
+      }
+    } catch (err) {
+      Swal.fire('Error', 'Failed to approve patient', 'error');
+    }
+  };
 
   const handleStartConsultation = async (patient) => {
     try {
@@ -1159,6 +1181,7 @@ const DoctorDashboard = () => {
                   <div className="px-4 pt-1.5 flex gap-0.5 border-b border-gray-100">
                     {[
                       { id: 'All', label: 'All', count: queue.length },
+                      { id: 'Pending', label: 'Pending', count: queue.filter(p => !p.isApproved || p.status === 'Pending-Approval').length },
                       { id: 'Waiting', label: 'Waiting', count: queue.filter(p => p.status === 'Waiting').length },
                       { id: 'In', label: 'Active', count: queue.filter(p => p.status === 'In-Consultation').length },
                       { id: 'Completed', label: 'Done', count: queue.filter(p => p.status === 'Completed').length }
@@ -1232,8 +1255,9 @@ const DoctorDashboard = () => {
                               ) : patient.status === 'In-Consultation' ? (
                                 <button onClick={(e) => { e.stopPropagation(); setActivePatient(patient); setIsConsultationMode(true); }}
                                   className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[14px] font-bold shadow-sm transition-all active:scale-95 animate-pulse">Resume</button>
-                              ) : patient.status === 'Pending-Approval' ? (
-                                <span className="px-2 py-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-lg text-[14px] font-bold">Pending</span>
+                              ) : (patient.status === 'Pending-Approval' || !patient.isApproved) ? (
+                                <button onClick={(e) => { e.stopPropagation(); handleApprovePatient(patient); }}
+                                  className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-[14px] font-bold shadow-sm transition-all active:scale-95">Approve</button>
                               ) : (
                                 <span className="text-[14px] text-gray-300">{patient.status}</span>
                               )}

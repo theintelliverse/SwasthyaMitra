@@ -41,6 +41,12 @@ const Privacy = lazy(() => import('./pages/shared/Privacy'));
 const Terms = lazy(() => import('./pages/shared/Terms'));
 const Contact = lazy(() => import('./pages/shared/Contact'));
 
+// Independent Lab Portal
+const LabLogin = lazy(() => import('./pages/auth/LabLogin'));
+const LabRegister = lazy(() => import('./pages/auth/LabRegister'));
+const LabPortalDashboard = lazy(() => import('./pages/lab-portal/LabPortalDashboard'));
+const LabPortalConnections = lazy(() => import('./pages/lab-portal/LabPortalConnections'));
+
 // Import Security Guard
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -65,6 +71,12 @@ const App = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />
+
+            {/* --- 🔬 Independent Lab Portal Routes --- */}
+            <Route path="/lab/login" element={<LabLogin />} />
+            <Route path="/lab/register" element={<LabRegister />} />
+            <Route path="/lab/portal/dashboard" element={<LabPortalDashboard />} />
+            <Route path="/lab/portal/connections" element={<LabPortalConnections />} />
 
             {/* --- 📱 Patient Routes (QR & OTP) --- */}
             <Route path="/patient/checkin" element={<PatientCheckIn />} />
