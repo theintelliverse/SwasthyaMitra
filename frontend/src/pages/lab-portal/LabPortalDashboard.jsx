@@ -8,6 +8,7 @@ import {
   User, Phone, TestTube, ChevronDown, ChevronUp, AlertCircle,
   Building, Loader2, BadgeCheck
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -115,6 +116,12 @@ const LabPortalDashboard = () => {
 
   return (
     <div className="min-h-screen font-body" style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #f0f9ff 100%)' }}>
+      <SEO
+        title="Lab Portal Dashboard"
+        description="Private portal dashboard to manage test requests and report uploads."
+        url="/lab/portal/dashboard"
+        noindex={true}
+      />
 
       {/* ─── Top Nav ─── */}
       <nav className="bg-white/80 backdrop-blur-xl border-b border-blue-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
@@ -131,6 +138,7 @@ const LabPortalDashboard = () => {
 
           <div className="flex items-center gap-2">
             <button
+              id="btn-nav-connections"
               onClick={() => navigate('/lab/portal/connections')}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 transition-all"
             >
@@ -138,6 +146,7 @@ const LabPortalDashboard = () => {
               <span className="hidden sm:inline">Connections</span>
             </button>
             <button
+              id="btn-nav-refresh"
               onClick={fetchRequests}
               className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
               title="Refresh"
@@ -145,6 +154,7 @@ const LabPortalDashboard = () => {
               <RefreshCw size={16} />
             </button>
             <button
+              id="btn-nav-logout"
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-bold hover:bg-red-100 transition-all"
             >
@@ -165,7 +175,7 @@ const LabPortalDashboard = () => {
             { label: 'In Progress', value: stats.processing, icon: TestTube, color: '#7c3aed' },
             { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: '#059669' }
           ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 shadow-sm hover:shadow-md transition-all">
+            <div key={label} id={`stats-card-${label.toLowerCase().replace(/\s+/g, '-')}`} className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${color}15` }}>
                   <Icon size={20} style={{ color }} />
@@ -182,6 +192,7 @@ const LabPortalDashboard = () => {
           {['all', 'Pending', 'Accepted', 'Processing', 'Completed', 'Rejected'].map(f => (
             <button
               key={f}
+              id={`filter-tab-${f.toLowerCase()}`}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-[13px] font-bold uppercase tracking-widest transition-all ${filter === f ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-blue-50'}`}
             >

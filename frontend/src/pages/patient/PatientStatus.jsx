@@ -362,7 +362,7 @@ const PatientStatus = () => {
                             <div className={`rounded-2xl p-4 text-center ${isInConsultation || isEmergency ? 'bg-white/15' : 'bg-slate-50 border border-slate-100'}`}>
                                 <div className={`flex items-center justify-center gap-1.5 mb-1 ${isInConsultation || isEmergency ? 'text-white/70' : 'text-slate-400'}`}>
                                     <Clock size={12} />
-                                    <span className="text-[14px] font-black uppercase tracking-widest">Est. Wait</span>
+                                    <span className="text-[14px] font-black uppercase tracking-widest">Waiting Period</span>
                                 </div>
                                 <p className={`text-3xl font-black ${isInConsultation || isEmergency ? 'text-white' : 'text-slate-900'}`}>
                                     {isInConsultation ? '0' : status.estimatedWait ?? '—'}

@@ -8,6 +8,7 @@ import {
   User, Phone, TestTube, ChevronDown, ChevronUp, AlertCircle,
   Building, Loader2, BadgeCheck, ArrowLeft, Send, Check, X, ShieldAlert
 } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -106,6 +107,12 @@ const LabPortalConnections = () => {
 
   return (
     <div className="min-h-screen font-body" style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #f0f9ff 100%)' }}>
+      <SEO
+        title="Lab Connections Hub"
+        description="Private panel to manage connected partner clinics."
+        url="/lab/portal/connections"
+        noindex={true}
+      />
       
       {/* ─── Top Nav ─── */}
       <nav className="bg-white/80 backdrop-blur-xl border-b border-blue-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
