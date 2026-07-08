@@ -568,15 +568,15 @@ const LandingPage = () => {
             >
               <div>
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[9.5px] font-black uppercase text-marigold tracking-wider">For Clinics</span>
+                  <span className="text-[9.5px] font-black uppercase text-marigold tracking-wider">For Clinics & Staff</span>
                   <span className="text-[14px] group-hover:scale-110 transition-transform duration-300">🏥</span>
                 </div>
                 <p className="text-[9.5px] text-khaki leading-snug font-medium">
-                  Login to manage patient queues, bookings, staff panels, and digital records.
+                  Login for Clinic Admins, Doctors, and Receptionists to access dashboards, queues, and entry panels.
                 </p>
               </div>
               <button className="text-[9.5px] font-black text-teak mt-2 flex items-center gap-1 group-hover:text-marigold transition-colors">
-                Clinic Staff Login <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                Staff & Reception Login <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
               </button>
             </div>
 
