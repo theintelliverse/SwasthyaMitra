@@ -153,25 +153,35 @@ const PatientQuickView = ({ phone, onClose }) => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {patientData.documents && patientData.documents.length > 0 ? (
-                  patientData.documents.map((doc, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedReportIndex(i)}
-                      className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-sandstone hover:border-marigold hover:shadow-xl transition-all group flex items-center justify-between text-left"
-                    >
-                      <div className="flex items-center gap-3 md:gap-4 flex-1">
-                        <div className="w-10 h-10 bg-parchment rounded-xl flex items-center justify-center text-marigold border border-sandstone group-hover:scale-110 transition-transform flex-shrink-0">
-                          <FileText size={16} className="md:hidden" />
-                          <FileText size={18} className="hidden md:block" />
-                        </div>
-                        <div className="max-w-[140px] md:max-w-none">
-                          <p className="text-[14px] md:text-sm font-bold text-teak truncate">{doc.title}</p>
-                          <p className="text-[14px] font-black text-khaki uppercase">{doc.fileType}</p>
-                        </div>
-                      </div>
-                      <Eye size={16} className="text-marigold group-hover:scale-125 transition-transform flex-shrink-0" />
-                    </button>
-                  ))
+                  [...patientData.documents]
+                    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+                    .map((doc, i) => {
+                      const originalIdx = patientData.documents.findIndex(d => d._id === doc._id);
+                      return (
+                        <button
+                          key={doc._id || i}
+                          onClick={() => setSelectedReportIndex(originalIdx !== -1 ? originalIdx : i)}
+                          className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-sandstone hover:border-marigold hover:shadow-xl transition-all group flex items-center justify-between text-left min-w-0 w-full"
+                        >
+                          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                            <div className="w-10 h-10 bg-parchment rounded-xl flex items-center justify-center text-marigold border border-sandstone group-hover:scale-110 transition-transform flex-shrink-0">
+                              <FileText size={16} className="md:hidden" />
+                              <FileText size={18} className="hidden md:block" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[14px] md:text-sm font-bold text-teak truncate" title={doc.title}>{doc.title}</p>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                <span className="text-[10px] font-black text-khaki uppercase bg-parchment px-1.5 py-0.5 rounded border border-sandstone/30">{doc.fileType || 'Image'}</span>
+                                <span className="text-[11px] text-khaki/80">
+                                  {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} {new Date(doc.uploadedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Eye size={16} className="text-marigold group-hover:scale-125 transition-transform flex-shrink-0 ml-2" />
+                        </button>
+                      );
+                    })
                 ) : (
                   <div className="col-span-full py-10 bg-white/50 border-2 border-dashed border-sandstone rounded-2xl md:rounded-[2rem] text-center italic text-khaki text-sm">
                     No medical documents found in this locker.
@@ -199,35 +209,41 @@ const PatientQuickView = ({ phone, onClose }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#AFC4D8]/50">
-                      {patientData.vitals.map((v, i) => (
-                        <tr key={i} className="hover:bg-parchment/50 transition-colors">
-                          <td className="p-6 text-sm font-bold text-teak">{new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                          <td className="p-6 text-sm text-teak">{v.bloodPressure} <span className="text-[14px] text-khaki">mmHg</span></td>
-                          <td className="p-6 text-sm text-teak">{v.pulseRate} <span className="text-[14px] text-khaki">bpm</span></td>
-                          <td className="p-6">
-                            <div className="flex items-center gap-3">
-                              <span className="text-sm font-bold text-teak">{v.weight} kg</span>
-                              <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[14px] font-black rounded-lg">BMI: {v.bmi}</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {[...patientData.vitals]
+                        .sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt))
+                        .map((v, i) => (
+                          <tr key={i} className="hover:bg-parchment/50 transition-colors">
+                            <td className="p-6 text-sm font-bold text-teak">
+                              {new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} <span className="text-[12px] font-normal text-khaki/80 ml-2">{new Date(v.recordedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                            </td>
+                            <td className="p-6 text-sm text-teak">{v.bloodPressure || '--'} <span className="text-[14px] text-khaki">mmHg</span></td>
+                            <td className="p-6 text-sm text-teak">{v.pulseRate || '--'} <span className="text-[14px] text-khaki">bpm</span></td>
+                            <td className="p-6">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-bold text-teak">{v.weight || '--'} kg</span>
+                                <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[14px] font-black rounded-lg">BMI: {v.bmi || '--'}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile View Stacked Logs */}
                 <div className="block md:hidden space-y-3">
-                  {patientData.vitals.map((v, i) => (
-                    <div key={i} className="bg-parchment/30 p-4 rounded-xl border border-sandstone/50 space-y-2.5">
-                      <div className="flex justify-between items-center pb-2 border-b border-sandstone/30">
-                        <span className="text-[14px] font-bold text-teak">
-                          {new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </span>
-                        <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[14px] font-black rounded-lg">
-                          BMI: {v.bmi}
-                        </span>
-                      </div>
+                  {[...patientData.vitals]
+                    .sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt))
+                    .map((v, i) => (
+                      <div key={i} className="bg-parchment/30 p-4 rounded-xl border border-sandstone/50 space-y-2.5">
+                        <div className="flex justify-between items-center pb-2 border-b border-sandstone/30">
+                          <span className="text-[13px] font-bold text-teak">
+                            {new Date(v.recordedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} <span className="text-[11px] font-normal text-khaki/80 ml-1.5">{new Date(v.recordedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                          </span>
+                          <span className="px-2 py-0.5 bg-marigold/10 text-marigold text-[13px] font-black rounded-lg">
+                            BMI: {v.bmi || '--'}
+                          </span>
+                        </div>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-white p-2 rounded-lg border border-sandstone/20">
                           <p className="text-[14px] font-black text-khaki uppercase tracking-widest">BP</p>

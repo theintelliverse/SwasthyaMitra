@@ -455,13 +455,25 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
 
                     {!error && imageUrl && (
                         isPdfDocument ? (
-                            <iframe
-                                key={currentDoc._id}
-                                src={imageUrl}
-                                title={currentDoc.title || 'Diagnostic Report PDF'}
-                                className="w-full h-full rounded-lg bg-white"
-                                onLoad={handleImageLoad}
-                            />
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-lg p-2">
+                                <iframe
+                                    key={currentDoc._id}
+                                    src={imageUrl}
+                                    title={currentDoc.title || 'Diagnostic Report PDF'}
+                                    className="w-full flex-grow rounded-lg border border-gray-100"
+                                    onLoad={handleImageLoad}
+                                />
+                                <div className="py-2.5 flex justify-center w-full bg-slate-50 border-t border-gray-100 rounded-b-lg mt-2">
+                                    <a
+                                        href={imageUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-teal-600/10 flex items-center gap-1.5"
+                                    >
+                                        <span>↗ Open PDF in New Tab</span>
+                                    </a>
+                                </div>
+                            </div>
                         ) : (
                             <img
                                 key={currentDoc._id}
