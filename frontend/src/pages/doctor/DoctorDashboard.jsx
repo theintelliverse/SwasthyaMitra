@@ -168,6 +168,8 @@ const DoctorDashboard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [showHistoryLocker, setShowHistoryLocker] = useState(false);
+  const [showPreviousNotesModal, setShowPreviousNotesModal] = useState(false);
+  const [previousNotes, setPreviousNotes] = useState([]);
 
   const [showVitalsModal, setShowVitalsModal] = useState(false);
   const [vitalsInput, setVitalsInput] = useState({
@@ -226,7 +228,7 @@ const DoctorDashboard = () => {
 
     recognition.onresult = (event) => {
       const speechToText = event.results[0][0].transcript;
-      setDiagnosis((prev) => prev ? `${prev} ${speechToText}` : speechToText);
+      setNotes((prev) => prev ? `${prev} ${speechToText}` : speechToText);
     };
 
     recognition.start();
@@ -439,6 +441,20 @@ const DoctorDashboard = () => {
             console.error("Draft load error:", e);
           }
         } else {
+          // Fetch latest private note
+          let privateNoteLoaded = false;
+          try {
+            const resNotes = await axios.get(`${API_URL}/api/queue/private-notes/${activePatient.patientPhone}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (resNotes.data.success && resNotes.data.data.length > 0) {
+              setNotes(resNotes.data.data[0].note);
+              privateNoteLoaded = true;
+            }
+          } catch (err) {
+            console.error("Failed to load private notes:", err);
+          }
+
           // Pre-populate with last prescription from SAME DOCTOR
           const currentDoctorName = localStorage.getItem('userName');
           const sortedHistory = [...fetchedHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -453,11 +469,15 @@ const DoctorDashboard = () => {
                  setMedicines([]);
              }
              
-             if (lastVisitSameDoc.symptoms) {
-                 setNotes(lastVisitSameDoc.symptoms);
-                 loadedAny = true;
+             if (!privateNoteLoaded) {
+               if (lastVisitSameDoc.symptoms) {
+                   setNotes(lastVisitSameDoc.symptoms);
+                   loadedAny = true;
+               } else {
+                   setNotes("");
+               }
              } else {
-                 setNotes("");
+               loadedAny = true;
              }
              
              if (loadedAny) {
@@ -621,7 +641,7 @@ const DoctorDashboard = () => {
     setIsConsultationMode(false);
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!activePatient?._id) return;
     const draftData = {
       diagnosis,
@@ -629,17 +649,53 @@ const DoctorDashboard = () => {
       notes
     };
     localStorage.setItem(`consultation_draft_${activePatient._id}`, JSON.stringify(draftData));
-    const Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-    });
-    Toast.fire({
-      icon: 'success',
-      title: 'Private Note Saved'
-    });
+
+    try {
+      setIsSyncing(true);
+      const res = await axios.post(`${API_URL}/api/queue/private-notes`, {
+        patientPhone: activePatient.patientPhone,
+        note: notes
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        });
+        Toast.fire({
+          icon: 'success',
+          title: 'Private Note Saved & Stored'
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Failed to store private note in database', 'error');
+    } finally {
+      setIsSyncing(false);
+  };
+
+  const handleViewPreviousNotes = async () => {
+    if (!activePatient?.patientPhone) return;
+    try {
+      setIsSyncing(true);
+      const res = await axios.get(`${API_URL}/api/queue/private-notes/${activePatient.patientPhone}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setPreviousNotes(res.data.data);
+        setShowPreviousNotesModal(true);
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Failed to fetch previous notes', 'error');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleCreateAppointment = async (e) => {
