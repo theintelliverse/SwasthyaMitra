@@ -875,23 +875,7 @@ const DoctorDashboard = () => {
                         <p className="font-bold text-gray-900">{patientData?.lastVisit ? new Date(patientData.lastVisit).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric'}) : 'N/A'}</p>
                       </div>
                       
-                      {(() => {
-                        const drName = localStorage.getItem('userName');
-                        const prevNote = patientData?.medicalHistory?.slice().reverse().find(h => h.doctorName === drName && h.symptoms && h.symptoms.trim() !== '');
-                        return (
-                          <div className="col-span-2 mt-1 pt-1 border-t border-gray-100">
-                            <div className="flex justify-between items-center mb-0.5">
-                               <p className="text-gray-400 text-[14px]">
-                                  {prevNote ? `Previous Private Note (${new Date(prevNote.date).toLocaleDateString('en-GB')})` : 'Previous Private Note'}
-                               </p>
-                               <button onClick={() => setShowHistoryLocker(true)} className="text-[14px] font-bold text-teal-600 hover:underline">View All</button>
-                            </div>
-                            <p className="font-medium text-gray-700 italic line-clamp-1 max-w-sm text-[14px]">
-                               {prevNote ? `"${prevNote.symptoms}"` : "No previous notes recorded by you."}
-                            </p>
-                          </div>
-                        );
-                      })()}
+
                    </div>
                 </div>
                 
@@ -929,7 +913,10 @@ const DoctorDashboard = () => {
                        value={notes}
                        onChange={(e) => setNotes(e.target.value)}
                     />
-                    <div className="flex justify-end mt-2">
+                    <div className="flex justify-between items-center mt-2">
+                       <button onClick={() => setShowHistoryLocker(true)} className="px-3 py-1 bg-teal-50 text-teal-600 hover:bg-teal-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
+                          <History size={12}/> View All Previous Notes
+                       </button>
                        <button onClick={handleSaveNote} className="px-3 py-1 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
                           <Save size={10}/> Store Note
                        </button>

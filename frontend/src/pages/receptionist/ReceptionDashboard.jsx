@@ -327,12 +327,12 @@ const ReceptionDashboard = () => {
                 {doctors.map(doc => {
                   const status = getDoctorLiveStatus(doc._id);
                   return (
-                    <div key={doc._id} className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-sandstone bg-parchment group hover:border-marigold transition-all min-w-[200px] sm:min-w-[240px] shrink-0 snap-start lg:min-w-0 lg:shrink">
-                      <div className="flex justify-between items-start gap-2 mb-1">
-                        <p className="font-bold text-[14px] md:text-sm truncate">Dr. {doc.name}</p>
-                        <span className={`px-2 py-0.5 rounded text-[14px] md:text-[14px] font-black uppercase flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${status.bg} ${status.color}`}>{status.icon} <span>{status.label}</span></span>
+                    <div key={doc._id} className="p-2.5 md:p-3 rounded-xl md:rounded-2xl border border-sandstone bg-parchment group hover:border-marigold transition-all min-w-[200px] sm:min-w-[240px] shrink-0 snap-start lg:min-w-0 lg:shrink">
+                      <div className="flex justify-between items-start gap-2 mb-1 lg:flex-col lg:gap-1.5">
+                        <p className="font-bold text-[11px] md:text-xs truncate">Dr. {doc.name}</p>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase flex items-center gap-1 flex-shrink-0 ${status.bg} ${status.color} lg:w-full lg:truncate`}>{status.icon} <span className="truncate">{status.label}</span></span>
                       </div>
-                      <p className="text-[14px] md:text-[14px] text-khaki font-medium italic truncate">{doc.specialization}</p>
+                      <p className="text-[10px] md:text-[11px] text-khaki font-medium italic truncate">{doc.specialization}</p>
                     </div>
                   );
                 })}
