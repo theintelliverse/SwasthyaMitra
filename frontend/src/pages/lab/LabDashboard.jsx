@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-import MobileNav from '../../components/MobileNav';
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -1927,7 +1927,6 @@ const LabDashboard = () => {
         <Footer />
       </div>
 
-      <MobileNav role="lab" />
     </div>
   );
 };

@@ -9,17 +9,12 @@ import {
   LogOut,
   ClipboardList,
   Activity,
-  Beaker,
   ShieldCheck,
-  Menu,
   X,
   ChevronRight,
   TestTubes,
   FileCheck,
   Calendar,
-  MessageSquare,
-  LifeBuoy,
-  HelpCircle,
   FileText,
   Layout,
   FolderHeart,
@@ -30,8 +25,6 @@ import {
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const Sidebar = ({ role = 'lab' }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [analysisMode, setAnalysisMode] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const navigate = useNavigate();
 
@@ -215,7 +208,7 @@ const Sidebar = ({ role = 'lab' }) => {
       </aside>
 
       {/* Mobile Bottom Navigation (Hidden on Desktop) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex items-center justify-around z-[100] px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex items-center justify-around z-40 px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar">
         {menuItems.map((item) => (
           <NavLink
             key={item.path}
@@ -241,7 +234,7 @@ const Sidebar = ({ role = 'lab' }) => {
 
       {/* 🌟 Mobile Floating Quick Action Panel for Patients */}
       {userRole.toLowerCase() === 'patient' && showQuickActions && (
-        <div className="fixed bottom-36 right-6 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(13,148,136,0.3)] border border-slate-100 p-6 w-[calc(100vw-3rem)] sm:w-[320px] max-w-[320px] z-[110] animate-in slide-in-from-bottom-5 duration-300 lg:hidden">
+        <div className="fixed bottom-36 right-6 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(13,148,136,0.3)] border border-slate-100 p-6 w-[calc(100vw-3rem)] sm:w-[320px] max-w-[320px] z-[60] animate-in slide-in-from-bottom-5 duration-300 lg:hidden">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h3 className="text-base font-black text-slate-900 tracking-tight">Quick Actions</h3>
@@ -293,7 +286,7 @@ const Sidebar = ({ role = 'lab' }) => {
       {userRole.toLowerCase() === 'patient' && (
         <button
           onClick={() => setShowQuickActions(!showQuickActions)}
-          className="fixed bottom-20 right-6 lg:hidden z-[100] bg-gradient-to-r from-teal-600 to-indigo-600 text-white w-14 h-14 rounded-full shadow-[0_10px_25px_rgba(13,148,136,0.4)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-teal-500/20"
+          className="fixed bottom-20 right-6 lg:hidden z-50 bg-gradient-to-r from-teal-600 to-indigo-600 text-white w-14 h-14 rounded-full shadow-[0_10px_25px_rgba(13,148,136,0.4)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-teal-500/20"
         >
           {showQuickActions ? <X size={24} /> : <Plus size={24} />}
         </button>

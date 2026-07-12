@@ -456,13 +456,20 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
                     {!error && imageUrl && (
                         isPdfDocument ? (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-lg p-2">
-                                <iframe
+                                <object
                                     key={currentDoc._id}
-                                    src={imageUrl}
-                                    title={currentDoc.title || 'Diagnostic Report PDF'}
+                                    data={imageUrl}
+                                    type="application/pdf"
                                     className="w-full flex-grow rounded-lg border border-gray-100"
                                     onLoad={handleImageLoad}
-                                />
+                                >
+                                    <iframe
+                                        src={`https://docs.google.com/gview?url=${encodeURIComponent(imageUrl)}&embedded=true`}
+                                        title={currentDoc.title || 'Diagnostic Report PDF'}
+                                        className="w-full h-full rounded-lg border border-gray-100"
+                                        onLoad={handleImageLoad}
+                                    />
+                                </object>
                                 <div className="py-2.5 flex justify-center w-full bg-slate-50 border-t border-gray-100 rounded-b-lg mt-2">
                                     <a
                                         href={imageUrl}

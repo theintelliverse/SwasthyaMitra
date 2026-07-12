@@ -13,3 +13,57 @@
   --font-heading: "Manrope", "Trebuchet MS", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;
 }
+
+/* ─── Custom Scrollbar Styles ─── */
+
+/* Standard scrollbar — teal healthcare accent */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(45, 155, 111, 0.45);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 122, 86, 0.7);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;               /* Firefox */
+  scrollbar-color: rgba(45,155,111,0.45) transparent;
+}
+
+/* Thin scrollbar — subtle for panels & dropdowns */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(212, 228, 223, 0.7);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 155, 111, 0.4);
+}
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212,228,223,0.7) transparent;
+}
+
+/* Hidden scrollbar — keeps scroll ability without visible track */
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE / Edge */
+  scrollbar-width: none;     /* Firefox */
+}

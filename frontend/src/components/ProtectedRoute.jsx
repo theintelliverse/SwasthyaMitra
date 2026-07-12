@@ -2,8 +2,6 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import SEO from './SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   

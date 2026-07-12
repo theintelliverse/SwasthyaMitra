@@ -63,7 +63,7 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-[#D4E4DF]/80">
               <li>
-                <Link to="/clinic/dashboard" className="hover:text-white transition-colors flex items-center gap-2">
+                <Link to="/admin/dashboard" className="hover:text-white transition-colors flex items-center gap-2">
                   <span className="text-[#2D9B6F]">•</span> Clinic Management
                 </Link>
               </li>
