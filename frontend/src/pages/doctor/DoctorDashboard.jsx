@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -202,35 +202,73 @@ const DoctorDashboard = () => {
   };
 
   const [isDictating, setIsDictating] = useState(false);
-  const handleStartDictation = () => {
+  const recognitionRef = useRef(null);
+
+  const handleToggleDictation = () => {
+    // If already dictating, stop it
+    if (isDictating && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsDictating(false);
+      return;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       Swal.fire('Not Supported', 'Speech recognition is not supported on this browser. Try Chrome or Safari.', 'warning');
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.lang = 'en-US';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
 
     recognition.onstart = () => {
       setIsDictating(true);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: '🎙️ Listening... Speak now',
+        showConfirmButton: false,
+        timer: 2000
+      });
     };
 
     recognition.onerror = (e) => {
-      console.error(e);
+      console.error('Speech recognition error:', e);
+      if (e.error !== 'aborted') {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: `Mic error: ${e.error === 'not-allowed' ? 'Microphone access denied' : e.error}`,
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }
       setIsDictating(false);
+      recognitionRef.current = null;
     };
 
     recognition.onend = () => {
       setIsDictating(false);
+      recognitionRef.current = null;
     };
 
     recognition.onresult = (event) => {
-      const speechToText = event.results[0][0].transcript;
-      setNotes((prev) => prev ? `${prev} ${speechToText}` : speechToText);
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setNotes((prev) => prev ? `${prev} ${finalTranscript}` : finalTranscript);
+      }
     };
 
+    recognitionRef.current = recognition;
     recognition.start();
   };
 
@@ -951,10 +989,10 @@ const DoctorDashboard = () => {
                         <h3 className="text-[14px] font-bold text-gray-900">Doctor's Private Notes</h3>
                         <div className="flex gap-2 items-center">
                           {('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && (
-                            <button type="button" onClick={handleStartDictation}
-                              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[14px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
+                            <button type="button" onClick={handleToggleDictation}
+                              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[14px] font-bold transition-all ${isDictating ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30' : 'bg-teal-50 text-teal-600 hover:bg-teal-100'}`}>
                               <Mic size={10} className={isDictating ? 'animate-bounce' : ''} />
-                              {isDictating ? 'Listening...' : 'Dictate'}
+                              {isDictating ? '■ Stop' : 'Dictate'}
                             </button>
                           )}
                           <button className="text-[14px] font-bold text-gray-500 hover:text-teal-600 flex items-center gap-1"><Edit3 size={12} /> Edit Notes</button>
@@ -971,7 +1009,7 @@ const DoctorDashboard = () => {
                         onChange={(e) => setNotes(e.target.value)}
                       />
                       <div className="flex justify-between items-center mt-2">
-                        <button onClick={() => setShowHistoryLocker(true)} className="px-3 py-1 bg-teal-50 text-teal-600 hover:bg-teal-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
+                        <button onClick={handleViewPreviousNotes} className="px-3 py-1 bg-teal-50 text-teal-600 hover:bg-teal-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
                           <History size={12} /> View All Previous Notes
                         </button>
                         <button onClick={handleSaveNote} className="px-3 py-1 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-md text-[14px] font-bold transition-colors flex items-center gap-1 shadow-sm">
@@ -1796,6 +1834,87 @@ const DoctorDashboard = () => {
                     Register & Save
                   </button>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Previous Notes Modal */}
+          {showPreviousNotesModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+              <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl animate-in zoom-in duration-300 flex flex-col max-h-[85vh]">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Previous Notes</h3>
+                    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Doctor's private notes for {activePatient?.patientName}</p>
+                  </div>
+                  <button onClick={() => setShowPreviousNotesModal(false)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="flex-grow overflow-y-auto space-y-3 pr-2">
+                  {previousNotes.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileText size={28} className="text-orange-300" />
+                      </div>
+                      <p className="text-slate-400 font-bold text-sm">No previous notes found for this patient.</p>
+                      <p className="text-slate-300 text-[14px] mt-1">Notes you save will appear here.</p>
+                    </div>
+                  ) : (
+                    previousNotes.map((noteItem, idx) => (
+                      <div key={noteItem._id || idx} className="p-4 rounded-2xl border border-slate-100 hover:border-orange-100 bg-white hover:bg-orange-50/20 transition-all group">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+                              <FileText size={12} className="text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-[14px] font-bold text-slate-500">
+                                {noteItem.createdAt ? new Date(noteItem.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown date'}
+                              </p>
+                              <p className="text-[14px] text-slate-400">
+                                {noteItem.createdAt ? new Date(noteItem.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setNotes(noteItem.note);
+                              setShowPreviousNotesModal(false);
+                              Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Note loaded into editor',
+                                showConfirmButton: false,
+                                timer: 2000
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-teal-50 text-teal-600 text-[14px] font-bold rounded-lg hover:bg-teal-100 transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            Load
+                          </button>
+                        </div>
+                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap bg-[#FFFAF0] rounded-xl p-3 border border-orange-50">
+                          {noteItem.note}
+                        </p>
+                        {noteItem.doctorName && (
+                          <p className="text-[14px] text-slate-400 mt-2 flex items-center gap-1">
+                            <Lock size={8} className="text-orange-300" /> By {noteItem.doctorName}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowPreviousNotesModal(false)}
+                  className="mt-6 w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                >
+                  Close
+                </button>
               </div>
             </div>
           )}
