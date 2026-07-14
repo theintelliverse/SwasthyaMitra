@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL, API_URL } from '../../config/runtime';
 import { useNavigate, Link } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -17,7 +17,6 @@ import Footer from '../../components/Footer';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = io(SOCKET_URL || API_URL || 'http://localhost:5000');
 
 // Quick Action Tile Component

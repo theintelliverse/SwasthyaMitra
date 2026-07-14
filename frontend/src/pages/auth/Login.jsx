@@ -6,7 +6,7 @@ import { ShieldCheck, Mail, LockKeyhole, Hash, RefreshCw, ArrowRight, Activity, 
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const Login = () => {
   const [formData, setFormData] = useState({

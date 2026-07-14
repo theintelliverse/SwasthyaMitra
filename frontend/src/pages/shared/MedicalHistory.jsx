@@ -4,7 +4,7 @@ import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import PatientQuickView from '../../components/PatientQuickView';
 import { Search, FileText, Calendar, Phone } from 'lucide-react';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const MedicalHistory = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ const MedicalHistory = () => {
         setRecords(res.data.data);
         setLoading(false);
       } catch (err) {
-        console.error("History fetch failed");
+        console.error(err,"History fetch failed");
         setLoading(false);
       }
     };

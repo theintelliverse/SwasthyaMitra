@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const AddPatient = () => {
   const navigate = useNavigate();

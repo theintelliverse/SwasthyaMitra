@@ -4,7 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const RegisterClinic = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);

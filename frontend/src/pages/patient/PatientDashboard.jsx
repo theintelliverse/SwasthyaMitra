@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   FileText, Clock, ExternalLink, LogOut,
   ShieldCheck, Activity, Search, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle,
@@ -12,7 +12,6 @@ import Sidebar from '../../components/Sidebar';
 import { QRCodeSVG } from 'qrcode.react';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL, {
   transports: ['websocket', 'polling'],
   withCredentials: true

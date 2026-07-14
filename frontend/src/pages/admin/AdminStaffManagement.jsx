@@ -6,22 +6,24 @@ import { io } from 'socket.io-client'; // 🔑 Added Socket Client
 import { SOCKET_URL } from '../../config/runtime'; // Importing runtime socket URL
 import {
   Archive, RefreshCw, UserPlus, Search, Users,
-  ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2, Key
+  ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2, Key,
+  FlaskConical, Link2, Unlink, Check, X
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 // Initialize socket
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const AdminStaffManagement = () => {
   const navigate = useNavigate();
   const [staffList, setStaffList] = useState([]);
+  const [labsList, setLabsList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeView, setActiveView] = useState('active'); // 'active' or 'archived'
+  const [activeView, setActiveView] = useState('active'); // 'active' or 'archived' or 'labs'
 
   const [formData, setFormData] = useState({
     name: '',
@@ -48,9 +50,104 @@ const AdminStaffManagement = () => {
     }
   };
 
+  const fetchLabs = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/lab-connect/clinic/labs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLabsList(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleConnectLab = async (labId) => {
+    try {
+      const res = await axios.post(`${API_URL}/api/lab-connect/request`, { labId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Connection Requested',
+          text: 'Request sent to lab successfully!',
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#EEF6FA'
+        });
+        fetchLabs();
+      }
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Failed to send request', 'error');
+    }
+  };
+
+  const handleClinicRespondToLab = async (connId, action) => {
+    try {
+      const result = await Swal.fire({
+        title: action === 'accept' ? 'Accept Connection?' : 'Reject Connection?',
+        text: action === 'accept'
+          ? 'This will allow the lab to receive test requests from your clinic.'
+          : 'This request will be marked as rejected.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: action === 'accept' ? '#059669' : '#dc2626',
+        cancelButtonColor: '#4b5563',
+        confirmButtonText: action === 'accept' ? 'Yes, Accept' : 'Yes, Reject',
+        background: '#EEF6FA'
+      });
+
+      if (!result.isConfirmed) return;
+
+      const res = await axios.patch(`${API_URL}/api/lab-connect/clinic/${connId}/respond`, { action }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: `Request ${action === 'accept' ? 'Accepted' : 'Rejected'}`,
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#EEF6FA'
+        });
+        fetchLabs();
+      }
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Action failed', 'error');
+    }
+  };
+
+  const handleDisconnectLab = async (connId) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Disconnect Lab?',
+        text: 'Are you sure you want to disconnect? You will no longer be able to send test requests to this lab.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#AFC4D8',
+        confirmButtonText: 'Yes, Disconnect',
+        background: '#EEF6FA'
+      });
+
+      if (!result.isConfirmed) return;
+
+      const res = await axios.delete(`${API_URL}/api/lab-connect/${connId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire('Disconnected!', 'Successfully disconnected from the lab.', 'success');
+        fetchLabs();
+      }
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Failed to disconnect', 'error');
+    }
+  };
+
   // 🔌 WebSocket Lifecycle
   useEffect(() => {
     fetchStaff();
+    fetchLabs();
 
     if (clinicId) {
       socket.emit('joinClinic', clinicId);
@@ -194,9 +291,10 @@ const AdminStaffManagement = () => {
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div>
               <h1 className="text-5xl font-heading mb-2">Staff Roster</h1>
-              <div className="flex gap-4 mt-4">
+              <div className="flex gap-4 mt-4 flex-wrap">
                 <button onClick={() => setActiveView('active')} className={`text-[14px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'active' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Current Team</button>
                 <button onClick={() => setActiveView('archived')} className={`text-[14px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all ${activeView === 'archived' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}>Past Staff</button>
+                <button onClick={() => { setActiveView('labs'); fetchLabs(); }} className={`text-[14px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${activeView === 'labs' ? 'bg-teak text-white shadow-lg' : 'bg-white border border-sandstone text-khaki'}`}><FlaskConical size={14} /> Lab Partners</button>
               </div>
             </div>
             <button
@@ -271,6 +369,103 @@ const AdminStaffManagement = () => {
                 <RefreshCw className="mx-auto mb-4 animate-spin" size={40} />
                 <p className="font-heading text-xl">Refreshing Roster...</p>
               </div>
+            ) : activeView === 'labs' ? (
+              /* ─── Lab Partners Grid ─── */
+              labsList.length > 0 ? (
+                labsList.map((lab) => (
+                  <div key={lab._id} className="bg-white border border-sandstone p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-sm group relative transition-all hover:border-marigold flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-blue-50 border border-blue-100">
+                          🔬
+                        </div>
+                        <span className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-widest border ${
+                          lab.connectionStatus === 'accepted' ? 'bg-green-50 text-green-700 border-green-200' :
+                          lab.connectionStatus === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' :
+                          lab.connectionStatus === 'rejected' ? 'bg-red-50 text-red-600 border-red-200' :
+                          'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}>
+                          {lab.connectionStatus === 'none' ? 'Not Connected' : lab.connectionStatus}
+                        </span>
+                      </div>
+
+                      <h3 className="text-2xl font-heading text-teak mb-1">{lab.labName}</h3>
+                      <p className="text-[14px] font-black text-marigold uppercase tracking-widest mb-2">{lab.labCode}</p>
+                      <p className="text-sm text-khaki mb-1">{lab.address || 'No address'}</p>
+                      {lab.phone && <p className="text-sm text-khaki">{lab.phone}</p>}
+                    </div>
+
+                    <div className="pt-6 border-t border-sandstone/50 mt-4">
+                      {lab.connectionStatus === 'none' && (
+                        <button
+                          onClick={() => handleConnectLab(lab._id)}
+                          className="w-full py-3 bg-teak text-white rounded-xl font-black text-[13px] uppercase tracking-widest hover:bg-marigold transition-all flex items-center justify-center gap-2 active:scale-95"
+                        >
+                          <Link2 size={14} /> Request Connection
+                        </button>
+                      )}
+                      {lab.connectionStatus === 'pending' && lab.initiatedBy === 'clinic' && (
+                        <div className="flex flex-col gap-2">
+                          <div className="text-center text-amber-600 font-black text-[12px] uppercase tracking-widest bg-amber-50 border border-amber-100 py-2.5 rounded-xl">
+                            ⏳ Waiting for Lab's response
+                          </div>
+                          <button
+                            onClick={() => handleDisconnectLab(lab.connectionId)}
+                            className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 border border-red-100 active:scale-95"
+                          >
+                            <Trash2 size={12} /> Remove Request
+                          </button>
+                        </div>
+                      )}
+                      {lab.connectionStatus === 'pending' && lab.initiatedBy === 'lab' && (
+                        <div className="flex gap-2.5">
+                          <button
+                            onClick={() => handleClinicRespondToLab(lab.connectionId, 'accept')}
+                            className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                          >
+                            <Check size={14} /> Accept
+                          </button>
+                          <button
+                            onClick={() => handleClinicRespondToLab(lab.connectionId, 'reject')}
+                            className="flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-black text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 border border-red-100 active:scale-95"
+                          >
+                            <X size={14} /> Reject
+                          </button>
+                        </div>
+                      )}
+                      {lab.connectionStatus === 'accepted' && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-green-600 font-black text-[12px] uppercase tracking-widest flex items-center gap-1.5"><Check size={12} /> Active Link</span>
+                          <button
+                            onClick={() => handleDisconnectLab(lab.connectionId)}
+                            className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-black text-[11px] uppercase tracking-widest transition-all flex items-center gap-1.5 border border-red-100"
+                          >
+                            <Unlink size={12} /> Disconnect
+                          </button>
+                        </div>
+                      )}
+                      {lab.connectionStatus === 'rejected' && (
+                        <div className="flex flex-col gap-2">
+                          <div className="text-center text-red-600 font-black text-[12px] uppercase tracking-widest bg-red-50 border border-red-100 py-2 rounded-xl">
+                            Connection Refused
+                          </div>
+                          <button
+                            onClick={() => handleConnectLab(lab._id)}
+                            className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95 border border-gray-200"
+                          >
+                            <RefreshCw size={12} /> Retry Connection
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-24 text-center bg-white rounded-[3.5rem] border border-dashed border-sandstone flex flex-col items-center">
+                  <FlaskConical size={32} className="text-sandstone mb-4" />
+                  <p className="text-khaki font-medium italic">No independent labs registered in the system yet.</p>
+                </div>
+              )
             ) : filteredStaff.length > 0 ? (
               filteredStaff.map((member) => (
                 <div key={member._id} className={`bg-white border border-sandstone p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-sm group relative transition-all hover:border-marigold ${activeView === 'archived' ? 'grayscale opacity-80' : ''}`}>

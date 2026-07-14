@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL, API_URL } from '../../config/runtime';
 import ReportViewer from '../../components/ReportViewer';
 import {
   User, FileText, Activity, History, Download, Calendar, Eye,
@@ -12,7 +12,6 @@ import {
 import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const HealthLocker = () => {

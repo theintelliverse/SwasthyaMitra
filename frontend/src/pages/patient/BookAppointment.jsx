@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const MAX_BOOKING_DAYS = 14;
 const DEFAULT_WORKING_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const WEEKDAY_MAP = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];

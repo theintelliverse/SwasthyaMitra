@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
     Clock, ShieldCheck, Lock, XCircle, ArrowRight, UserCheck,
     RefreshCcw, Activity, Zap, AlertCircle, Heart, Wifi, WifiOff,
@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL, {
     transports: ['websocket', 'polling'],
     withCredentials: true

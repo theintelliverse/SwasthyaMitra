@@ -179,6 +179,16 @@ if (!isVercel) {
             socket.emit('joined', { room: clinicId });
         });
 
+        socket.on('joinLab', (labId) => {
+            if (!labId) {
+                console.error(`❌ Socket ${socket.id} tried to join an undefined lab room!`);
+                return;
+            }
+            socket.join(`lab_${labId}`);
+            console.log(`🔬 Socket ${socket.id} successfully joined Lab Room: lab_${labId}`);
+            socket.emit('joined', { room: `lab_${labId}` });
+        });
+
         socket.on('disconnect', () => {
             console.log('❌ Client Disconnected:', socket.id);
         });

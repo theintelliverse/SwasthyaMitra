@@ -7,8 +7,7 @@ import {
     Eye, EyeOff, Lock, CheckCircle, Activity, ShieldCheck, Zap
 } from 'lucide-react';
 import SEO from '../../components/SEO';
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const PatientRegister = () => {
     const navigate = useNavigate();

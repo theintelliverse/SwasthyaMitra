@@ -48,7 +48,7 @@ import {
 import Sidebar from '../../components/Sidebar';
 import PatientQuickView from '../../components/PatientQuickView';
 
-const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const QuickActionTile = ({ icon, label, color, onClick }) => (
@@ -560,7 +560,7 @@ const DoctorDashboard = () => {
         fetchDashboardData(false);
       }
     } catch (err) {
-      Swal.fire('Error', 'Failed to approve patient', 'error');
+      Swal.fire('Error', 'Failed to approve patient', err);
     }
   };
 
@@ -575,7 +575,7 @@ const DoctorDashboard = () => {
         fetchDashboardData(false);
       }
     } catch (err) {
-      Swal.fire('Error', 'Failed to start consultation', 'error');
+      Swal.fire('Error', 'Failed to start consultation', err);
     }
   };
 
@@ -827,7 +827,7 @@ const DoctorDashboard = () => {
         }
         fetchDashboardData(false);
       } catch (err) {
-        Swal.fire('Error', 'Failed to toggle status', 'error');
+        Swal.fire('Error', 'Failed to toggle status', err);
       }
     };
 

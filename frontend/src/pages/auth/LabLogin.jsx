@@ -9,7 +9,7 @@ import {
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const LabLogin = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });

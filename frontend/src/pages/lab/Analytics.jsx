@@ -5,7 +5,7 @@ import Footer from '../../components/Footer';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import axios from 'axios';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 // Analytics Metric Card Component
 const AnalyticsMetricCard = ({ title, value, icon, color }) => {

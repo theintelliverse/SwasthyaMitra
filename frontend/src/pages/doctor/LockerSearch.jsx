@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, ShieldCheck, User, Phone, FileText, ArrowRight, RefreshCw } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import PatientQuickView from '../../components/PatientQuickView';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const LockerSearch = () => {
   const [phone, setPhone] = useState('');
   const [activePatient, setActivePatient] = useState(null);

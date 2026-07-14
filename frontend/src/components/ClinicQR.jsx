@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Download, ExternalLink, QrCode, Info } from 'lucide-react';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../config/runtime';
 const ClinicQR = ({ clinicCode, clinicName }) => {
   const qrRef = useRef();
 

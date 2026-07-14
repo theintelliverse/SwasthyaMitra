@@ -5,13 +5,15 @@ import SEO from './SEO';
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   
+  const isLabRoute = allowedRoles && allowedRoles.includes('independent_lab');
+  
   // Get token and role from localStorage
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role'); // This was 'admin', 'doctor', or 'receptionist'
+  const token = isLabRoute ? localStorage.getItem('labToken') : localStorage.getItem('token');
+  const userRole = isLabRoute ? localStorage.getItem('labRole') : localStorage.getItem('role');
 
   // 1. If not logged in, send to login
   if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={isLabRoute ? "/lab/login" : "/login"} state={{ from: location }} replace />;
   }
 
   // 2. If logged in but role is not authorized for this specific route

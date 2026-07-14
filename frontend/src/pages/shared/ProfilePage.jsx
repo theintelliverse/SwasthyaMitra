@@ -10,7 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 
-const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const ProfilePage = () => {
     const navigate = useNavigate();

@@ -20,7 +20,7 @@ import {
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import ClinicQR from '../../components/ClinicQR';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 const ClinicSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../config/runtime';
 
 // Minimal fallback mock clinics used when backend data is unavailable
 const MOCK_CLINICS = [

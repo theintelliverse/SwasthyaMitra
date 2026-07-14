@@ -7,9 +7,9 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
+import SEO from '../../components/SEO';
+import { API_URL } from '../../config/runtime';
 import Swal from 'sweetalert2';
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const InputField = ({ label, icon: Icon, children, note }) => (
   <div>

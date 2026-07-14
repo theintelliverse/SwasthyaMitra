@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../../config/runtime';
+import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   User, Phone, Stethoscope, AlertCircle, Clipboard,
   Beaker, Activity, UserCheck, XCircle, Coffee,
@@ -12,7 +12,6 @@ import {
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
 import { useLocation } from 'react-router-dom';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ReceptionDashboard = () => {
@@ -38,6 +37,7 @@ const ReceptionDashboard = () => {
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
   const userRole = localStorage.getItem('role');
+  const clinicCode = localStorage.getItem('clinicCode') || 'CITY01';
 
   const fetchDashboardData = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -305,15 +305,27 @@ const ReceptionDashboard = () => {
             <div className="w-9 md:w-10 h-9 md:h-10 bg-teak rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg flex-shrink-0"><LayoutDashboard size={18} /></div>
             <h1 className="font-heading text-base md:text-xl">Reception</h1>
           </div>
-          <div className="flex bg-parchment p-1 rounded-xl md:rounded-2xl border border-sandstone w-full sm:w-auto overflow-x-auto">
-            <button onClick={() => setActiveTab('live')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex-shrink-0 ${activeTab === 'live' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>Active</button>
-            <button onClick={() => setActiveTab('pending')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'pending' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
-              Requests
-              {pendingRequests.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white animate-bounce">{pendingRequests.length}</span>}
-            </button>
-            <button onClick={() => setActiveTab('scheduled')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'scheduled' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
-              📅 Next
-              {futureAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white">{futureAppointments.length}</span>}
+          <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto">
+            <div className="flex bg-parchment p-1 rounded-xl md:rounded-2xl border border-sandstone">
+              <button onClick={() => setActiveTab('live')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex-shrink-0 ${activeTab === 'live' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>Active</button>
+              <button onClick={() => setActiveTab('pending')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'pending' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
+                Requests
+                {pendingRequests.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white animate-bounce">{pendingRequests.length}</span>}
+              </button>
+              <button onClick={() => setActiveTab('scheduled')} className={`px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap flex-shrink-0 ${activeTab === 'scheduled' ? 'bg-marigold text-white shadow-md' : 'text-khaki'}`}>
+                📅 Next
+                {futureAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white">{futureAppointments.length}</span>}
+              </button>
+            </div>
+            <button
+              onClick={() => window.open(`/display/${clinicCode}`, '_blank')}
+              className="p-3 md:p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100/50 flex flex-col items-center justify-center text-center group hover:bg-sky-600 transition-all duration-300 flex-shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-tv text-sky-600 group-hover:text-white transition-colors mb-1.5" aria-hidden="true">
+                <path d="m17 2-5 5-5-5"></path>
+                <rect width="20" height="15" x="2" y="7" rx="2"></rect>
+              </svg>
+              <p className="text-[14px] font-black text-sky-900 group-hover:text-white uppercase tracking-widest leading-none">Live TV</p>
             </button>
           </div>
         </nav>

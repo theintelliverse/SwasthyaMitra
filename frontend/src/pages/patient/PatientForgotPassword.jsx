@@ -7,8 +7,7 @@ import {
     ShieldCheck, Lock, Eye, EyeOff, Activity, CheckCircle
 } from 'lucide-react';
 import SEO from '../../components/SEO';
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const PatientForgotPassword = () => {
     const navigate = useNavigate();

@@ -5,7 +5,7 @@ import Footer from '../../components/Footer';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const Samples = () => {
   const [samples, setSamples] = useState([]);

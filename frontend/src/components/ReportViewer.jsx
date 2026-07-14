@@ -3,7 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { X, ZoomIn, ZoomOut, Download, ChevronLeft, ChevronRight, AlertCircle, Trash2 } from 'lucide-react';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../config/runtime';
 
 // Utility function to decode JWT token and extract phone
 const extractPhoneFromToken = (token) => {

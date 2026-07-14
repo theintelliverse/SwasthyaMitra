@@ -21,7 +21,7 @@ import Footer from '../../components/Footer';
 import PatientQuickView from '../../components/PatientQuickView';
 import Swal from 'sweetalert2';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);

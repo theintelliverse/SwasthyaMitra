@@ -22,7 +22,7 @@ import {
   Bell
 } from 'lucide-react';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../config/runtime';
 
 const Sidebar = ({ role = 'lab' }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);

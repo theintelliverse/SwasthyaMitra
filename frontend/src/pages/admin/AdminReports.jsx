@@ -8,7 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const AdminReports = () => {
     const navigate = useNavigate();

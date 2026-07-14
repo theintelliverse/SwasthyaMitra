@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { LockKeyhole, Eye, EyeOff, ArrowRight, RefreshCw, ArrowLeft, CheckCircle } from 'lucide-react';
 import SEO from '../../components/SEO';
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../../config/runtime';
 
 const ResetPassword = () => {
     const navigate = useNavigate();

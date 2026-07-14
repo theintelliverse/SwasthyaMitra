@@ -46,6 +46,7 @@ const LabLogin = lazy(() => import('./pages/auth/LabLogin'));
 const LabRegister = lazy(() => import('./pages/auth/LabRegister'));
 const LabPortalDashboard = lazy(() => import('./pages/lab-portal/LabPortalDashboard'));
 const LabPortalConnections = lazy(() => import('./pages/lab-portal/LabPortalConnections'));
+const LabPortalAnalytics = lazy(() => import('./pages/lab-portal/LabPortalAnalytics'));
 
 // Import Security Guard
 import ProtectedRoute from './components/ProtectedRoute';
@@ -75,8 +76,30 @@ const App = () => {
             {/* --- 🔬 Independent Lab Portal Routes --- */}
             <Route path="/lab/login" element={<LabLogin />} />
             <Route path="/lab/register" element={<LabRegister />} />
-            <Route path="/lab/portal/dashboard" element={<LabPortalDashboard />} />
-            <Route path="/lab/portal/connections" element={<LabPortalConnections />} />
+            <Route
+              path="/lab/portal/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['independent_lab']}>
+                  <LabPortalDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/portal/connections"
+              element={
+                <ProtectedRoute allowedRoles={['independent_lab']}>
+                  <LabPortalConnections />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lab/portal/analytics"
+              element={
+                <ProtectedRoute allowedRoles={['independent_lab']}>
+                  <LabPortalAnalytics />
+                </ProtectedRoute>
+              }
+            />
 
             {/* --- 📱 Patient Routes (QR & OTP) --- */}
             <Route path="/patient/checkin" element={<PatientCheckIn />} />

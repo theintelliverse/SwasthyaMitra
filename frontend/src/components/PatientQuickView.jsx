@@ -11,7 +11,7 @@ import {
   Weight
 } from 'lucide-react';
 import ReportViewer from './ReportViewer';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { API_URL } from '../config/runtime';
 const PatientQuickView = ({ phone, onClose }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
