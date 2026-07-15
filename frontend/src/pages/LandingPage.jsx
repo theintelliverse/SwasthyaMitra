@@ -616,9 +616,8 @@ const LandingPage = () => {
               Powered by
             </p>
             <div className="h-px w-6 bg-sandstone"></div>
-            <span className="font-heading text-[14px] sm:text-[11.5px]">Twilio</span>
-            <span className="font-heading text-[14px] sm:text-[11.5px]">MERN Stack</span>
             <span className="font-heading text-[14px] sm:text-[11.5px]">Appointory</span>
+            <span className="font-heading text-[14px] sm:text-[11.5px]">The Intelliverse</span>
           </div>
         </div>
 
