@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ChartTooltip } from 'recharts';
 import { API_URL } from '../../config/runtime';
+import Sidebar from '../../components/Sidebar';
 
 const LabPortalAnalytics = () => {
   const navigate = useNavigate();
@@ -118,62 +119,14 @@ const LabPortalAnalytics = () => {
   );
 
   return (
-    <div className="min-h-screen font-body" style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #f0f9ff 100%)' }}>
-      <Helmet>
-        <title>Lab Analytics & Samples | Appointory</title>
-      </Helmet>
+    <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
+      <Sidebar role="lab" />
 
-      {/* ─── Top Nav ─── */}
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-blue-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}>
-              <FlaskConical className="text-white" size={22} />
-            </div>
-            <div>
-              <h1 className="font-heading text-lg font-bold leading-none text-slate-800">{labName}</h1>
-              <p className="text-[11px] font-black uppercase tracking-widest text-blue-500">{labCode} · Analytics Hub</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 mr-3 bg-blue-50/50 border border-blue-100/50 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest">
-              <span className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-              <span className={socketConnected ? 'text-emerald-700 font-extrabold' : 'text-rose-700 font-extrabold'}>{socketConnected ? 'Live' : 'Offline'}</span>
-            </div>
-            <button
-              onClick={() => navigate('/lab/portal/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
-            >
-              <LayoutDashboard size={15} />
-              <span className="hidden sm:inline">Dashboard</span>
-            </button>
-            <button
-              onClick={() => navigate('/lab/portal/connections')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 transition-all shadow-sm"
-            >
-              <Link2 size={15} />
-              <span className="hidden sm:inline">Connections Hub</span>
-            </button>
-            <button
-              onClick={() => fetchRequests(true)}
-              className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all bg-white"
-              title="Refresh"
-            >
-              <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-bold hover:bg-red-100 transition-all shadow-sm"
-            >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-0">
+        <main className="px-4 md:px-8 py-8 flex-grow max-w-6xl mx-auto w-full space-y-6">
+          <Helmet>
+            <title>Lab Analytics & Samples | Appointory</title>
+          </Helmet>
         
         {/* Sync Info */}
         <div className="flex justify-between items-center bg-white/60 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-blue-50/50 text-[10px] font-black uppercase tracking-wider text-slate-500 shadow-sm">
@@ -315,6 +268,7 @@ const LabPortalAnalytics = () => {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,178 @@
+import React from 'react';
+import { Search, Edit, Gift, ToggleLeft, Trash2 } from 'lucide-react';
+
+const ClinicsTab = ({
+  filteredClinics,
+  searchTerm,
+  setSearchTerm,
+  handleSetCustomPrice,
+  handleSetCustomLimits,
+  handleToggleNetwork,
+  handleTogglePremium,
+  handleEditSubscription,
+  handleGiftSubscription,
+  handleToggleActive,
+  handleDeleteFacility
+}) => {
+  return (
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-khaki" size={16} />
+        <input
+          type="text"
+          placeholder="Search clinic name or code..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-white border border-sandstone/40 rounded-2xl pl-10 pr-4 py-3 text-sm text-teak outline-none focus:border-marigold font-semibold"
+        />
+      </div>
+
+      <div className="overflow-x-auto border border-sandstone/25 rounded-2xl bg-white/40 shadow-sm">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-sandstone/20 text-khaki font-bold uppercase tracking-wider bg-slate-50/50">
+              <th className="p-4">Clinic Name</th>
+              <th className="p-4">Contact</th>
+              <th className="p-4">Metrics</th>
+              <th className="p-4">Custom Pricing</th>
+              <th className="p-4">Expiry Date</th>
+              <th className="p-4 text-center">Appointory Network</th>
+              <th className="p-4 text-center">Premium Status</th>
+              <th className="p-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-sandstone/15 font-medium text-slate-700">
+            {filteredClinics.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="p-8 text-center text-khaki font-bold uppercase tracking-widest">No clinics found</td>
+              </tr>
+            ) : (
+              filteredClinics.map(c => {
+                const isExpired = c.subscriptionExpiresAt && new Date(c.subscriptionExpiresAt) < new Date();
+                return (
+                  <tr key={c._id} className={`hover:bg-parchment/30 transition-colors ${!c.isActive ? 'opacity-60 bg-rose-50/10' : ''}`}>
+                    <td className="p-4">
+                      <div className="font-black text-teak text-sm flex items-center gap-2">
+                        {c.name}
+                        {!c.isActive && (
+                          <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 rounded text-[9px] font-black uppercase">Closed Temp</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-marigold uppercase tracking-widest font-black mt-0.5">{c.clinicCode}</div>
+                      <div className="text-[10px] text-khaki mt-1">Joined: {new Date(c.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="p-4 text-khaki">
+                      <div className="text-slate-800 font-semibold">{c.contactPhone}</div>
+                      <div className="text-[10px] mt-0.5">{c.address}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-slate-700 font-semibold">Staff: {c.staffCount}</div>
+                      <div className="text-slate-700 mt-0.5">Patients: {c.patientCount}</div>
+                      <div className="text-emerald-600 font-bold mt-1">Sales: ₹{(c.revenueContributed || 0).toLocaleString()}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          onClick={() => handleSetCustomPrice(c._id, 'clinic', c.customSubscriptionPrice)}
+                          className="px-2.5 py-1 bg-white border border-sandstone/30 text-slate-700 hover:text-marigold hover:border-marigold/60 rounded-xl transition cursor-pointer font-bold text-[10px]"
+                        >
+                          {c.customSubscriptionPrice !== undefined && c.customSubscriptionPrice !== null
+                            ? `₹${c.customSubscriptionPrice}/mo`
+                            : 'Set Price'}
+                        </button>
+                        <button
+                          onClick={() => handleSetCustomLimits(c._id, 'clinic', c.customTrafficLimits)}
+                          className="px-2.5 py-1 bg-white border border-sandstone/30 text-slate-700 hover:text-marigold hover:border-marigold/60 rounded-xl transition cursor-pointer font-bold text-[10px]"
+                        >
+                          {c.customTrafficLimits && (c.customTrafficLimits.maxStaff !== null || c.customTrafficLimits.maxPatients !== null || c.customTrafficLimits.maxQueues !== null)
+                            ? 'Custom Limits'
+                            : 'Set Limits'}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {c.subscriptionExpiresAt ? (
+                        <div className="space-y-1">
+                          <div className={isExpired ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
+                            {new Date(c.subscriptionExpiresAt).toLocaleDateString()}
+                          </div>
+                          <div className="text-[9px] uppercase tracking-wider text-khaki">
+                            {c.subscriptionPlan}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-rose-600 font-bold">Unsubscribed</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleToggleNetwork(c._id, 'clinic')}
+                        className="text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-xl transition cursor-pointer shadow-sm border border-sandstone/10"
+                        style={{
+                          backgroundColor: c.showOnNetwork !== false ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: c.showOnNetwork !== false ? '#10b981' : '#ef4444'
+                        }}
+                      >
+                        {c.showOnNetwork !== false ? 'Visible' : 'Hidden'}
+                      </button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleTogglePremium(c._id, 'clinic')}
+                        className="text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-xl transition cursor-pointer shadow-sm border border-sandstone/10"
+                        style={{
+                          backgroundColor: c.isPremium ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: c.isPremium ? '#10b981' : '#ef4444'
+                        }}
+                      >
+                        {c.isPremium ? 'Active' : 'Expired'}
+                      </button>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-1.5 justify-center">
+                        <button
+                          onClick={() => handleEditSubscription(c._id, 'clinic', c.subscriptionPlan, c.subscriptionExpiresAt)}
+                          className="p-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition cursor-pointer"
+                          title="Edit Subscription Details"
+                        >
+                          <Edit size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleGiftSubscription(c._id, 'clinic')}
+                          className="p-2 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition cursor-pointer"
+                          title="Gift Free Trial Extension"
+                        >
+                          <Gift size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(c._id, 'clinic')}
+                          className={`p-2 rounded-xl transition cursor-pointer ${c.isActive
+                              ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-650 hover:text-white'
+                              : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-650 hover:text-white'
+                            }`}
+                          title={c.isActive ? "Temporarily Close Clinic" : "Open Clinic"}
+                        >
+                          <ToggleLeft size={15} className={c.isActive ? 'text-amber-655' : 'text-emerald-600'} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFacility(c._id, 'clinic')}
+                          className="p-2 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition cursor-pointer"
+                          title="Delete Facility"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default ClinicsTab;

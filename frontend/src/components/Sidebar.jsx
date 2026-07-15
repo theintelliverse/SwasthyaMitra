@@ -26,7 +26,24 @@ import { API_URL } from '../config/runtime';
 
 const Sidebar = ({ role = 'lab' }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [isSubscriptionEnforced, setIsSubscriptionEnforced] = useState(false);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    let active = true;
+    const fetchConfig = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/superadmin/config/public`);
+        if (res.data.success && active) {
+          setIsSubscriptionEnforced(res.data.isSubscriptionEnforced);
+        }
+      } catch (err) {
+        console.error("Failed to fetch public config in Sidebar", err);
+      }
+    };
+    fetchConfig();
+    return () => { active = false; };
+  }, []);
 
   // Safely get user info from localStorage
   const getSafeStorageItem = (key, fallback) => {
@@ -45,6 +62,7 @@ const Sidebar = ({ role = 'lab' }) => {
   const userEducation = getSafeStorageItem('education', '');
 
   const menuItems = useMemo(() => {
+    const isIndLab = getSafeStorageItem('labRole', '') === 'independent_lab';
     const config = {
       admin: [
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
@@ -67,7 +85,11 @@ const Sidebar = ({ role = 'lab' }) => {
         { name: 'Add Patient', path: '/receptionist/add', icon: <Activity size={20} /> },
         { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
       ],
-      lab: [
+      lab: isIndLab ? [
+        { name: 'Dashboard', path: '/lab/portal/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Connections', path: '/lab/portal/connections', icon: <Users size={20} /> },
+        { name: 'Analytics', path: '/lab/portal/analytics', icon: <Activity size={20} /> },
+      ] : [
         { name: 'Dashboard', path: '/lab/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Test Requests', path: '/lab/requests', icon: <ClipboardList size={20} /> },
         { name: 'Samples', path: '/lab/samples', icon: <TestTubes size={20} /> },
@@ -84,8 +106,28 @@ const Sidebar = ({ role = 'lab' }) => {
     };
     // Normalize role key to lowercase to match config
     const normalizedRole = (userRole || 'staff').toLowerCase();
-    return config[normalizedRole] || config.lab || [];
-  }, [userRole]);
+    const items = [...(config[normalizedRole] || config.lab || [])];
+
+    // If subscription enforcement is active, inject subscription page (except for patient)
+    if (isSubscriptionEnforced && normalizedRole !== 'patient') {
+      let subPath = `/${normalizedRole}/subscription`;
+      if (normalizedRole === 'lab') {
+        subPath = isIndLab ? '/lab/portal/subscription' : '/lab/subscription';
+      }
+      
+      // Inject subscription page right before Profile/Settings/Logout or just append it before Profile/My Profile
+      const profileIndex = items.findIndex(item => item.name.toLowerCase().includes('profile'));
+      const subItem = { name: 'Subscription', path: subPath, icon: <ShieldCheck size={20} /> };
+      
+      if (profileIndex !== -1) {
+        items.splice(profileIndex, 0, subItem);
+      } else {
+        items.push(subItem);
+      }
+    }
+
+    return items;
+  }, [userRole, isSubscriptionEnforced]);
 
   const handleLogout = async () => {
     try {

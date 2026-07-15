@@ -89,7 +89,7 @@ const LandingPage = () => {
     const fetchLiveQueues = async () => {
       try {
         const res = await axios.get(`${API_URL}/api/clinic/public/queues-live`);
-        if (res.data.success && res.data.data && res.data.data.length > 0) {
+        if (res.data.success && res.data.data) {
           const dbClinics = res.data.data;
 
           // Format DB clinics
@@ -105,18 +105,10 @@ const LandingPage = () => {
             return clinic;
           });
 
-          // Merge DB clinics with mocks to ensure at least 5 clinics for sliding
-          if (processedDbClinics.length < 5) {
-            const neededMockCount = 5 - processedDbClinics.length;
-            const dbNames = new Set(processedDbClinics.map(c => c.name.toLowerCase()));
-            const filteredMocks = MOCK_CLINICS.filter(m => !dbNames.has(m.name.toLowerCase()));
-            setClinicsQueues([...processedDbClinics, ...filteredMocks.slice(0, neededMockCount)]);
-          } else {
-            setClinicsQueues(processedDbClinics);
-          }
+          setClinicsQueues(processedDbClinics);
         }
       } catch (error) {
-        console.warn("⚠️ Failed to fetch live queues, using fallback mocks:", error.message);
+        console.warn("⚠️ Failed to fetch live queues:", error.message);
       }
     };
 

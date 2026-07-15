@@ -120,7 +120,7 @@ const AdminReports = () => {
     }, [view, data, searchTerm]);
 
     const getAvgWorkTime = (staffId) => {
-        const stats = data.staffStats.find(s => s._id === staffId);
+        const stats = data.staffStats.find(s => String(s._id) === String(staffId));
         if (!stats) return "N/A";
         const mins = Math.round(stats.avgMinutes);
         if (mins < 60) return `${mins}m`;

@@ -42,6 +42,7 @@ const Login = () => {
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userName', user.name);
+        if (user.email) localStorage.setItem('userEmail', user.email);
         if (user.specialization) localStorage.setItem('specialization', user.specialization);
         if (user.education) localStorage.setItem('education', user.education);
         localStorage.setItem('sessionId', sessionId);
@@ -68,6 +69,7 @@ const Login = () => {
 
         setTimeout(() => {
           switch (user.role) {
+            case 'superadmin': navigate('/superadmin/dashboard'); break;
             case 'admin': navigate('/admin/dashboard'); break;
             case 'doctor': navigate('/doctor/dashboard'); break;
             case 'receptionist': navigate('/receptionist/dashboard'); break;
@@ -143,7 +145,7 @@ const Login = () => {
             <div className="text-center mb-6">
               <h2 className="text-3xl font-heading font-bold mb-2 text-teak">Clinic Portal</h2>
               <p className="text-sm text-khaki font-medium mb-3">Authenticate to access your facility dashboard</p>
-              
+
               {/* Visual Role Badges */}
               <div className="flex justify-center gap-1.5 mt-2">
                 <span className="px-2.5 py-0.5 bg-teal-50 text-teal-600 border border-teal-100 rounded-full text-[10px] font-black uppercase tracking-wider">Admin</span>
@@ -193,7 +195,6 @@ const Login = () => {
                   <Hash className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === 'clinicCode' ? 'text-marigold' : 'text-khaki/40'}`} size={18} />
                   <input
                     type="text"
-                    required
                     placeholder="e.g. CITY01"
                     autoComplete="off"
                     className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 transition-all font-bold placeholder:text-khaki/30 uppercase text-teak ${loginError?.type === 'credentials' ? 'border-red-300 focus:border-red-400 focus:ring-red-500/5' : 'border-sandstone focus:border-marigold focus:ring-marigold/5'

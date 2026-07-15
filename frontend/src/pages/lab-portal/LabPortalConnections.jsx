@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -9,6 +10,7 @@ import {
   Building, Loader2, BadgeCheck, ArrowLeft, Send, Check, X, ShieldAlert
 } from 'lucide-react';
 import SEO from '../../components/SEO';
+import Sidebar from '../../components/Sidebar';
 import { API_URL } from '../../config/runtime';
 
 const labApi = () => {
@@ -128,61 +130,17 @@ const LabPortalConnections = () => {
   });
 
   return (
-    <div className="min-h-screen font-body" style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #f0f9ff 100%)' }}>
-      <SEO
-        title="Lab Connections Hub"
-        description="Private panel to manage connected partner clinics."
-        url="/lab/portal/connections"
-        noindex={true}
-      />
-      
-      {/* ─── Top Nav ─── */}
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-blue-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/lab/portal/dashboard')}
-              className="mr-1 p-2 rounded-xl text-slate-500 hover:bg-blue-50 transition-all border border-blue-100 bg-white"
-              title="Back to Dashboard"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}>
-              <FlaskConical className="text-white" size={22} />
-            </div>
-            <div>
-              <h1 className="font-heading text-lg font-bold leading-none text-slate-800">{labName}</h1>
-              <p className="text-[11px] font-black uppercase tracking-widest text-blue-500">{labCode} · Connections Hub</p>
-            </div>
-          </div>
+    <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
+      <Sidebar role="lab" />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/lab/portal/analytics')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
-            >
-              <BarChart3 size={15} />
-              <span className="hidden sm:inline">Analytics & Samples</span>
-            </button>
-            <button
-              onClick={fetchConnections}
-              className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
-              title="Refresh"
-            >
-              <RefreshCw size={16} />
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-bold hover:bg-red-100 transition-all"
-            >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-0">
+        <main className="px-4 md:px-8 py-8 flex-grow max-w-6xl mx-auto w-full space-y-6">
+          <SEO
+            title="Lab Connections Hub"
+            description="Private panel to manage connected partner clinics."
+            url="/lab/portal/connections"
+            noindex={true}
+          />
 
         {/* Header Title */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -194,7 +152,7 @@ const LabPortalConnections = () => {
           </div>
 
           {/* Tab Selection */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-1 border border-blue-50 shadow-sm flex gap-1 overflow-x-auto">
+          <div className="bg-slate-100/70 backdrop-blur-md rounded-[1.25rem] p-1.5 border border-slate-200/40 shadow-inner flex gap-1.5 overflow-x-auto max-w-full hide-scrollbar shrink-0">
             {[
               { id: 'accepted', label: 'Active', count: connections.filter(c => c.status === 'accepted').length },
               { id: 'pending', label: 'Requests', count: connections.filter(c => c.status === 'pending').length },
@@ -204,10 +162,18 @@ const LabPortalConnections = () => {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
-                className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === t.id ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-blue-50'}`}
+                className={`px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 whitespace-nowrap active:scale-[0.97] hover:scale-[1.01] ${
+                  activeTab === t.id
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/15 border border-blue-500/10'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                }`}
               >
                 {t.label}
-                <span className={`px-1.5 py-0.5 rounded text-[10px] ${activeTab === t.id ? 'bg-white/35 text-white font-extrabold' : 'bg-slate-100 text-slate-400'}`}>
+                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
+                  activeTab === t.id
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 text-slate-500 group-hover:bg-slate-350'
+                }`}>
                   {t.count}
                 </span>
               </button>
@@ -395,6 +361,7 @@ const LabPortalConnections = () => {
         )}
 
       </main>
+      </div>
     </div>
   );
 };

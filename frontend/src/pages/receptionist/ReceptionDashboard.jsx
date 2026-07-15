@@ -321,7 +321,7 @@ const ReceptionDashboard = () => {
               onClick={() => window.open(`/display/${clinicCode}`, '_blank')}
               className="p-3 md:p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100/50 flex flex-col items-center justify-center text-center group hover:bg-sky-600 transition-all duration-300 flex-shrink-0"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-tv text-sky-600 group-hover:text-white transition-colors mb-1.5" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tv text-sky-600 group-hover:text-white transition-colors mb-1.5" aria-hidden="true">
                 <path d="m17 2-5 5-5-5"></path>
                 <rect width="20" height="15" x="2" y="7" rx="2"></rect>
               </svg>

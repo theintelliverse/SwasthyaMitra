@@ -15,7 +15,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as ChartToolt
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import SEO from '../../components/SEO';
+import Sidebar from '../../components/Sidebar';
 import { API_URL, SOCKET_URL } from '../../config/runtime';
+
+import NewTestModal from './components/NewTestModal';
+import ReportConfigModal from './components/ReportConfigModal';
+import SampleCollectionModal from './components/SampleCollectionModal';
+import DigitalReportModal from './components/DigitalReportModal';
+import UploadReportModal from './components/UploadReportModal';
 
 const socket = io(SOCKET_URL || API_URL || 'http://localhost:5000');
 
@@ -521,74 +528,54 @@ const LabPortalDashboard = () => {
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
 
   return (
-    <div className="min-h-screen font-body" style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #f0f9ff 100%)' }}>
-      <SEO
-        title="Lab Portal Dashboard"
-        description="Private portal dashboard to manage test requests and report uploads."
-        url="/lab/portal/dashboard"
-        noindex={true}
-      />
+    <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
+      <Sidebar role="lab" />
 
-      {/* ─── Top Nav ─── */}
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-blue-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}>
-              <FlaskConical className="text-white" size={22} />
-            </div>
+      <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-0">
+        <main className="px-4 md:px-8 py-8 flex-grow max-w-6xl mx-auto w-full space-y-6">
+          <SEO
+            title="Lab Portal Dashboard"
+            description="Private portal dashboard to manage test requests and report uploads."
+            url="/lab/portal/dashboard"
+            noindex={true}
+          />
+
+          {/* Simple header bar replacing top nav */}
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
             <div>
-              <h1 className="font-heading text-lg font-bold leading-none text-slate-800">{labName}</h1>
-              <p className="text-[11px] font-black uppercase tracking-widest text-blue-500">{labCode} · Lab Portal</p>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[12px] font-black uppercase tracking-widest border border-blue-100">
+                  Lab Administrator
+                </span>
+                <div className="flex items-center gap-1.5 bg-blue-50/50 border border-blue-100/50 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                  <span className={`w-1.5 h-1.5 rounded-full ${socketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                  <span className={socketConnected ? 'text-emerald-700 font-extrabold' : 'text-rose-700 font-extrabold'}>{socketConnected ? 'Live' : 'Offline'}</span>
+                </div>
+              </div>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-1">
+                Namaste, {labName}
+              </h1>
+              <p className="text-slate-500 font-bold flex items-center gap-2">
+                Independent Diagnostics command hub · <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-black text-slate-400">ID: {labCode}</span>
+              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 mr-3 bg-blue-50/50 border border-blue-100/50 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest">
-              <span className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-              <span className={socketConnected ? 'text-emerald-700 font-extrabold' : 'text-rose-700 font-extrabold'}>{socketConnected ? 'Live' : 'Offline'}</span>
+            
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => fetchRequests(true)}
+                className="p-3 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-2xl transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0"
+                title="Refresh Queue"
+              >
+                <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
+              </button>
             </div>
-            <button
-              onClick={() => navigate('/lab/portal/analytics')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
-            >
-              <BarChart3 size={15} />
-              <span className="hidden sm:inline">Analytics & Samples</span>
-            </button>
-            <button
-              id="btn-nav-connections"
-              onClick={() => navigate('/lab/portal/connections')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 transition-all shadow-sm"
-            >
-              <Link2 size={15} />
-              <span className="hidden sm:inline">Connections Hub</span>
-            </button>
-            <button
-              id="btn-nav-refresh"
-              onClick={() => fetchRequests(true)}
-              className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all bg-white"
-              title="Refresh"
-            >
-              <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-            </button>
-            <button
-              id="btn-nav-logout"
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-bold hover:bg-red-100 transition-all shadow-sm"
-            >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+          </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        
-        {/* Real-time status update banner */}
-        <div className="flex justify-between items-center bg-white/60 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-blue-50/50 text-[10px] font-black uppercase tracking-wider text-slate-500 shadow-sm">
-          <span>Last sync: {lastUpdate.toLocaleTimeString()}</span>
-          <span className="flex items-center gap-1">Connected: {connectedClinics.length} clinics</span>
-        </div>
+          {/* Real-time status update banner */}
+          <div className="flex justify-between items-center bg-white px-4 py-2.5 rounded-2xl border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-400 shadow-sm">
+            <span>Last sync: {lastUpdate.toLocaleTimeString()}</span>
+            <span className="flex items-center gap-1">Connected: {connectedClinics.length} clinics</span>
+          </div>
 
         {/* ─── Split Layout: Main Queue (Left) & Widgets (Right) ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -901,304 +888,50 @@ const LabPortalDashboard = () => {
         </div>
 
       </main>
+      </div>
 
       {/* ─── Modals ─── */}
 
-      {/* New Test Request Modal (Walk-in direct booking) */}
-      {showNewTestModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
-            <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Plus className="text-emerald-600" size={20} />
-                <h3 className="font-extrabold text-slate-900 text-base">New Walk-In Request</h3>
-              </div>
-              <button onClick={() => setShowNewTestModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Select Partner Clinic</label>
-                <select
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-xs font-extrabold text-slate-800"
-                  value={newTestForm.clinicId}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, clinicId: e.target.value })}
-                >
-                  <option value="">Choose partner clinic...</option>
-                  {connectedClinics.map(clinic => (
-                    <option key={clinic._id} value={clinic._id}>{clinic.name} ({clinic.clinicCode})</option>
-                  ))}
-                </select>
-              </div>
+      <NewTestModal
+        showNewTestModal={showNewTestModal}
+        setShowNewTestModal={setShowNewTestModal}
+        newTestForm={newTestForm}
+        setNewTestForm={setNewTestForm}
+        connectedClinics={connectedClinics}
+        handleNewTestRequest={handleNewTestRequest}
+      />
 
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Patient Full Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-xs font-extrabold text-slate-800"
-                  value={newTestForm.patientName}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, patientName: e.target.value })}
-                />
-              </div>
+      <ReportConfigModal
+        showReportConfigModal={showReportConfigModal}
+        setShowReportConfigModal={setShowReportConfigModal}
+        reportConfig={reportConfig}
+        setReportConfig={setReportConfig}
+        handleSaveReportConfig={handleSaveReportConfig}
+      />
 
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Patient Phone Number</label>
-                <input
-                  type="tel"
-                  placeholder="e.g. 9876543210"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-xs font-extrabold text-slate-800"
-                  value={newTestForm.patientPhone}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, patientPhone: e.target.value })}
-                />
-              </div>
+      <SampleCollectionModal
+        showSampleCollectionModal={showSampleCollectionModal}
+        setShowSampleCollectionModal={setShowSampleCollectionModal}
+      />
 
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Test Name / Parameters</label>
-                <input
-                  type="text"
-                  placeholder="e.g. CBC, Lipid Profile, Thyroid"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-xs font-extrabold text-slate-800"
-                  value={newTestForm.testType}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, testType: e.target.value })}
-                />
-              </div>
+      <DigitalReportModal
+        showDigitalReportModal={showDigitalReportModal}
+        setShowDigitalReportModal={setShowDigitalReportModal}
+        activeDigitalPatient={activeDigitalPatient}
+        digitalReportForm={digitalReportForm}
+        setDigitalReportForm={setDigitalReportForm}
+        handlePublishDigitalReport={handlePublishDigitalReport}
+      />
 
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Clinical Notes / Symptoms (Optional)</label>
-                <textarea
-                  rows="2"
-                  placeholder="e.g. Patient requests fasting lipid panel"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-xs font-extrabold text-slate-800 resize-none"
-                  value={newTestForm.notes}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, notes: e.target.value })}
-                />
-              </div>
-
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setShowNewTestModal(false)} className="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-wider">Cancel</button>
-              <button onClick={handleNewTestRequest} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider">Create Request</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Customization Modal */}
-      {showReportConfigModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
-            <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Settings className="text-teal-600" size={20} />
-                <h3 className="font-extrabold text-slate-900 text-base">Branding Customization</h3>
-              </div>
-              <button onClick={() => setShowReportConfigModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4 overflow-y-auto flex-grow">
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Lab Name (Header)</label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500 text-xs font-extrabold text-slate-800"
-                  value={reportConfig.labName}
-                  onChange={(e) => setReportConfig({ ...reportConfig, labName: e.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Header Primary Color</label>
-                  <input
-                    type="color"
-                    className="w-full h-10 p-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500"
-                    value={reportConfig.primaryColor}
-                    onChange={(e) => setReportConfig({ ...reportConfig, primaryColor: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Header Font Size (pt)</label>
-                  <input
-                    type="number"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500 text-xs font-extrabold text-slate-800"
-                    value={reportConfig.headerFontSize}
-                    onChange={(e) => setReportConfig({ ...reportConfig, headerFontSize: parseInt(e.target.value) || 20 })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Authorized Signatory Name</label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500 text-xs font-extrabold text-slate-800"
-                  value={reportConfig.defaultDoctorName}
-                  onChange={(e) => setReportConfig({ ...reportConfig, defaultDoctorName: e.target.value })}
-                  placeholder="e.g. Dr. John Doe, MD (Pathology)"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Default Report Footnotes</label>
-                <textarea
-                  rows="3"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500 text-xs font-extrabold text-slate-800 resize-none"
-                  value={reportConfig.defaultNotes}
-                  onChange={(e) => setReportConfig({ ...reportConfig, defaultNotes: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-              <button onClick={() => setShowReportConfigModal(false)} className="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-wider">Cancel</button>
-              <button onClick={handleSaveReportConfig} className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5"><Save size={14} /> Save Config</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Sample Collection Guide Modal */}
-      {showSampleCollectionModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[85vh]">
-            <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TestTubes className="text-violet-600" size={20} />
-                <h3 className="font-extrabold text-slate-900 text-base">Specimen Collection Guide</h3>
-              </div>
-              <button onClick={() => setShowSampleCollectionModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4 overflow-y-auto flex-grow text-xs text-slate-600 font-semibold leading-relaxed">
-              <div className="bg-violet-50 p-4 rounded-2xl border border-violet-100/50">
-                <h4 className="font-extrabold text-violet-800 mb-1 uppercase tracking-wider">1. Blood Samples (SST / EDTA)</h4>
-                <p>CBC/Hb: EDTA tube (purple), mix gently. Glucose/Lipids: SST (gold) or Plain (red). Require 8-12 hours overnight fasting.</p>
-              </div>
-              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100/50">
-                <h4 className="font-extrabold text-amber-800 mb-1 uppercase tracking-wider">2. Urine Collections (Sterile Cup)</h4>
-                <p>Advise patient to collect first-morning clean-catch midstream sample. Process within 2 hours or refrigerate immediately.</p>
-              </div>
-              <div className="bg-sky-50 p-4 rounded-2xl border border-sky-100/50">
-                <h4 className="font-extrabold text-sky-800 mb-1 uppercase tracking-wider">3. Swabs & Culture Samples</h4>
-                <p>Use sterile dacron swabs. Store in transport media (Amies). Ensure patient has not brushed or used mouthwash within 1 hour for oral tests.</p>
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
-              <button onClick={() => setShowSampleCollectionModal(false)} className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wider">Understood</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Digital Report Builder Modal */}
-      {showDigitalReportModal && activeDigitalPatient && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[92vh]">
-            <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileCheck className="text-indigo-600" size={20} />
-                <div>
-                  <h3 className="font-extrabold text-slate-900 text-base">Digital Report Builder</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Generating report for {activeDigitalPatient.patientName}</p>
-                </div>
-              </div>
-              <button onClick={() => setShowDigitalReportModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4 overflow-y-auto flex-grow">
-              <div className="bg-indigo-50/50 border border-indigo-100/50 p-4 rounded-2xl grid grid-cols-2 gap-3 text-xs font-bold text-slate-600">
-                <p>Patient Name: <span className="text-slate-900 font-black">{activeDigitalPatient.patientName}</span></p>
-                <p>Phone: <span className="text-slate-900 font-black">{activeDigitalPatient.patientPhone}</span></p>
-                <p className="col-span-2">Diagnostic Test Referral: <span className="text-indigo-700 font-black">{activeDigitalPatient.testName || 'Routine Diagnosis'}</span></p>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Test Parameters, Values & Findings</label>
-                <textarea
-                  rows="7"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-xs font-bold text-slate-800"
-                  value={digitalReportForm.findings}
-                  onChange={(e) => setDigitalReportForm({ ...digitalReportForm, findings: e.target.value })}
-                  placeholder={`E.g.\nParameter            Observed    Ref. Range\n---------------------------------------------\nHemoglobin (Hb)      14.2 g/dL   13.0 - 17.0\nRBC Count            4.8 M/uL    4.5 - 5.5\nWBC Count            6,500 /uL   4,000 - 11,000\nPlatelets            2.5 L/uL    1.5 - 4.5`}
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Pathologist Notes & Interpretation</label>
-                <textarea
-                  rows="3"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-xs font-bold text-slate-800 resize-none"
-                  value={digitalReportForm.notes}
-                  onChange={(e) => setDigitalReportForm({ ...digitalReportForm, notes: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Authorized Signatory</label>
-                <input
-                  type="text"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-xs font-bold text-slate-800"
-                  value={digitalReportForm.doctorName}
-                  onChange={(e) => setDigitalReportForm({ ...digitalReportForm, doctorName: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-              <button onClick={() => setShowDigitalReportModal(false)} className="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-wider">Cancel</button>
-              <button onClick={handlePublishDigitalReport} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5"><BadgeCheck size={14} /> Compile & Publish Report</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Multi-Image Upload Panel Modal */}
-      {showUploadModal && uploadModalPatient && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
-            <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Upload className="text-emerald-600" size={20} />
-                <h3 className="font-extrabold text-slate-900 text-base">Upload Scanned Lab Report</h3>
-              </div>
-              <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="bg-slate-50 p-4 rounded-2xl grid grid-cols-2 gap-2 text-xs font-bold text-slate-500 border border-slate-150">
-                <p>Patient Name: <span className="text-slate-800 font-extrabold">{uploadModalPatient.patientName}</span></p>
-                <p>Phone: <span className="text-slate-800 font-extrabold">{uploadModalPatient.patientPhone}</span></p>
-                <p className="col-span-2">Test: <span className="text-emerald-700 font-extrabold">{uploadModalPatient.testName || 'Routine Diagnosis'}</span></p>
-              </div>
-
-              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-emerald-500 transition-all cursor-pointer bg-slate-50/50 hover:bg-white relative">
-                <input
-                  type="file"
-                  multiple
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={handleUploadModalFileSelect}
-                />
-                <Upload className="mx-auto text-slate-400 mb-2" size={28} />
-                <p className="text-xs font-black text-slate-700 uppercase tracking-wide">Drag & Drop files here or click to browse</p>
-                <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">Supports PDF, JPG, PNG up to 5MB</p>
-              </div>
-
-              {selectedUploadFiles.length > 0 && (
-                <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Added Files ({selectedUploadFiles.length})</p>
-                  {selectedUploadFiles.map(file => (
-                    <div key={file.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {file.isPdf ? <FileText className="text-red-500 shrink-0" size={14} /> : <Eye className="text-emerald-500 shrink-0" size={14} />}
-                        <span className="font-bold text-slate-700 truncate max-w-xs">{file.name}</span>
-                        <span className="text-[9px] text-slate-400 font-bold">({file.size})</span>
-                      </div>
-                      <button onClick={() => handleRemoveSelectedFile(file.id)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={14} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setShowUploadModal(false)} className="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-wider">Cancel</button>
-              <button onClick={handleConfirmUpload} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider">Publish Results</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UploadReportModal
+        showUploadModal={showUploadModal}
+        setShowUploadModal={setShowUploadModal}
+        uploadModalPatient={uploadModalPatient}
+        handleUploadModalFileSelect={handleUploadModalFileSelect}
+        selectedUploadFiles={selectedUploadFiles}
+        handleRemoveSelectedFile={handleRemoveSelectedFile}
+        handleConfirmUpload={handleConfirmUpload}
+      />
 
       {/* Floating Action Button (Quick Action Ball) */}
       <div className="fixed bottom-24 lg:bottom-8 right-4 lg:right-8 z-50 flex flex-col items-end gap-3 max-w-[calc(100vw-2rem)]">

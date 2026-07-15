@@ -19,6 +19,14 @@ import { API_URL } from '../../config/runtime';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [labMetrics, setLabMetrics] = useState({
+    dailyCount: 0,
+    dailyCharges: 0,
+    weeklyCount: 0,
+    weeklyCharges: 0,
+    monthlyCount: 0,
+    monthlyCharges: 0
+  });
   const [stats, setStats] = useState({
     todayVisits: 0,
     activeDoctors: 0,
@@ -175,6 +183,44 @@ const AdminDashboard = () => {
       const feeLab = clinicData.feeLab ?? 450;
       const feeEmergency = clinicData.feeEmergency ?? 300;
       const feeMedicine = clinicData.feeMedicine ?? 120;
+
+      // Fetch clinic test requests
+      let labMetricsData = {
+        dailyCount: 0,
+        dailyCharges: 0,
+        weeklyCount: 0,
+        weeklyCharges: 0,
+        monthlyCount: 0,
+        monthlyCharges: 0
+      };
+      try {
+        const testReqsRes = await axios.get(`${API_URL}/api/lab-connect/test-requests/clinic`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (testReqsRes.data.success) {
+          const testReqs = testReqsRes.data.data || [];
+          const completedReqs = testReqs.filter(r => r.status === 'Completed');
+          
+          const now = Date.now();
+          const oneDay = 24 * 60 * 60 * 1000;
+          
+          const daily = completedReqs.filter(r => (now - new Date(r.completedAt || r.updatedAt).getTime()) <= oneDay);
+          const weekly = completedReqs.filter(r => (now - new Date(r.completedAt || r.updatedAt).getTime()) <= 7 * oneDay);
+          const monthly = completedReqs.filter(r => (now - new Date(r.completedAt || r.updatedAt).getTime()) <= 30 * oneDay);
+          
+          labMetricsData = {
+            dailyCount: daily.length,
+            dailyCharges: daily.length * feeLab,
+            weeklyCount: weekly.length,
+            weeklyCharges: weekly.length * feeLab,
+            monthlyCount: monthly.length,
+            monthlyCharges: monthly.length * feeLab
+          };
+        }
+      } catch (err) {
+        console.error("Failed to fetch lab requests for admin metrics:", err);
+      }
+      setLabMetrics(labMetricsData);
       
       setConfig({
         avgWaitFactor,
@@ -489,6 +535,36 @@ const AdminDashboard = () => {
                     color="rose"
                     subtitle="Staff on duty"
                   />
+                </div>
+              </div>
+
+              {/* Connected Lab Diagnostics Report Metrics */}
+              <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Connected Lab Report Analytics</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Diagnostic reports completed & charges</p>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-wider border border-emerald-100">
+                    Live Diagnostics
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Daily Reports</p>
+                    <h4 className="text-2xl font-extrabold text-slate-800 mt-1">{labMetrics.dailyCount}</h4>
+                    <p className="text-xs text-teal-600 font-extrabold mt-1">₹{labMetrics.dailyCharges.toLocaleString('en-IN')}</p>
+                  </div>
+                  <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Weekly Reports</p>
+                    <h4 className="text-2xl font-extrabold text-slate-800 mt-1">{labMetrics.weeklyCount}</h4>
+                    <p className="text-xs text-teal-600 font-extrabold mt-1">₹{labMetrics.weeklyCharges.toLocaleString('en-IN')}</p>
+                  </div>
+                  <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Monthly Reports</p>
+                    <h4 className="text-2xl font-extrabold text-slate-800 mt-1">{labMetrics.monthlyCount}</h4>
+                    <p className="text-xs text-teal-600 font-extrabold mt-1">₹{labMetrics.monthlyCharges.toLocaleString('en-IN')}</p>
+                  </div>
                 </div>
               </div>
 
@@ -1211,14 +1287,14 @@ const MetricCard = ({ title, value, change, icon, color, subtitle, onClick }) =>
   return (
     <div 
       onClick={onClick}
-      className={`bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full h-[6.5rem] flex flex-col justify-between ${clickableClass}`}
+      className={`bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300 w-full min-h-[8rem] flex flex-col justify-between ${clickableClass}`}
     >
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 truncate">{title}</span>
+          <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">{title}</span>
           <span className="text-lg font-bold text-slate-900 leading-none">{value}</span>
           {subtitle && (
-            <span className="text-[10px] font-bold text-slate-400 mt-1 truncate">{subtitle}</span>
+            <span className="text-[10px] font-bold text-slate-400 mt-1">{subtitle}</span>
           )}
         </div>
         <div className="shrink-0 scale-75">
