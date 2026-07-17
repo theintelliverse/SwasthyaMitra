@@ -631,9 +631,55 @@ const DoctorDashboard = () => {
 
     if (!testName) return;
 
+    let selectedLabId = null;
+    try {
+      const labsRes = await axios.get(`${API_URL}/api/lab-connect/clinic`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (labsRes.data.success) {
+        const activeConnections = (labsRes.data.data || []).filter(c => c.status === 'accepted');
+        
+        if (activeConnections.length > 0) {
+          const inputOptions = {
+            'in-house': 'In-House Clinic Lab (Default)'
+          };
+          activeConnections.forEach(c => {
+            const lab = c.labId || {};
+            inputOptions[lab._id] = `${lab.labName} (${lab.labCode}) - External`;
+          });
+          
+          const { value: chosenLabId } = await Swal.fire({
+            title: 'Choose Destination Lab',
+            input: 'select',
+            inputOptions,
+            defaultValue: 'in-house',
+            showCancelButton: true,
+            confirmButtonColor: '#0d9488',
+            cancelButtonColor: '#ef4444',
+            inputValidator: (value) => {
+              if (!value) {
+                return 'You must select a laboratory!';
+              }
+            }
+          });
+          
+          if (!chosenLabId) return;
+          if (chosenLabId !== 'in-house') {
+            selectedLabId = chosenLabId;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error checking lab connections:", err);
+    }
+
     setIsSyncing(true);
     try {
-      const res = await axios.patch(`${API_URL}/api/queue/refer/lab/${activePatient._id}`, { testName }, {
+      const res = await axios.patch(`${API_URL}/api/queue/refer/lab/${activePatient._id}`, { 
+        testName,
+        labId: selectedLabId 
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

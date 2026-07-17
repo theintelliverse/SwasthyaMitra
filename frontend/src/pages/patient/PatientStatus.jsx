@@ -291,6 +291,56 @@ const PatientStatus = () => {
                     </div>
                 )}
 
+                {/* ── LABORATORY QUEUE STATUS CARD ── */}
+                {status.currentStage === 'Lab-Pending' && (
+                    <div className="relative rounded-[2.5rem] bg-gradient-to-br from-indigo-700 via-indigo-650 to-teal-600 text-white shadow-2xl shadow-indigo-500/20 overflow-hidden p-8 border border-white/10 animate-in slide-in-from-bottom duration-700">
+                        <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
+                            <Activity size={260} className="absolute -bottom-5 -right-5" />
+                        </div>
+                        
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2 text-[12px] font-black uppercase tracking-widest text-teal-200">
+                                    <Activity size={14} className="animate-pulse" />
+                                    Laboratory Queue Tracker
+                                </div>
+                                <div className="px-2.5 py-1 bg-white/20 text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping" />
+                                    Lab Processing
+                                </div>
+                            </div>
+                            
+                            <h2 className="text-xl font-black mb-2 truncate">
+                                {status.labDetails ? status.labDetails.labName : "In-House Clinic Lab"}
+                            </h2>
+                            <p className="text-white/80 text-[14px] leading-relaxed mb-4">
+                                Referred Test: <span className="font-black text-white">{status.requiredTest || "Diagnostic Check"}</span>
+                            </p>
+                            
+                            {status.labDetails && (
+                                <div className="bg-white/10 rounded-2xl p-4 mb-4 text-[13px] space-y-1.5 border border-white/5">
+                                    <p><strong>📍 Address:</strong> {status.labDetails.address}</p>
+                                    {status.labDetails.phone && <p><strong>📞 Phone:</strong> {status.labDetails.phone}</p>}
+                                    <p><strong>⏰ Operating Hours:</strong> {status.labDetails.openingTime || '08:00'} to {status.labDetails.closingTime || '20:00'}</p>
+                                </div>
+                            )}
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/15 rounded-2xl p-4 text-center">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/70 block mb-1">Queue Position</span>
+                                    <p className="text-3xl font-black">{status.labPeopleAhead}</p>
+                                    <span className="text-[9px] text-white/50 font-bold uppercase mt-1 block">People Ahead</span>
+                                </div>
+                                <div className="bg-white/15 rounded-2xl p-4 text-center">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/70 block mb-1">Estimated Wait</span>
+                                    <p className="text-3xl font-black">{Math.max(5, status.labPeopleAhead * 10)}</p>
+                                    <span className="text-[9px] text-white/50 font-bold uppercase mt-1 block">Minutes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── MAIN TOKEN CARD ── */}
                 <div className={`relative rounded-[2.5rem] overflow-hidden transition-all duration-700 ${isInConsultation
                     ? 'bg-gradient-to-br from-teal-500 to-cyan-600 shadow-2xl shadow-teal-400/40'

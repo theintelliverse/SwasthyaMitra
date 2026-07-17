@@ -40,10 +40,11 @@ const ClinicSettings = () => {
   
   // Lab Connection States
   const [labSearchQuery, setLabSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [myConnections, setMyConnections] = useState([]);
   const [loadingConnections, setLoadingConnections] = useState(false);
+  const [allLabs, setAllLabs] = useState([]);
+  const [loadingAllLabs, setLoadingAllLabs] = useState(false);
 
   const weekdayOptions = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const token = localStorage.getItem('token');
@@ -95,9 +96,26 @@ const ClinicSettings = () => {
     }
   };
 
+  const fetchAllLabs = async () => {
+    setLoadingAllLabs(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/lab-connect/clinic/labs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setAllLabs(res.data.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching all labs:", err);
+    } finally {
+      setLoadingAllLabs(false);
+    }
+  };
+
   useEffect(() => {
     if (activeSettingsTab === 'labs') {
       fetchClinicConnections();
+      fetchAllLabs();
     }
   }, [activeSettingsTab]);
 
@@ -125,27 +143,6 @@ const ClinicSettings = () => {
     }
   };
 
-  const handleSearchLabs = async (e) => {
-    e.preventDefault();
-    if (!labSearchQuery.trim() || labSearchQuery.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
-    try {
-      const res = await axios.get(`${API_URL}/api/lab-connect/search?q=${encodeURIComponent(labSearchQuery)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.data.success) {
-        setSearchResults(res.data.data || []);
-      }
-    } catch (err) {
-      console.error("Error searching labs:", err);
-    } finally {
-      setSearching(false);
-    }
-  };
-
   const handleLinkLab = async (labId) => {
     try {
       const res = await axios.post(`${API_URL}/api/lab-connect/request`, { labId }, {
@@ -159,11 +156,30 @@ const ClinicSettings = () => {
           confirmButtonColor: '#0F766E'
         });
         fetchClinicConnections();
-        setSearchResults([]);
-        setLabSearchQuery('');
+        fetchAllLabs();
       }
     } catch (err) {
       Swal.fire('Error', err.response?.data?.message || 'Failed to send request', 'error');
+    }
+  };
+
+  const handleRespondToRequest = async (connId, action) => {
+    try {
+      const res = await axios.patch(`${API_URL}/api/lab-connect/clinic/${connId}/respond`, { action }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: `Request ${action === 'accept' ? 'Accepted' : 'Rejected'}`,
+          text: `You have successfully ${action === 'accept' ? 'accepted' : 'rejected'} the lab connection request.`,
+          confirmButtonColor: '#0F766E'
+        });
+        fetchClinicConnections();
+        fetchAllLabs();
+      }
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Failed to respond to request', 'error');
     }
   };
 
@@ -186,6 +202,7 @@ const ClinicSettings = () => {
       if (res.data.success) {
         Swal.fire('Disconnected', 'Lab connection has been removed.', 'success');
         fetchClinicConnections();
+        fetchAllLabs();
       }
     } catch (err) {
       Swal.fire('Error', err.response?.data?.message || 'Failed to disconnect', 'error');
@@ -437,7 +454,7 @@ const ClinicSettings = () => {
                   <h3 className="font-heading text-lg mb-4 flex items-center gap-2">
                     <Search size={18} className="text-marigold" /> Link Lab Partner
                   </h3>
-                  <form onSubmit={handleSearchLabs} className="space-y-4">
+                  <div className="space-y-4">
                     <div className="relative">
                       <input
                         type="text"
@@ -447,38 +464,51 @@ const ClinicSettings = () => {
                         onChange={(e) => setLabSearchQuery(e.target.value)}
                       />
                     </div>
-                    <button
-                      type="submit"
-                      disabled={searching}
-                      className="w-full py-3 bg-marigold hover:bg-teak text-white font-bold rounded-2xl text-[13px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {searching ? 'Searching...' : 'Search Labs'}
-                    </button>
-                  </form>
+                  </div>
 
-                  {/* Search Results */}
+                  {/* Available Labs */}
                   <div className="mt-6 space-y-3">
-                    {searchResults.length > 0 && (
-                      <h4 className="text-[11px] font-black uppercase tracking-wider text-khaki">Found Labs ({searchResults.length})</h4>
-                    )}
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                      {searchResults.map((lab) => (
-                        <div key={lab._id} className="p-3 bg-parchment border border-sandstone rounded-2xl flex flex-col gap-2">
-                          <div>
-                            <p className="font-bold text-sm text-teak leading-tight">{lab.labName}</p>
-                            <p className="text-[11px] font-black text-khaki uppercase tracking-widest mt-0.5">{lab.labCode}</p>
-                            <p className="text-[12px] text-teak/70 mt-1 line-clamp-1">{lab.address}</p>
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-khaki">Available Labs</h4>
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                      {loadingAllLabs ? (
+                        <p className="text-[13px] text-khaki text-center py-4">Loading laboratories...</p>
+                      ) : allLabs.filter(lab => 
+                          !labSearchQuery.trim() ||
+                          lab.labName.toLowerCase().includes(labSearchQuery.toLowerCase()) ||
+                          lab.labCode.toLowerCase().includes(labSearchQuery.toLowerCase())
+                        ).length === 0 ? (
+                        <p className="text-[13px] text-khaki text-center italic py-4">No labs found.</p>
+                      ) : (
+                        allLabs.filter(lab => 
+                          !labSearchQuery.trim() ||
+                          lab.labName.toLowerCase().includes(labSearchQuery.toLowerCase()) ||
+                          lab.labCode.toLowerCase().includes(labSearchQuery.toLowerCase())
+                        ).map((lab) => (
+                          <div key={lab._id} className="p-3 bg-parchment border border-sandstone rounded-2xl flex flex-col gap-2">
+                            <div>
+                              <p className="font-bold text-sm text-teak leading-tight">{lab.labName}</p>
+                              <p className="text-[11px] font-black text-khaki uppercase tracking-widest mt-0.5">{lab.labCode}</p>
+                              <p className="text-[12px] text-teak/70 mt-1 line-clamp-1">{lab.address}</p>
+                            </div>
+                            
+                            {lab.connectionStatus === 'accepted' ? (
+                              <div className="py-1.5 bg-green-50 text-green-700 text-[12px] font-black uppercase tracking-wider rounded-xl text-center border border-green-200">
+                                Connected
+                              </div>
+                            ) : lab.connectionStatus === 'pending' ? (
+                              <div className="py-1.5 bg-yellow-50 text-yellow-700 text-[12px] font-black uppercase tracking-wider rounded-xl text-center border border-yellow-200 animate-pulse">
+                                {lab.initiatedBy === 'lab' ? 'Incoming Request' : 'Request Pending'}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleLinkLab(lab._id)}
+                                className="py-1.5 bg-teak hover:bg-marigold text-white text-[12px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
+                              >
+                                <Link2 size={12} /> Link Lab
+                              </button>
+                            )}
                           </div>
-                          <button
-                            onClick={() => handleLinkLab(lab._id)}
-                            className="py-1.5 bg-teak hover:bg-marigold text-white text-[12px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <Link2 size={12} /> Send Request
-                          </button>
-                        </div>
-                      ))}
-                      {searchResults.length === 0 && labSearchQuery.trim().length >= 2 && !searching && (
-                        <p className="text-[13px] text-khaki text-center italic py-4">No labs found matching your query.</p>
+                        ))
                       )}
                     </div>
                   </div>
@@ -491,7 +521,7 @@ const ClinicSettings = () => {
                       <FlaskConical size={18} className="text-teak" /> Linked Diagnostics
                     </h3>
                     <button
-                      onClick={fetchClinicConnections}
+                      onClick={() => { fetchClinicConnections(); fetchAllLabs(); }}
                       className="p-2 text-khaki hover:text-teak rounded-xl hover:bg-parchment transition-all"
                       title="Reload connections"
                     >
@@ -532,18 +562,38 @@ const ClinicSettings = () => {
                               {lab.phone && <p className="text-[12px] text-teak/70 mt-1">📞 {lab.phone}</p>}
                             </div>
 
-                            <div className="mt-4 pt-3 border-t border-sandstone/40 flex items-center justify-between">
-                              <span className="text-[11px] text-khaki">
-                                {conn.status === 'accepted' ? 'Active Partner' : 'Requested'}
-                              </span>
-                              <button
-                                onClick={() => handleDisconnectLab(conn._id)}
-                                className="p-1.5 bg-white hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg border border-sandstone/50 hover:border-red-200 transition-all"
-                                title="Disconnect Partnership"
-                              >
-                                <X size={13} />
-                              </button>
-                            </div>
+                            {conn.status === 'pending' && conn.initiatedBy === 'lab' ? (
+                              <div className="mt-4 pt-3 border-t border-sandstone/40 flex flex-col gap-2">
+                                <p className="text-[10px] text-marigold font-black uppercase tracking-wider">Incoming Connection Request</p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleRespondToRequest(conn._id, 'accept')}
+                                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-black uppercase tracking-wider rounded-xl transition-all"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() => handleRespondToRequest(conn._id, 'reject')}
+                                    className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[12px] font-black uppercase tracking-wider rounded-xl transition-all"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mt-4 pt-3 border-t border-sandstone/40 flex items-center justify-between">
+                                <span className="text-[11px] text-khaki">
+                                  {conn.status === 'accepted' ? 'Active Partner' : 'Requested'}
+                                </span>
+                                <button
+                                  onClick={() => handleDisconnectLab(conn._id)}
+                                  className="p-1.5 bg-white hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg border border-sandstone/50 hover:border-red-200 transition-all"
+                                  title="Disconnect Partnership"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

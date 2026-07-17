@@ -17,6 +17,34 @@ const Samples = () => {
     fetchSamples();
   }, []);
 
+  const handleShowDetails = (sample) => {
+    Swal.fire({
+      title: `<span style="color: #0f766e; font-weight: 800;">Sample Details</span>`,
+      html: `
+        <div style="text-align: left; font-family: sans-serif; font-size: 14px; color: #374151; line-height: 1.6;">
+          <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
+            <p><strong>Patient Name:</strong> ${sample.patientName}</p>
+            <p><strong>Phone:</strong> ${sample.patientPhone}</p>
+          </div>
+          <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
+            <p><strong>Token / ID:</strong> TRF-${sample.tokenNumber || 'N/A'}</p>
+            <p><strong>Required Test:</strong> ${sample.requiredTest || 'General Diagnostic'}</p>
+            <p><strong>Current Stage:</strong> <span style="font-weight: bold; color: ${sample.currentStage === 'Lab-Completed' ? '#10b981' : '#f59e0b'}">${sample.currentStage}</span></p>
+          </div>
+          <div>
+            <p><strong>Collected On:</strong> ${new Date(sample.createdAt).toLocaleString()}</p>
+            <p><strong>Priority:</strong> ${sample.isEmergency ? '<span style="color: #ef4444; font-weight: bold;">Emergency</span>' : 'Standard'}</p>
+            ${sample.reason ? `<p><strong>Reason/Notes:</strong> ${sample.reason}</p>` : ''}
+            ${sample.diagnosis ? `<p><strong>Diagnosis:</strong> ${sample.diagnosis}</p>` : ''}
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Close',
+      confirmButtonColor: '#0f766e',
+      background: '#ffffff',
+    });
+  };
+
   const fetchSamples = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/lab/dashboard/stats?filter=all`, {
@@ -91,8 +119,8 @@ const Samples = () => {
                   
                   <div className="flex justify-between items-start mb-3">
                     <div className="min-w-0 pr-2">
-                      <h3 className="font-black text-[14px] text-slate-900 truncate">{sample.patientName}</h3>
-                      <p className="text-[14px] font-bold text-slate-400 mt-0.5">{sample.patientPhone}</p>
+                       <h3 className="font-black text-[14px] text-slate-900 truncate">{sample.patientName}</h3>
+                       <p className="text-[14px] font-bold text-slate-400 mt-0.5">{sample.patientPhone}</p>
                     </div>
                     <div className={`px-2 py-0.5 rounded text-[14px] font-black uppercase tracking-widest shrink-0 ${
                       sample.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-teal-50 text-teal-600 border border-teal-100'
@@ -114,7 +142,12 @@ const Samples = () => {
 
                   <div className="pt-3 border-t border-slate-50 flex justify-between items-center">
                     <span className="text-[14px] font-black uppercase tracking-widest text-slate-400">ID: #{sample.tokenNumber || sample._id.substring(18)}</span>
-                    <button className="text-teal-600 text-[14px] font-black hover:text-teal-700 transition-colors">Details</button>
+                    <button 
+                      onClick={() => handleShowDetails(sample)}
+                      className="text-teal-600 text-[14px] font-black hover:text-teal-700 transition-colors"
+                    >
+                      Details
+                    </button>
                   </div>
                 </div>
               ))

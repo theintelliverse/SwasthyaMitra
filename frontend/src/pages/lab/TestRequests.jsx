@@ -17,6 +17,34 @@ const TestRequests = () => {
     fetchRequests();
   }, []);
 
+  const handleShowDetails = (req) => {
+    Swal.fire({
+      title: `<span style="color: #0f766e; font-weight: 800;">Request Details</span>`,
+      html: `
+        <div style="text-align: left; font-family: sans-serif; font-size: 14px; color: #374151; line-height: 1.6;">
+          <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
+            <p><strong>Patient Name:</strong> ${req.patientName}</p>
+            <p><strong>Phone:</strong> ${req.patientPhone}</p>
+          </div>
+          <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
+            <p><strong>Token / ID:</strong> TRF-${req.tokenNumber || 'N/A'}</p>
+            <p><strong>Required Test:</strong> ${req.requiredTest || 'General Diagnostic'}</p>
+            <p><strong>Current Stage:</strong> <span style="font-weight: bold; color: ${req.currentStage === 'Lab-Completed' ? '#10b981' : '#f59e0b'}">${req.currentStage}</span></p>
+          </div>
+          <div>
+            <p><strong>Requested On:</strong> ${new Date(req.createdAt).toLocaleString()}</p>
+            <p><strong>Priority:</strong> ${req.isEmergency ? '<span style="color: #ef4444; font-weight: bold;">Emergency</span>' : 'Standard'}</p>
+            ${req.reason ? `<p><strong>Reason/Notes:</strong> ${req.reason}</p>` : ''}
+            ${req.diagnosis ? `<p><strong>Diagnosis:</strong> ${req.diagnosis}</p>` : ''}
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Close',
+      confirmButtonColor: '#0f766e',
+      background: '#ffffff',
+    });
+  };
+
   const fetchRequests = async () => {
     try {
       // Use ?filter=all to get historical data for this page
@@ -103,7 +131,7 @@ const TestRequests = () => {
                           </td>
                           <td className="px-6 py-4">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[14px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                              {req.requiredTest || 'General Diagnostic'}
+                               {req.requiredTest || 'General Diagnostic'}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">
@@ -120,7 +148,10 @@ const TestRequests = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <button className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
+                            <button 
+                              onClick={() => handleShowDetails(req)}
+                              className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                            >
                               <Eye size={18} />
                             </button>
                           </td>
@@ -162,7 +193,10 @@ const TestRequests = () => {
                       </div>
 
                       <div className="flex justify-end pt-2 border-t border-gray-50">
-                        <button className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-[14px] font-bold transition-all active:scale-95">
+                        <button 
+                          onClick={() => handleShowDetails(req)}
+                          className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-[14px] font-bold transition-all active:scale-95"
+                        >
                           <Eye size={12} />
                           Details
                         </button>

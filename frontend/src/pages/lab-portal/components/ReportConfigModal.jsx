@@ -63,6 +63,15 @@ const ReportConfigModal = ({
             />
           </div>
           <div>
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Default Charge Per Lab Test (₹)</label>
+            <input
+              type="number"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-teal-500 text-xs font-extrabold text-slate-800"
+              value={reportConfig.testFee}
+              onChange={(e) => setReportConfig({ ...reportConfig, testFee: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+          <div>
             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Default Report Footnotes</label>
             <textarea
               rows="3"

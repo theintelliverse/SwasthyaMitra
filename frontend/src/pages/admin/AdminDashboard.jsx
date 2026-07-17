@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -19,6 +19,7 @@ import { API_URL } from '../../config/runtime';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [revenueTimeframe, setRevenueTimeframe] = useState('today'); // 'today' | 'week' | 'month' | 'year'
   const [labMetrics, setLabMetrics] = useState({
     dailyCount: 0,
     dailyCharges: 0,
@@ -73,6 +74,85 @@ const AdminDashboard = () => {
     const saved = localStorage.getItem('SM_inventory');
     return saved ? JSON.parse(saved) : defaultInventory;
   });
+
+  // Dynamically calculate revenue stats based on timeframe, queueList, and allPatientsList
+  const revenueStats = useMemo(() => {
+    const { feeConsult, feeLab, feeEmergency, feeMedicine } = config;
+    const nowMs = Date.now();
+    let currentStartMs = nowMs - 24 * 60 * 60 * 1000;
+    let prevStartMs = nowMs - 48 * 60 * 60 * 1000;
+
+    if (revenueTimeframe === 'week') {
+      currentStartMs = nowMs - 7 * 24 * 60 * 60 * 1000;
+      prevStartMs = nowMs - 14 * 24 * 60 * 60 * 1000;
+    } else if (revenueTimeframe === 'month') {
+      currentStartMs = nowMs - 30 * 24 * 60 * 60 * 1000;
+      prevStartMs = nowMs - 60 * 24 * 60 * 60 * 1000;
+    } else if (revenueTimeframe === 'year') {
+      currentStartMs = nowMs - 365 * 24 * 60 * 60 * 1000;
+      prevStartMs = nowMs - 730 * 24 * 60 * 60 * 1000;
+    }
+
+    const historyData = allPatientsList.filter(p => !queueList.some(q => q._id === p._id));
+
+    const currentPatients = [
+      ...queueList,
+      ...historyData.filter(r => {
+        const t = new Date(r.visitDate || r.createdAt).getTime();
+        return t >= currentStartMs;
+      })
+    ];
+
+    const prevPatients = historyData.filter(r => {
+      const t = new Date(r.visitDate || r.createdAt).getTime();
+      return t >= prevStartMs && t < currentStartMs;
+    });
+
+    let consultFees = 0;
+    let labFees = 0;
+    let medicineFees = 0;
+    let emergencyFees = 0;
+
+    currentPatients.forEach(p => {
+      consultFees += feeConsult;
+      if (p.requiredTest) labFees += feeLab;
+      if (p.isEmergency) emergencyFees += feeEmergency;
+      if (p.medicines && p.medicines.length > 0) {
+        medicineFees += p.medicines.length * feeMedicine;
+      }
+    });
+
+    const revenue = consultFees + labFees + medicineFees + emergencyFees;
+
+    let prevRevenue = 0;
+    prevPatients.forEach(p => {
+      prevRevenue += feeConsult;
+      if (p.requiredTest) prevRevenue += feeLab;
+      if (p.isEmergency) prevRevenue += feeEmergency;
+      if (p.medicines && p.medicines.length > 0) {
+        prevRevenue += p.medicines.length * feeMedicine;
+      }
+    });
+
+    let revenueChange = "+0%";
+    if (prevRevenue > 0) {
+      const diff = ((revenue - prevRevenue) / prevRevenue) * 100;
+      revenueChange = `${diff >= 0 ? '+' : ''}${diff.toFixed(0)}%`;
+    } else if (revenue > 0) {
+      revenueChange = "+100%";
+    } else {
+      revenueChange = "0%";
+    }
+
+    return {
+      revenue,
+      revenueChange,
+      consultFees,
+      labFees,
+      medicineFees,
+      emergencyFees
+    };
+  }, [revenueTimeframe, queueList, allPatientsList, config]);
 
   const handleConfigChange = (key, value) => {
     setConfig(prev => ({
@@ -234,8 +314,8 @@ const AdminDashboard = () => {
         setInventory(clinicData.inventory);
       }
 
-      // Calculate today's revenue & visit breakdowns dynamically
-      const todayStart = new Date().setHours(0, 0, 0, 0);
+      // Calculate today's revenue & visit breakdowns dynamically (sliding 24-hour window to cover late-night operations)
+      const todayStart = new Date().getTime() - 24 * 60 * 60 * 1000;
       const todayPatients = [
         ...queueData,
         ...historyData.filter(r => new Date(r.visitDate || r.createdAt).getTime() >= todayStart)
@@ -417,7 +497,7 @@ const AdminDashboard = () => {
     <div className="flex min-h-screen bg-[#F8FAFC] font-body text-slate-900 flex-col md:flex-row">
       <Sidebar 
         role="admin" 
-        revenueStats={stats} 
+        revenueStats={{ ...stats, ...revenueStats }} 
         onRevenueClick={() => setIsRevenueModalOpen(true)} 
       />
 
@@ -445,30 +525,39 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-4 flex-wrap md:flex-nowrap w-full md:w-auto">
               {/* Clinical Revenue Nav Widget */}
               <div 
-                onClick={() => setIsRevenueModalOpen(true)}
-                className="flex-grow md:flex-grow-0 flex items-center gap-3 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100/70 hover:to-teal-100/70 border-2 border-emerald-100/80 rounded-2xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group shrink-0"
+                className="flex-grow md:flex-grow-0 flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100/70 hover:to-teal-100/70 border-2 border-emerald-100/80 rounded-2xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group shrink-0"
               >
-                <div className="p-2 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                <div 
+                  onClick={() => setIsRevenueModalOpen(true)}
+                  className="p-2 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform"
+                >
                   <TrendingUp size={16} />
                 </div>
-                <div className="text-left">
+                <div className="text-left" onClick={() => setIsRevenueModalOpen(true)}>
                   <div className="flex items-center gap-1.5 leading-none">
                     <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Clinical Revenue</span>
                     <span className="px-1.5 py-0.5 bg-emerald-500/10 text-[10px] font-black text-emerald-600 rounded">
-                      {stats.revenueChange}
+                      {revenueStats.revenueChange}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
-                    <span className="text-[14px] font-black text-slate-800 leading-none">₹{stats.revenue.toLocaleString('en-IN')}</span>
+                    <span className="text-[14px] font-black text-slate-800 leading-none">₹{revenueStats.revenue.toLocaleString('en-IN')}</span>
                     <span className="text-[10px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
-                      Consults: ₹{stats.consultFees} · Labs: ₹{stats.labFees}
+                      Consults: ₹{revenueStats.consultFees} · Labs: ₹{revenueStats.labFees}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-white border border-slate-100 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none shrink-0 group-hover:border-emerald-200">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  Live Sync
-                </div>
+                <select
+                  value={revenueTimeframe}
+                  onChange={(e) => setRevenueTimeframe(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white border border-slate-100 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-wider py-1 px-2 outline-none cursor-pointer focus:border-emerald-300"
+                >
+                  <option value="today">Today</option>
+                  <option value="week">Week</option>
+                  <option value="month">Month</option>
+                  <option value="year">Year</option>
+                </select>
               </div>
 
               <button 
@@ -516,15 +605,27 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <MetricCard 
-                    title="Clinical Revenue"
-                    value={`₹${stats.revenue.toLocaleString('en-IN')}`}
-                    change={stats.revenueChange}
-                    icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
-                    color="emerald"
-                    subtitle={`Consults: ₹${stats.consultFees} · Labs: ₹${stats.labFees}`}
-                    onClick={() => setIsRevenueModalOpen(true)}
-                  />
+                  <div className="relative">
+                    <MetricCard 
+                      title="Clinical Revenue"
+                      value={`₹${revenueStats.revenue.toLocaleString('en-IN')}`}
+                      change={revenueStats.revenueChange}
+                      icon={<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><TrendingUp size={24} /></div>}
+                      color="emerald"
+                      subtitle={`Consults: ₹${revenueStats.consultFees} · Labs: ₹${revenueStats.labFees}`}
+                      onClick={() => setIsRevenueModalOpen(true)}
+                    />
+                    <select
+                      value={revenueTimeframe}
+                      onChange={(e) => setRevenueTimeframe(e.target.value)}
+                      className="absolute top-2.5 right-12 bg-slate-50 border border-slate-200/60 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-wider py-0.5 px-1 outline-none cursor-pointer focus:border-emerald-300 z-10"
+                    >
+                      <option value="today">Today</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <MetricCard 
@@ -709,7 +810,7 @@ const AdminDashboard = () => {
         syncInventory={syncInventory}
         restockMed={restockMed}
         resetInventory={resetInventory}
-        stats={stats}
+        stats={{ ...stats, ...revenueStats }}
       />
     </div>
   );

@@ -19,7 +19,7 @@ import Sidebar from '../../components/Sidebar';
 import { API_URL, SOCKET_URL } from '../../config/runtime';
 
 import NewTestModal from './components/NewTestModal';
-import ReportConfigModal from './components/ReportConfigModal';
+import LabSettingsModal from './components/LabSettingsModal';
 import SampleCollectionModal from './components/SampleCollectionModal';
 import DigitalReportModal from './components/DigitalReportModal';
 import UploadReportModal from './components/UploadReportModal';
@@ -102,8 +102,11 @@ const LabPortalDashboard = () => {
     bodyFontSize: parseInt(localStorage.getItem('labPortal_bodyFontSize') || '11'),
     reportType: 'Diagnostic',
     defaultNotes: localStorage.getItem('labPortal_defaultNotes') || 'Results are clinically validated. Correlate with symptoms.',
-    defaultDoctorName: localStorage.getItem('labPortal_defaultDoctorName') || 'Pathologist'
+    defaultDoctorName: localStorage.getItem('labPortal_defaultDoctorName') || 'Pathologist',
+    testFee: parseInt(localStorage.getItem('labPortal_testFee') || '450')
   });
+
+  const [timeframe, setTimeframe] = useState(localStorage.getItem('labPortal_timeframe') || 'all');
 
   const [digitalReportForm, setDigitalReportForm] = useState({
     title: 'Diagnostic Lab Report',
@@ -137,6 +140,27 @@ const LabPortalDashboard = () => {
     }
   }, []);
 
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await labApi().get('/api/lab-connect/settings/lab');
+      if (res.data.success && res.data.data) {
+        const dbConfig = res.data.data;
+        setReportConfig({
+          labName: dbConfig.labName || localStorage.getItem('labPortal_labName') || labName || 'SwasthyaMitra Lab',
+          primaryColor: dbConfig.primaryColor || '#1B6CA8',
+          headerFontSize: dbConfig.headerFontSize || 22,
+          bodyFontSize: dbConfig.bodyFontSize || 11,
+          reportType: 'Diagnostic',
+          defaultNotes: dbConfig.defaultNotes || 'Results are clinically validated. Correlate with symptoms.',
+          defaultDoctorName: dbConfig.defaultDoctorName || 'Pathologist',
+          testFee: dbConfig.testFee || 450
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch lab settings:', err);
+    }
+  }, [labName]);
+
   useEffect(() => {
     const token = localStorage.getItem('labToken');
     const labId = localStorage.getItem('labId');
@@ -144,6 +168,7 @@ const LabPortalDashboard = () => {
     
     fetchRequests();
     fetchConnectedClinics();
+    fetchSettings();
 
     if (labId) {
       console.log("🔌 Initializing socket for Independent Lab:", labId);
@@ -411,15 +436,34 @@ const LabPortalDashboard = () => {
     }
   };
 
-  const handleSaveReportConfig = () => {
-    localStorage.setItem('labPortal_defaultNotes', reportConfig.defaultNotes || '');
-    localStorage.setItem('labPortal_defaultDoctorName', reportConfig.defaultDoctorName || '');
-    localStorage.setItem('labPortal_labName', reportConfig.labName || '');
-    localStorage.setItem('labPortal_primaryColor', reportConfig.primaryColor || '#1B6CA8');
-    localStorage.setItem('labPortal_headerFontSize', reportConfig.headerFontSize?.toString() || '22');
-    localStorage.setItem('labPortal_bodyFontSize', reportConfig.bodyFontSize?.toString() || '11');
-    setShowReportConfigModal(false);
-    Swal.fire({ icon: 'success', title: 'Branding Saved', text: 'PDF Report generation settings updated.', timer: 1500, showConfirmButton: false });
+  const handleSaveReportConfig = async () => {
+    try {
+      const payload = {
+        primaryColor: reportConfig.primaryColor,
+        headerFontSize: reportConfig.headerFontSize,
+        bodyFontSize: reportConfig.bodyFontSize,
+        defaultNotes: reportConfig.defaultNotes,
+        defaultDoctorName: reportConfig.defaultDoctorName,
+        testFee: reportConfig.testFee
+      };
+      
+      const res = await labApi().patch('/api/lab-connect/settings/lab', payload);
+      
+      if (res.data.success) {
+        localStorage.setItem('labPortal_defaultNotes', reportConfig.defaultNotes || '');
+        localStorage.setItem('labPortal_defaultDoctorName', reportConfig.defaultDoctorName || '');
+        localStorage.setItem('labPortal_labName', reportConfig.labName || '');
+        localStorage.setItem('labPortal_primaryColor', reportConfig.primaryColor || '#1B6CA8');
+        localStorage.setItem('labPortal_headerFontSize', reportConfig.headerFontSize?.toString() || '22');
+        localStorage.setItem('labPortal_bodyFontSize', reportConfig.bodyFontSize?.toString() || '11');
+        localStorage.setItem('labPortal_testFee', reportConfig.testFee?.toString() || '450');
+        setShowReportConfigModal(false);
+        Swal.fire({ icon: 'success', title: 'Branding Saved', text: 'Settings updated in database successfully.', timer: 1500, showConfirmButton: false });
+      }
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      Swal.fire('Error', err.response?.data?.message || 'Failed to save settings to database', 'error');
+    }
   };
 
   const handleDailySummary = () => {
@@ -498,6 +542,44 @@ const LabPortalDashboard = () => {
     return `${accuracy}%`;
   };
 
+  const getRevenueStats = () => {
+    const fee = reportConfig.testFee || 450;
+    const now = new Date();
+    
+    let filtered = [];
+    let label = '';
+    
+    if (timeframe === 'today') {
+      const oneDay = 24 * 60 * 60 * 1000;
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt).getTime();
+        return (now.getTime() - d) <= oneDay;
+      });
+      label = 'Today';
+    } else if (timeframe === 'month') {
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+      label = 'This Month';
+    } else if (timeframe === 'year') {
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt);
+        return d.getFullYear() === now.getFullYear();
+      });
+      label = 'This Year';
+    } else {
+      filtered = requests;
+      label = 'All Time';
+    }
+    
+    const completed = filtered.filter(r => r.status === 'Completed').length;
+    const pending = filtered.filter(r => r.status === 'Pending' || r.status === 'Accepted' || r.status === 'Processing').length;
+    const revenue = completed * fee;
+    
+    return { revenue, completed, pending, label };
+  };
+
   // Recharts configuration
   const getSampleStatusData = () => {
     return [
@@ -560,7 +642,44 @@ const LabPortalDashboard = () => {
               </p>
             </div>
             
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-4 flex-wrap md:flex-nowrap w-full md:w-auto">
+              {/* Diagnostic Revenue Widget */}
+              <div 
+                className="flex-grow md:flex-grow-0 flex items-center gap-3 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100/70 hover:to-teal-100/70 border-2 border-emerald-100/80 rounded-2xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group shrink-0"
+                onClick={() => setShowReportConfigModal(true)}
+                title="Configure Lab Charge Rate"
+              >
+                <div className="p-2 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                  <TrendingUp size={16} />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5 leading-none">
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Diagnostic Revenue</span>
+                    <select
+                      value={timeframe}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTimeframe(val);
+                        localStorage.setItem('labPortal_timeframe', val);
+                      }}
+                      className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-300 rounded-lg text-[10px] font-black text-slate-600 uppercase tracking-wider outline-none transition-all cursor-pointer shadow-sm ml-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <option value="today">Today</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                      <option value="all">All Time</option>
+                    </select>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
+                    <span className="text-[14px] font-black text-slate-800 leading-none">₹{getRevenueStats().revenue.toLocaleString('en-IN')}</span>
+                    <span className="text-[10px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
+                      Completed: {getRevenueStats().completed} · Pending: {getRevenueStats().pending}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={() => fetchRequests(true)}
                 className="p-3 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-2xl transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0"
@@ -901,12 +1020,13 @@ const LabPortalDashboard = () => {
         handleNewTestRequest={handleNewTestRequest}
       />
 
-      <ReportConfigModal
-        showReportConfigModal={showReportConfigModal}
-        setShowReportConfigModal={setShowReportConfigModal}
+      <LabSettingsModal
+        isOpen={showReportConfigModal}
+        onClose={() => setShowReportConfigModal(false)}
         reportConfig={reportConfig}
         setReportConfig={setReportConfig}
         handleSaveReportConfig={handleSaveReportConfig}
+        requests={requests}
       />
 
       <SampleCollectionModal
@@ -963,7 +1083,7 @@ const LabPortalDashboard = () => {
               />
               <QuickActionTile 
                 icon={<Settings size={14} className="text-teal-600" />} 
-                label="Branding" 
+                label="Settings" 
                 color="bg-teal-50 text-teal-700 hover:bg-teal-100/50" 
                 onClick={() => { setShowReportConfigModal(true); setShowQuickActions(false); }} 
               />

@@ -15,7 +15,8 @@ import {
   Flame,
   ShieldAlert,
   Clock,
-  Sparkles
+  Sparkles,
+  TrendingUp
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ChartTooltip } from 'recharts';
 import { API_URL } from '../../config/runtime';
@@ -31,14 +32,25 @@ const LabPortalAnalytics = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-
   // Fetch Requests
   const fetchRequests = async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsSyncing(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('labToken');
+      
+      try {
+        const settingsRes = await axios.get(`${API_URL}/api/lab-connect/settings/lab`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (settingsRes.data.success && settingsRes.data.data) {
+          setTestFee(settingsRes.data.data.testFee || 450);
+        }
+      } catch (settingsErr) {
+        console.error("Failed to load settings in analytics:", settingsErr);
+      }
+
       const res = await axios.get(`${API_URL}/api/lab-connect/test-requests/lab`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -59,14 +71,14 @@ const LabPortalAnalytics = () => {
     fetchRequests();
 
     const socket = io(API_URL, {
-      auth: { token: localStorage.getItem('token') }
+      auth: { token: localStorage.getItem('labToken') }
     });
 
     socket.on('connect', () => {
       setSocketConnected(true);
       const labId = localStorage.getItem('labId');
       if (labId) {
-        socket.emit('joinLab', { labId });
+        socket.emit('joinLab', labId);
       }
     });
 
@@ -87,9 +99,48 @@ const LabPortalAnalytics = () => {
     };
   }, []);
 
+  const [timeframe, setTimeframe] = useState(localStorage.getItem('labPortal_timeframe') || 'all');
+  const [testFee, setTestFee] = useState(parseInt(localStorage.getItem('labPortal_testFee') || '450'));
+
   const handleLogout = () => {
     localStorage.clear();
     navigate('/lab/login');
+  };
+
+  const getRevenueStats = () => {
+    const now = new Date();
+    let filtered = [];
+    let label = '';
+    
+    if (timeframe === 'today') {
+      const oneDay = 24 * 60 * 60 * 1000;
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt).getTime();
+        return (now.getTime() - d) <= oneDay;
+      });
+      label = 'Today';
+    } else if (timeframe === 'month') {
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+      label = 'This Month';
+    } else if (timeframe === 'year') {
+      filtered = requests.filter(r => {
+        const d = new Date(r.completedAt || r.updatedAt || r.createdAt);
+        return d.getFullYear() === now.getFullYear();
+      });
+      label = 'This Year';
+    } else {
+      filtered = requests;
+      label = 'All Time';
+    }
+    
+    const completed = filtered.filter(r => r.status === 'Completed').length;
+    const pending = filtered.filter(r => r.status === 'Pending' || r.status === 'Accepted' || r.status === 'Processing').length;
+    const revenue = completed * testFee;
+    
+    return { revenue, completed, pending, label };
   };
 
   // Calculate Stats
@@ -128,10 +179,48 @@ const LabPortalAnalytics = () => {
             <title>Lab Analytics & Samples | Appointory</title>
           </Helmet>
         
-        {/* Sync Info */}
-        <div className="flex justify-between items-center bg-white/60 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-blue-50/50 text-[10px] font-black uppercase tracking-wider text-slate-500 shadow-sm">
-          <span>Last sync: {lastUpdate.toLocaleTimeString()}</span>
-          <span>Overview & Active Pipelines</span>
+        {/* Sync Info & Revenue Card Row */}
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+          <div className="flex-1 flex justify-between items-center bg-white/60 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-blue-50/50 text-[10px] font-black uppercase tracking-wider text-slate-500 shadow-sm">
+            <span>Last sync: {lastUpdate.toLocaleTimeString()}</span>
+            <span>Overview & Active Pipelines</span>
+          </div>
+          
+          {/* Diagnostic Revenue Widget */}
+          <div 
+            className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100/70 hover:to-teal-100/70 border-2 border-emerald-100/80 rounded-2xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group shrink-0"
+            title="Branding / Rates can be configured on Dashboard"
+          >
+            <div className="p-2 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <TrendingUp size={16} />
+            </div>
+            <div className="text-left">
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Diagnostic Revenue</span>
+                <select
+                  value={timeframe}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTimeframe(val);
+                    localStorage.setItem('labPortal_timeframe', val);
+                  }}
+                  className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-300 rounded-lg text-[10px] font-black text-slate-600 uppercase tracking-wider outline-none transition-all cursor-pointer shadow-sm ml-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="today">Today</option>
+                  <option value="month">Month</option>
+                  <option value="year">Year</option>
+                  <option value="all">All Time</option>
+                </select>
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-0.5 leading-none">
+                <span className="text-[14px] font-black text-slate-800 leading-none">₹{getRevenueStats().revenue.toLocaleString('en-IN')}</span>
+                <span className="text-[10px] font-bold text-slate-400 truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline">
+                  Completed: {getRevenueStats().completed} · Pending: {getRevenueStats().pending}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ─── Hero Row with Stats Summary Panel ─── */}

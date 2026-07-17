@@ -22,10 +22,19 @@ const AdminReports = () => {
     const [hasSearched, setHasSearched] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [selectedQuick, setSelectedQuick] = useState('');
+
+    const getLocalDateString = (date) => {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     useEffect(() => {
-        // Fetch Today's stats by default for the summary widget
-        const todayStr = new Date().toISOString().split('T')[0];
+        // Fetch Today's stats by default for the summary widget and pre-load today's local records
+        const todayStr = getLocalDateString(new Date());
         fetchInitialStats(todayStr);
     }, []);
 
@@ -41,7 +50,61 @@ const AdminReports = () => {
                 sessions: res.data.sessions || [],
                 staffStats: res.data.staffStats || []
             });
+            setDates({ start: date, end: date });
+            setHasSearched(true);
         } catch (err) { console.error("Initial stats failed", err); }
+    };
+
+    const fetchPreviewDataWithRange = async (startDate, endDate, silent = false) => {
+        if (!startDate || !endDate) return;
+        if (!silent) setLoading(true);
+        else setIsSyncing(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_URL}/api/staff/admin/preview-data?startDate=${startDate}&endDate=${endDate}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setData({ 
+                medicalRecords: res.data.medicalRecords || [], 
+                staffList: res.data.staffList || [],
+                sessions: res.data.sessions || [],
+                staffStats: res.data.staffStats || []
+            });
+            setHasSearched(true);
+        } catch (err) {
+            console.error("Preview fetch failed", err);
+        } finally {
+            setLoading(false);
+            setIsSyncing(false);
+        }
+    };
+
+    const handleQuickSelect = async (range) => {
+        setSelectedQuick(range);
+        const today = new Date();
+        const end = getLocalDateString(today);
+        let start = '';
+
+        if (range === 'today') {
+            // Sliding 24 hours to cover late-night operations: start from yesterday's calendar date
+            const yest = new Date(today);
+            yest.setDate(yest.getDate() - 1);
+            start = getLocalDateString(yest);
+        } else if (range === 'week') {
+            const wDate = new Date(today);
+            wDate.setDate(wDate.getDate() - 7);
+            start = getLocalDateString(wDate);
+        } else if (range === 'month') {
+            const mDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            start = getLocalDateString(mDate);
+        } else if (range === 'year') {
+            const yDate = new Date(today.getFullYear(), 0, 1);
+            start = getLocalDateString(yDate);
+        }
+
+        setDates({ start, end });
+        await fetchPreviewDataWithRange(start, end);
     };
 
     const fetchPreviewData = async (silent = false) => {
@@ -160,11 +223,38 @@ const AdminReports = () => {
                                 <h3 className="font-black text-lg text-slate-900">Intelligence Portal</h3>
                                 <div className="p-1.5 bg-slate-50 rounded-lg text-slate-400"><FileSpreadsheet size={16} /></div>
                             </div>
-                            
-                            <div className="space-y-4 mb-5">
-                                <DateInput label="Start Date" onChange={(e) => setDates({...dates, start: e.target.value})} />
-                                <DateInput label="End Date" onChange={(e) => setDates({...dates, end: e.target.value})} />
-                            </div>
+                             {/* Quick Range Selectors */}
+                             <div className="grid grid-cols-4 gap-1.5 mb-4">
+                                 <button
+                                     onClick={() => handleQuickSelect('today')}
+                                     className={`py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${selectedQuick === 'today' ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}
+                                 >
+                                     Today
+                                 </button>
+                                 <button
+                                     onClick={() => handleQuickSelect('week')}
+                                     className={`py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${selectedQuick === 'week' ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}
+                                 >
+                                     Week
+                                 </button>
+                                 <button
+                                     onClick={() => handleQuickSelect('month')}
+                                     className={`py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${selectedQuick === 'month' ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}
+                                 >
+                                     Month
+                                 </button>
+                                 <button
+                                     onClick={() => handleQuickSelect('year')}
+                                     className={`py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${selectedQuick === 'year' ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}
+                                 >
+                                     Year
+                                 </button>
+                             </div>
+                             
+                             <div className="space-y-4 mb-5">
+                                 <DateInput label="Start Date" value={dates.start} onChange={(e) => { setSelectedQuick(''); setDates({...dates, start: e.target.value}); }} />
+                                 <DateInput label="End Date" value={dates.end} onChange={(e) => { setSelectedQuick(''); setDates({...dates, end: e.target.value}); }} />
+                             </div>
 
                             <div className="space-y-2.5">
                                 <button 
@@ -315,7 +405,7 @@ const AdminReports = () => {
                                                         {view === 'medical' ? (
                                                             <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest">{new Date(item.visitDate).toLocaleDateString()}</span>
                                                         ) : view === 'staff' ? (
-                                                            <div className={`w-2.5 h-2.5 rounded-full inline-block ${item.isActive !== false ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`}></div>
+                                                            <div className={`w-2.5 h-2.5 rounded-full inline-block ${item.isAvailable ? 'bg-green-500 shadow-lg shadow-green-500/20 animate-pulse' : 'bg-slate-200'}`}></div>
                                                         ) : (
                                                             <span className="text-[14px] font-black text-teal-600">
                                                                 {item.sessionDurationMinutes ? `${item.sessionDurationMinutes}m` : '--'}
@@ -356,11 +446,12 @@ const TabBtn = ({ active, onClick, icon, label }) => (
     </button>
 );
 
-const DateInput = ({ label, onChange }) => (
+const DateInput = ({ label, value, onChange }) => (
     <div className="group">
         <label className="text-[14px] font-black uppercase tracking-widest text-slate-400 ml-2.5 block mb-1.5 group-focus-within:text-teal-600 transition-colors">{label}</label>
         <input 
             type="date" 
+            value={value}
             className="w-full bg-slate-50 border border-slate-100 p-3 rounded-xl outline-none focus:border-teal-500 focus:bg-white text-[14px] font-bold transition-all shadow-sm"
             onChange={onChange}
         />

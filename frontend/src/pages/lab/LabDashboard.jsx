@@ -944,25 +944,25 @@ const LabDashboard = () => {
                     </div>
 
                     {/* Table (Desktop View Only) */}
-                    <div className="hidden md:block overflow-x-auto bg-white border border-gray-200/80 rounded-2xl shadow-xl shadow-teal-900/[0.02]">
+                    <div className="hidden md:block overflow-x-auto bg-white border border-slate-100 rounded-3xl shadow-xl shadow-teal-900/[0.02]">
                       <table className="w-full text-sm border-collapse min-w-[720px]">
                         <thead>
-                          <tr className="border-b border-gray-200 bg-gray-50/75 backdrop-blur-sm">
-                            <th className="w-[8%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Request ID</th>
-                            <th className="w-[24%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Patient Details</th>
-                            <th className="w-[15%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Referred Tests</th>
-                            <th className="w-[12%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Status</th>
-                            <th className="w-[12%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Priority</th>
-                            <th className="w-[13%] px-2 py-3 text-left text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Requested On</th>
-                            <th className="w-[16%] px-2 py-3 text-center text-[14px] font-extrabold text-gray-500 uppercase tracking-widest">Actions</th>
+                          <tr className="border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm">
+                            <th className="w-[10%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Request ID</th>
+                            <th className="w-[24%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Patient Details</th>
+                            <th className="w-[18%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Referred Tests</th>
+                            <th className="w-[12%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                            <th className="w-[12%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Priority</th>
+                            <th className="w-[12%] px-4 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Requested On</th>
+                            <th className="w-[12%] px-4 py-4 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100/80">
+                        <tbody className="divide-y divide-slate-50">
                           {loading ? (
                             <tr>
-                              <td colSpan="7" className="px-3 py-12 text-center text-gray-500">
-                                <Beaker className="mx-auto mb-3 text-teal-500 animate-spin" size={32} />
-                                <p className="font-semibold text-gray-700">Loading requests...</p>
+                              <td colSpan="7" className="px-4 py-16 text-center text-slate-500">
+                                <Beaker className="mx-auto mb-3 text-teal-500 animate-spin" size={36} />
+                                <p className="font-semibold text-slate-700">Loading requests...</p>
                               </td>
                             </tr>
                           ) : (
@@ -972,17 +972,17 @@ const LabDashboard = () => {
                                 if (index === 0 && paginatedQueue.length === 0) {
                                   return (
                                     <tr key={`empty-state`}>
-                                      <td colSpan="7" className="px-3 py-12 text-center text-gray-500 h-[64px]">
-                                        <FileCheck className="mx-auto mb-3 text-gray-300" size={36} />
-                                        <p className="font-semibold text-gray-700">No test requests found</p>
-                                        <p className="text-[14px] text-gray-400 mt-1">All samples have been processed and published!</p>
+                                      <td colSpan="7" className="px-4 py-16 text-center text-slate-500">
+                                        <FileCheck className="mx-auto mb-3 text-slate-300" size={42} />
+                                        <p className="font-bold text-slate-700">No test requests found</p>
+                                        <p className="text-[13px] text-slate-400 mt-1">All samples have been processed and published!</p>
                                       </td>
                                     </tr>
                                   );
                                 }
                                 return (
                                   <tr key={`dummy-${index}`} className="opacity-0 pointer-events-none border-b border-transparent">
-                                    <td className="px-3 py-3 align-middle h-[64px]" colSpan="7">
+                                    <td className="px-4 py-4 align-middle h-20" colSpan="7">
                                       <span className="invisible">Dummy</span>
                                     </td>
                                   </tr>
@@ -993,88 +993,92 @@ const LabDashboard = () => {
                                 ? request.patientName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                                 : 'PT';
                               return (
-                                <tr key={request._id} className="hover:bg-gradient-to-r hover:from-teal-50/[0.04] hover:to-indigo-50/[0.04] transition-all duration-300 group">
-                                  <td className="px-3 py-3 align-middle">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[14px] font-bold bg-teal-50 text-teal-700 border border-teal-100/50">
+                                <tr key={request._id} className="hover:bg-teal-50/[0.15] transition-all duration-300 group">
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-[12px] font-black bg-teal-50 text-teal-700 border border-teal-100">
                                       TRF-{request.tokenNumber || '00'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-3 align-middle">
-                                    <div className="flex items-center gap-2.5">
-                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[14px] shadow-md border-2 border-white ring-2 ring-teal-100 group-hover:scale-105 transition-transform shrink-0">
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 flex items-center justify-center text-white font-extrabold text-[12px] shadow-sm border-2 border-white ring-2 ring-teal-50 group-hover:scale-105 transition-all shrink-0">
                                         {initials}
                                       </div>
-                                      <div>
-                                        <p className="text-gray-900 font-extrabold text-[14px] group-hover:text-teal-700 transition-colors leading-tight">{request.patientName}</p>
-                                        <p className="text-[14px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
-                                          <Smartphone size={10} className="text-gray-300 animate-pulse" />
+                                      <div className="min-w-0">
+                                        <p className="text-slate-850 font-black text-sm group-hover:text-teal-700 transition-colors leading-tight truncate">{request.patientName}</p>
+                                        <p className="text-[12px] text-slate-400 font-bold flex items-center gap-1 mt-0.5">
+                                          <Smartphone size={10} className="text-slate-350 shrink-0" />
                                           {request.patientPhone}
                                         </p>
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-3 align-middle">
-                                    <div className="flex items-center gap-1 bg-teal-50/30 border border-teal-100/50 text-teal-800 px-2 py-1 rounded-lg w-fit shadow-sm">
-                                      <Beaker size={11} className="text-teal-600" />
-                                      <span className="font-bold text-[14px]">{request.requiredTest || 'Routine Diagnosis'}</span>
+                                  <td className="px-4 py-4 align-middle">
+                                    <div className="flex items-center gap-1.5 bg-teal-50/55 border border-teal-100/70 text-teal-900 px-2.5 py-1 rounded-xl w-fit shadow-inner">
+                                      <Beaker size={11} className="text-teal-600 shrink-0" />
+                                      <span className="font-bold text-[13px]">{request.requiredTest || 'Routine Diagnosis'}</span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-3 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[14px] font-bold shadow-sm ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[12px] font-black uppercase tracking-wider shadow-sm ${
+                                      request.currentStage === 'Lab-Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                       request.currentStage === 'Lab-Processing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
-                                        'bg-amber-50 text-amber-700 border border-amber-200'
-                                      }`}>
+                                      'bg-amber-50 text-amber-700 border border-amber-200'
+                                    }`}>
                                       <span className="relative flex h-1.5 w-1.5">
-                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-400' :
+                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-400' :
                                           request.currentStage === 'Lab-Processing' ? 'bg-sky-400' :
-                                            'bg-amber-400'
-                                          }`}></span>
-                                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
+                                          'bg-amber-400'
+                                        }`}></span>
+                                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
+                                          request.currentStage === 'Lab-Completed' ? 'bg-emerald-500' :
                                           request.currentStage === 'Lab-Processing' ? 'bg-sky-500' :
-                                            'bg-amber-500'
-                                          }`}></span>
+                                          'bg-amber-500'
+                                        }`}></span>
                                       </span>
                                       {request.currentStage === 'Lab-Completed' ? 'Completed' :
                                         request.currentStage === 'Lab-Processing' ? 'In Process' : 'Pending'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-3 align-middle">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[14px] font-bold shadow-sm ${request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-600 border border-gray-200'
-                                      }`}>
+                                  <td className="px-4 py-4 align-middle">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[12px] font-black uppercase tracking-wider shadow-sm ${
+                                      request.isEmergency ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                                    }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${request.isEmergency ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
                                       {request.isEmergency ? 'Emergency' : 'Standard'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-3 align-middle">
+                                  <td className="px-4 py-4 align-middle">
                                     <div className="flex flex-col">
-                                      <span className="text-gray-900 font-bold text-[14px]">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                      <span className="text-[14px] text-gray-400 font-medium flex items-center gap-0.5 mt-0.5">
-                                        <Clock size={10} className="text-gray-300" />
+                                      <span className="text-slate-800 font-bold text-[13px]">{new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                      <span className="text-[12px] text-slate-400 font-semibold flex items-center gap-0.5 mt-0.5">
+                                        <Clock size={10} className="text-slate-300" />
                                         {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                       </span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-3 align-middle text-center">
+                                  <td className="px-4 py-4 align-middle text-center">
                                     {request.currentStage === 'Lab-Completed' ? (
-                                      <span className="inline-flex items-center gap-1 text-[14px] font-extrabold text-gray-400 py-1">
-                                        <FileCheck size={14} className="text-gray-400" /> Published
+                                      <span className="inline-flex items-center gap-1 text-[13px] font-black text-slate-400 uppercase tracking-widest">
+                                        <FileCheck size={14} className="text-slate-400" /> Published
                                       </span>
                                     ) : (
-                                      <div className="flex items-center justify-center gap-1.5 w-full min-w-[110px] mx-auto">
+                                      <div className="flex items-center justify-center gap-2 w-full min-w-[120px] mx-auto">
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-lg text-[14px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-teal-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-2 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-600 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-teal-200 hover:shadow"
                                           onClick={() => handleFileUpload(request.patientPhone, request._id)}
                                           title="Upload Clinical Files"
                                         >
-                                          <Upload size={14} />
+                                          <Upload size={13} />
                                           <span>Upload</span>
                                         </button>
                                         <button
-                                          className="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 p-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-lg text-[14px] font-extrabold uppercase tracking-widest transition-all active:scale-95 shadow-sm border border-indigo-200/50 hover:shadow-md"
+                                          className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-2 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm border border-indigo-200 hover:shadow"
                                           onClick={() => handleOpenDigitalReportModal(request)}
                                           title="Enter report details digitally"
                                         >
-                                          <FileCheck size={10} />
+                                          <FileCheck size={13} />
                                           <span>Digital</span>
                                         </button>
                                       </div>
