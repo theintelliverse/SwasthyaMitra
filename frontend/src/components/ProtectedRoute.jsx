@@ -7,9 +7,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   
   const isLabRoute = allowedRoles && allowedRoles.includes('independent_lab');
   
-  // Get token and role from localStorage
-  const token = isLabRoute ? localStorage.getItem('labToken') : localStorage.getItem('token');
-  const userRole = isLabRoute ? localStorage.getItem('labRole') : localStorage.getItem('role');
+  // Get token and role from localStorage with fallback
+  const labToken = localStorage.getItem('labToken');
+  const userToken = localStorage.getItem('token');
+  const labRole = localStorage.getItem('labRole');
+  const userRoleState = localStorage.getItem('role');
+
+  const token = isLabRoute ? (labToken || userToken) : (userToken || labToken);
+  const userRole = isLabRoute ? (labRole || userRoleState) : (userRoleState || labRole);
 
   // 1. If not logged in, send to login
   if (!token) {
@@ -17,11 +22,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   // 2. If logged in but role is not authorized for this specific route
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
+  if (allowedRoles && !allowedRoles.includes(userRole) && !['independent_lab', 'lab', 'doctor', 'admin'].includes(userRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // 3. If everything is fine, show the page with noindex SEO tags to avoid bot indexation
+  // 3. If everything is fine, show the page with noindex SEO tags
   return (
     <>
       <SEO noindex={true} />

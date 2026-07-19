@@ -14,6 +14,7 @@ const DoctorDashboard = lazy(() => import('./pages/doctor/DoctorDashboard'));
 const DoctorAppointments = lazy(() => import('./pages/doctor/Appointments'));
 const DoctorPrescriptions = lazy(() => import('./pages/doctor/Prescriptions'));
 const DoctorReports = lazy(() => import('./pages/doctor/Reports'));
+const DoctorAllReports = lazy(() => import('./pages/doctor/AllReports'));
 const DoctorTemplates = lazy(() => import('./pages/doctor/Templates'));
 const ReceptionDashboard = lazy(() => import('./pages/receptionist/ReceptionDashboard'));
 const AddPatient = lazy(() => import('./pages/receptionist/AddPatient'));
@@ -48,6 +49,7 @@ const LabForgotPassword = lazy(() => import('./pages/auth/LabForgotPassword'));
 const LabResetPassword = lazy(() => import('./pages/auth/LabResetPassword'));
 const LabPortalDashboard = lazy(() => import('./pages/lab-portal/LabPortalDashboard'));
 const LabPortalConnections = lazy(() => import('./pages/lab-portal/LabPortalConnections'));
+const LabPortalReports = lazy(() => import('./pages/lab-portal/LabPortalReports'));
 const LabPortalAnalytics = lazy(() => import('./pages/lab-portal/LabPortalAnalytics'));
 
 // Super Admin & Subscriptions
@@ -96,10 +98,11 @@ const PlatformGuard = ({ children }) => {
         // 2. Subscription Enforced check
         if (res.data.isSubscriptionEnforced && token && role !== 'superadmin' && window.location.pathname !== '/subscription-checkout' && window.location.pathname !== '/maintenance') {
           const isLab = localStorage.getItem('labRole') === 'independent_lab';
+          const authToken = isLab ? (localStorage.getItem('labToken') || token) : token;
           const profileUrl = isLab ? `${API_URL}/api/auth/lab/me` : `${API_URL}/api/auth/me`;
           
           const profileRes = await axios.get(profileUrl, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${authToken}` }
           });
 
           if (profileRes.data.success) {
@@ -221,6 +224,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/lab/portal/reports"
+                element={
+                  <ProtectedRoute allowedRoles={['independent_lab', 'lab', 'doctor', 'admin']}>
+                    <LabPortalReports />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/lab/portal/analytics"
                 element={
                   <ProtectedRoute allowedRoles={['independent_lab']}>
@@ -284,6 +295,14 @@ const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['doctor']}>
                     <DoctorReports />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/doctor/all-reports"
+                element={
+                  <ProtectedRoute allowedRoles={['doctor']}>
+                    <DoctorAllReports />
                   </ProtectedRoute>
                 }
               />

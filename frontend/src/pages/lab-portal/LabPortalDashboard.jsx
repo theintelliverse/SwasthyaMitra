@@ -62,6 +62,7 @@ const LabPortalDashboard = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [queueDateFilter, setQueueDateFilter] = useState('today');
   const [expandedId, setExpandedId] = useState(null);
   const [uploading, setUploading] = useState(null); 
   const [isSyncing, setIsSyncing] = useState(false);
@@ -594,9 +595,19 @@ const LabPortalDashboard = () => {
 
   // Search & Filtering & Pagination
   const filteredRequests = requests.filter(r => {
+    if (!r) return false;
+
+    // Date filter: 'today' shows today's requests or active (Pending/Accepted/Processing) requests
+    if (queueDateFilter === 'today') {
+      const todayStr = new Date().toDateString();
+      const reqDate = new Date(r.createdAt || r.requestedAt || r.updatedAt).toDateString();
+      const isActive = ['Pending', 'Accepted', 'Processing'].includes(r.status);
+      if (!isActive && reqDate !== todayStr) return false;
+    }
+
     const matchesSearch = 
-      r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.patientPhone.includes(searchTerm) ||
+      (r.patientName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.patientPhone || '').includes(searchTerm) ||
       (r.testName && r.testName.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesTab = filter === 'all' || r.status === filter;
@@ -681,6 +692,14 @@ const LabPortalDashboard = () => {
               </div>
 
               <button
+                onClick={() => navigate('/lab/portal/reports')}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 active:scale-95 shrink-0"
+              >
+                <FileCheck size={16} />
+                Past Reports Archive →
+              </button>
+
+              <button
                 onClick={() => fetchRequests(true)}
                 className="p-3 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-2xl transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0"
                 title="Refresh Queue"
@@ -722,15 +741,40 @@ const LabPortalDashboard = () => {
                 ))}
               </div>
 
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                <input
-                  type="text"
-                  placeholder="Search patient, phone, test..."
-                  className="pl-9 pr-4 py-2.5 bg-white border border-blue-50 rounded-2xl outline-none focus:border-blue-500 text-xs w-full transition-all font-bold shadow-sm"
-                  value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                />
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="flex items-center bg-white/80 p-1 rounded-2xl border border-blue-50 shadow-sm shrink-0">
+                  <button
+                    onClick={() => setQueueDateFilter('today')}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${
+                      queueDateFilter === 'today'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setQueueDateFilter('all')}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${
+                      queueDateFilter === 'all'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    All Time
+                  </button>
+                </div>
+
+                <div className="relative w-full md:w-56">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <input
+                    type="text"
+                    placeholder="Search patient, phone, test..."
+                    className="pl-9 pr-4 py-2.5 bg-white border border-blue-50 rounded-2xl outline-none focus:border-blue-500 text-xs w-full transition-all font-bold shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -757,7 +801,7 @@ const LabPortalDashboard = () => {
             ) : (
               <div className="bg-white rounded-3xl border border-blue-50/60 shadow-sm flex flex-col h-[380px] justify-between overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-5 space-y-3 hide-scrollbar">
-                  {(showAllRequests ? filteredRequests : filteredRequests.slice(0, 3)).map(req => {
+                  {filteredRequests.map(req => {
                     const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.Pending;
                     const isExpanded = expandedId === req._id;
 

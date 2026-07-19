@@ -25,7 +25,9 @@ exports.getLabDashboardStats = async (req, res) => {
         console.log(`🔬 Lab stats query for clinicId: ${clinicId}, filterAll: ${filterAll}`);
 
         const queueData = await Queue.find(query)
-            .select('patientName patientPhone currentStage requiredTest isEmergency createdAt tokenNumber _id')
+            .select('patientName patientPhone currentStage requiredTest isEmergency createdAt tokenNumber labId doctorId _id')
+            .populate('labId', 'labName phone address')
+            .populate('doctorId', 'name specialization')
             .sort({ createdAt: -1 });
 
         // Calculate statistics
@@ -68,7 +70,10 @@ exports.getRecentReports = async (req, res) => {
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            query.updatedAt = { $gte: today, $lt: tomorrow };
+            query.$or = [
+                { updatedAt: { $gte: today, $lt: tomorrow } },
+                { createdAt: { $gte: today, $lt: tomorrow } }
+            ];
         }
 
         // 1. Get recently completed lab tasks from Queue
@@ -85,7 +90,11 @@ exports.getRecentReports = async (req, res) => {
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            extQuery.completedAt = { $gte: today, $lt: tomorrow };
+            extQuery.$or = [
+                { completedAt: { $gte: today, $lt: tomorrow } },
+                { updatedAt: { $gte: today, $lt: tomorrow } },
+                { createdAt: { $gte: today, $lt: tomorrow } }
+            ];
         }
 
         const externalReports = await ExternalLabRequest.find(extQuery)
@@ -130,14 +139,11 @@ exports.getLabQueueByStatus = async (req, res) => {
 
         const queueData = await Queue.find({
             clinicId: clinicId,
-            currentStage: status,
-            $or: [
-                { labId: null },
-                { labId: { $exists: false } }
-            ]
+            currentStage: status
         })
             .sort({ isEmergency: -1, createdAt: 1 })
-            .populate('doctorId', 'name specialization');
+            .populate('doctorId', 'name specialization')
+            .populate('labId', 'labName phone address');
 
         res.status(200).json({
             success: true,

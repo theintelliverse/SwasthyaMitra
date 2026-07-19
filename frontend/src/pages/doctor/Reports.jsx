@@ -34,17 +34,20 @@ const Reports = () => {
   const [lockerError, setLockerError] = useState('');
   const [activePatient, setActivePatient] = useState(null);
 
+  const [filterMode, setFilterMode] = useState('today'); // 'today' or 'all'
+
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    fetchReports(filterMode);
+  }, [filterMode]);
 
-  const fetchReports = async () => {
+  const fetchReports = async (mode = filterMode) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/api/lab/reports/recent?limit=50&filter=all`, {
+      const filterParam = mode === 'today' ? 'today' : 'all';
+      const res = await axios.get(`${API_URL}/api/lab/reports/recent?limit=50&filter=${filterParam}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -190,7 +193,38 @@ const Reports = () => {
                 Monitor and review laboratory test results for your patients
               </p>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              {/* Filter Pills */}
+              <div className="flex items-center bg-slate-200/60 p-1 rounded-2xl border border-slate-200/50">
+                <button
+                  onClick={() => setFilterMode('today')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    filterMode === 'today'
+                      ? 'bg-white text-teal-700 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Today's Reports
+                </button>
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    filterMode === 'all'
+                      ? 'bg-white text-teal-700 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  All Time
+                </button>
+              </div>
+
+              <button
+                onClick={() => navigate('/doctor/all-reports')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 whitespace-nowrap"
+              >
+                <FileText size={14} /> Full Archive →
+              </button>
+
               <div className="relative flex-grow md:flex-grow-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <input
@@ -202,7 +236,7 @@ const Reports = () => {
                 />
               </div>
               <button
-                onClick={fetchReports}
+                onClick={() => fetchReports(filterMode)}
                 className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
               >
                 <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />

@@ -56,7 +56,7 @@ const Sidebar = ({ role = 'lab' }) => {
   };
 
   const clinicName = getSafeStorageItem('clinicName', 'Appointory Hub');
-  const userName = getSafeStorageItem('userName', 'Healthcare Professional');
+  const userName = getSafeStorageItem('userName', '') || getSafeStorageItem('labName', 'Healthcare Professional');
   const userRole = role || getSafeStorageItem('role', 'staff');
   const userSpecialization = getSafeStorageItem('specialization', '');
   const userEducation = getSafeStorageItem('education', '');
@@ -88,6 +88,7 @@ const Sidebar = ({ role = 'lab' }) => {
       lab: isIndLab ? [
         { name: 'Dashboard', path: '/lab/portal/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Connections', path: '/lab/portal/connections', icon: <Users size={20} /> },
+        { name: 'Past Reports', path: '/lab/portal/reports', icon: <FileCheck size={20} /> },
         { name: 'Analytics', path: '/lab/portal/analytics', icon: <Activity size={20} /> },
       ] : [
         { name: 'Dashboard', path: '/lab/dashboard', icon: <LayoutDashboard size={20} /> },
