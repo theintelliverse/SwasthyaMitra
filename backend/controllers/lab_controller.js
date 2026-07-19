@@ -1,5 +1,6 @@
 const Queue = require('../models/Queue');
 const Patient = require('../models/Patient');
+const ExternalLabRequest = require('../models/ExternalLabRequest');
 const mongoose = require('mongoose');
 
 // 🆕 GET LAB DASHBOARD STATISTICS
@@ -7,16 +8,12 @@ exports.getLabDashboardStats = async (req, res) => {
     try {
         const clinicId = req.user.clinicId;
         const filterAll = req.query.filter === 'all';
-        
-        const query = { 
+
+        const query = {
             clinicId: clinicId,
-            currentStage: { $in: ['Lab-Pending', 'Lab-Processing', 'Lab-Completed', 'Lab-Rejected'] },
-            $or: [
-                { labId: null },
-                { labId: { $exists: false } }
-            ]
+            currentStage: { $in: ['Lab-Pending', 'Lab-Processing', 'Lab-Completed', 'Lab-Rejected'] }
         };
-        
+
         if (!filterAll) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -59,15 +56,11 @@ exports.getRecentReports = async (req, res) => {
     try {
         const clinicId = req.user.clinicId;
         const filterAll = req.query.filter === 'all';
-        const limit = req.query.limit || 10;
+        const limit = parseInt(req.query.limit) || 50;
 
-        const query = { 
+        const query = {
             clinicId: clinicId,
-            currentStage: 'Lab-Completed',
-            $or: [
-                { labId: null },
-                { labId: { $exists: false } }
-            ]
+            currentStage: 'Lab-Completed'
         };
 
         if (!filterAll) {
@@ -78,15 +71,50 @@ exports.getRecentReports = async (req, res) => {
             query.updatedAt = { $gte: today, $lt: tomorrow };
         }
 
-        // Get recently completed lab tasks
-        const recentReports = await Queue.find(query)
+        // 1. Get recently completed lab tasks from Queue
+        const recentQueueReports = await Queue.find(query)
             .sort({ updatedAt: -1 })
-            .limit(parseInt(limit))
-            .select('patientName patientPhone requiredTest createdAt updatedAt currentStage _id');
+            .limit(limit)
+            .select('patientName patientPhone requiredTest createdAt updatedAt currentStage _id')
+            .lean();
+
+        // 2. Get completed requests from ExternalLabRequest
+        const extQuery = { clinicId, status: 'Completed' };
+        if (!filterAll) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            extQuery.completedAt = { $gte: today, $lt: tomorrow };
+        }
+
+        const externalReports = await ExternalLabRequest.find(extQuery)
+            .sort({ completedAt: -1, updatedAt: -1 })
+            .limit(limit)
+            .lean();
+
+        const formattedExternal = externalReports.map(ext => ({
+            _id: ext._id,
+            patientName: ext.patientName,
+            patientPhone: ext.patientPhone,
+            requiredTest: ext.testName,
+            createdAt: ext.createdAt,
+            updatedAt: ext.completedAt || ext.updatedAt,
+            currentStage: 'Lab-Completed',
+            queueId: ext.queueId
+        }));
+
+        // Merge queue and external reports, avoiding duplicates if queueId matches
+        const existingQueueIds = new Set(recentQueueReports.map(q => q._id.toString()));
+        const uniqueExternal = formattedExternal.filter(ext => !ext.queueId || !existingQueueIds.has(ext.queueId.toString()));
+
+        const combined = [...recentQueueReports, ...uniqueExternal].sort((a, b) => {
+            return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+        }).slice(0, limit);
 
         res.status(200).json({
             success: true,
-            data: recentReports
+            data: combined
         });
 
     } catch (error) {
@@ -136,13 +164,13 @@ exports.getLabAnalytics = async (req, res) => {
         const completedIds = labTasks.filter(t => t.currentStage === 'Lab-Completed').map(t => t._id.toString());
         let totalHours = 0;
         let countedMatches = 0;
-        
+
         if (completedIds.length > 0) {
             // Find patient profiles that have matching report visitIds
             const patientsWithReports = await Patient.find({
                 "documents.visitId": { $in: completedIds }
             });
-            
+
             patientsWithReports.forEach(patient => {
                 patient.documents.forEach(doc => {
                     if (doc.visitId && completedIds.includes(doc.visitId.toString())) {
@@ -159,9 +187,9 @@ exports.getLabAnalytics = async (req, res) => {
                 });
             });
         }
-        
+
         const avgProcessingTime = countedMatches > 0 ? (totalHours / countedMatches).toFixed(1) : "2.4";
-        
+
         // 2. Success & Completion Rates
         let completedCount = labTasks.filter(q => q.currentStage === 'Lab-Completed').length;
         let totalLabTasks = labTasks.length;
@@ -171,7 +199,7 @@ exports.getLabAnalytics = async (req, res) => {
         const uniquePatients = new Set(labTasks.map(task => task.patientPhone || task.patientName));
         const totalPatients = uniquePatients.size;
         const pendingReviews = labTasks.filter(q => q.currentStage === 'Lab-Pending').length;
-        
+
         // 4. Monthly Aggregation
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
@@ -203,13 +231,13 @@ exports.getLabAnalytics = async (req, res) => {
 
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         let monthlyStats = [];
-        
+
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
             d.setMonth(d.getMonth() - i);
             const m = d.getMonth() + 1;
             const y = d.getFullYear();
-            
+
             const found = monthlyAggregation.find(x => x._id.month === m && x._id.year === y);
             monthlyStats.push({
                 name: monthNames[m - 1],
@@ -217,7 +245,7 @@ exports.getLabAnalytics = async (req, res) => {
                 completed: found ? found.completed : 0
             });
         }
-        
+
         res.status(200).json({
             success: true,
             data: {
@@ -290,7 +318,7 @@ exports.uploadLabReport = async (req, res) => {
         const newDocuments = files.map((file, idx) => {
             const cloudinarySecureUrl = file.secure_url || file.path || file.url;
             console.log(`🔗 File [${idx + 1}] Cloudinary URL:`, cloudinarySecureUrl);
-            
+
             // Extract a realistic title if multiple reports are uploaded (e.g. CBC Report, Lipid Report, etc.)
             let fileTitle = req.body.title || "Diagnostic Report";
             if (files.length > 1) {

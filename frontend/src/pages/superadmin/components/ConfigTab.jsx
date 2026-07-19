@@ -1,5 +1,5 @@
-import React from 'react';
-import { Settings, Percent, Mail, Info, Save, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, Percent, Mail, Info, Save, ShieldAlert, Sparkles, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 const ToggleSwitch = ({ checked, onChange, disabled, activeColor = "bg-marigold" }) => {
   return (
@@ -26,6 +26,7 @@ const ConfigTab = ({
   savingConfig,
   handleUpdateConfig
 }) => {
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
   return (
     <div className="flex flex-col gap-8 w-full animate-in fade-in-50 duration-300">
       
@@ -397,13 +398,22 @@ const ConfigTab = ({
 
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-[10px] font-black uppercase tracking-wider text-khaki">SMTP Password / App Password (will be encrypted)</label>
-              <input
-                type="password"
-                value={config.smtpPass ?? ''}
-                onChange={(e) => setConfig({ ...config, smtpPass: e.target.value })}
-                placeholder="••••••••••••••••"
-                className="w-full bg-white border border-sandstone/40 focus:border-marigold focus:ring-1 focus:ring-marigold rounded-xl px-4 py-2.5 outline-none text-teak transition-all font-bold"
-              />
+              <div className="relative">
+                <input
+                  type={showSmtpPass ? 'text' : 'password'}
+                  value={config.smtpPass ?? ''}
+                  onChange={(e) => setConfig({ ...config, smtpPass: e.target.value })}
+                  placeholder="••••••••••••••••"
+                  className="w-full bg-white border border-sandstone/40 focus:border-marigold focus:ring-1 focus:ring-marigold rounded-xl pl-4 pr-12 py-2.5 outline-none text-teak transition-all font-bold"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSmtpPass(!showSmtpPass)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
+                >
+                  {showSmtpPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           </div>
 

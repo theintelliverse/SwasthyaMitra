@@ -36,10 +36,20 @@ const Reports = () => {
     }
   };
 
-  const filteredReports = reports.filter(r => 
-    r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.requiredTest.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredReports = (reports || []).filter(r => {
+    if (!r) return false;
+    const name = (r.patientName || '').toLowerCase();
+    const test = (r.requiredTest || '').toLowerCase();
+    const rawPhone = (r.patientPhone || '').toLowerCase();
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const rawTerm = searchTerm.toLowerCase();
+    const cleanTerm = rawTerm.replace(/\D/g, '');
+
+    return name.includes(rawTerm) ||
+      test.includes(rawTerm) ||
+      rawPhone.includes(rawTerm) ||
+      (cleanTerm.length > 0 && cleanPhone.includes(cleanTerm));
+  });
 
   const handleDownloadReport = (report) => {
     try {

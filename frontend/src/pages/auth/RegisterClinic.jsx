@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import { API_URL } from '../../config/runtime';
 const RegisterClinic = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     clinicName: '',
     clinicCode: '',
@@ -193,19 +196,37 @@ const RegisterClinic = () => {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-0.5">
                     <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Password</label>
-                    <input
-                      type="password" required placeholder="••••••••"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'} required placeholder="••••••••"
+                        className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-0.5">
                     <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Confirm Password</label>
-                    <input
-                      type="password" required placeholder="••••••••"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'} required placeholder="••••••••"
+                        className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

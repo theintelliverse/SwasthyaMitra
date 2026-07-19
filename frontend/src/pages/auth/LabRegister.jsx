@@ -4,7 +4,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
   FlaskConical, Mail, LockKeyhole, Building, Phone, MapPin,
-  Hash, RefreshCw, ArrowRight, ArrowLeft, ShieldCheck, CheckCircle
+  Hash, RefreshCw, ArrowRight, ArrowLeft, ShieldCheck, CheckCircle,
+  Eye, EyeOff
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
@@ -15,6 +16,7 @@ const LabRegister = () => {
   const [formData, setFormData] = useState({
     labName: '', labCode: '', email: '', password: '', confirmPassword: '', phone: '', address: ''
   });
+  const [showPasswords, setShowPasswords] = useState({ password: false, confirmPassword: false });
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [errors, setErrors] = useState({});
@@ -134,14 +136,23 @@ const LabRegister = () => {
                       size={17}
                     />
                     <input
-                      type={type}
+                      type={key === 'password' || key === 'confirmPassword' ? (showPasswords[key] ? 'text' : 'password') : type}
                       placeholder={placeholder}
-                      className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[key] ? 'border-red-300' : 'border-sandstone'} ${key === 'labCode' ? 'uppercase font-black' : ''}`}
+                      className={`w-full pl-12 ${key === 'password' || key === 'confirmPassword' ? 'pr-14' : 'pr-6'} py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[key] ? 'border-red-300' : 'border-sandstone'} ${key === 'labCode' ? 'uppercase font-black' : ''}`}
                       value={formData[key]}
                       onFocus={() => setFocusedField(key)}
                       onBlur={() => setFocusedField(null)}
                       onChange={(e) => handleInputChange(key, e.target.value)}
                     />
+                    {(key === 'password' || key === 'confirmPassword') && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }))}
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
+                      >
+                        {showPasswords[key] ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    )}
                   </div>
                   {hint && !errors[key] && <p className="text-[12px] text-khaki/60 ml-4">{hint}</p>}
                   {errors[key] && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors[key]}</p>}

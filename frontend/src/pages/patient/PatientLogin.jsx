@@ -161,7 +161,16 @@ const PatientLogin = () => {
                                 <button type="button" onClick={() => setStep(1)} className="text-[14px] font-black text-teal-600 uppercase tracking-widest hover:underline">Change</button>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Master Password</label>
+                                <div className="flex justify-between items-end px-4">
+                                    <label className="text-[14px] font-black uppercase text-slate-400 tracking-widest">Master Password</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/patient/forgot-password')}
+                                        className="text-[14px] text-slate-400 hover:text-teal-600 font-bold uppercase tracking-widest transition-colors"
+                                    >
+                                        Forgot?
+                                    </button>
+                                </div>
                                 <div className="relative group">
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input

@@ -7,7 +7,7 @@ import { SOCKET_URL } from '../../config/runtime'; // Importing runtime socket U
 import {
   Archive, RefreshCw, UserPlus, Search, Users,
   ShieldCheck, Activity, UserCheck, History, AlertCircle, Trash2, Key,
-  FlaskConical, Link2, Unlink, Check, X
+  FlaskConical, Link2, Unlink, Check, X, Eye, EyeOff
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -535,15 +535,31 @@ const StatBox = ({ icon, label, val }) => (
   </div>
 );
 
-const InputGroup = ({ label, type, placeholder, onChange }) => (
-  <div className="flex flex-col gap-2">
-    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">{label}</label>
-    <input
-      type={type} placeholder={placeholder} required
-      className="px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all placeholder:text-sandstone placeholder:font-normal text-sm"
-      onChange={onChange}
-    />
-  </div>
-);
+const InputGroup = ({ label, type, placeholder, onChange }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">{label}</label>
+      <div className="relative">
+        <input
+          type={isPassword ? (showPassword ? 'text' : 'password') : type}
+          placeholder={placeholder} required
+          className={`w-full px-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold font-bold text-teak transition-all placeholder:text-sandstone placeholder:font-normal text-sm ${isPassword ? 'pr-14' : ''}`}
+          onChange={onChange}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki hover:text-marigold transition-colors"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default AdminStaffManagement;

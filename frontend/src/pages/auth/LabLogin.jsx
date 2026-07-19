@@ -4,7 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
   FlaskConical, Mail, LockKeyhole, RefreshCw, ArrowRight,
-  AlertCircle, X, WifiOff, ShieldCheck, ArrowLeft
+  AlertCircle, X, WifiOff, ShieldCheck, ArrowLeft, Eye, EyeOff
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
@@ -13,6 +13,7 @@ import { API_URL } from '../../config/runtime';
 
 const LabLogin = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [loginError, setLoginError] = useState(null);
@@ -175,16 +176,23 @@ const LabLogin = () => {
                 <div className={`relative transition-all duration-300 transform ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
                   <LockKeyhole className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === 'password' ? 'text-blue-600' : 'text-khaki/40'}`} size={18} />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-12 pr-6 py-3 bg-parchment/50 border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium text-teak"
+                    className="w-full pl-12 pr-14 py-3 bg-parchment/50 border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium text-teak"
                     value={formData.password}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 

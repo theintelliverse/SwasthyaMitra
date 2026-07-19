@@ -64,6 +64,7 @@ const Reports = () => {
     setLockerLoading(true);
     try {
       const cleanPhone = lockerPhone.replace(/\D/g, '').slice(-10);
+      setSearchTerm(cleanPhone);
       const res = await axios.get(`${API_URL}/api/staff/patient-full-profile/${cleanPhone}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -79,10 +80,17 @@ const Reports = () => {
 
   const filteredReports = (reports || []).filter(r => {
     if (!r) return false;
-    const name = r.patientName || 'Unknown';
-    const test = r.requiredTest || 'Test';
-    return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      test.toLowerCase().includes(searchTerm.toLowerCase());
+    const name = (r.patientName || 'Unknown').toLowerCase();
+    const test = (r.requiredTest || 'Test').toLowerCase();
+    const rawPhone = (r.patientPhone || '').toLowerCase();
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const rawTerm = searchTerm.toLowerCase();
+    const cleanTerm = rawTerm.replace(/\D/g, '');
+
+    return name.includes(rawTerm) ||
+      test.includes(rawTerm) ||
+      rawPhone.includes(rawTerm) ||
+      (cleanTerm.length > 0 && cleanPhone.includes(cleanTerm));
   });
 
   return (
@@ -261,7 +269,14 @@ const Reports = () => {
                         </td>
                         <td className="px-6 py-5 text-right">
                           <button
-                            onClick={() => navigate(`/doctor/records?phone=${r.patientPhone}`)}
+                            onClick={() => {
+                              if (r.patientPhone) {
+                                const clean = r.patientPhone.replace(/\D/g, '').slice(-10);
+                                setActivePatient(clean);
+                              } else {
+                                navigate(`/doctor/records`);
+                              }
+                            }}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[14px] font-black text-slate-700 uppercase tracking-widest hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm active:scale-95"
                           >
                             <FileCheck size={13} /> View Report

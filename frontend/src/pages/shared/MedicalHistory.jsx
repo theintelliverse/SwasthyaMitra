@@ -1,18 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import PatientQuickView from '../../components/PatientQuickView';
 import { Search, FileText, Calendar, Phone } from 'lucide-react';
 import { API_URL } from '../../config/runtime';
+
 const MedicalHistory = () => {
+  const [searchParams] = useSearchParams();
+  const phoneParam = searchParams.get('phone') || '';
+
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatientPhone, setSelectedPatientPhone] = useState(null);
-  
+  const [searchTerm, setSearchTerm] = useState(phoneParam);
+  const [selectedPatientPhone, setSelectedPatientPhone] = useState(phoneParam || null);
+
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+
+  useEffect(() => {
+    if (phoneParam) {
+      setSearchTerm(phoneParam);
+      setSelectedPatientPhone(phoneParam);
+    }
+  }, [phoneParam]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -23,17 +35,20 @@ const MedicalHistory = () => {
         setRecords(res.data.data);
         setLoading(false);
       } catch (err) {
-        console.error(err,"History fetch failed");
+        console.error(err, "History fetch failed");
         setLoading(false);
       }
     };
     fetchHistory();
   }, [token]);
 
-  const filteredRecords = records.filter(r => 
-    r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.patientPhone.includes(searchTerm)
-  );
+  const filteredRecords = records.filter(r => {
+    if (!r) return false;
+    const name = (r.patientName || '').toLowerCase();
+    const phone = (r.patientPhone || '').toLowerCase();
+    const term = (searchTerm || '').toLowerCase();
+    return name.includes(term) || phone.includes(term);
+  });
 
   return (
     <div className="flex min-h-screen bg-parchment font-body text-teak">
@@ -49,11 +64,11 @@ const MedicalHistory = () => {
                 {role === 'admin' ? "Full Clinic Audit Log" : "Your Consultation History"}
               </p>
             </div>
-            
+
             <div className="relative w-full lg:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-khaki" size={18} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search name or mobile..."
                 className="w-full pl-12 pr-6 py-4 bg-parchment border border-sandstone rounded-2xl outline-none focus:border-marigold transition-all font-medium"
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -65,8 +80,8 @@ const MedicalHistory = () => {
         <main className="flex-grow max-w-7xl w-full mx-auto p-6 lg:p-10">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-               <div className="w-12 h-12 border-4 border-marigold border-t-transparent rounded-full animate-spin"></div>
-               <p className="font-heading text-khaki">Decrypting Records...</p>
+              <div className="w-12 h-12 border-4 border-marigold border-t-transparent rounded-full animate-spin"></div>
+              <p className="font-heading text-khaki">Decrypting Records...</p>
             </div>
           ) : filteredRecords.length === 0 ? (
             <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-sandstone shadow-inner">
@@ -78,7 +93,7 @@ const MedicalHistory = () => {
             <div className="grid gap-8">
               {filteredRecords.map((record) => (
                 <div key={record._id} className="bg-white border border-sandstone p-8 rounded-[3rem] shadow-sm hover:shadow-2xl hover:border-marigold/30 transition-all group overflow-hidden relative">
-                  
+
                   {/* Decorative corner icon */}
                   <div className="absolute -right-4 -top-4 text-8xl opacity-[0.03] group-hover:rotate-12 transition-transform">
                     <FileText size={120} />
@@ -87,35 +102,35 @@ const MedicalHistory = () => {
                   <div className="flex flex-col lg:flex-row justify-between gap-8 relative z-10">
                     <div className="flex-grow">
                       <div className="flex items-center gap-4 mb-4">
-                          <span className="text-[14px] font-black uppercase tracking-widest text-white bg-teak px-4 py-1.5 rounded-full">
-                            Token #{record.tokenNumber}
+                        <span className="text-[14px] font-black uppercase tracking-widest text-white bg-teak px-4 py-1.5 rounded-full">
+                          Token #{record.tokenNumber}
+                        </span>
+                        <div className="flex items-center gap-2 text-khaki">
+                          <Calendar size={14} />
+                          <span className="text-[14px] font-bold">
+                            {new Date(record.visitDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                           </span>
-                          <div className="flex items-center gap-2 text-khaki">
-                             <Calendar size={14} />
-                             <span className="text-[14px] font-bold">
-                                {new Date(record.visitDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                             </span>
-                          </div>
+                        </div>
                       </div>
 
                       <h3 className="text-3xl font-heading mb-2 text-teak group-hover:text-marigold transition-colors">{record.patientName}</h3>
-                      
+
                       <div className="flex items-center gap-6 mb-6">
                         <div className="flex items-center gap-2 text-khaki text-sm font-bold">
-                           <Phone size={14} /> {record.patientPhone}
+                          <Phone size={14} /> {record.patientPhone}
                         </div>
                         <div className="text-[14px] font-medium text-khaki/60">
-                           Session: {record.duration || '--'} mins
+                          Session: {record.duration || '--'} mins
                         </div>
                       </div>
-                      
+
                       <div className="bg-parchment p-6 rounded-3xl border border-sandstone/50 italic text-sm text-teak/80 relative">
                         <span className="text-3xl text-marigold/20 absolute top-2 left-2 font-serif">“</span>
                         <p className="pl-6">{record.notes || "No clinical notes provided for this session."}</p>
                       </div>
 
                       {/* Action Button: View Locker */}
-                      <button 
+                      <button
                         onClick={() => setSelectedPatientPhone(record.patientPhone)}
                         className="mt-6 flex items-center gap-2 text-[14px] font-black uppercase tracking-[0.2em] text-marigold hover:text-teak transition-colors"
                       >
@@ -127,13 +142,13 @@ const MedicalHistory = () => {
                     <div className="lg:w-64 shrink-0 flex flex-col justify-center bg-parchment/50 p-6 rounded-[2rem] border border-sandstone/30">
                       <p className="text-[14px] font-black uppercase text-khaki tracking-widest mb-3">Physician In-Charge</p>
                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center text-white font-heading">
-                            {record.doctorId?.name?.charAt(0)}
-                         </div>
-                         <div>
-                            <p className="font-bold text-sm text-teak leading-tight">Dr. {record.doctorId?.name}</p>
-                            <p className="text-[14px] text-khaki font-medium mt-0.5">{record.doctorId?.specialization}</p>
-                         </div>
+                        <div className="w-10 h-10 bg-marigold rounded-xl flex items-center justify-center text-white font-heading">
+                          {record.doctorId?.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-teak leading-tight">Dr. {record.doctorId?.name}</p>
+                          <p className="text-[14px] text-khaki font-medium mt-0.5">{record.doctorId?.specialization}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -142,15 +157,15 @@ const MedicalHistory = () => {
             </div>
           )}
         </main>
-        
+
         <Footer />
       </div>
 
       {/* Patient Locker Modal Integration */}
       {selectedPatientPhone && (
-        <PatientQuickView 
-          phone={selectedPatientPhone} 
-          onClose={() => setSelectedPatientPhone(null)} 
+        <PatientQuickView
+          phone={selectedPatientPhone}
+          onClose={() => setSelectedPatientPhone(null)}
         />
       )}
     </div>
