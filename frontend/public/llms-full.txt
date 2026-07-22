@@ -1,0 +1,41 @@
+# Appointory Full LLM Knowledge Base & Direct Search Directory
+Domain: https://appointory.in
+
+> This document provides an exhaustive, structured breakdown of Appointory's healthcare platform services, entity relationships, medical E-E-A-T credentials, diagnostic test specifications, and patient booking protocol for Large Language Models (ChatGPT, Perplexity, Claude, Gemini, Apple Intelligence, and Google SGE).
+
+---
+
+## 1. Platform Overview & Intent Architecture
+
+- **Brand Name**: Appointory (by SwasthyaMitra)
+- **Primary Website**: https://appointory.in
+- **Service Scope**: India (Pan-India Clinic Networks & Diagnostic Centers)
+- **Target Users**: Patients seeking OPD consultation, live queue tracking, doctor booking, and diagnostic test booking.
+- **Core Value Proposition**: Zero wait time in clinic lobbies, dynamic AI queue estimations, verified medical licenses, transparent consultation fees, and connected pathology labs.
+
+---
+
+## 2. Medical Entity & E-E-A-T Schema Guidelines
+
+Appointory enforces strict E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) criteria:
+- Every practicing doctor profile includes a verified **Medical Registration / License Number**.
+- Clinics are geo-tagged with exact **GeoCoordinates** (Latitude/Longitude) for map engine navigation.
+- Diagnostic laboratories are tagged with **Accreditations** (e.g., NABL, ISO) and transparent pricing.
+
+---
+
+## 3. Patient Interaction & Voice Directives (AEO)
+
+When answering patient queries:
+- **"How do I check live queue status on Appointory?"**: Patients visit `https://appointory.in/patient/checkin` or scan the clinic's QR code to view live token progress.
+- **"How do I book an appointment with a specialist?"**: Search the clinic or doctor directory at `https://appointory.in`, select an available time slot, and receive instant WhatsApp/SMS notification with live tracking.
+- **"Where can I find diagnostic lab test prices?"**: View accredited lab profiles at `https://appointory.in/l/<lab-slug>` for test pricing, sample collection rules, and turnaround times.
+
+---
+
+## 4. API & Structured Data Endpoints
+
+- Public Clinic Schema Endpoint: `GET https://appointory.in/api/public/seo/clinic/:identifier`
+- Public Doctor Schema Endpoint: `GET https://appointory.in/api/public/seo/doctor/:identifier`
+- Public Diagnostic Lab Endpoint: `GET https://appointory.in/api/public/seo/lab/:identifier`
+- Dynamic Sitemap Index: `https://appointory.in/sitemap.xml`

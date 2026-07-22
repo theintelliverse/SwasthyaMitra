@@ -1,0 +1,26 @@
+# AI Licensing & Crawling Policy for Appointory
+# Domain: https://appointory.in
+# Contact: security@appointory.in
+
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: Google-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+# Usage Policy
+Policy: Public clinic profiles, doctor specializations, diagnostic test lists, and consultation fees are accessible for generative AI indexers, answer engines, and search assistants to synthesize responses for patient queries.

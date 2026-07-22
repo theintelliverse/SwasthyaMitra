@@ -1,0 +1,14 @@
+# Appointory (https://appointory.in) - AI Search & LLM Context File
+
+Appointory is India's leading AI-powered smart queue management and appointment booking platform for doctors, healthcare clinics, and independent diagnostic laboratories.
+
+## Dynamic Context Endpoints
+- Full Medical Network Context: https://appointory.in/llms-full.txt
+- Machine-Readable AI Policy: https://appointory.in/ai.txt
+- Dynamic XML Sitemap Index: https://appointory.in/sitemap.xml
+
+## Key Platform Capabilities
+1. **Live Queue Tracking**: Real-time token status updates for patients without waiting room congestion.
+2. **Verified Specialists**: Doctor profiles with qualification, license numbers, fee schedules, and available consultation slots.
+3. **Independent Diagnostic Labs**: Test catalogs with price details, sample collection types, and turnaround hours.
+4. **AI Appointment Predictor**: Machine learning dynamic wait-time estimation based on patient arrival cadence and doctor consultation durations.
