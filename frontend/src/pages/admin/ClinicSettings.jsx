@@ -24,7 +24,7 @@ import { API_URL } from '../../config/runtime';
 const ClinicSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [activeSettingsTab, setActiveSettingsTab] = useState('profile'); // 'profile' or 'labs'
+  const [activeSettingsTab, setActiveSettingsTab] = useState('profile'); // 'profile', 'labs', or 'seo'
   const [formData, setFormData] = useState({
     name: '',
     clinicCode: '',
@@ -35,7 +35,12 @@ const ClinicSettings = () => {
     breakStartTime: '12:00',
     breakEndTime: '14:00',
     slotDurationMinutes: 30,
-    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    slug: '',
+    bio: '',
+    specialtiesStr: '',
+    seoTitle: '',
+    seoDescription: ''
   });
   
   // Lab Connection States
@@ -57,7 +62,7 @@ const ClinicSettings = () => {
         });
 
         if (res.data.success) {
-          const { name, clinicCode, contactNumber, contactPhone, address, openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays } = res.data.data;
+          const { name, clinicCode, contactNumber, contactPhone, address, openingTime, closingTime, breakStartTime, breakEndTime, slotDurationMinutes, workingDays, slug, bio, specialties, seoTitle, seoDescription } = res.data.data;
           setFormData({
             name: name || '',
             clinicCode: clinicCode || '',
@@ -68,7 +73,12 @@ const ClinicSettings = () => {
             breakStartTime: breakStartTime || '12:00',
             breakEndTime: breakEndTime || '14:00',
             slotDurationMinutes: slotDurationMinutes || 30,
-            workingDays: workingDays && workingDays.length ? workingDays : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+            workingDays: workingDays && workingDays.length ? workingDays : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+            slug: slug || '',
+            bio: bio || '',
+            specialtiesStr: Array.isArray(specialties) ? specialties.join(', ') : '',
+            seoTitle: seoTitle || '',
+            seoDescription: seoDescription || ''
           });
         }
         setLoading(false);

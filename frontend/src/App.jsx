@@ -52,6 +52,11 @@ const LabPortalConnections = lazy(() => import('./pages/lab-portal/LabPortalConn
 const LabPortalReports = lazy(() => import('./pages/lab-portal/LabPortalReports'));
 const LabPortalAnalytics = lazy(() => import('./pages/lab-portal/LabPortalAnalytics'));
 
+// Public SEO & Profile Pages
+const ClinicPublicProfile = lazy(() => import('./pages/public/ClinicPublicProfile'));
+const DoctorPublicProfile = lazy(() => import('./pages/public/DoctorPublicProfile'));
+const LabPublicProfile = lazy(() => import('./pages/public/LabPublicProfile'));
+
 // Super Admin & Subscriptions
 const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
 const SubscriptionCheckout = lazy(() => import('./pages/shared/SubscriptionCheckout'));
@@ -191,6 +196,14 @@ const App = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/maintenance" element={<MaintenanceMode />} />
               <Route path="/subscription-checkout" element={<SubscriptionCheckout />} />
+
+              {/* --- 🌐 Public SEO & Entity Profile Pages --- */}
+              <Route path="/c/:identifier" element={<ClinicPublicProfile />} />
+              <Route path="/clinic/profile/:identifier" element={<ClinicPublicProfile />} />
+              <Route path="/d/:identifier" element={<DoctorPublicProfile />} />
+              <Route path="/doctor/profile/:identifier" element={<DoctorPublicProfile />} />
+              <Route path="/l/:identifier" element={<LabPublicProfile />} />
+              <Route path="/lab/profile/:identifier" element={<LabPublicProfile />} />
 
               {/* --- 👑 Super Admin Dashboard Route --- */}
               <Route

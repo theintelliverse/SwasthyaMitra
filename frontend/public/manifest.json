@@ -8,7 +8,13 @@
   "orientation": "portrait-primary",
   "theme_color": "#2C6FB3",
   "background_color": "#FFFFFF",
-  "categories": ["healthcare", "medical", "clinic", "health", "appointments"],
+  "categories": [
+    "healthcare",
+    "medical",
+    "clinic",
+    "health",
+    "appointments"
+  ],
   "icons": [
     {
       "src": "/og-image.svg",
@@ -85,10 +91,19 @@
     {
       "action": "/files",
       "accept": {
-        "application/pdf": [".pdf"],
-        "image/jpeg": [".jpg", ".jpeg"],
-        "image/png": [".png"],
-        "text/plain": [".txt"]
+        "application/pdf": [
+          ".pdf"
+        ],
+        "image/jpeg": [
+          ".jpg",
+          ".jpeg"
+        ],
+        "image/png": [
+          ".png"
+        ],
+        "text/plain": [
+          ".txt"
+        ]
       }
     }
   ],

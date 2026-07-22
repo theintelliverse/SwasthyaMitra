@@ -335,13 +335,38 @@ const ProfilePage = () => {
                                                 onChange={(val) => setUser({...user, experience: val})} 
                                             />
                                             {role === 'doctor' && (
-                                                <ProfileInput 
-                                                    icon={<Clock size={18} />} 
-                                                    label="Session Avg (Mins)" 
-                                                    value={user.avgWaitTime} 
-                                                    disabled={!isEditing} 
-                                                    onChange={(val) => setUser({...user, avgWaitTime: val})} 
-                                                />
+                                                <>
+                                                    <ProfileInput 
+                                                        icon={<Clock size={18} />} 
+                                                        label="Session Avg (Mins)" 
+                                                        value={user.avgWaitTime} 
+                                                        disabled={!isEditing} 
+                                                        onChange={(val) => setUser({...user, avgWaitTime: val})} 
+                                                    />
+                                                    <ProfileInput 
+                                                        icon={<Hash size={18} />} 
+                                                        label="Consultation Fee (₹)" 
+                                                        type="number"
+                                                        value={user.consultationFee} 
+                                                        disabled={!isEditing} 
+                                                        onChange={(val) => setUser({...user, consultationFee: val})} 
+                                                    />
+                                                    <ProfileInput 
+                                                        icon={<ShieldCheck size={18} />} 
+                                                        label="Medical License #" 
+                                                        value={user.medicalLicenseNumber} 
+                                                        disabled={!isEditing} 
+                                                        onChange={(val) => setUser({...user, medicalLicenseNumber: val})} 
+                                                    />
+                                                    <ProfileInput 
+                                                        icon={<UserCircle size={18} />} 
+                                                        label="Public Profile Slug" 
+                                                        value={user.slug} 
+                                                        disabled={!isEditing} 
+                                                        placeholder="e.g. dr-rahul-sharma"
+                                                        onChange={(val) => setUser({...user, slug: val})} 
+                                                    />
+                                                </>
                                             )}
                                         </>
                                     )}
