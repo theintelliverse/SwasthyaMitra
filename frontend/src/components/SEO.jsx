@@ -23,8 +23,8 @@ const SEO = ({ title, description, url, keywords, image, schemaMarkup, noindex }
     const isPng = imageUrl.toLowerCase().endsWith('.png');
     const imageType = isPng ? 'image/png' : 'image/jpeg';
     const isBanner = imageUrl.includes('og-image-banner');
-    const imageWidth = isBanner ? '1200' : '800';
-    const imageHeight = isBanner ? '630' : '800';
+    const imageWidth = isBanner ? '1024' : '800';
+    const imageHeight = isBanner ? '1024' : '800';
 
     return (
         <Helmet>
@@ -32,6 +32,7 @@ const SEO = ({ title, description, url, keywords, image, schemaMarkup, noindex }
             <title>{displayTitle}</title>
             <meta name="description" content={description || defaultDescription} />
             <meta name="keywords" content={keywords || defaultKeywords} />
+            <meta itemprop="image" content={imageUrl} />
             <link rel="canonical" href={pageUrl} />
 
             {/* Robots Directives */}
@@ -68,6 +69,7 @@ const SEO = ({ title, description, url, keywords, image, schemaMarkup, noindex }
             <meta property="og:title" content={displayTitle} />
             <meta property="og:description" content={description || defaultDescription} />
             <meta property="og:image" content={imageUrl} />
+            <meta property="og:image:url" content={imageUrl} />
             <meta property="og:image:secure_url" content={imageUrl} />
             <meta property="og:image:type" content={imageType} />
             <meta property="og:image:width" content={imageWidth} />

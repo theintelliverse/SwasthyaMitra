@@ -67,14 +67,11 @@ import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { API_URL } from './config/runtime';
 
-// Import Security Guard
+// Import Security Guard & Loaders
 import ProtectedRoute from './components/ProtectedRoute';
+import SkeletonLoader from './components/SkeletonLoader';
 
-const routeFallback = (
-  <div className="flex min-h-[40vh] items-center justify-center text-sm text-sandstone">
-    Loading...
-  </div>
-);
+const routeFallback = <SkeletonLoader />;
 
 const PlatformGuard = ({ children }) => {
   const [checking, setChecking] = useState(true);
@@ -138,14 +135,7 @@ const PlatformGuard = ({ children }) => {
   }, []);
 
   if (checking) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center font-sans">
-        <div className="text-center space-y-3">
-          <Loader2 className="animate-spin text-sky-400 mx-auto" size={32} />
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Syncing Appointory Ledger...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
 
   if (isMaintenance && window.location.pathname !== '/maintenance') {
@@ -158,7 +148,7 @@ const PlatformGuard = ({ children }) => {
     return null;
   }
 
-  return children;
+  return <div className="animate-fade-in">{children}</div>;
 };
 
 const App = () => {
