@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Edit, Gift, ToggleLeft, Trash2 } from 'lucide-react';
+import { Search, Edit, Gift, ToggleLeft, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const LabsTab = ({
   filteredLabs,
@@ -11,7 +11,9 @@ const LabsTab = ({
   handleEditSubscription,
   handleGiftSubscription,
   handleToggleActive,
-  handleDeleteFacility
+  handleDeleteFacility,
+  onSelectFacility,
+  handleApproveReject
 }) => {
   return (
     <div className="space-y-6">
@@ -50,17 +52,32 @@ const LabsTab = ({
               filteredLabs.map(l => {
                 const isExpired = l.subscriptionExpiresAt && new Date(l.subscriptionExpiresAt) < new Date();
                 return (
-                  <tr key={l._id} className={`hover:bg-parchment/30 transition-colors ${!l.isActive ? 'opacity-60 bg-rose-50/10' : ''}`}>
-                    <td className="p-4">
-                      <div className="font-black text-teak text-sm flex items-center gap-2">
+                  <tr key={l._id} className={`hover:bg-parchment/30 transition-colors ${!l.isActive ? 'bg-rose-50/10' : ''}`}>
+                    <td 
+                      className="p-4 cursor-pointer group transition hover:bg-teal-50/40"
+                      onClick={() => onSelectFacility && onSelectFacility(l, 'lab')}
+                      title="Click to view complete lab analytics, reports, and member details"
+                    >
+                      <div className="font-black text-teak text-sm flex items-center gap-2 group-hover:text-teal-900 group-hover:underline">
                         {l.labName}
-                        {!l.isActive && (
+                        {l.approvalStatus === 'pending' && (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[9px] font-black uppercase flex items-center gap-1">
+                            <Clock size={10} /> Pending Approval
+                          </span>
+                        )}
+                        {l.approvalStatus === 'rejected' && (
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-300 rounded-full text-[9px] font-black uppercase flex items-center gap-1">
+                            <XCircle size={10} /> Rejected
+                          </span>
+                        )}
+                        {!l.isActive && l.approvalStatus === 'approved' && (
                           <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 rounded text-[9px] font-black uppercase">Closed Temp</span>
                         )}
                       </div>
                       <div className="text-[10px] text-marigold uppercase tracking-widest font-black mt-0.5">{l.labCode}</div>
                       <div className="text-[10px] text-khaki mt-1">Joined: {new Date(l.createdAt).toLocaleDateString()}</div>
                     </td>
+
                     <td className="p-4 text-khaki">
                       <div className="text-slate-800 font-semibold">{l.phone}</div>
                       <div className="text-[10px] mt-0.5">{l.email}</div>
@@ -118,7 +135,25 @@ const LabsTab = ({
                       </button>
                     </td>
                     <td className="p-4">
-                      <div className="flex gap-1.5 justify-center">
+                      <div className="flex gap-1.5 justify-center flex-wrap">
+                        {l.approvalStatus === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApproveReject && handleApproveReject(l._id, 'lab', 'approved')}
+                              className="p-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition cursor-pointer"
+                              title="Approve Lab Registration"
+                            >
+                              <CheckCircle size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleApproveReject && handleApproveReject(l._id, 'lab', 'rejected')}
+                              className="p-2 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition cursor-pointer"
+                              title="Reject Registration Request"
+                            >
+                              <XCircle size={15} />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => handleEditSubscription(l._id, 'lab', l.subscriptionPlan, l.subscriptionExpiresAt)}
                           className="p-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition cursor-pointer"
@@ -136,8 +171,8 @@ const LabsTab = ({
                         <button
                           onClick={() => handleToggleActive(l._id, 'lab')}
                           className={`p-2 rounded-xl transition cursor-pointer ${l.isActive
-                              ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-650 hover:text-white'
-                              : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-650 hover:text-white'
+                              ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-655 hover:text-white'
+                              : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-655 hover:text-white'
                             }`}
                           title={l.isActive ? "Temporarily Close Lab" : "Open Lab"}
                         >
@@ -152,6 +187,7 @@ const LabsTab = ({
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 );
               })

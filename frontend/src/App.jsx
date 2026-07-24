@@ -62,6 +62,7 @@ const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDash
 const SubscriptionCheckout = lazy(() => import('./pages/shared/SubscriptionCheckout'));
 const MaintenanceMode = lazy(() => import('./pages/shared/MaintenanceMode'));
 const SubscriptionDetails = lazy(() => import('./pages/shared/SubscriptionDetails'));
+const PendingApprovalPage = lazy(() => import('./pages/shared/PendingApprovalPage'));
 
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
@@ -186,6 +187,19 @@ const App = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/maintenance" element={<MaintenanceMode />} />
               <Route path="/subscription-checkout" element={<SubscriptionCheckout />} />
+              <Route 
+                path="/pending-approval" 
+                element={
+                  <PendingApprovalPage 
+                    facility={JSON.parse(localStorage.getItem('pendingFacility') || '{}')} 
+                    onLogout={() => { 
+                      localStorage.removeItem('pendingFacility'); 
+                      window.location.href = '/login'; 
+                    }} 
+                  />
+                } 
+              />
+
 
               {/* --- 🌐 Public SEO & Entity Profile Pages --- */}
               <Route path="/c/:identifier" element={<ClinicPublicProfile />} />

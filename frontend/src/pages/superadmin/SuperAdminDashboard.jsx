@@ -20,6 +20,7 @@ import PaymentsTab from './components/PaymentsTab';
 import PromosTab from './components/PromosTab';
 import TicketsTab from './components/TicketsTab';
 import ConfigTab from './components/ConfigTab';
+import FacilityOverviewModal from './components/FacilityOverviewModal';
 
 const superadminApi = () => {
   const token = localStorage.getItem('token');
@@ -75,6 +76,41 @@ const SuperAdminDashboard = () => {
   });
 
   const [savingConfig, setSavingConfig] = useState(false);
+
+  // Facility Overview Modal State
+  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [selectedFacilityType, setSelectedFacilityType] = useState('clinic');
+  const [isOverviewOpen, setIsOverviewOpen] = useState(false);
+
+  const handleOpenOverview = (facility, type) => {
+    setSelectedFacility(facility);
+    setSelectedFacilityType(type);
+    setIsOverviewOpen(true);
+  };
+
+  const handleApproveReject = async (id, type, status, reason = '') => {
+    try {
+      const res = await superadminApi().patch(`/api/superadmin/facility/${id}/approval`, {
+        type,
+        status,
+        reason
+      });
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: res.data.message,
+          timer: 2000,
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false
+        });
+        setIsOverviewOpen(false);
+        fetchData();
+      }
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Failed to process approval decision', 'error');
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -860,6 +896,39 @@ const SuperAdminDashboard = () => {
             </button>
           </header>
 
+          {/* Pending Approval Banner Alert */}
+          {((clinics.filter(c => c.approvalStatus === 'pending').length > 0) || (labs.filter(l => l.approvalStatus === 'pending').length > 0)) && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-2 border-amber-400/40 rounded-2xl p-4 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white font-black flex items-center justify-center text-lg animate-pulse">
+                  🚨
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-amber-900">
+                    Pending Registration Approval Requests
+                  </h4>
+                  <p className="text-xs text-amber-800 font-medium">
+                    You have {clinics.filter(c => c.approvalStatus === 'pending').length} clinic(s) and {labs.filter(l => l.approvalStatus === 'pending').length} lab(s) waiting for Super Admin review.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('clinics')}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-teal-950 font-black text-xs hover:bg-amber-400 transition cursor-pointer"
+                >
+                  Review Clinics
+                </button>
+                <button
+                  onClick={() => setActiveTab('labs')}
+                  className="px-3.5 py-1.5 rounded-xl bg-teal-900 text-white font-black text-xs hover:bg-teal-800 transition cursor-pointer"
+                >
+                  Review Labs
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-3 bg-white/40 border border-sandstone/25 rounded-3xl">
               <RefreshCw className="animate-spin text-marigold" size={32} />
@@ -891,6 +960,8 @@ const SuperAdminDashboard = () => {
                   handleGiftSubscription={handleGiftSubscription}
                   handleToggleActive={handleToggleActive}
                   handleDeleteFacility={handleDeleteFacility}
+                  onSelectFacility={handleOpenOverview}
+                  handleApproveReject={handleApproveReject}
                 />
               )}
               {activeTab === 'labs' && (
@@ -905,6 +976,8 @@ const SuperAdminDashboard = () => {
                   handleGiftSubscription={handleGiftSubscription}
                   handleToggleActive={handleToggleActive}
                   handleDeleteFacility={handleDeleteFacility}
+                  onSelectFacility={handleOpenOverview}
+                  handleApproveReject={handleApproveReject}
                 />
               )}
               {activeTab === 'plans' && (
@@ -950,7 +1023,21 @@ const SuperAdminDashboard = () => {
               )}
             </>
           )}
+
+          {/* Facility Overview Modal */}
+          <FacilityOverviewModal
+            facility={selectedFacility}
+            facilityType={selectedFacilityType}
+            isOpen={isOverviewOpen}
+            onClose={() => setIsOverviewOpen(false)}
+            token={localStorage.getItem('token')}
+            onRefreshData={fetchData}
+            onApproveReject={handleApproveReject}
+            onGiftSubscription={handleGiftSubscription}
+            onToggleActive={handleToggleActive}
+          />
         </main>
+
       </div>
     </div>
   );

@@ -65,9 +65,14 @@ const LabLogin = () => {
 
       if (!error.response) {
         setLoginError({ type: 'network', message: 'Cannot reach the server. Check your connection.' });
+      } else if (error.response?.data?.isPendingApproval) {
+        localStorage.setItem('pendingFacility', JSON.stringify(error.response.data.facility));
+        navigate('/pending-approval');
+        return;
       } else if (status === 401 || status === 403) {
         setLoginError({ type: 'credentials', message: serverMessage || 'Invalid email or password.' });
-      } else if (status === 429) {
+      }
+ else if (status === 429) {
         setLoginError({ type: 'server', message: 'Too many attempts. Please wait before trying again.' });
       } else {
         setLoginError({ type: 'server', message: serverMessage || 'Something went wrong. Please try again.' });

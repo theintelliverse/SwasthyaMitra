@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Edit, Gift, ToggleLeft, Trash2 } from 'lucide-react';
+import { Search, Edit, Gift, ToggleLeft, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const ClinicsTab = ({
   filteredClinics,
@@ -12,7 +12,9 @@ const ClinicsTab = ({
   handleEditSubscription,
   handleGiftSubscription,
   handleToggleActive,
-  handleDeleteFacility
+  handleDeleteFacility,
+  onSelectFacility,
+  handleApproveReject
 }) => {
   return (
     <div className="space-y-6">
@@ -51,17 +53,32 @@ const ClinicsTab = ({
               filteredClinics.map(c => {
                 const isExpired = c.subscriptionExpiresAt && new Date(c.subscriptionExpiresAt) < new Date();
                 return (
-                  <tr key={c._id} className={`hover:bg-parchment/30 transition-colors ${!c.isActive ? 'opacity-60 bg-rose-50/10' : ''}`}>
-                    <td className="p-4">
-                      <div className="font-black text-teak text-sm flex items-center gap-2">
+                  <tr key={c._id} className={`hover:bg-parchment/30 transition-colors ${!c.isActive ? 'bg-rose-50/10' : ''}`}>
+                    <td 
+                      className="p-4 cursor-pointer group transition hover:bg-teal-50/40"
+                      onClick={() => onSelectFacility && onSelectFacility(c, 'clinic')}
+                      title="Click to view complete clinic analytics, doctors, and member details"
+                    >
+                      <div className="font-black text-teak text-sm flex items-center gap-2 group-hover:text-teal-900 group-hover:underline">
                         {c.name}
-                        {!c.isActive && (
+                        {c.approvalStatus === 'pending' && (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[9px] font-black uppercase flex items-center gap-1">
+                            <Clock size={10} /> Pending Approval
+                          </span>
+                        )}
+                        {c.approvalStatus === 'rejected' && (
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-300 rounded-full text-[9px] font-black uppercase flex items-center gap-1">
+                            <XCircle size={10} /> Rejected
+                          </span>
+                        )}
+                        {!c.isActive && c.approvalStatus === 'approved' && (
                           <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 rounded text-[9px] font-black uppercase">Closed Temp</span>
                         )}
                       </div>
                       <div className="text-[10px] text-marigold uppercase tracking-widest font-black mt-0.5">{c.clinicCode}</div>
                       <div className="text-[10px] text-khaki mt-1">Joined: {new Date(c.createdAt).toLocaleDateString()}</div>
                     </td>
+
                     <td className="p-4 text-khaki">
                       <div className="text-slate-800 font-semibold">{c.contactPhone}</div>
                       <div className="text-[10px] mt-0.5">{c.address}</div>
@@ -130,7 +147,25 @@ const ClinicsTab = ({
                       </button>
                     </td>
                     <td className="p-4">
-                      <div className="flex gap-1.5 justify-center">
+                      <div className="flex gap-1.5 justify-center flex-wrap">
+                        {c.approvalStatus === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApproveReject && handleApproveReject(c._id, 'clinic', 'approved')}
+                              className="p-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition cursor-pointer"
+                              title="Approve Clinic Registration"
+                            >
+                              <CheckCircle size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleApproveReject && handleApproveReject(c._id, 'clinic', 'rejected')}
+                              className="p-2 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition cursor-pointer"
+                              title="Reject Registration Request"
+                            >
+                              <XCircle size={15} />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => handleEditSubscription(c._id, 'clinic', c.subscriptionPlan, c.subscriptionExpiresAt)}
                           className="p-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition cursor-pointer"
@@ -148,8 +183,8 @@ const ClinicsTab = ({
                         <button
                           onClick={() => handleToggleActive(c._id, 'clinic')}
                           className={`p-2 rounded-xl transition cursor-pointer ${c.isActive
-                              ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-650 hover:text-white'
-                              : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-650 hover:text-white'
+                              ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-655 hover:text-white'
+                              : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-655 hover:text-white'
                             }`}
                           title={c.isActive ? "Temporarily Close Clinic" : "Open Clinic"}
                         >
@@ -164,6 +199,7 @@ const ClinicsTab = ({
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 );
               })

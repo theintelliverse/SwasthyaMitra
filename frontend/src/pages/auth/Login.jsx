@@ -90,12 +90,17 @@ const Login = () => {
           type: 'network',
           message: 'Cannot reach the server. Check your connection or ensure the backend is running.'
         });
+      } else if (error.response?.data?.isPendingApproval) {
+        localStorage.setItem('pendingFacility', JSON.stringify(error.response.data.facility));
+        navigate('/pending-approval');
+        return;
       } else if (status === 401 || status === 403) {
         setLoginError({
           type: 'credentials',
           message: serverMessage || 'Invalid email, clinic code, or password. Please try again.'
         });
-      } else if (status === 429) {
+      }
+ else if (status === 429) {
         setLoginError({
           type: 'server',
           message: 'Too many login attempts. Please wait a moment before trying again.'
