@@ -19,8 +19,12 @@ const getOrCreateConfig = async () => {
     if (!config) {
         config = await SystemConfig.create({
             isMaintenanceMode: false,
-            isSubscriptionEnforced: false
+            isSubscriptionEnforced: false,
+            superadminEmail: 'appointory@gmail.com'
         });
+    } else if (!config.superadminEmail) {
+        config.superadminEmail = 'appointory@gmail.com';
+        await config.save();
     }
     return config;
 };
@@ -341,7 +345,8 @@ exports.getPublicConfig = async (req, res) => {
             success: true,
             isMaintenanceMode: config.isMaintenanceMode,
             maintenanceMessage: config.maintenanceMessage,
-            isSubscriptionEnforced: config.isSubscriptionEnforced
+            isSubscriptionEnforced: config.isSubscriptionEnforced,
+            superadminEmail: config.superadminEmail || 'appointory@gmail.com'
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -384,7 +389,7 @@ exports.createTicket = async (req, res) => {
         const { senderName, senderEmail, facilityType, facilityName, subject, message } = req.body;
         const ticket = await SupportTicket.create({
             senderName,
-            senderEmail,
+            senderEmail: senderEmail || 'help.appointory@gmail.com',
             facilityType,
             facilityName,
             subject,
@@ -392,7 +397,7 @@ exports.createTicket = async (req, res) => {
         });
 
         const config = await SystemConfig.findOne();
-        const superadminEmail = config ? config.superadminEmail : null;
+        const superadminEmail = (config && config.superadminEmail) ? config.superadminEmail : 'appointory@gmail.com';
 
         const { sendSupportConfirmationEmail } = require('../utils/send_email');
         sendSupportConfirmationEmail(ticket, superadminEmail).catch(err => console.error('Failed to send support confirmation email:', err.message));
