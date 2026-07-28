@@ -23,6 +23,15 @@ const FacilityOverviewModal = ({
   const [memberSearch, setMemberSearch] = useState('');
   const [patientSearch, setPatientSearch] = useState('');
 
+  // Email tab states
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [emailTemplate, setEmailTemplate] = useState('custom');
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailStatusMsg, setEmailStatusMsg] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('Application did not meet operational criteria.');
+  const [customGreeting, setCustomGreeting] = useState('Hope you are doing well.');
+
   // Fetch detailed facility overview data when modal opens
   useEffect(() => {
     if (isOpen && facility?._id) {
@@ -59,6 +68,119 @@ const FacilityOverviewModal = ({
     weekly: { labels: [], patients: [], revenue: [], consultations: [] },
     monthly: { labels: [], patients: [], revenue: [], consultations: [] },
     yearly: { labels: [], patients: [], revenue: [], consultations: [] }
+  };
+
+  const facName = fac.name || fac.labName;
+  const expiryDateStr = fac.subscriptionExpiresAt ? new Date(fac.subscriptionExpiresAt).toLocaleDateString() : 'N/A';
+
+  useEffect(() => {
+    if (emailTemplate === 'rejection') {
+      setEmailSubject(`Update regarding your ${facilityType === 'clinic' ? 'clinic' : 'lab'} registration`);
+      setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+  <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 25px 20px; text-align: center; color: white;">
+    <h2 style="margin: 0; font-size: 22px;">Registration Request Update</h2>
+    <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">Appointory Support Notice</p>
+  </div>
+  <div style="padding: 25px; color: #334155; line-height: 1.6;">
+    <p>Hello <strong>${facName}</strong> Administrator,</p>
+    <p>Thank you for your interest in Appointory. We are writing to update you regarding your registration request for <strong>${facName}</strong>.</p>
+    <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; border-radius: 6px; margin: 20px 0;">
+      <h4 style="margin: 0 0 8px 0; color: #b91c1c; font-size: 14px;">❌ Request Not Approved</h4>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Reason:</strong> ${rejectionReason}</p>
+    </div>
+    <p style="font-size: 13px;">If you wish to provide updated documentation or details, please reply directly or contact our support team.</p>
+    <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Admin Team</strong></p>
+  </div>
+</div>`);
+    } else if (emailTemplate === 'greeting') {
+      setEmailSubject(`🎉 Welcome to Appointory! Let's get started`);
+      setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+  <div style="background: linear-gradient(135deg, #0f766e 0%, #1f6fb2 100%); padding: 25px 20px; text-align: center; color: white;">
+    <h2 style="margin: 0; font-size: 22px;">🎉 Welcome to Appointory!</h2>
+    <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">Active & Live on our Network</p>
+  </div>
+  <div style="padding: 25px; color: #334155; line-height: 1.6;">
+    <p>Hello <strong>${facName}</strong> Administrator,</p>
+    <p>${customGreeting}</p>
+    <p>We are absolutely thrilled to welcome you to the Appointory family! Your facility has been verified and is now active on our national healthcare network.</p>
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 6px; margin: 20px 0;">
+      <h4 style="margin: 0 0 8px 0; color: #047857; font-size: 14px;">🚀 What to do next:</h4>
+      <ol style="margin: 0; padding-left: 20px; font-size: 13px;">
+        <li>Log into your admin dashboard.</li>
+        <li>Set up your service catalog or pricing fees.</li>
+        <li>Add staff members, doctors, and tech accounts.</li>
+      </ol>
+    </div>
+    <p style="font-size: 13px;">If you have any questions or need onboarding assistance, please feel free to reach out to our dedicated support managers.</p>
+    <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Team</strong></p>
+  </div>
+</div>`);
+    } else if (emailTemplate === 'subscription') {
+      setEmailSubject(`⚠️ Action Required: Your Appointory subscription is expiring soon`);
+      setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+  <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); padding: 25px 20px; text-align: center; color: white;">
+    <h2 style="margin: 0; font-size: 22px;">⚠️ Subscription Expiry Alert</h2>
+    <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">Appointory Premium Services</p>
+  </div>
+  <div style="padding: 25px; color: #334155; line-height: 1.6;">
+    <p>Hello <strong>${facName}</strong> Team,</p>
+    <p>This is a friendly reminder that your Appointory Premium subscription for <strong>${facName}</strong> is expiring soon on <strong>${expiryDateStr}</strong>.</p>
+    <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0;">
+      <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 14px;">🔒 Renew to Avoid Disruption</h4>
+      <p style="margin: 0; font-size: 13px;">To ensure your staff and patient directories remain fully functional without any access locks, please renew your subscription package.</p>
+    </div>
+    <p style="font-size: 13px;">You can easily complete your payment through your facility dashboard billing section.</p>
+    <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Billing</strong></p>
+  </div>
+</div>`);
+    } else if (emailTemplate === 'custom') {
+      setEmailSubject(`Notification from Appointory Superadmin`);
+      setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 25px; background-color: #ffffff;">
+  <h2 style="color: #0f766e; margin-top: 0;">Notification from Appointory</h2>
+  <p>Dear <strong>${facName}</strong> Team,</p>
+  <div style="color: #334155; line-height: 1.6; min-height: 150px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+    [Write your message here...]
+  </div>
+  <p style="color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 25px;">Appointory Healthcare Network Admin Message</p>
+</div>`);
+    }
+  }, [emailTemplate, facName, expiryDateStr, rejectionReason, customGreeting, facilityType]);
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!emailSubject || !emailBody) {
+      setEmailStatusMsg({ type: 'error', text: 'Subject and email body content cannot be empty.' });
+      return;
+    }
+    
+    setEmailSending(true);
+    setEmailStatusMsg(null);
+    try {
+      const res = await fetch(`/api/superadmin/facility/${fac._id}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: facilityType,
+          email: fac.email,
+          subject: emailSubject,
+          body: emailBody
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEmailStatusMsg({ type: 'success', text: data.message || 'Email sent successfully!' });
+      } else {
+        setEmailStatusMsg({ type: 'error', text: data.message || 'Failed to send email.' });
+      }
+    } catch (err) {
+      console.error(err);
+      setEmailStatusMsg({ type: 'error', text: 'Network/server error while sending email.' });
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   const currentAnalytics = analytics[timeframe] || analytics.weekly;
@@ -125,6 +247,12 @@ const FacilityOverviewModal = ({
                 <span>Code: <strong className="text-amber-300 font-mono">{fac.clinicCode || fac.labCode}</strong></span>
                 <span>•</span>
                 <span>Contact: {fac.contactPhone || fac.phone}</span>
+                {fac.email && (
+                  <>
+                    <span>•</span>
+                    <span>Email: <strong className="text-amber-300">{fac.email}</strong></span>
+                  </>
+                )}
                 <span>•</span>
                 <span>Joined: {new Date(fac.createdAt).toLocaleDateString()}</span>
               </div>
@@ -180,6 +308,7 @@ const FacilityOverviewModal = ({
             { id: 'financials', label: 'Financials & Ledger', icon: DollarSign },
             { id: 'support', label: `Support Tickets (${supportTickets.length})`, icon: FileText },
             { id: 'seo', label: 'SEO & Public Profile', icon: ExternalLink },
+            { id: 'email', label: 'Email Facility', icon: Send },
             { id: 'controls', label: 'Quick Admin Actions', icon: Shield }
           ].map(tab => {
             const Icon = tab.icon;
@@ -694,6 +823,134 @@ const FacilityOverviewModal = ({
                       <div className="text-slate-600 mt-0.5">{fac.seoDescription || 'No custom description provided.'}</div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* TAB: EMAIL FACILITY */}
+              {activeTab === 'email' && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left Column - Email Parameters & Settings */}
+                  <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">Email Configuration</h4>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Recipient Address</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={fac.email || 'No email configured'}
+                          className="w-full bg-slate-50 border border-sandstone/30 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-500 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Email Template</label>
+                        <select
+                          value={emailTemplate}
+                          onChange={(e) => {
+                            setEmailTemplate(e.target.value);
+                            setEmailStatusMsg(null);
+                          }}
+                          className="w-full bg-white border border-sandstone/30 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-teal-600"
+                        >
+                          <option value="custom">✉️ Custom Email</option>
+                          <option value="rejection">❌ Registration Rejected</option>
+                          <option value="greeting">👋 Welcome / Greeting</option>
+                          <option value="subscription">⚠️ Subscription Expiry Warning</option>
+                        </select>
+                      </div>
+
+                      {/* Template Variable Fields */}
+                      {emailTemplate === 'rejection' && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Rejection Reason</label>
+                          <textarea
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            rows={3}
+                            className="w-full bg-white border border-sandstone/30 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-teal-600"
+                            placeholder="State why the application is not approved..."
+                          />
+                        </div>
+                      )}
+
+                      {emailTemplate === 'greeting' && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Greeting message / Welcome intro</label>
+                          <textarea
+                            value={customGreeting}
+                            onChange={(e) => setCustomGreeting(e.target.value)}
+                            rows={3}
+                            className="w-full bg-white border border-sandstone/30 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-teal-600"
+                            placeholder="Write a custom welcome greeting..."
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2">
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        💡 Choosing a template will automatically construct standard HTML structure. You can customize the final content in the text editor.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Subject, Editor & Actions */}
+                  <form onSubmit={handleSendEmail} className="lg:col-span-7 bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-4 flex flex-col">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">Compose Message</h4>
+
+                    <div className="space-y-3 flex-1 flex flex-col">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Subject</label>
+                        <input
+                          type="text"
+                          value={emailSubject}
+                          onChange={(e) => setEmailSubject(e.target.value)}
+                          className="w-full bg-white border border-sandstone/30 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-teal-600"
+                          placeholder="Email subject..."
+                        />
+                      </div>
+
+                      <div className="flex-1 flex flex-col">
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Body (HTML & Text Editor)</label>
+                        <textarea
+                          value={emailBody}
+                          onChange={(e) => setEmailBody(e.target.value)}
+                          rows={12}
+                          className="w-full bg-slate-50 border border-sandstone/30 rounded-xl px-3.5 py-2.5 text-xs font-mono outline-none focus:bg-white focus:border-teal-600 flex-1 min-h-[250px]"
+                          placeholder="HTML/Text template body..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status Feedback Messages */}
+                    {emailStatusMsg && (
+                      <div className={`p-3 rounded-xl text-xs font-bold ${
+                        emailStatusMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                      }`}>
+                        {emailStatusMsg.text}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end pt-2 border-t border-slate-100">
+                      <button
+                        type="submit"
+                        disabled={emailSending || !fac.email}
+                        className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-bold text-xs shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        {emailSending ? (
+                          <>
+                            <RefreshCw className="animate-spin" size={14} /> Sending Email...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={14} /> Send Email
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
 
