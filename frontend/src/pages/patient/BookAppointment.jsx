@@ -682,7 +682,7 @@ const BookAppointment = () => {
                                         title: 'Predictive Wait Intelligence ðŸ§ ',
                                         html: `
                                             <div class="text-left space-y-4 text-slate-600 font-sans mt-4">
-                                                <p>This estimate is dynamically computed using SwasthyaMitra's AI Engine based on:</p>
+                                                <p>This estimate is dynamically computed using Appointory's AI Engine based on:</p>
                                                 <ul class="list-disc pl-5 space-y-2 text-[14px]">
                                                     <li>Doctor's average consultation duration.</li>
                                                     <li>Today's active queue load &amp; scheduling density.</li>
