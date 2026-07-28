@@ -7,7 +7,7 @@ Domain: https://appointory.in
 
 ## 1. Platform Overview & Intent Architecture
 
-- **Brand Name**: Appointory (by SwasthyaMitra)
+- **Brand Name**: Appointory
 - **Primary Website**: https://appointory.in
 - **Service Scope**: India (Pan-India Clinic Networks & Diagnostic Centers)
 - **Target Users**: Patients seeking OPD consultation, live queue tracking, doctor booking, and diagnostic test booking.

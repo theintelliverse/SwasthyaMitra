@@ -179,7 +179,7 @@ const PatientRegister = () => {
         <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
             <SEO 
                 title="Patient Registration" 
-                description="Sign up for a secure SwasthyaMitra patient account. Track queues, view appointments, and manage your health records." 
+                description="Sign up for a secure Appointory patient account. Track queues, view appointments, and manage your health records." 
                 url="/patient/register" 
             />
             <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">

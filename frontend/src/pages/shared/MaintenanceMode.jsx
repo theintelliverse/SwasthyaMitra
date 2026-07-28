@@ -50,7 +50,7 @@ const MaintenanceMode = () => {
           </div>
 
           <div className="flex items-center justify-center gap-1.5 mt-6 text-indigo-400 font-extrabold uppercase tracking-widest text-[10px]">
-            <HeartPulse size={12} /> SwasthyaMitra Healthcare Network
+            <HeartPulse size={12} /> Appointory Healthcare Network
           </div>
 
           <h2 className="text-2xl font-extrabold text-slate-100 mt-3 tracking-tight">Temporary Downtime</h2>

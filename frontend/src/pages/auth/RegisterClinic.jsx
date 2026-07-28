@@ -11,6 +11,7 @@ const RegisterClinic = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [verificationRequired, setVerificationRequired] = useState(false);
   const [formData, setFormData] = useState({
     clinicName: '',
     clinicCode: '',
@@ -19,7 +20,9 @@ const RegisterClinic = () => {
     adminName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    emailOtp: '',
+    smsOtp: ''
   });
 
   const handleSubmit = async (e) => {
@@ -41,6 +44,19 @@ const RegisterClinic = () => {
     try {
       // 2. Backend API Call
       const response = await axios.post(`${API_URL}/api/auth/register-clinic`, formData);
+
+      if (response.data.verificationRequired) {
+        setVerificationRequired(true);
+        Swal.fire({
+          icon: 'info',
+          title: '<span style="font-family: var(--font-heading)">Verification Required</span>',
+          text: response.data.message || 'Verification codes have been sent to your email and phone number. Please enter them below to complete registration.',
+          confirmButtonColor: '#0F766E',
+          background: '#EEF6FA',
+        });
+        setLoading(false);
+        return;
+      }
 
       if (response.data.success) {
         Swal.fire({
@@ -127,117 +143,169 @@ const RegisterClinic = () => {
           {/* Right Sidebar - Form */}
           <div className="lg:col-span-3 p-6 lg:p-8">
             <form onSubmit={handleSubmit} className="space-y-4">
-
-              {/* Section 1: Clinic Info */}
-              <div className="space-y-3">
-                <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Clinic Information</h3>
-
-                <div className="grid sm:grid-cols-2 gap-4">
+              {verificationRequired ? (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                  <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Verification Codes</h3>
+                  <p className="text-xs text-khaki/80">We have sent two verification codes. Enter them below to finish onboarding.</p>
+                  
                   <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Name</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Email Verification Code</label>
                     <input
-                      type="text" required placeholder="City Care Hospital"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold"
-                      onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
+                      type="text" required placeholder="Enter 6-digit code" maxLength={6}
+                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold text-center tracking-[0.2em]"
+                      value={formData.emailOtp}
+                      onChange={(e) => setFormData({ ...formData, emailOtp: e.target.value })}
                     />
                   </div>
+
                   <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Code (Unique)</label>
+                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">SMS Verification Code</label>
                     <input
-                      type="text" required placeholder="e.g. CITY01"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold uppercase"
-                      onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
+                      type="text" required placeholder="Enter 6-digit code" maxLength={6}
+                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold text-center tracking-[0.2em]"
+                      value={formData.smsOtp}
+                      onChange={(e) => setFormData({ ...formData, smsOtp: e.target.value })}
                     />
                   </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-2.5 bg-marigold text-white rounded-2xl font-bold text-base shadow-lg shadow-marigold/20 transition-all transform hover:-translate-y-1 active:translate-y-0 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-teak'}`}
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Register'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setVerificationRequired(false)}
+                    className="w-full py-2 bg-transparent text-khaki hover:text-teak transition-colors text-sm font-bold"
+                  >
+                    Back to Edit Info
+                  </button>
                 </div>
+              ) : (
+                <>
+                  {/* Section 1: Clinic Info */}
+                  <div className="space-y-3">
+                    <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Clinic Information</h3>
 
-                <div className="space-y-0.5">
-                  <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Full Address</label>
-                  <input
-                    type="text" required placeholder="Street, Sector, City, State"
-                    className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  />
-                </div>
-              </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Name</label>
+                        <input
+                          type="text" required placeholder="City Care Hospital"
+                          className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold"
+                          value={formData.clinicName}
+                          onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Clinic Code (Unique)</label>
+                        <input
+                          type="text" required placeholder="e.g. CITY01"
+                          className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-bold uppercase"
+                          value={formData.clinicCode}
+                          onChange={(e) => setFormData({ ...formData, clinicCode: e.target.value })}
+                        />
+                      </div>
+                    </div>
 
-              {/* Section 2: Admin Info */}
-              <div className="space-y-3 pt-2">
-                <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Admin Account</h3>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
-                    <input
-                      type="text" required placeholder="Dr. Jal"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Contact Phone</label>
-                    <input
-                      type="tel" required placeholder="+91 XXXXX XXXXX"
-                      className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                      onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-0.5">
-                  <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Email</label>
-                  <input
-                    type="email" required placeholder="admin@clinic.com"
-                    className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Password</label>
-                    <div className="relative">
+                    <div className="space-y-0.5">
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Full Address</label>
                       <input
-                        type={showPassword ? 'text' : 'password'} required placeholder="••••••••"
-                        className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        type="text" required placeholder="Street, Sector, City, State"
+                        className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
                     </div>
                   </div>
-                  <div className="space-y-0.5">
-                    <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Confirm Password</label>
-                    <div className="relative">
+
+                  {/* Section 2: Admin Info */}
+                  <div className="space-y-3 pt-2">
+                    <h3 className="text-[14px] font-black uppercase tracking-widest text-khaki border-b border-sandstone pb-2">Admin Account</h3>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Name</label>
+                        <input
+                          type="text" required placeholder="Dr. Jal"
+                          className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                          value={formData.adminName}
+                          onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Contact Phone</label>
+                        <input
+                          type="tel" required placeholder="+91 XXXXX XXXXX"
+                          className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                          value={formData.contactPhone}
+                          onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Admin Email</label>
                       <input
-                        type={showConfirmPassword ? 'text' : 'password'} required placeholder="••••••••"
-                        className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        type="email" required placeholder="admin@clinic.com"
+                        className="w-full px-4 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Password</label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? 'text' : 'password'} required placeholder="••••••••"
+                            className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-0.5">
+                        <label className="text-[14px] font-black uppercase tracking-widest text-khaki ml-2">Confirm Password</label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? 'text' : 'password'} required placeholder="••••••••"
+                            className="w-full pl-4 pr-10 py-2 bg-parchment border border-sandstone rounded-xl focus:outline-none focus:border-marigold transition-all text-sm font-medium"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-khaki/60 hover:text-marigold transition-colors"
+                          >
+                            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2.5 bg-marigold text-white rounded-2xl font-bold text-base shadow-lg shadow-marigold/20 transition-all transform hover:-translate-y-1 active:translate-y-0 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-teak'}`}
-              >
-                {loading ? 'Processing Registration...' : 'Finalize Registration'}
-              </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-2.5 bg-marigold text-white rounded-2xl font-bold text-base shadow-lg shadow-marigold/20 transition-all transform hover:-translate-y-1 active:translate-y-0 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-teak'}`}
+                  >
+                    {loading ? 'Processing Registration...' : 'Finalize Registration'}
+                  </button>
+                </>
+              )}
             </form>
           </div>
         </div>

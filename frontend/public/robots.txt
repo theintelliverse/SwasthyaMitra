@@ -11,7 +11,7 @@ User-agent: SemrushBot
 User-agent: SemrushBot-SA
 Disallow: /
 
-# 2. Block AI scraper bots from training on SwasthyaMitra data
+# 2. Block AI scraper bots from training on Appointory data
 User-agent: GPTBot
 User-agent: ChatGPT-User
 User-agent: ClaudeBot

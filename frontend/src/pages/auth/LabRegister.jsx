@@ -13,8 +13,9 @@ import SEO from '../../components/SEO';
 import { API_URL } from '../../config/runtime';
 
 const LabRegister = () => {
+  const [verificationRequired, setVerificationRequired] = useState(false);
   const [formData, setFormData] = useState({
-    labName: '', labCode: '', email: '', password: '', confirmPassword: '', phone: '', address: ''
+    labName: '', labCode: '', email: '', password: '', confirmPassword: '', phone: '', address: '', emailOtp: '', smsOtp: ''
   });
   const [showPasswords, setShowPasswords] = useState({ password: false, confirmPassword: false });
   const [loading, setLoading] = useState(false);
@@ -44,8 +45,10 @@ const LabRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    if (!verificationRequired) {
+      const errs = validate();
+      if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    }
 
     setLoading(true);
     try {
@@ -55,8 +58,22 @@ const LabRegister = () => {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
-        address: formData.address
+        address: formData.address,
+        emailOtp: formData.emailOtp,
+        smsOtp: formData.smsOtp
       });
+
+      if (response.data.verificationRequired) {
+        setVerificationRequired(true);
+        Swal.fire({
+          icon: 'info',
+          title: 'Verification Required',
+          text: response.data.message || 'Verification codes have been sent to your email and phone number. Please enter them below to complete registration.',
+          confirmButtonColor: '#1B6CA8'
+        });
+        setLoading(false);
+        return;
+      }
 
       if (response.data.success) {
         await Swal.fire({
@@ -89,7 +106,7 @@ const LabRegister = () => {
     <div className="min-h-screen bg-parchment font-body text-teak flex flex-col relative overflow-hidden">
       <SEO
         title="Lab Registration"
-        description="Register your independent diagnostic lab on SwasthyaMitra to receive test requests from clinics."
+        description="Register your independent diagnostic lab on Appointory to receive test requests from clinics."
         url="/lab/register"
       />
 
@@ -125,78 +142,127 @@ const LabRegister = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {fieldConfig.map(({ key, label, placeholder, icon: Icon, type, hint }) => (
-                <div key={key} className="space-y-1.5">
-                  <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/60'}`}>
-                    {label}
-                  </label>
-                  <div className={`relative transition-all duration-300 transform ${focusedField === key ? 'scale-[1.01]' : ''}`}>
-                    <Icon
-                      className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/40'}`}
-                      size={17}
-                    />
+              {verificationRequired ? (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                  <p className="text-xs text-khaki/80">We have sent two verification codes. Enter them below to finish onboarding.</p>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[14px] font-bold uppercase tracking-widest ml-4 text-khaki/60">
+                      Email Verification Code
+                    </label>
                     <input
-                      type={key === 'password' || key === 'confirmPassword' ? (showPasswords[key] ? 'text' : 'password') : type}
-                      placeholder={placeholder}
-                      className={`w-full pl-12 ${key === 'password' || key === 'confirmPassword' ? 'pr-14' : 'pr-6'} py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[key] ? 'border-red-300' : 'border-sandstone'} ${key === 'labCode' ? 'uppercase font-black' : ''}`}
-                      value={formData[key]}
-                      onFocus={() => setFocusedField(key)}
-                      onBlur={() => setFocusedField(null)}
-                      onChange={(e) => handleInputChange(key, e.target.value)}
+                      type="text" required placeholder="Enter 6-digit code" maxLength={6}
+                      className="w-full px-4 py-3 bg-parchment/50 border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all text-sm font-bold text-center tracking-[0.2em] text-teak"
+                      value={formData.emailOtp}
+                      onChange={(e) => handleInputChange('emailOtp', e.target.value)}
                     />
-                    {(key === 'password' || key === 'confirmPassword') && (
-                      <button
-                        type="button"
-                        onClick={() => setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }))}
-                        className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
-                      >
-                        {showPasswords[key] ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    )}
                   </div>
-                  {hint && !errors[key] && <p className="text-[12px] text-khaki/60 ml-4">{hint}</p>}
-                  {errors[key] && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors[key]}</p>}
-                </div>
-              ))}
 
-              {/* Address — textarea */}
-              <div className="space-y-1.5">
-                <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'address' ? 'text-blue-600' : 'text-khaki/60'}`}>
-                  Lab Address
-                </label>
-                <div className={`relative transition-all duration-300 transform ${focusedField === 'address' ? 'scale-[1.01]' : ''}`}>
-                  <MapPin className={`absolute left-5 top-4 transition-colors duration-300 ${focusedField === 'address' ? 'text-blue-600' : 'text-khaki/40'}`} size={17} />
-                  <textarea
-                    placeholder="Street, Area, City, Pincode..."
-                    rows={3}
-                    className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm resize-none ${errors.address ? 'border-red-300' : 'border-sandstone'}`}
-                    value={formData.address}
-                    onFocus={() => setFocusedField('address')}
-                    onBlur={() => setFocusedField(null)}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                  />
-                </div>
-                {errors.address && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors.address}</p>}
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[14px] font-bold uppercase tracking-widest ml-4 text-khaki/60">
+                      SMS Verification Code
+                    </label>
+                    <input
+                      type="text" required placeholder="Enter 6-digit code" maxLength={6}
+                      className="w-full px-4 py-3 bg-parchment/50 border border-sandstone rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all text-sm font-bold text-center tracking-[0.2em] text-teak"
+                      value={formData.smsOtp}
+                      onChange={(e) => handleInputChange('smsOtp', e.target.value)}
+                    />
+                  </div>
 
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
-                  style={{ background: loading ? '#6b7280' : 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}
-                >
-                  {loading ? (
-                    <RefreshCw className="animate-spin" size={20} />
-                  ) : (
-                    <>
-                      <CheckCircle size={18} />
-                      Register Lab
-                      <ArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" size={18} />
-                    </>
-                  )}
-                </button>
-              </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+                    style={{ background: loading ? '#6b7280' : 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}
+                  >
+                    {loading ? <RefreshCw className="animate-spin" size={20} /> : 'Verify & Register'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setVerificationRequired(false)}
+                    className="w-full py-2 bg-transparent hover:text-teak transition-colors text-sm font-bold text-khaki/60"
+                  >
+                    Back to Edit Info
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {fieldConfig.map(({ key, label, placeholder, icon: Icon, type, hint }) => (
+                    <div key={key} className="space-y-1.5">
+                      <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/60'}`}>
+                        {label}
+                      </label>
+                      <div className={`relative transition-all duration-300 transform ${focusedField === key ? 'scale-[1.01]' : ''}`}>
+                        <Icon
+                          className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/40'}`}
+                          size={17}
+                        />
+                        <input
+                          type={key === 'password' || key === 'confirmPassword' ? (showPasswords[key] ? 'text' : 'password') : type}
+                          placeholder={placeholder}
+                          className={`w-full pl-12 ${key === 'password' || key === 'confirmPassword' ? 'pr-14' : 'pr-6'} py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[key] ? 'border-red-300' : 'border-sandstone'} ${key === 'labCode' ? 'uppercase font-black' : ''}`}
+                          value={formData[key]}
+                          onFocus={() => setFocusedField(key)}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => handleInputChange(key, e.target.value)}
+                        />
+                        {(key === 'password' || key === 'confirmPassword') && (
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }))}
+                            className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
+                          >
+                            {showPasswords[key] ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        )}
+                      </div>
+                      {hint && !errors[key] && <p className="text-[12px] text-khaki/60 ml-4">{hint}</p>}
+                      {errors[key] && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors[key]}</p>}
+                    </div>
+                  ))}
+
+                  {/* Address — textarea */}
+                  <div className="space-y-1.5">
+                    <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === 'address' ? 'text-blue-600' : 'text-khaki/60'}`}>
+                      Lab Address
+                    </label>
+                    <div className={`relative transition-all duration-300 transform ${focusedField === 'address' ? 'scale-[1.01]' : ''}`}>
+                      <MapPin className={`absolute left-5 top-4 transition-colors duration-300 ${focusedField === 'address' ? 'text-blue-600' : 'text-khaki/40'}`} size={17} />
+                      <textarea
+                        placeholder="Street, Area, City, Pincode..."
+                        rows={3}
+                        className={`w-full pl-12 pr-6 py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm resize-none ${errors.address ? 'border-red-300' : 'border-sandstone'}`}
+                        value={formData.address}
+                        onFocus={() => setFocusedField('address')}
+                        onBlur={() => setFocusedField(null)}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                      />
+                    </div>
+                    {errors.address && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors.address}</p>}
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3.5 text-white rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+                      style={{ background: loading ? '#6b7280' : 'linear-gradient(135deg, #0F4C75, #1B6CA8)' }}
+                    >
+                      {loading ? (
+                        <RefreshCw className="animate-spin" size={20} />
+                      ) : (
+                        <>
+                          <CheckCircle size={18} />
+                          Register Lab
+                          <ArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" size={18} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
             </form>
 
             <div className="mt-6 text-center pt-5 border-t border-sandstone/30 space-y-3">

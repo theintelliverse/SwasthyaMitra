@@ -168,7 +168,7 @@ const LabPortalReports = () => {
       // Footer
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text('Official computer-generated laboratory report issued by SwasthyaMitra Lab Network.', 20, 280);
+      doc.text('Official computer-generated laboratory report issued by Appointory Lab Network.', 20, 280);
 
       doc.save(`LabReport-${report.patientName.replace(/\s+/g, '_')}-${report._id.slice(-4)}.pdf`);
       Swal.fire({ icon: 'success', title: 'PDF Downloaded', timer: 1500, showConfirmButton: false });

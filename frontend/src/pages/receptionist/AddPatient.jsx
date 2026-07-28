@@ -456,7 +456,7 @@ const AddPatient = () => {
                   <ShieldCheck size={20} className="text-teal-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-[14px] font-black text-teal-800 uppercase tracking-wider">Locker Sync Enabled</p>
-                    <p className="text-[14px] text-teal-700 mt-1 leading-relaxed">If the patient has set up a SwasthyaMitra health locker, searching their phone will instantly pull and auto-fill details, saving reception setup time.</p>
+                    <p className="text-[14px] text-teal-700 mt-1 leading-relaxed">If the patient has set up an Appointory health locker, searching their phone will instantly pull and auto-fill details, saving reception setup time.</p>
                   </div>
                 </div>
               </div>

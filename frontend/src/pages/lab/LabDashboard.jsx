@@ -90,7 +90,7 @@ const LabDashboard = () => {
   const [showSampleCollectionModal, setShowSampleCollectionModal] = useState(false);
   const [showReportConfigModal, setShowReportConfigModal] = useState(false);
   const [reportConfig, setReportConfig] = useState({
-    labName: localStorage.getItem('clinicName') || 'SwasthyaMitra Lab',
+    labName: localStorage.getItem('clinicName') || 'Appointory Lab',
     primaryColor: localStorage.getItem('primaryColor') || '#14B8A6',
     headerFontSize: parseInt(localStorage.getItem('headerFontSize') || '24'),
     bodyFontSize: parseInt(localStorage.getItem('bodyFontSize') || '12'),
@@ -526,7 +526,7 @@ const LabDashboard = () => {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(headerFontSize);
       doc.setFont("helvetica", "bold");
-      doc.text(labName || 'SWASTHYAMITRA PATHOLOGY LAB', 20, 25);
+      doc.text(labName || 'APPOINTORY PATHOLOGY LAB', 20, 25);
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -584,7 +584,7 @@ const LabDashboard = () => {
       // Dynamic Footer
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text('This is a digitally generated secure report verified by SwasthyaMitra health network.', 20, 280);
+      doc.text('This is a digitally generated secure report verified by Appointory health network.', 20, 280);
 
       // Convert jsPDF output to Blob
       const pdfBlob = doc.output('blob');

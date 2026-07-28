@@ -189,7 +189,7 @@ const PatientStatus = () => {
                     </button>
                 </div>
 
-                <p className="text-center text-[14px] text-slate-400 mt-6">Live updates via SwasthyaMitra</p>
+                <p className="text-center text-[14px] text-slate-400 mt-6">Live updates via Appointory</p>
             </div>
 
             <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} }`}</style>

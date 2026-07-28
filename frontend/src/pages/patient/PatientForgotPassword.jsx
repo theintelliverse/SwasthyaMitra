@@ -111,7 +111,7 @@ const PatientForgotPassword = () => {
         <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-body">
             <SEO 
                 title="Patient Password Recovery" 
-                description="Securely recover your SwasthyaMitra patient account credentials using SMS OTP verification." 
+                description="Securely recover your Appointory patient account credentials using SMS OTP verification." 
                 url="/patient/forgot-password" 
             />
             <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col md:flex-row">

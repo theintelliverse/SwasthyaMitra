@@ -198,7 +198,7 @@ Public web visitors can discover clinics, doctors, and diagnostic labs through s
 
 ## ⚡ Real-Time Socket.io Architecture
 
-SwasthyaMitra uses WebSocket channels via Socket.io to ensure zero latency between clinic cabins, reception desks, diagnostic labs, and patient mobile devices.
+Appointory uses WebSocket channels via Socket.io to ensure zero latency between clinic cabins, reception desks, diagnostic labs, and patient mobile devices.
 
 ```
                   ┌────────────────────────┐
@@ -281,8 +281,8 @@ SwasthyaMitra uses WebSocket channels via Socket.io to ensure zero latency betwe
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/SwasthyaMitra.git
-cd SwasthyaMitra
+git clone https://github.com/your-username/Appointory.git
+cd Appointory
 ```
 
 ### 2. Backend Setup

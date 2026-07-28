@@ -229,7 +229,7 @@ const AdminDashboard = () => {
 
   const token = localStorage.getItem('token');
   const adminName = localStorage.getItem('userName') || 'Admin';
-  const clinicName = localStorage.getItem('clinicName') || 'SwasthyaMitra Clinic';
+  const clinicName = localStorage.getItem('clinicName') || 'Appointory Clinic';
   const clinicCode = localStorage.getItem('clinicCode') || 'SW-001';
   const clinicId = localStorage.getItem('clinicId');
 

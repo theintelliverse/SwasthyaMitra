@@ -97,7 +97,7 @@ const LabPortalDashboard = () => {
   });
 
   const [reportConfig, setReportConfig] = useState({
-    labName: localStorage.getItem('labPortal_labName') || labName || 'SwasthyaMitra Lab',
+    labName: localStorage.getItem('labPortal_labName') || labName || 'Appointory Lab',
     primaryColor: localStorage.getItem('labPortal_primaryColor') || '#1B6CA8',
     headerFontSize: parseInt(localStorage.getItem('labPortal_headerFontSize') || '22'),
     bodyFontSize: parseInt(localStorage.getItem('labPortal_bodyFontSize') || '11'),
@@ -147,7 +147,7 @@ const LabPortalDashboard = () => {
       if (res.data.success && res.data.data) {
         const dbConfig = res.data.data;
         setReportConfig({
-          labName: dbConfig.labName || localStorage.getItem('labPortal_labName') || labName || 'SwasthyaMitra Lab',
+          labName: dbConfig.labName || localStorage.getItem('labPortal_labName') || labName || 'Appointory Lab',
           primaryColor: dbConfig.primaryColor || '#1B6CA8',
           headerFontSize: dbConfig.headerFontSize || 22,
           bodyFontSize: dbConfig.bodyFontSize || 11,
@@ -422,7 +422,7 @@ const LabPortalDashboard = () => {
       // Footer
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text('This is a digitally generated secure report verified by SwasthyaMitra health network.', 20, 280);
+      doc.text('This is a digitally generated secure report verified by Appointory health network.', 20, 280);
 
       const pdfBlob = doc.output('blob');
       const pdfFile = new File([pdfBlob], `digital_report_${activeDigitalPatient.patientName.replace(/\s+/g, '_')}.pdf`, {

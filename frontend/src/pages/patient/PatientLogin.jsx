@@ -196,7 +196,7 @@ const PatientLogin = () => {
 
                     <div className="mt-12 text-center">
                         <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest">
-                            New to SwasthyaMitra? <button onClick={() => navigate('/patient/register')} className="text-teal-600 hover:underline">Create Account</button>
+                            New to Appointory? <button onClick={() => navigate('/patient/register')} className="text-teal-600 hover:underline">Create Account</button>
                         </p>
                     </div>
                 </div>
