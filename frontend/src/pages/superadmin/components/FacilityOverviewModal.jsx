@@ -4,6 +4,7 @@ import {
   CheckCircle, XCircle, Clock, Shield, Search, Award, MapPin, ExternalLink,
   ChevronRight, AlertTriangle, Send, Download, Tag, RefreshCw, BarChart2
 } from 'lucide-react';
+import { API_URL } from '../../../config/runtime';
 
 const FacilityOverviewModal = ({
   facility,
@@ -42,7 +43,7 @@ const FacilityOverviewModal = ({
   const fetchFacilityOverview = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/superadmin/facility/${facility._id}/overview?type=${facilityType}`, {
+      const res = await fetch(`${API_URL}/api/superadmin/facility/${facility._id}/overview?type=${facilityType}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -56,9 +57,7 @@ const FacilityOverviewModal = ({
     }
   };
 
-  if (!isOpen || !facility) return null;
-
-  const fac = overviewData?.facility || facility;
+  const fac = overviewData?.facility || facility || {};
   const members = overviewData?.members || [];
   const patients = overviewData?.patients || [];
   const financials = overviewData?.financials || { payments: [], totalRevenue: 0 };
@@ -70,7 +69,7 @@ const FacilityOverviewModal = ({
     yearly: { labels: [], patients: [], revenue: [], consultations: [] }
   };
 
-  const facName = fac.name || fac.labName;
+  const facName = fac.name || fac.labName || '';
   const expiryDateStr = fac.subscriptionExpiresAt ? new Date(fac.subscriptionExpiresAt).toLocaleDateString() : 'N/A';
 
   useEffect(() => {
@@ -156,7 +155,7 @@ const FacilityOverviewModal = ({
     setEmailSending(true);
     setEmailStatusMsg(null);
     try {
-      const res = await fetch(`/api/superadmin/facility/${fac._id}/send-email`, {
+      const res = await fetch(`${API_URL}/api/superadmin/facility/${fac._id}/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,6 +204,8 @@ const FacilityOverviewModal = ({
     downloadAnchor.click();
     downloadAnchor.remove();
   };
+
+  if (!isOpen || !facility) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
