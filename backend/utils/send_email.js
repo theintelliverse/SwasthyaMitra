@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 // ✅ VALIDATION: Check if Gmail credentials are configured
 const validateEmailConfig = () => {
@@ -17,8 +18,8 @@ const createTransporter = () => {
 
     return nodemailer.createTransport({
         host: 'smtp.gmail.com',
-        port: 465,       // Use 465 for secure, or 587 for TLS
-        secure: true,    // true for 465, false for other ports
+        port: 465,       // Use 587 for STARTTLS (more compatible in cloud environments)
+        secure: true,   // false for 587
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
@@ -28,13 +29,73 @@ const createTransporter = () => {
             rejectUnauthorized: false
         },
         // Add connection timeout to prevent hanging
-        connectionTimeout: 10000,
-        socketTimeout: 10000,
+        connectionTimeout: 50000,
+        socketTimeout: 50000,
+        lookup: (hostname, options, callback) => {
+            dns.lookup(hostname, { family: 4 }, callback);
+        }
     });
 };
 
 let transporter = null;
 let emailServiceReady = false;
+
+// Fallback email sender using Vercel HTTPS API
+const sendMailViaVercel = async (mailOptions, smtpConfig = null) => {
+    const vercelUrl = process.env.EMAIL_SERVICE_URL;
+    const vercelSecret = process.env.EMAIL_SERVICE_SECRET;
+
+    if (!vercelUrl) {
+        throw new Error('SMTP connection failed and EMAIL_SERVICE_URL is not configured for Vercel fallback.');
+    }
+
+    console.log(`🔗 Attempting to send email via Vercel fallback to: ${mailOptions.to}`);
+
+    const response = await fetch(vercelUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-email-service-secret': vercelSecret || ''
+        },
+        body: JSON.stringify({
+            to: mailOptions.to,
+            subject: mailOptions.subject,
+            html: mailOptions.html,
+            attachments: mailOptions.attachments || [],
+            smtpConfig: smtpConfig // Pass down custom credentials if active
+        })
+    });
+
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(`Vercel email service failed: ${errData.message || response.statusText}`);
+    }
+
+    console.log(`✅ Email sent successfully via Vercel fallback to ${mailOptions.to}`);
+    return { messageId: 'vercel-fallback' };
+};
+
+// Wrapper to transparently fall back to Vercel if SMTP fails
+const wrapTransporter = (transporterToWrap, smtpConfig = null) => {
+    if (!transporterToWrap) {
+        return {
+            sendMail: async (mailOptions) => {
+                return sendMailViaVercel(mailOptions, smtpConfig);
+            }
+        };
+    }
+
+    const originalSendMail = transporterToWrap.sendMail.bind(transporterToWrap);
+    transporterToWrap.sendMail = async (mailOptions) => {
+        try {
+            return await originalSendMail(mailOptions);
+        } catch (smtpError) {
+            console.warn('⚠️ SMTP send failed, trying Vercel fallback:', smtpError.message);
+            return await sendMailViaVercel(mailOptions, smtpConfig);
+        }
+    };
+    return transporterToWrap;
+};
 
 // Initialize transporter safely with proper async handling
 const initializeEmailService = async () => {
@@ -99,28 +160,39 @@ const getTransporterAndSender = async (useSystemDefault = false) => {
             const config = await SystemConfig.findOne();
             if (config && config.smtpUser && config.smtpPass) {
                 const decryptedPass = decrypt(config.smtpPass);
-                const activeTransporter = nodemailer.createTransport({
+                
+                const smtpConfig = {
                     host: config.smtpHost || 'smtp.gmail.com',
                     port: config.smtpPort || 587,
                     secure: config.smtpSecure || false,
                     auth: {
                         user: config.smtpUser,
                         pass: decryptedPass,
-                    },
+                    }
+                };
+
+                const activeTransporter = nodemailer.createTransport({
+                    host: smtpConfig.host,
+                    port: smtpConfig.port,
+                    secure: smtpConfig.secure,
+                    auth: smtpConfig.auth,
                     tls: {
                         rejectUnauthorized: false
                     },
                     connectionTimeout: 10000,
                     socketTimeout: 10000,
+                    lookup: (hostname, options, callback) => {
+                        dns.lookup(hostname, { family: 4 }, callback);
+                    }
                 });
-                return { activeTransporter, senderUser: config.smtpUser };
+                return { activeTransporter: wrapTransporter(activeTransporter, smtpConfig), senderUser: config.smtpUser };
             }
         } catch (err) {
             console.error('Error fetching dynamic SMTP config, falling back:', err.message);
         }
     }
-    
-    return { activeTransporter: transporter, senderUser: process.env.EMAIL_USER || 'support@appointory.com' };
+
+    return { activeTransporter: wrapTransporter(transporter), senderUser: process.env.EMAIL_USER || 'support@appointory.com' };
 };
 
 // Helper to detect dummy or invalid emails (e.g. admin@facility.com, example.com, etc.)
