@@ -28,15 +28,18 @@ const PatientCheckIn = () => {
     });
 
     useEffect(() => {
+        let active = true;
         const fetchClinicDoctors = async () => {
             try {
                 const res = await axios.get(`${API_URL}/api/staff/public/doctors/${clinicCode}`);
-                setDoctors(res.data.doctors);
-                setClinicName(res.data.clinicName);
-                setLoading(false);
+                if (active) {
+                    setDoctors(res.data.doctors);
+                    setClinicName(res.data.clinicName);
+                    setLoading(false);
+                }
             } catch (err) {
-                console.error("Could not load doctors");
-                setLoading(false);
+                console.error("Could not load doctors", err);
+                if (active) setLoading(false);
                 Swal.fire({
                     icon: 'error',
                     title: 'Clinic Not Found',
@@ -45,11 +48,14 @@ const PatientCheckIn = () => {
                 });
             }
         };
-        if (clinicCode) fetchClinicDoctors();
-        else {
-            setLoading(false);
-            // If no code, maybe show a search or error
+        if (clinicCode) {
+            fetchClinicDoctors();
+        } else {
+            Promise.resolve().then(() => {
+                if (active) setLoading(false);
+            });
         }
+        return () => { active = false; };
     }, [clinicCode]);
 
     const handleSendOTP = async (e) => {
@@ -70,6 +76,7 @@ const PatientCheckIn = () => {
                 background: '#F8FAFC'
             });
         } catch (err) {
+            console.error("OTP send error:", err);
             Swal.fire({
                 icon: 'error',
                 title: 'Dispatch Failed',

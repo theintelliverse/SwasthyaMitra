@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -43,11 +43,7 @@ const Prescriptions = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchPrescriptions();
-  }, []);
-
-  const fetchPrescriptions = async () => {
+  const fetchPrescriptions = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/staff/all-prescriptions`, {
@@ -62,7 +58,15 @@ const Prescriptions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchPrescriptions();
+    });
+    return () => { active = false; };
+  }, [fetchPrescriptions]);
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -326,20 +330,20 @@ const Prescriptions = () => {
 
       {/* Create / Update Prescription Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl p-6 md:p-8 max-h-[92vh] overflow-y-auto animate-in zoom-in-95 duration-200 flex flex-col">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-4xl rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-2xl p-5 sm:p-8 max-h-[92vh] overflow-y-auto animate-in zoom-in-95 duration-200 flex flex-col my-auto">
 
             {/* Modal Header */}
-            <div className="flex justify-between items-center mb-6 shrink-0">
+            <div className="flex justify-between items-center mb-5 shrink-0 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${editingId ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
                   {editingId ? <Edit3 size={20} /> : <Plus size={20} />}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                     {editingId ? 'Update Prescription' : 'New Prescription Record'}
                   </h2>
-                  <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
                     {editingId ? 'Edit illness, medicines and notes' : 'Issue new clinical medication order'}
                   </p>
                 </div>
@@ -347,127 +351,213 @@ const Prescriptions = () => {
               <button
                 type="button"
                 onClick={closeModal}
-                className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
+                className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 flex-grow">
+            <form onSubmit={handleSubmit} className="space-y-5 flex-grow">
 
               {/* ---- ILLNESS / BIMARI FIELD - TOP PRIORITY ---- */}
-              <div className="p-5 bg-teal-50 border-2 border-teal-100 rounded-2xl">
-                <label className="block text-[14px] font-black text-teal-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                  <Stethoscope size={12} /> Illness / Bimari Name *
+              <div className="p-4 sm:p-5 bg-teal-50/80 border-2 border-teal-100 rounded-2xl space-y-2">
+                <label className="block text-xs font-black text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Stethoscope size={15} className="text-teal-600" /> Illness / Bimari Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Viral Fever, Hypertension, Diabetes..."
+                  placeholder="e.g. Viral Fever, Hypertension, Diabetes, Migraine..."
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
-                  className="w-full bg-white border-2 border-teal-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-teal-500 transition-all text-slate-800 placeholder:text-slate-300"
+                  className="w-full bg-white border border-teal-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100 transition-all text-slate-800 placeholder:text-slate-300 shadow-xs"
                 />
               </div>
 
               {/* Patient Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Patient Full Name</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Patient Full Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Rahul Sharma"
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-4 py-3 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-teal-600 focus:bg-white transition-all text-slate-800"
                   />
                 </div>
                 <div>
-                  <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Patient Phone Number</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Patient Phone Number *</label>
                   <input
                     type="tel"
                     required
                     placeholder="e.g. 9876543210"
                     value={patientPhone}
                     onChange={(e) => setPatientPhone(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-4 py-3 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-teal-600 focus:bg-white transition-all text-slate-800"
                   />
                 </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-[14px] font-black text-slate-500 uppercase tracking-widest mb-2">Observational Notes</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Observational Notes</label>
                 <textarea
-                  placeholder="Additional clinical notes about the patient's condition..."
+                  placeholder="Additional clinical notes about the patient's condition, allergies or advice..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-4 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800 resize-none"
+                  rows={2}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs sm:text-sm font-medium outline-none focus:border-teal-600 focus:bg-white transition-all text-slate-800 resize-none"
                 />
               </div>
 
               {/* Prescribed Medicines */}
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-[14px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5"><Pill size={12} /> Prescribed Medicines</label>
+              <div className="space-y-3 pt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <label className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Pill size={15} className="text-teal-600" /> Prescribed Medicines & Dosage Instructions
+                  </label>
                   <button
                     type="button"
                     onClick={() => setMedicines([...medicines, emptyMed()])}
-                    className="text-[14px] font-black text-teal-600 hover:text-teal-700 flex items-center gap-1 uppercase tracking-widest"
+                    className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3.5 py-1.5 rounded-xl border border-teal-200/80 transition-all flex items-center gap-1.5 uppercase tracking-wider whitespace-nowrap self-start sm:self-auto shadow-xs"
                   >
                     <Plus size={14} /> Add Medicine
                   </button>
                 </div>
 
-                <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1">
+                {/* Column Headers for Large Screens */}
+                <div className="hidden sm:grid sm:grid-cols-12 gap-3 px-1 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                  <span className="sm:col-span-5">Medicine Name & Strength</span>
+                  <span className="sm:col-span-3">Dosage / Quantity</span>
+                  <span className="sm:col-span-4">Timing & Clinical Instructions</span>
+                </div>
+
+                {/* Medicines Input Rows */}
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                   {medicines.map((m, idx) => (
-                    <div key={idx} className="flex gap-2 items-center group">
-                      <input
-                        type="text"
-                        placeholder="Medicine name"
-                        value={m.name}
-                        onChange={(e) => {
-                          const updated = [...medicines];
-                          updated[idx].name = e.target.value;
-                          setMedicines(updated);
-                        }}
-                        className="flex-grow bg-slate-50 border-2 border-transparent rounded-xl px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Dosage"
-                        value={m.amount}
-                        onChange={(e) => {
-                          const updated = [...medicines];
-                          updated[idx].amount = e.target.value;
-                          setMedicines(updated);
-                        }}
-                        className="w-28 bg-slate-50 border-2 border-transparent rounded-xl px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Timing"
-                        value={m.time}
-                        onChange={(e) => {
-                          const updated = [...medicines];
-                          updated[idx].time = e.target.value;
-                          setMedicines(updated);
-                        }}
-                        className="w-28 bg-slate-50 border-2 border-transparent rounded-xl px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:bg-white transition-all text-slate-800"
-                      />
-                      {medicines.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))}
-                          className="p-2 text-slate-300 hover:text-red-500 transition-colors shrink-0"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
+                    <div key={idx} className="flex flex-col sm:grid sm:grid-cols-12 gap-2.5 sm:gap-3 items-center bg-slate-50/80 p-3 sm:p-2.5 rounded-2xl border border-slate-200/80 group transition-all hover:bg-white hover:border-teal-300 hover:shadow-xs">
+                      
+                      {/* Medicine Name */}
+                      <div className="w-full sm:col-span-5">
+                        <label className="block text-[10px] font-bold text-slate-400 sm:hidden mb-1">Medicine Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Paracetamol 650mg"
+                          value={m.name}
+                          onChange={(e) => {
+                            const updated = [...medicines];
+                            updated[idx].name = e.target.value;
+                            setMedicines(updated);
+                          }}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold outline-none focus:border-teal-600 transition-all text-slate-800"
+                        />
+                      </div>
+
+                      {/* Dosage */}
+                      <div className="w-full sm:col-span-3">
+                        <label className="block text-[10px] font-bold text-slate-400 sm:hidden mb-1">Dosage</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 1 Tab / 5ml"
+                          value={m.amount}
+                          onChange={(e) => {
+                            const updated = [...medicines];
+                            updated[idx].amount = e.target.value;
+                            setMedicines(updated);
+                          }}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold outline-none focus:border-teal-600 transition-all text-slate-800"
+                        />
+                      </div>
+
+                      {/* Timing / Instructions */}
+                      <div className="w-full sm:col-span-4 flex items-center gap-2">
+                        <div className="flex-grow space-y-1">
+                          <label className="block text-[10px] font-bold text-slate-400 sm:hidden mb-1">Timing & Instructions</label>
+                          <select
+                            value={['After Food (1-0-1)', 'Before Meals (1-0-0)', 'Morning & Night (1-0-1)', 'Once Daily (Morning)', 'At Bedtime (0-0-1)', 'After Meals (Post-food)', 'Before Meals (Pre-food)', 'As Needed (SOS)'].includes(m.time) ? m.time : (m.time ? 'CUSTOM' : '')}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const updated = [...medicines];
+                              if (val === 'CUSTOM') {
+                                updated[idx].time = '';
+                              } else {
+                                updated[idx].time = val;
+                              }
+                              setMedicines(updated);
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:border-teal-600 mb-1"
+                          >
+                            <option value="">-- Quick Select Timing --</option>
+                            <option value="After Food (1-0-1)">After Food (1-0-1)</option>
+                            <option value="Before Meals (1-0-0)">Before Meals (1-0-0)</option>
+                            <option value="Morning & Night (1-0-1)">Morning & Night (1-0-1)</option>
+                            <option value="Once Daily (Morning)">Once Daily (Morning)</option>
+                            <option value="At Bedtime (0-0-1)">At Bedtime (0-0-1)</option>
+                            <option value="After Meals (Post-food)">After Meals (Post-food)</option>
+                            <option value="Before Meals (Pre-food)">Before Meals (Pre-food)</option>
+                            <option value="As Needed (SOS)">As Needed (SOS)</option>
+                            <option value="CUSTOM">✏️ Custom Text...</option>
+                          </select>
+
+                          <input
+                            type="text"
+                            placeholder="Or type custom timing..."
+                            value={m.time}
+                            onChange={(e) => {
+                              const updated = [...medicines];
+                              updated[idx].time = e.target.value;
+                              setMedicines(updated);
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold outline-none focus:border-teal-600 transition-all text-slate-800"
+                          />
+                        </div>
+                        {medicines.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))}
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all shrink-0 mt-4 sm:mt-0"
+                            title="Remove Medicine"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Preset Timing Suggestions */}
+                <div className="pt-1 space-y-1">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Quick Timing Suggestions:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      'After Food (1-0-1)',
+                      'Before Meals (1-0-0)',
+                      'Once Daily (Morning)',
+                      'At Bedtime (0-0-1)',
+                      'As Needed (SOS)',
+                      'Twice Daily After Meals'
+                    ].map((preset, pIdx) => (
+                      <button
+                        key={pIdx}
+                        type="button"
+                        onClick={() => {
+                          const updated = [...medicines];
+                          const lastIdx = updated.length - 1;
+                          if (lastIdx >= 0) {
+                            updated[lastIdx].time = preset;
+                            setMedicines(updated);
+                          }
+                        }}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-600 rounded-lg text-[11px] font-semibold border border-slate-200 transition-all"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

@@ -15,13 +15,8 @@ const Reports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
-      // Use ?filter=all to get historical data for this page
       const res = await axios.get(`${API_URL}/api/lab/reports/recent?filter=all&limit=100`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -34,7 +29,15 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchReports();
+    });
+    return () => { active = false; };
+  }, [fetchReports]);
 
   const filteredReports = (reports || []).filter(r => {
     if (!r) return false;

@@ -59,8 +59,13 @@ const ProfilePage = () => {
     };
 
     useEffect(() => {
-        if (token) fetchProfile();
-        else navigate('/login');
+        let active = true;
+        if (token) {
+            Promise.resolve().then(() => {
+                if (active) fetchProfile();
+            });
+        } else navigate('/login');
+        return () => { active = false; };
     }, [token, fetchProfile, navigate]);
 
     const handleUpdate = async (e) => {
@@ -173,7 +178,7 @@ const ProfilePage = () => {
                                     <h1 className="text-2xl font-black text-white tracking-tighter mb-1.5">{user.name}</h1>
                                     <p className="text-slate-400 font-black text-[14px] uppercase tracking-[0.15em] flex items-center justify-center gap-2">
                                         <MapPin size={12} className="text-teal-400" /> 
-                                        {role === 'patient' ? `Member since ${new Date(user.createdAt || Date.now()).getFullYear()}` : (user.specialization || "Clinical Associate")}
+                                        {role === 'patient' ? `Member since ${new Date(user.createdAt || '2025-01-01').getFullYear()}` : (user.specialization || "Clinical Associate")}
                                     </p>
 
                                     <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>

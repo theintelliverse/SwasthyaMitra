@@ -79,12 +79,16 @@ const LabPortalReports = () => {
   }, []);
 
   useEffect(() => {
+    let active = true;
     const token = localStorage.getItem('labToken') || localStorage.getItem('token');
     if (!token) {
       navigate('/lab/login');
       return;
     }
-    fetchPastReports();
+    Promise.resolve().then(() => {
+      if (active) fetchPastReports();
+    });
+    return () => { active = false; };
   }, [fetchPastReports, navigate]);
 
   // Filter completed reports for this lab

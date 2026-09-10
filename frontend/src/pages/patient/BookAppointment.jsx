@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
+import PatientBottomNav from '../../components/patient/PatientBottomNav';
 import { API_URL } from '../../config/runtime';
 const MAX_BOOKING_DAYS = 14;
 const DEFAULT_WORKING_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -21,13 +22,6 @@ const toLocalDateTimeKey = (dateInput) => {
     const hh = String(d.getHours()).padStart(2, '0');
     const mi = String(d.getMinutes()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-};
-
-const getCurrentLocalDate = () => toLocalDateTimeKey(new Date()).split('T')[0];
-const getMaxLocalDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + MAX_BOOKING_DAYS);
-    return toLocalDateTimeKey(d).split('T')[0];
 };
 
 const BookAppointment = () => {
@@ -57,20 +51,25 @@ const BookAppointment = () => {
     });
 
     useEffect(() => {
+        let active = true;
         if (rescheduleApp) {
-            setFormData(prev => ({
-                ...prev,
-                clinicId: rescheduleApp.clinicId?._id || rescheduleApp.clinicId,
-                doctorId: rescheduleApp.doctorId?._id || rescheduleApp.doctorId,
-                appointmentType: rescheduleApp.appointmentType || 'new',
-                reason: rescheduleApp.reason || '',
-                rescheduleAppointmentId: rescheduleApp.queueId
-            }));
-            if (rescheduleApp.appointmentDate) {
-                setSelectedDate(new Date(rescheduleApp.appointmentDate));
-            }
-            setStep(3);
+            Promise.resolve().then(() => {
+                if (active) {
+                    setFormData(prev => ({
+                        ...prev,
+                        clinicId: rescheduleApp.clinicId?._id || rescheduleApp.clinicId,
+                        doctorId: rescheduleApp.doctorId?._id || rescheduleApp.doctorId,
+                        appointmentType: rescheduleApp.appointmentType || 'new',
+                        reason: rescheduleApp.reason || '',
+                        rescheduleAppointmentId: rescheduleApp.queueId
+                    }));
+                    if (rescheduleApp.appointmentDate) {
+                        setSelectedDate(new Date(rescheduleApp.appointmentDate));
+                    }
+                }
+            });
         }
+        return () => { active = false; };
     }, [rescheduleApp]);
 
     // Generate date strip for Step 3
@@ -157,9 +156,13 @@ const BookAppointment = () => {
     }, [formData.clinicId, formData.doctorId, selectedDate]);
 
     useEffect(() => {
+        let active = true;
         if (formData.doctorId && step === 3) {
-            fetchBookedSlots();
+            Promise.resolve().then(() => {
+                if (active) fetchBookedSlots();
+            });
         }
+        return () => { active = false; };
     }, [formData.doctorId, selectedDate, step, fetchBookedSlots]);
 
     const generateAvailableSlots = useCallback(() => {
@@ -201,9 +204,13 @@ const BookAppointment = () => {
     }, [bookedSlots, getClinicTimingConfig, selectedDate, formData.slotMode]);
 
     useEffect(() => {
+        let active = true;
         if (formData.clinicId && formData.doctorId && step === 3) {
-            generateAvailableSlots();
+            Promise.resolve().then(() => {
+                if (active) generateAvailableSlots();
+            });
         }
+        return () => { active = false; };
     }, [formData.clinicId, formData.doctorId, bookedSlots, selectedDate, step, generateAvailableSlots]);
 
     // AI Wait Prediction (Dynamic from API)
@@ -854,6 +861,7 @@ const BookAppointment = () => {
                     )}
                 </main>
             </div>
+            <PatientBottomNav activeTab="clinics" />
         </div>
     );
 };

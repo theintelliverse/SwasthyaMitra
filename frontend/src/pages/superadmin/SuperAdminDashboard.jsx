@@ -72,7 +72,9 @@ const SuperAdminDashboard = () => {
     maxPatients: '0',
     maxQueues: '0',
     isCustomPlan: false,
-    isActive: true
+    isActive: true,
+    serviceType: 'full',
+    includedServices: []
   });
 
   const [savingConfig, setSavingConfig] = useState(false);
@@ -643,14 +645,16 @@ const SuperAdminDashboard = () => {
         price: parseFloat(newPlan.price),
         durationDays: parseInt(newPlan.durationDays),
         facilityType: newPlan.facilityType,
-        features: newPlan.features.split(',').map(f => f.trim()).filter(Boolean),
+        features: typeof newPlan.features === 'string' ? newPlan.features.split(',').map(f => f.trim()).filter(Boolean) : (newPlan.features || []),
         trafficLimits: {
           maxStaff: parseInt(newPlan.maxStaff) || 0,
           maxPatients: parseInt(newPlan.maxPatients) || 0,
           maxQueues: parseInt(newPlan.maxQueues) || 0
         },
         isCustomPlan: newPlan.isCustomPlan,
-        isActive: newPlan.isActive
+        isActive: newPlan.isActive,
+        serviceType: newPlan.serviceType || 'full',
+        includedServices: newPlan.includedServices || []
       };
 
       let res;
@@ -666,7 +670,7 @@ const SuperAdminDashboard = () => {
         setNewPlan({
           name: '', key: '', price: '', durationDays: '', facilityType: 'clinic',
           features: '', maxStaff: '0', maxPatients: '0', maxQueues: '0',
-          isCustomPlan: false, isActive: true
+          isCustomPlan: false, isActive: true, serviceType: 'full', includedServices: []
         });
         fetchData();
       }
@@ -683,12 +687,14 @@ const SuperAdminDashboard = () => {
       price: plan.price.toString(),
       durationDays: plan.durationDays.toString(),
       facilityType: plan.facilityType,
-      features: plan.features.join(', '),
+      features: Array.isArray(plan.features) ? plan.features.join(', ') : '',
       maxStaff: (plan.trafficLimits?.maxStaff || 0).toString(),
       maxPatients: (plan.trafficLimits?.maxPatients || 0).toString(),
       maxQueues: (plan.trafficLimits?.maxQueues || 0).toString(),
       isCustomPlan: !!plan.isCustomPlan,
-      isActive: !!plan.isActive
+      isActive: !!plan.isActive,
+      serviceType: plan.serviceType || 'full',
+      includedServices: plan.includedServices || []
     });
   };
 
@@ -709,6 +715,7 @@ const SuperAdminDashboard = () => {
             fetchData();
           }
         } catch (err) {
+          console.error('Failed to delete plan:', err);
           Swal.fire('Error', 'Failed to delete plan', 'error');
         }
       }
@@ -724,21 +731,6 @@ const SuperAdminDashboard = () => {
     l.labName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     l.labCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getRevenueChartData = () => {
-    const dailyPayments = {};
-    payments.forEach(p => {
-      const dateStr = new Date(p.billingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      dailyPayments[dateStr] = (dailyPayments[dateStr] || 0) + p.amount;
-    });
-
-    return Object.keys(dailyPayments).map(date => ({
-      date,
-      revenue: dailyPayments[date]
-    })).reverse();
-  };
-
-  const revenueData = getRevenueChartData();
 
   const menuItems = [
     { id: 'overview', name: 'Dashboard Overview', icon: <LayoutDashboard size={20} /> },

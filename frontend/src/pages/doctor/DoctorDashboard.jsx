@@ -126,7 +126,7 @@ const DoctorDashboard = () => {
   const [newPatient, setNewPatient] = useState({ name: '', phone: '', email: '', gender: 'Male', age: '' });
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [templates, setTemplates] = useState([
     { id: 1, name: 'Viral Fever Protocol', drugs: 'Paracetamol 500mg, Vitamin C', instruction: 'Post meals' },
@@ -155,12 +155,8 @@ const DoctorDashboard = () => {
     }
     return 0;
   });
-  const [breakStartedAt, setBreakStartedAt] = useState(() => {
-    const s = localStorage.getItem('break_started_at');
-    return s ? new Date(parseInt(s, 10)) : null;
-  });
   const [breaksTaken, setBreaksTaken] = useState(() => parseInt(localStorage.getItem('breaks_taken_today') || '0', 10));
-  const [breakTimerRef, setBreakTimerRef] = useState(null);
+  const breakTimerRef = useRef(null);
 
   const [notes, setNotes] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
@@ -273,10 +269,14 @@ const DoctorDashboard = () => {
   };
 
   useEffect(() => {
+    let active = true;
     const savedTemplates = localStorage.getItem('doctor_templates');
     if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
+      Promise.resolve().then(() => {
+        if (active) setTemplates(JSON.parse(savedTemplates));
+      });
     }
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -291,30 +291,31 @@ const DoctorDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    if (location.state?.applyTemplate && activePatient && isConsultationMode) {
-      const template = location.state.applyTemplate;
-      setDiagnosis(template.name);
-      // Convert drugs string to medicines array
-      const drugList = template.drugs.split(',').map(d => {
-        const trimmed = d.trim();
-        // Match standard dosages like 500mg, 5ml, 10mg, 1g, 10mcg
-        const dosageMatch = trimmed.match(/(\d+(?:\.\d+)?\s*(?:mg|g|ml|mcg|tab|caps|tabs))\b/i);
-        let name = trimmed;
-        let amount = '';
-        if (dosageMatch) {
-          amount = dosageMatch[1];
-          name = trimmed.replace(dosageMatch[1], '').trim();
-        }
-        return {
-          name: name,
-          time: template.instruction || '',
-          amount: amount,
-          total: ''
-        };
-      });
-      setMedicines(drugList);
+    if (!location.state?.applyTemplate) return;
 
-      // Clear navigation state so it doesn't re-apply
+    const template = location.state.applyTemplate;
+    if (activePatient && isConsultationMode) {
+      Promise.resolve().then(() => {
+        setDiagnosis(template.name);
+        const drugList = template.drugs.split(',').map(d => {
+          const trimmed = d.trim();
+          const dosageMatch = trimmed.match(/(\d+(?:\.\d+)?\s*(?:mg|g|ml|mcg|tab|caps|tabs))\b/i);
+          let name = trimmed;
+          let amount = '';
+          if (dosageMatch) {
+            amount = dosageMatch[1];
+            name = trimmed.replace(dosageMatch[1], '').trim();
+          }
+          return {
+            name: name,
+            time: template.instruction || '',
+            amount: amount,
+            total: ''
+          };
+        });
+        setMedicines(drugList);
+      });
+
       navigate(location.pathname, { replace: true, state: {} });
 
       Swal.fire({
@@ -325,14 +326,13 @@ const DoctorDashboard = () => {
         showConfirmButton: false,
         timer: 3000
       });
-    } else if (location.state?.applyTemplate) {
+    } else {
       Swal.fire({
         icon: 'info',
         title: 'Start Consultation First',
         text: 'Please start a consultation with a patient first to apply this protocol.',
         confirmButtonColor: '#0d9488'
       });
-      // Clear navigation state
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, activePatient, isConsultationMode, location.pathname, navigate]);
@@ -385,6 +385,62 @@ const DoctorDashboard = () => {
     }
   }, [token, isConsultationMode]);
 
+  const handleToggleBreak = useCallback(async () => {
+    try {
+      const res = await axios.patch(`${API_URL}/api/staff/toggle-status/me`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const nowOnBreak = !res.data.isAvailable;
+      setIsOnBreak(nowOnBreak);
+      if (nowOnBreak) {
+        // Starting break — persist to localStorage
+        const startTs = Date.now();
+        const totalSecs = selectedBreakMins * 60;
+        setBreakCountdown(totalSecs);
+        const newCount = breaksTaken + 1;
+        setBreaksTaken(newCount);
+        localStorage.setItem('break_active', 'true');
+        localStorage.setItem('break_started_at', String(startTs));
+        localStorage.setItem('break_duration_mins', String(selectedBreakMins));
+        localStorage.setItem('breaks_taken_today', String(newCount));
+        // countdown tick
+        const ref = setInterval(() => {
+          setBreakCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(ref);
+              localStorage.removeItem('break_active');
+              localStorage.removeItem('break_started_at');
+              setIsOnBreak(false);
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: '☕ Break time is up!',
+                text: 'Ready to get back to work?',
+                showConfirmButton: true,
+                confirmButtonText: 'Resume',
+                confirmButtonColor: '#0d9488',
+                timer: 30000
+              });
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        breakTimerRef.current = ref;
+      } else {
+        // Ending break — clear countdown + localStorage
+        if (breakTimerRef.current) clearInterval(breakTimerRef.current);
+        setBreakCountdown(0);
+        localStorage.removeItem('break_active');
+        localStorage.removeItem('break_started_at');
+      }
+      fetchDashboardData(false);
+    } catch {
+      Swal.fire('Error', 'Failed to toggle status', 'error');
+    }
+  }, [token, selectedBreakMins, breaksTaken, fetchDashboardData]);
+
   // ─── Restore break countdown timer on reload ───────────────────────
   useEffect(() => {
     const wasOnBreak = localStorage.getItem('break_active') === 'true';
@@ -410,25 +466,30 @@ const DoctorDashboard = () => {
             return prev - 1;
           });
         }, 1000);
-        setBreakTimerRef(ref);
+        breakTimerRef.current = ref;
         return () => clearInterval(ref);
       } else {
         // Break expired while away — auto-clear
         localStorage.removeItem('break_active');
         localStorage.removeItem('break_started_at');
-        setIsOnBreak(false);
-        setBreakCountdown(0);
+        Promise.resolve().then(() => {
+          setIsOnBreak(false);
+          setBreakCountdown(0);
+        });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    let active = true;
     if (!token) {
       navigate('/login');
       return;
     }
-    fetchDashboardData();
+    Promise.resolve().then(() => {
+      if (active) fetchDashboardData();
+    });
 
     if (clinicId) {
       socket.emit('joinClinic', clinicId);
@@ -581,6 +642,7 @@ const DoctorDashboard = () => {
 
   const handleCompleteVisit = async (e) => {
     e.preventDefault();
+    setIsProcessing(true);
     setIsSyncing(true);
     try {
       const payload = {
@@ -609,6 +671,7 @@ const DoctorDashboard = () => {
       console.error(err);
       Swal.fire('Error', 'Failed to save record. Try again.', 'error');
     } finally {
+      setIsProcessing(false);
       setIsSyncing(false);
     }
   };
@@ -819,63 +882,7 @@ const DoctorDashboard = () => {
       }
     };
 
-    const handleToggleBreak = async () => {
-      try {
-        const res = await axios.patch(`${API_URL}/api/staff/toggle-status/me`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const nowOnBreak = !res.data.isAvailable;
-        setIsOnBreak(nowOnBreak);
-        if (nowOnBreak) {
-          // Starting break — persist to localStorage
-          const startTs = Date.now();
-          const totalSecs = selectedBreakMins * 60;
-          setBreakCountdown(totalSecs);
-          setBreakStartedAt(new Date(startTs));
-          const newCount = breaksTaken + 1;
-          setBreaksTaken(newCount);
-          localStorage.setItem('break_active', 'true');
-          localStorage.setItem('break_started_at', String(startTs));
-          localStorage.setItem('break_duration_mins', String(selectedBreakMins));
-          localStorage.setItem('breaks_taken_today', String(newCount));
-          // countdown tick
-          const ref = setInterval(() => {
-            setBreakCountdown(prev => {
-              if (prev <= 1) {
-                clearInterval(ref);
-                localStorage.removeItem('break_active');
-                localStorage.removeItem('break_started_at');
-                setIsOnBreak(false);
-                Swal.fire({
-                  toast: true,
-                  position: 'top-end',
-                  icon: 'info',
-                  title: '☕ Break time is up!',
-                  text: 'Ready to get back to work?',
-                  showConfirmButton: true,
-                  confirmButtonText: 'Resume',
-                  confirmButtonColor: '#0d9488',
-                  timer: 30000
-                });
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          setBreakTimerRef(ref);
-        } else {
-          // Ending break — clear countdown + localStorage
-          if (breakTimerRef) clearInterval(breakTimerRef);
-          setBreakCountdown(0);
-          setBreakStartedAt(null);
-          localStorage.removeItem('break_active');
-          localStorage.removeItem('break_started_at');
-        }
-        fetchDashboardData(false);
-      } catch (err) {
-        Swal.fire('Error', 'Failed to toggle status', err);
-      }
-    };
+
 
     if (loading && !isSyncing) {
       return (
@@ -1221,12 +1228,139 @@ const DoctorDashboard = () => {
                             <tbody className="divide-y divide-gray-50">
                               {medicines.map((m, idx) => (
                                 <tr key={idx} className="group hover:bg-gray-50/50">
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.name || ''} onChange={(e) => { const u = [...medicines]; u[idx].name = e.target.value; setMedicines(u); }} placeholder="Telmisartan" className="w-full bg-transparent outline-none text-gray-800 font-bold placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.strength || m.amount || ''} onChange={(e) => { const u = [...medicines]; u[idx].strength = e.target.value; setMedicines(u); }} placeholder="40 mg" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.whenToTake || m.time || ''} onChange={(e) => { const u = [...medicines]; u[idx].whenToTake = e.target.value; setMedicines(u); }} placeholder="Morning" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.beforeAfter || ''} onChange={(e) => { const u = [...medicines]; u[idx].beforeAfter = e.target.value; setMedicines(u); }} placeholder="After Breakfast" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.duration || ''} onChange={(e) => { const u = [...medicines]; u[idx].duration = e.target.value; setMedicines(u); }} placeholder="30 Days" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
-                                  <td className="py-1.5 pr-1"><input type="text" value={m.instructions || ''} onChange={(e) => { const u = [...medicines]; u[idx].instructions = e.target.value; setMedicines(u); }} placeholder="For BP control" className="w-full bg-transparent outline-none text-gray-600 placeholder:text-gray-300 focus:border-b focus:border-teal-300 px-1 py-0.5" /></td>
+                                  <td className="py-1.5 pr-1 font-semibold text-slate-800"><input type="text" value={m.name || ''} onChange={(e) => { const u = [...medicines]; u[idx].name = e.target.value; setMedicines(u); }} placeholder="e.g. Paracetamol" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold outline-none focus:border-teal-500 focus:bg-white text-slate-900" /></td>
+                                  <td className="py-1.5 pr-1"><input type="text" value={m.strength || m.amount || ''} onChange={(e) => { const u = [...medicines]; u[idx].strength = e.target.value; setMedicines(u); }} placeholder="e.g. 500mg" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold outline-none focus:border-teal-500 focus:bg-white text-slate-800" /></td>
+                                  
+                                  {/* When to Take Dropdown */}
+                                  <td className="py-1.5 pr-1">
+                                    <select
+                                      value={['Morning (1-0-0)', 'Night (0-0-1)', 'Morning & Night (1-0-1)', 'Post Meals (1-0-1)', 'Pre Meals (1-0-0)', 'Three Times Daily (1-1-1)', 'Afternoon Only (0-1-0)', 'Once Daily', 'Twice Daily', 'As Needed (SOS)'].includes(m.whenToTake || m.time) ? (m.whenToTake || m.time) : (m.whenToTake ? 'CUSTOM' : '')}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const u = [...medicines];
+                                        if (val === 'CUSTOM') {
+                                          u[idx].whenToTake = '';
+                                        } else {
+                                          u[idx].whenToTake = val;
+                                          u[idx].time = val;
+                                        }
+                                        setMedicines(u);
+                                      }}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-teal-500 focus:bg-white"
+                                    >
+                                      <option value="">-- Frequency --</option>
+                                      <option value="Morning & Night (1-0-1)">Morning & Night (1-0-1)</option>
+                                      <option value="Post Meals (1-0-1)">Post Meals (1-0-1)</option>
+                                      <option value="Pre Meals (1-0-0)">Pre Meals (1-0-0)</option>
+                                      <option value="Morning (1-0-0)">Morning (1-0-0)</option>
+                                      <option value="Night (0-0-1)">Night (0-0-1)</option>
+                                      <option value="Three Times Daily (1-1-1)">Three Times Daily (1-1-1)</option>
+                                      <option value="Afternoon Only (0-1-0)">Afternoon Only (0-1-0)</option>
+                                      <option value="Once Daily">Once Daily</option>
+                                      <option value="Twice Daily">Twice Daily</option>
+                                      <option value="As Needed (SOS)">As Needed (SOS)</option>
+                                      <option value="CUSTOM">✏️ Custom Text...</option>
+                                    </select>
+                                    {(!['Morning (1-0-0)', 'Night (0-0-1)', 'Morning & Night (1-0-1)', 'Post Meals (1-0-1)', 'Pre Meals (1-0-0)', 'Three Times Daily (1-1-1)', 'Afternoon Only (0-1-0)', 'Once Daily', 'Twice Daily', 'As Needed (SOS)'].includes(m.whenToTake || m.time) && (m.whenToTake || m.time)) && (
+                                      <input
+                                        type="text"
+                                        value={m.whenToTake || m.time || ''}
+                                        onChange={(e) => {
+                                          const u = [...medicines];
+                                          u[idx].whenToTake = e.target.value;
+                                          u[idx].time = e.target.value;
+                                          setMedicines(u);
+                                        }}
+                                        placeholder="Type custom frequency..."
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-0.5 text-xs mt-1 outline-none focus:border-teal-500"
+                                      />
+                                    )}
+                                  </td>
+
+                                  {/* Before / After Dropdown (Circled in User Screenshot!) */}
+                                  <td className="py-1.5 pr-1">
+                                    <select
+                                      value={['After Meals', 'Before Meals', 'With Meals', 'Empty Stomach', 'After Breakfast', 'After Dinner', 'At Bedtime'].includes(m.beforeAfter) ? m.beforeAfter : (m.beforeAfter ? 'CUSTOM' : '')}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const u = [...medicines];
+                                        if (val === 'CUSTOM') {
+                                          u[idx].beforeAfter = '';
+                                        } else {
+                                          u[idx].beforeAfter = val;
+                                        }
+                                        setMedicines(u);
+                                      }}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-teal-500 focus:bg-white"
+                                    >
+                                      <option value="">-- Relation --</option>
+                                      <option value="After Meals">After Meals (Post-food)</option>
+                                      <option value="Before Meals">Before Meals (Pre-food)</option>
+                                      <option value="After Breakfast">After Breakfast</option>
+                                      <option value="After Dinner">After Dinner</option>
+                                      <option value="With Meals">With Meals</option>
+                                      <option value="Empty Stomach">Empty Stomach</option>
+                                      <option value="At Bedtime">At Bedtime</option>
+                                      <option value="CUSTOM">✏️ Custom Text...</option>
+                                    </select>
+                                    {(!['After Meals', 'Before Meals', 'With Meals', 'Empty Stomach', 'After Breakfast', 'After Dinner', 'At Bedtime'].includes(m.beforeAfter) && m.beforeAfter) && (
+                                      <input
+                                        type="text"
+                                        value={m.beforeAfter || ''}
+                                        onChange={(e) => {
+                                          const u = [...medicines];
+                                          u[idx].beforeAfter = e.target.value;
+                                          setMedicines(u);
+                                        }}
+                                        placeholder="Type food relation..."
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-0.5 text-xs mt-1 outline-none focus:border-teal-500"
+                                      />
+                                    )}
+                                  </td>
+
+                                  {/* Duration Dropdown */}
+                                  <td className="py-1.5 pr-1">
+                                    <select
+                                      value={['3 Days', '5 Days', '7 Days', '10 Days', '14 Days', '30 Days', '60 Days', '90 Days', 'SOS / As Needed'].includes(m.duration) ? m.duration : (m.duration ? 'CUSTOM' : '')}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const u = [...medicines];
+                                        if (val === 'CUSTOM') {
+                                          u[idx].duration = '';
+                                        } else {
+                                          u[idx].duration = val;
+                                        }
+                                        setMedicines(u);
+                                      }}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-teal-500 focus:bg-white"
+                                    >
+                                      <option value="">-- Duration --</option>
+                                      <option value="3 Days">3 Days</option>
+                                      <option value="5 Days">5 Days</option>
+                                      <option value="7 Days">7 Days (1 Wk)</option>
+                                      <option value="10 Days">10 Days</option>
+                                      <option value="14 Days">14 Days (2 Wks)</option>
+                                      <option value="30 Days">30 Days (1 Mo)</option>
+                                      <option value="60 Days">60 Days (2 Mos)</option>
+                                      <option value="90 Days">90 Days (3 Mos)</option>
+                                      <option value="SOS / As Needed">SOS / As Needed</option>
+                                      <option value="CUSTOM">✏️ Custom Text...</option>
+                                    </select>
+                                    {(!['3 Days', '5 Days', '7 Days', '10 Days', '14 Days', '30 Days', '60 Days', '90 Days', 'SOS / As Needed'].includes(m.duration) && m.duration) && (
+                                      <input
+                                        type="text"
+                                        value={m.duration || ''}
+                                        onChange={(e) => {
+                                          const u = [...medicines];
+                                          u[idx].duration = e.target.value;
+                                          setMedicines(u);
+                                        }}
+                                        placeholder="Type duration..."
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-0.5 text-xs mt-1 outline-none focus:border-teal-500"
+                                      />
+                                    )}
+                                  </td>
+                                  <td className="py-1.5 pr-1"><input type="text" value={m.instructions || ''} onChange={(e) => { const u = [...medicines]; u[idx].instructions = e.target.value; setMedicines(u); }} placeholder="For BP control" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold outline-none focus:border-teal-500 focus:bg-white text-slate-800" /></td>
                                   <td className="py-1.5 text-right px-1">
                                     <button type="button" onClick={() => setMedicines(medicines.filter((_, i) => i !== idx))} className="p-1 text-gray-300 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={12} /></button>
                                   </td>
@@ -1307,7 +1441,19 @@ const DoctorDashboard = () => {
                             {isSyncing ? 'Sync' : 'Live'}
                           </span>
                         </div>
-                        <button onClick={() => navigate('/doctor/appointments')} className="text-[14px] font-bold text-teal-600 hover:text-teal-700">Full Schedule</button>
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                              type="text"
+                              placeholder="Search patient..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="pl-8 pr-3 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[12px] focus:outline-none focus:border-teal-500 w-36 sm:w-44"
+                            />
+                          </div>
+                          <button onClick={() => navigate('/doctor/appointments')} className="text-[14px] font-bold text-teal-600 hover:text-teal-700">Full Schedule</button>
+                        </div>
                       </div>
 
                       <div className="px-4 pt-1.5 flex gap-0.5 border-b border-gray-100">

@@ -45,13 +45,12 @@ const AdminDashboard = () => {
   });
   const [recentStaffActivity, setRecentStaffActivity] = useState([]);
   const [queueList, setQueueList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [todayPatientsList, setTodayPatientsList] = useState([]);
   const [allPatientsList, setAllPatientsList] = useState([]);
   const [trafficTimeframe, setTrafficTimeframe] = useState('today');
-  const [modalTab, setModalTab] = useState('billing'); // 'billing' | 'inventory'
   const socketRef = useRef(null);
   
   const [config, setConfig] = useState({
@@ -76,9 +75,9 @@ const AdminDashboard = () => {
   });
 
   // Dynamically calculate revenue stats based on timeframe, queueList, and allPatientsList
+  const [nowMs] = useState(() => Date.now());
   const revenueStats = useMemo(() => {
     const { feeConsult, feeLab, feeEmergency, feeMedicine } = config;
-    const nowMs = Date.now();
     let currentStartMs = nowMs - 24 * 60 * 60 * 1000;
     let prevStartMs = nowMs - 48 * 60 * 60 * 1000;
 
@@ -152,7 +151,7 @@ const AdminDashboard = () => {
       medicineFees,
       emergencyFees
     };
-  }, [revenueTimeframe, queueList, allPatientsList, config]);
+  }, [revenueTimeframe, queueList, allPatientsList, config, nowMs]);
 
   const handleConfigChange = (key, value) => {
     setConfig(prev => ({
@@ -236,20 +235,21 @@ const AdminDashboard = () => {
   const publicDisplayUrl = `${window.location.origin}/display/${clinicCode}`;
 
   const fetchLiveStats = useCallback(async (silent = false) => {
+    const activeToken = localStorage.getItem('token');
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
       const res = await axios.get(`${API_URL}/api/queue/live`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${activeToken}` }
       });
       const staffRes = await axios.get(`${API_URL}/api/staff/all`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${activeToken}` }
       });
       const historyRes = await axios.get(`${API_URL}/api/queue/history`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${activeToken}` }
       });
       const clinicRes = await axios.get(`${API_URL}/api/clinic/me`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${activeToken}` }
       });
 
       const queueData = res.data.data || [];
@@ -275,7 +275,7 @@ const AdminDashboard = () => {
       };
       try {
         const testReqsRes = await axios.get(`${API_URL}/api/lab-connect/test-requests/clinic`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${activeToken}` }
         });
         if (testReqsRes.data.success) {
           const testReqs = testReqsRes.data.data || [];
@@ -399,7 +399,7 @@ const AdminDashboard = () => {
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (!SOCKET_URL) return;
@@ -431,7 +431,9 @@ const AdminDashboard = () => {
           text: `Monitor the live queue for ${clinicName}`,
           url: publicDisplayUrl,
         });
-      } catch (err) {}
+      } catch {
+        /* share cancelled */
+      }
     } else {
       navigator.clipboard.writeText(publicDisplayUrl);
       setCopied(true);
@@ -489,7 +491,9 @@ const AdminDashboard = () => {
         const patientDate = new Date(t).toDateString();
         const dayMatch = chartData.find(d => d.dateStr === patientDate);
         if (dayMatch) dayMatch.visits++;
-      } catch (e) {}
+      } catch {
+        /* invalid date */
+      }
     });
   }
 
@@ -564,8 +568,12 @@ const AdminDashboard = () => {
                 onClick={handleShare}
                 className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-black text-[14px] text-slate-700 uppercase tracking-widest hover:border-teal-600 hover:text-teal-600 transition-all active:scale-95 shadow-sm group"
               >
-                <Share2 size={16} className="text-teal-500 group-hover:rotate-12 transition-transform" />
-                Live Monitor Link
+                {copied ? (
+                  <Check size={16} className="text-teal-500" />
+                ) : (
+                  <Share2 size={16} className="text-teal-500 group-hover:rotate-12 transition-transform" />
+                )}
+                {copied ? 'Copied!' : 'Live Monitor Link'}
               </button>
               <button 
                 onClick={() => navigate('/admin/settings')}
@@ -926,9 +934,9 @@ const RevenueModal = ({
   const emergencyPct = Math.round(((stats.emergencyFees || 0) / totalBreakdown) * 100);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
       <div 
-        className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform scale-100 transition-all duration-300"
+        className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[90vh] my-auto overflow-hidden flex flex-col transform scale-100 transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

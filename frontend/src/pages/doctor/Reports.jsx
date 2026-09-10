@@ -39,11 +39,7 @@ const Reports = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchReports(filterMode);
-  }, [filterMode]);
-
-  const fetchReports = async (mode = filterMode) => {
+  const fetchReports = useCallback(async (mode = filterMode) => {
     setLoading(true);
     try {
       const filterParam = mode === 'today' ? 'today' : 'all';
@@ -59,7 +55,15 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterMode, token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchReports(filterMode);
+    });
+    return () => { active = false; };
+  }, [fetchReports, filterMode]);
 
   const handleLockerSearch = async (e) => {
     e.preventDefault();

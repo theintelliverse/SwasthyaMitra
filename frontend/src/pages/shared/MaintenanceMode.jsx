@@ -28,10 +28,15 @@ const MaintenanceMode = () => {
   };
 
   useEffect(() => {
-    fetchStatus();
-    // Auto check status every 20 seconds
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchStatus();
+    });
     const interval = setInterval(fetchStatus, 20000);
-    return () => clearInterval(interval);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (

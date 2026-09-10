@@ -88,7 +88,7 @@ const SubscriptionDetails = () => {
   const canBuy = role === 'admin' || role === 'doctor' || isLab;
 
   const daysRemaining = facilityInfo?.subscriptionExpiresAt 
-    ? Math.max(0, Math.ceil((new Date(facilityInfo.subscriptionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(0, Math.ceil((new Date(facilityInfo.subscriptionExpiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
 
   return (
@@ -170,6 +170,57 @@ const SubscriptionDetails = () => {
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Modular Active Services Status */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Active Service Add-Ons</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Modular Service Subscriptions Status</p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/subscription-checkout')}
+                    className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-extrabold text-xs rounded-xl transition cursor-pointer border border-teal-200/50"
+                  >
+                    + Buy Add-On
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {[
+                    { key: 'billing', name: 'Patient Billing & Invoicing', desc: 'GST invoices, receipt PDFs, collection reports' },
+                    { key: 'messaging', name: 'WhatsApp & SMS Alerts', desc: 'Automated appointment & lab alerts' },
+                    { key: 'appointments', name: 'Online Booking Engine', desc: 'Slot management & online queue booking' },
+                    { key: 'lab-connect', name: 'Lab Integration & Routing', desc: 'Electronic lab order dispatch' },
+                    { key: 'analytics', name: 'Advanced Clinic Analytics', desc: 'Revenue graphs & patient metrics' },
+                    { key: 'health-locker', name: 'Patient Health Locker', desc: 'Digital prescription storage' }
+                  ].map(svc => {
+                    const activeServices = facilityInfo?.activeServices || [];
+                    const svcObj = activeServices.find(s => s.service === svc.key);
+                    const isSvcActive = svcObj && svcObj.expiresAt && new Date(svcObj.expiresAt) > new Date();
+                    const isActive = isSvcActive || isPremiumActive;
+
+                    return (
+                      <div key={svc.key} className={`p-4 rounded-2xl border transition ${isActive ? 'bg-emerald-50/40 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="text-xs font-extrabold text-slate-800">{svc.name}</div>
+                            <div className="text-[10px] text-slate-500 font-medium mt-0.5">{svc.desc}</div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        {svcObj && svcObj.expiresAt && (
+                          <div className="text-[9px] font-bold text-teal-700 mt-2">
+                            Expires: {new Date(svcObj.expiresAt).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Billing History */}

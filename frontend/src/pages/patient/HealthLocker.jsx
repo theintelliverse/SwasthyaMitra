@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
+import PatientBottomNav from '../../components/patient/PatientBottomNav';
+import RecordRow from '../../components/patient/RecordRow';
 
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -43,13 +45,17 @@ const HealthLocker = () => {
   }, [navigate]);
 
   useEffect(() => {
-    fetchHealthData();
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchHealthData();
+    });
     const userPhone = localStorage.getItem('userPhone')?.replace(/\D/g, '').slice(-10);
     if (userPhone) {
       socket.emit('joinClinic', userPhone);
       socket.on('queueUpdate', () => fetchHealthData(true));
     }
     return () => {
+      active = false;
       socket.off('queueUpdate');
     };
   }, [fetchHealthData]);
@@ -72,7 +78,7 @@ const HealthLocker = () => {
   const latestVitals = data.vitals?.[0];
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body pb-safe">
       <SEO title="Health Locker" noindex={true} />
       <Sidebar role="patient" />
       
@@ -414,6 +420,9 @@ const HealthLocker = () => {
           onClose={() => setSelectedReportIndex(null)}
         />
       )}
+
+      {/* Mobile Spec Bottom Nav */}
+      <PatientBottomNav activeTab="records" />
     </div>
   );
 };

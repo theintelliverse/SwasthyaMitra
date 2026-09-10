@@ -19,7 +19,8 @@ import {
   Layout,
   FolderHeart,
   Plus,
-  Bell
+  Bell,
+  Receipt
 } from 'lucide-react';
 
 import { API_URL } from '../config/runtime';
@@ -68,6 +69,7 @@ const Sidebar = ({ role = 'lab' }) => {
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Staff Management', path: '/admin/staff-management', icon: <Users size={20} /> },
         { name: 'Front Desk', path: '/receptionist/dashboard?fromAdmin=true', icon: <Layout size={20} /> },
+        { name: 'Billing & Receipts', path: '/receptionist/billing', icon: <Receipt size={20} /> },
         { name: 'Clinic Settings', path: '/admin/settings', icon: <Settings size={20} /> },
         { name: 'Reports', path: '/admin/reports', icon: <ClipboardList size={20} /> },
         { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
@@ -83,6 +85,7 @@ const Sidebar = ({ role = 'lab' }) => {
       receptionist: [
         { name: 'Reception Hub', path: '/receptionist/dashboard', icon: <Users size={20} /> },
         { name: 'Add Patient', path: '/receptionist/add', icon: <Activity size={20} /> },
+        { name: 'Billing & Receipts', path: '/receptionist/billing', icon: <Receipt size={20} /> },
         { name: 'Profile', path: '/profile', icon: <UserCircle size={20} /> },
       ],
       lab: isIndLab ? [

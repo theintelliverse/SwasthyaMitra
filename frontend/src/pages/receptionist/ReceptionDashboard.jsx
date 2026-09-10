@@ -7,7 +7,7 @@ import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   User, Phone, Stethoscope, AlertCircle, Clipboard,
   Beaker, Activity, UserCheck, XCircle, Coffee,
-  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link, ArrowLeft
+  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link, ArrowLeft, Receipt
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
@@ -317,6 +317,13 @@ const ReceptionDashboard = () => {
                 {futureAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white">{futureAppointments.length}</span>}
               </button>
             </div>
+            <button
+              onClick={() => navigate('/receptionist/billing')}
+              className="p-3 md:p-3.5 bg-teal-50/80 rounded-2xl border border-teal-200/80 flex flex-col items-center justify-center text-center group hover:bg-teal-700 transition-all duration-300 flex-shrink-0 shadow-xs"
+            >
+              <Receipt className="text-teal-700 group-hover:text-white transition-colors mb-1.5" size={18} />
+              <p className="text-[14px] font-black text-teal-900 group-hover:text-white uppercase tracking-widest leading-none">Billing</p>
+            </button>
             <button
               onClick={() => window.open(`/display/${clinicCode}`, '_blank')}
               className="p-3 md:p-3.5 bg-sky-50/50 rounded-2xl border border-sky-100/50 flex flex-col items-center justify-center text-center group hover:bg-sky-600 transition-all duration-300 flex-shrink-0"

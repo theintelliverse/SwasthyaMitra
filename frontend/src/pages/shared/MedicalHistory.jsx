@@ -20,10 +20,16 @@ const MedicalHistory = () => {
   const role = localStorage.getItem('role');
 
   useEffect(() => {
+    let active = true;
     if (phoneParam) {
-      setSearchTerm(phoneParam);
-      setSelectedPatientPhone(phoneParam);
+      Promise.resolve().then(() => {
+        if (active) {
+          setSearchTerm(phoneParam);
+          setSelectedPatientPhone(phoneParam);
+        }
+      });
     }
+    return () => { active = false; };
   }, [phoneParam]);
 
   useEffect(() => {

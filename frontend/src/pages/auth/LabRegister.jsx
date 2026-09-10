@@ -189,39 +189,42 @@ const LabRegister = () => {
                 </div>
               ) : (
                 <>
-                  {fieldConfig.map(({ key, label, placeholder, icon: Icon, type, hint }) => (
-                    <div key={key} className="space-y-1.5">
-                      <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/60'}`}>
-                        {label}
-                      </label>
-                      <div className={`relative transition-all duration-300 transform ${focusedField === key ? 'scale-[1.01]' : ''}`}>
-                        <Icon
-                          className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === key ? 'text-blue-600' : 'text-khaki/40'}`}
-                          size={17}
-                        />
-                        <input
-                          type={key === 'password' || key === 'confirmPassword' ? (showPasswords[key] ? 'text' : 'password') : type}
-                          placeholder={placeholder}
-                          className={`w-full pl-12 ${key === 'password' || key === 'confirmPassword' ? 'pr-14' : 'pr-6'} py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[key] ? 'border-red-300' : 'border-sandstone'} ${key === 'labCode' ? 'uppercase font-black' : ''}`}
-                          value={formData[key]}
-                          onFocus={() => setFocusedField(key)}
-                          onBlur={() => setFocusedField(null)}
-                          onChange={(e) => handleInputChange(key, e.target.value)}
-                        />
-                        {(key === 'password' || key === 'confirmPassword') && (
-                          <button
-                            type="button"
-                            onClick={() => setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }))}
-                            className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
-                          >
-                            {showPasswords[key] ? <EyeOff size={18} /> : <Eye size={18} />}
-                          </button>
-                        )}
+                  {fieldConfig.map((field) => {
+                    const IconComponent = field.icon;
+                    return (
+                      <div key={field.key} className="space-y-1.5">
+                        <label className={`text-[14px] font-bold uppercase tracking-widest ml-4 transition-colors duration-300 ${focusedField === field.key ? 'text-blue-600' : 'text-khaki/60'}`}>
+                          {field.label}
+                        </label>
+                        <div className={`relative transition-all duration-300 transform ${focusedField === field.key ? 'scale-[1.01]' : ''}`}>
+                          <IconComponent
+                            className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focusedField === field.key ? 'text-blue-600' : 'text-khaki/40'}`}
+                            size={17}
+                          />
+                          <input
+                            type={field.key === 'password' || field.key === 'confirmPassword' ? (showPasswords[field.key] ? 'text' : 'password') : field.type}
+                            placeholder={field.placeholder}
+                            className={`w-full pl-12 ${field.key === 'password' || field.key === 'confirmPassword' ? 'pr-14' : 'pr-6'} py-3 bg-parchment/50 border rounded-2xl focus:outline-none focus:ring-4 focus:border-blue-500 focus:ring-blue-500/5 transition-all font-medium placeholder:text-khaki/30 text-teak text-sm ${errors[field.key] ? 'border-red-300' : 'border-sandstone'} ${field.key === 'labCode' ? 'uppercase font-black' : ''}`}
+                            value={formData[field.key]}
+                            onFocus={() => setFocusedField(field.key)}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => handleInputChange(field.key, e.target.value)}
+                          />
+                          {(field.key === 'password' || field.key === 'confirmPassword') && (
+                            <button
+                              type="button"
+                              onClick={() => setShowPasswords(prev => ({ ...prev, [field.key]: !prev[field.key] }))}
+                              className="absolute right-5 top-1/2 -translate-y-1/2 text-khaki/40 hover:text-blue-600 transition-colors"
+                            >
+                              {showPasswords[field.key] ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          )}
+                        </div>
+                        {field.hint && !errors[field.key] && <p className="text-[12px] text-khaki/60 ml-4">{field.hint}</p>}
+                        {errors[field.key] && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors[field.key]}</p>}
                       </div>
-                      {hint && !errors[key] && <p className="text-[12px] text-khaki/60 ml-4">{hint}</p>}
-                      {errors[key] && <p className="text-[12px] text-red-500 ml-4 font-medium">{errors[key]}</p>}
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Address — textarea */}
                   <div className="space-y-1.5">

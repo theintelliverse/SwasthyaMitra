@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   X, Users, UserCheck, Calendar, DollarSign, Activity, FileText, 
   CheckCircle, XCircle, Clock, Shield, Search, Award, MapPin, ExternalLink,
@@ -17,8 +17,8 @@ const FacilityOverviewModal = ({
   onGiftSubscription,
   onToggleActive
 }) => {
-  const [activeTab, setActiveTab] = useState('analytics'); // 'analytics', 'members', 'patients', 'catalog', 'financials', 'support', 'seo', 'controls'
-  const [timeframe, setTimeframe] = useState('weekly'); // 'daily', 'weekly', 'monthly', 'yearly'
+  const [activeTab, setActiveTab] = useState('analytics');
+  const [timeframe, setTimeframe] = useState('weekly');
   const [loading, setLoading] = useState(false);
   const [overviewData, setOverviewData] = useState(null);
   const [memberSearch, setMemberSearch] = useState('');
@@ -33,14 +33,8 @@ const FacilityOverviewModal = ({
   const [rejectionReason, setRejectionReason] = useState('Application did not meet operational criteria.');
   const [customGreeting, setCustomGreeting] = useState('Hope you are doing well.');
 
-  // Fetch detailed facility overview data when modal opens
-  useEffect(() => {
-    if (isOpen && facility?._id) {
-      fetchFacilityOverview();
-    }
-  }, [isOpen, facility?._id, facilityType]);
-
-  const fetchFacilityOverview = async () => {
+  const fetchFacilityOverview = useCallback(async () => {
+    if (!facility?._id) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/superadmin/facility/${facility._id}/overview?type=${facilityType}`, {
@@ -55,7 +49,14 @@ const FacilityOverviewModal = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [facility?._id, facilityType, token]);
+
+  // Fetch detailed facility overview data when modal opens
+  useEffect(() => {
+    if (isOpen && facility?._id) {
+      fetchFacilityOverview();
+    }
+  }, [isOpen, facility?._id, fetchFacilityOverview]);
 
   const fac = overviewData?.facility || facility || {};
   const members = overviewData?.members || [];
@@ -72,8 +73,9 @@ const FacilityOverviewModal = ({
   const facName = fac.name || fac.labName || '';
   const expiryDateStr = fac.subscriptionExpiresAt ? new Date(fac.subscriptionExpiresAt).toLocaleDateString() : 'N/A';
 
-  useEffect(() => {
-    if (emailTemplate === 'rejection') {
+  const applyTemplateContent = (template, rReason = rejectionReason, cGreeting = customGreeting) => {
+    setEmailStatusMsg(null);
+    if (template === 'rejection') {
       setEmailSubject(`Update regarding your ${facilityType === 'clinic' ? 'clinic' : 'lab'} registration`);
       setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
   <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 25px 20px; text-align: center; color: white;">
@@ -85,13 +87,13 @@ const FacilityOverviewModal = ({
     <p>Thank you for your interest in Appointory. We are writing to update you regarding your registration request for <strong>${facName}</strong>.</p>
     <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; border-radius: 6px; margin: 20px 0;">
       <h4 style="margin: 0 0 8px 0; color: #b91c1c; font-size: 14px;">❌ Request Not Approved</h4>
-      <p style="margin: 3px 0; font-size: 13px;"><strong>Reason:</strong> ${rejectionReason}</p>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Reason:</strong> ${rReason}</p>
     </div>
     <p style="font-size: 13px;">If you wish to provide updated documentation or details, please reply directly or contact our support team.</p>
     <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Admin Team</strong></p>
   </div>
 </div>`);
-    } else if (emailTemplate === 'greeting') {
+    } else if (template === 'greeting') {
       setEmailSubject(`🎉 Welcome to Appointory! Let's get started`);
       setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
   <div style="background: linear-gradient(135deg, #0f766e 0%, #1f6fb2 100%); padding: 25px 20px; text-align: center; color: white;">
@@ -100,7 +102,7 @@ const FacilityOverviewModal = ({
   </div>
   <div style="padding: 25px; color: #334155; line-height: 1.6;">
     <p>Hello <strong>${facName}</strong> Administrator,</p>
-    <p>${customGreeting}</p>
+    <p>${cGreeting}</p>
     <p>We are absolutely thrilled to welcome you to the Appointory family! Your facility has been verified and is now active on our national healthcare network.</p>
     <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 6px; margin: 20px 0;">
       <h4 style="margin: 0 0 8px 0; color: #047857; font-size: 14px;">🚀 What to do next:</h4>
@@ -114,7 +116,7 @@ const FacilityOverviewModal = ({
     <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Team</strong></p>
   </div>
 </div>`);
-    } else if (emailTemplate === 'subscription') {
+    } else if (template === 'subscription') {
       setEmailSubject(`⚠️ Action Required: Your Appointory subscription is expiring soon`);
       setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
   <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); padding: 25px 20px; text-align: center; color: white;">
@@ -132,7 +134,7 @@ const FacilityOverviewModal = ({
     <p style="margin-top: 25px;">Best regards,<br/><strong>Appointory Billing</strong></p>
   </div>
 </div>`);
-    } else if (emailTemplate === 'custom') {
+    } else if (template === 'custom') {
       setEmailSubject(`Notification from Appointory Superadmin`);
       setEmailBody(`<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 25px; background-color: #ffffff;">
   <h2 style="color: #0f766e; margin-top: 0;">Notification from Appointory</h2>
@@ -143,7 +145,7 @@ const FacilityOverviewModal = ({
   <p style="color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 25px;">Appointory Healthcare Network Admin Message</p>
 </div>`);
     }
-  }, [emailTemplate, facName, expiryDateStr, rejectionReason, customGreeting, facilityType]);
+  };
 
   const handleSendEmail = async (e) => {
     e.preventDefault();
@@ -850,8 +852,9 @@ const FacilityOverviewModal = ({
                         <select
                           value={emailTemplate}
                           onChange={(e) => {
-                            setEmailTemplate(e.target.value);
-                            setEmailStatusMsg(null);
+                            const val = e.target.value;
+                            setEmailTemplate(val);
+                            applyTemplateContent(val);
                           }}
                           className="w-full bg-white border border-sandstone/30 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-teal-600"
                         >
@@ -957,32 +960,110 @@ const FacilityOverviewModal = ({
 
               {/* TAB 8: QUICK ADMIN ACTIONS */}
               {activeTab === 'controls' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-3">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                      <Download size={15} className="text-teal-700" /> Export Facility Audit Summary
-                    </h4>
-                    <p className="text-xs text-slate-500">Download a full JSON diagnostic report containing staff, patients, analytics, and billing logs.</p>
-                    <button
-                      onClick={handleExportData}
-                      className="px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-2"
-                    >
-                      <Download size={14} /> Download Facility Report
-                    </button>
+                <div className="space-y-6">
+                  {/* Modular Service Toggles */}
+                  <div className="bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <Tag size={15} className="text-teal-700" /> Active Service Modules & Subscriptions
+                      </h4>
+                      <span className="text-[10px] font-bold text-slate-400">Granular Service Access Control</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {[
+                        { key: 'billing', name: 'Patient Billing & Invoicing', desc: 'Invoices, GST receipts, payment logs' },
+                        { key: 'messaging', name: 'WhatsApp & SMS Alerts', desc: 'Automated appointment reminders' },
+                        { key: 'appointments', name: 'Online Booking Engine', desc: 'Patient portal & slot booking' },
+                        { key: 'lab-connect', name: 'Lab Integration & Routing', desc: 'Diagnostic test dispatch to labs' },
+                        { key: 'analytics', name: 'Advanced Clinic Analytics', desc: 'Revenue graphs & patient metrics' },
+                        { key: 'health-locker', name: 'Patient Health Locker', desc: 'Cloud storage for prescriptions' }
+                      ].map(svc => {
+                        const activeServices = fac.activeServices || [];
+                        const svcObj = activeServices.find(s => s.service === svc.key);
+                        const isSvcActive = svcObj && svcObj.expiresAt && new Date(svcObj.expiresAt) > new Date();
+                        const isLegacyActive = fac.subscriptionExpiresAt && new Date(fac.subscriptionExpiresAt) > new Date();
+                        const isActive = isSvcActive || isLegacyActive;
+
+                        return (
+                          <div key={svc.key} className={`p-3.5 rounded-xl border transition ${isActive ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-75'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="text-xs font-extrabold text-slate-800">{svc.name}</div>
+                                <div className="text-[10px] text-slate-500 mt-0.5">{svc.desc}</div>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch(`${API_URL}/api/superadmin/facility/${fac._id}/services`, {
+                                      method: 'PATCH',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: `Bearer ${token}`
+                                      },
+                                      body: JSON.stringify({
+                                        type: facilityType,
+                                        service: svc.key,
+                                        active: !isActive,
+                                        durationDays: 30
+                                      })
+                                    });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                      fetchFacilityOverview();
+                                      if (onRefreshData) onRefreshData();
+                                    }
+                                  } catch (err) {
+                                    console.error('Failed to toggle service:', err);
+                                  }
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer border-0 ${
+                                  isActive
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                                    : 'bg-slate-300 hover:bg-slate-400 text-slate-700'
+                                }`}
+                              >
+                                {isActive ? 'Active' : 'Enable'}
+                              </button>
+                            </div>
+                            {svcObj && svcObj.expiresAt && (
+                              <div className="text-[9px] font-bold text-emerald-700 mt-2">
+                                Expires: {new Date(svcObj.expiresAt).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <div className="bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-3">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                      <Shield size={15} className="text-amber-600" /> Administrative Governance
-                    </h4>
-                    <p className="text-xs text-slate-500">Directly modify approval status or subscription expiration dates for this facility.</p>
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <Download size={15} className="text-teal-700" /> Export Facility Audit Summary
+                      </h4>
+                      <p className="text-xs text-slate-500">Download a full JSON diagnostic report containing staff, patients, analytics, and billing logs.</p>
                       <button
-                        onClick={() => onGiftSubscription(fac._id, facilityType)}
-                        className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition"
+                        onClick={handleExportData}
+                        className="px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-2"
                       >
-                        Gift 1 Month Trial
+                        <Download size={14} /> Download Facility Report
                       </button>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-sandstone/30 shadow-sm space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <Shield size={15} className="text-amber-600" /> Administrative Governance
+                      </h4>
+                      <p className="text-xs text-slate-500">Directly modify approval status or subscription expiration dates for this facility.</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => onGiftSubscription(fac._id, facilityType)}
+                          className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition cursor-pointer"
+                        >
+                          Gift 1 Month Trial
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

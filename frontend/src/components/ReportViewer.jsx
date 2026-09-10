@@ -42,6 +42,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
     // Effect to update image URL when document changes
     useEffect(() => {
         if (!currentDoc) return;
+        let active = true;
 
         console.log('📄 Report changed:', {
             title: currentDoc.title,
@@ -50,9 +51,13 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
             attemptNumber: retryCount + 1
         });
 
-        setImageUrl(currentDoc.fileUrl);
-        setLoading(true);
-        setError(false);
+        Promise.resolve().then(() => {
+            if (active) {
+                setImageUrl(currentDoc.fileUrl);
+                setLoading(true);
+                setError(false);
+            }
+        });
 
         // Timeout to detect stuck loading (60 seconds for slow/mobile networks)
         const loadingTimeout = setTimeout(() => {

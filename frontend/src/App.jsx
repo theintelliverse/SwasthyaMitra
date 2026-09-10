@@ -18,6 +18,7 @@ const DoctorAllReports = lazy(() => import('./pages/doctor/AllReports'));
 const DoctorTemplates = lazy(() => import('./pages/doctor/Templates'));
 const ReceptionDashboard = lazy(() => import('./pages/receptionist/ReceptionDashboard'));
 const AddPatient = lazy(() => import('./pages/receptionist/AddPatient'));
+const ReceptionistBilling = lazy(() => import('./pages/receptionist/ReceptionistBilling'));
 const LabDashboard = lazy(() => import('./pages/lab/LabDashboard'));
 const LabTestRequests = lazy(() => import('./pages/lab/TestRequests'));
 const LabSamples = lazy(() => import('./pages/lab/Samples'));
@@ -36,6 +37,7 @@ const PatientForgotPassword = lazy(() => import('./pages/patient/PatientForgotPa
 const BookAppointment = lazy(() => import('./pages/patient/BookAppointment'));
 const HealthLocker = lazy(() => import('./pages/patient/HealthLocker'));
 const PatientDashboard = lazy(() => import('./pages/patient/PatientDashboard'));
+const PatientProfile = lazy(() => import('./pages/patient/PatientProfile'));
 const LockerSearch = lazy(() => import('./pages/doctor/LockerSearch'));
 const MedicalHistory = lazy(() => import('./pages/shared/MedicalHistory'));
 const Privacy = lazy(() => import('./pages/shared/Privacy'));
@@ -135,18 +137,26 @@ const PlatformGuard = ({ children }) => {
     checkPlatformState();
   }, []);
 
+  useEffect(() => {
+    if (!checking) {
+      if (isMaintenance && window.location.pathname !== '/maintenance') {
+        window.location.assign('/maintenance');
+      } else if (isExpired && window.location.pathname !== '/subscription-checkout') {
+        window.location.assign('/subscription-checkout');
+      }
+    }
+  }, [checking, isMaintenance, isExpired]);
+
   if (checking) {
     return <SkeletonLoader />;
   }
 
   if (isMaintenance && window.location.pathname !== '/maintenance') {
-    window.location.href = '/maintenance';
-    return null;
+    return <Navigate to="/maintenance" replace />;
   }
 
   if (isExpired && window.location.pathname !== '/subscription-checkout') {
-    window.location.href = '/subscription-checkout';
-    return null;
+    return <Navigate to="/subscription-checkout" replace />;
   }
 
   return <div className="animate-fade-in">{children}</div>;
@@ -276,6 +286,14 @@ const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['patient']}>
                     <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PatientProfile />
                   </ProtectedRoute>
                 }
               />
@@ -432,6 +450,14 @@ const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
                     <AddPatient />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/receptionist/billing"
+                element={
+                  <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
+                    <ReceptionistBilling />
                   </ProtectedRoute>
                 }
               />

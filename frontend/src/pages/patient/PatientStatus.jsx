@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -46,7 +46,7 @@ const PatientStatus = () => {
         return () => clearInterval(tickRef.current);
     }, []);
 
-    const fetchStatus = async (silent = false) => {
+    const fetchStatus = useCallback(async (silent = false) => {
         if (!silent) setLoading(true);
         else setIsSyncing(true);
 
@@ -73,10 +73,15 @@ const PatientStatus = () => {
             setLoading(false);
             setTimeout(() => setIsSyncing(false), 1200);
         }
-    };
+    }, [queueId, clinicId]);
 
     useEffect(() => {
-        if (queueId) fetchStatus();
+        let active = true;
+        if (queueId) {
+            Promise.resolve().then(() => {
+                if (active) fetchStatus();
+            });
+        }
 
         socket.on('connect', () => setSocketConnected(true));
         socket.on('disconnect', () => setSocketConnected(false));
@@ -84,12 +89,13 @@ const PatientStatus = () => {
         socket.on('doctorStatusChanged', () => fetchStatus(true));
 
         return () => {
+            active = false;
             socket.off('connect');
             socket.off('disconnect');
             socket.off('queueUpdate');
             socket.off('doctorStatusChanged');
         };
-    }, [queueId]);
+    }, [queueId, fetchStatus]);
 
     useEffect(() => {
         if (queueId) socket.emit('joinClinic', queueId.toString());

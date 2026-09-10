@@ -40,108 +40,113 @@ const SubscriptionCheckout = () => {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [checkoutData, setCheckoutData] = useState(null);
 
-  // Fetch current profile and subscription status
-  const fetchProfile = async () => {
-    setLoading(true);
-    try {
-      const isLab = localStorage.getItem('labRole') === 'independent_lab';
-      
-      // Fetch dynamic active plans first
-      let activePlans = [];
-      try {
-        const plansRes = await axios.get(`${API_URL}/api/superadmin/plans/public`);
-        if (plansRes.data.success) {
-          activePlans = plansRes.data.data || [];
-          setPlans(activePlans);
-        }
-      } catch (plansErr) {
-        console.error("Failed to fetch public plans:", plansErr);
-      }
-
-      if (isLab) {
-        setFacilityType('lab');
-        const token = localStorage.getItem('labToken');
-        const res = await axios.get(`${API_URL}/api/auth/lab/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.data.success) {
-          setFacilityInfo(res.data.data);
-          const matched = activePlans.filter(p => p.facilityType === 'lab' || p.facilityType === 'both');
-          setSelectedPlan(matched[0]?.key || 'independent-lab');
-        }
-
-        // Fetch lab billing history
-        try {
-          const historyRes = await axios.get(`${API_URL}/api/superadmin/subscription/lab-history`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (historyRes.data.success) {
-            setBillingHistory(historyRes.data.data || []);
-          }
-        } catch (historyErr) {
-          console.error("Failed to fetch billing history:", historyErr);
-        }
-      } else {
-        setFacilityType('clinic');
-        const token = localStorage.getItem('token');
-        const res = await axios.get(`${API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.data.success) {
-          const user = res.data.data;
-          // Fetch clinic details
-          const clinicRes = await axios.get(`${API_URL}/api/clinic/public/${user.clinicId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setFacilityInfo(clinicRes.data.data);
-          const matched = activePlans.filter(p => p.facilityType === 'clinic' || p.facilityType === 'both');
-          setSelectedPlan(matched[0]?.key || 'clinic-only');
-        }
-
-        // Fetch clinic billing history
-        try {
-          const historyRes = await axios.get(`${API_URL}/api/superadmin/subscription/history`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (historyRes.data.success) {
-            setBillingHistory(historyRes.data.data || []);
-          }
-        } catch (historyErr) {
-          console.error("Failed to fetch billing history:", historyErr);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'Failed to retrieve profile and subscription state.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch current profile and subscription status on mount
   useEffect(() => {
-    fetchProfile();
+    let isMounted = true;
+
+    const loadProfileAndPlans = async () => {
+      try {
+        const isLab = localStorage.getItem('labRole') === 'independent_lab';
+        
+        let activePlans = [];
+        try {
+          const plansRes = await axios.get(`${API_URL}/api/superadmin/plans/public`);
+          if (plansRes.data.success && isMounted) {
+            activePlans = plansRes.data.data || [];
+            setPlans(activePlans);
+          }
+        } catch (plansErr) {
+          console.error("Failed to fetch public plans:", plansErr);
+        }
+
+        if (isLab) {
+          const token = localStorage.getItem('labToken');
+          const res = await axios.get(`${API_URL}/api/auth/lab/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data.success && isMounted) {
+            setFacilityType('lab');
+            setFacilityInfo(res.data.data);
+            const matched = activePlans.filter(p => p.facilityType === 'lab' || p.facilityType === 'both');
+            setSelectedPlan(matched[0]?.key || 'independent-lab');
+          }
+
+          try {
+            const historyRes = await axios.get(`${API_URL}/api/superadmin/subscription/lab-history`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (historyRes.data.success && isMounted) {
+              setBillingHistory(historyRes.data.data || []);
+            }
+          } catch (historyErr) {
+            console.error("Failed to fetch billing history:", historyErr);
+          }
+        } else {
+          const token = localStorage.getItem('token');
+          const res = await axios.get(`${API_URL}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data.success && isMounted) {
+            const user = res.data.data;
+            const clinicRes = await axios.get(`${API_URL}/api/clinic/public/${user.clinicId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (clinicRes.data.success && isMounted) {
+              setFacilityType('clinic');
+              setFacilityInfo(clinicRes.data.data);
+              const matched = activePlans.filter(p => p.facilityType === 'clinic' || p.facilityType === 'both');
+              setSelectedPlan(matched[0]?.key || 'clinic-only');
+            }
+          }
+
+          try {
+            const historyRes = await axios.get(`${API_URL}/api/superadmin/subscription/history`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (historyRes.data.success && isMounted) {
+              setBillingHistory(historyRes.data.data || []);
+            }
+          } catch (historyErr) {
+            console.error("Failed to fetch billing history:", historyErr);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) {
+          Swal.fire('Error', 'Failed to retrieve profile and subscription state.', 'error');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProfileAndPlans();
+    return () => { isMounted = false; };
   }, []);
 
-  // Compute pricing dynamically before generating Razorpay order
-  const handlePreviewCheckout = async (planId) => {
+  // Compute pricing preview dynamically when selected plan changes
+  const executePreviewCheckout = async (planId, codeToApply) => {
     setProcessing(true);
     try {
-      const token = facilityType === 'lab' ? localStorage.getItem('labToken') : localStorage.getItem('token');
-      const checkoutUrl = facilityType === 'lab' 
+      const isLab = facilityType === 'lab';
+      const token = isLab ? localStorage.getItem('labToken') : localStorage.getItem('token');
+      const checkoutUrl = isLab 
         ? `${API_URL}/api/superadmin/subscription/lab-checkout`
         : `${API_URL}/api/superadmin/subscription/checkout`;
 
       const res = await axios.post(checkoutUrl, {
         plan: planId || selectedPlan,
-        promoCode: promoCode || undefined
+        promoCode: codeToApply || promoCode || undefined
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.data.success) {
         setCheckoutData(res.data);
-        if (promoCode && !appliedPromo) {
-          setAppliedPromo(promoCode.toUpperCase());
+        if (codeToApply && !appliedPromo) {
+          setAppliedPromo(codeToApply.toUpperCase());
           Swal.fire({
             icon: 'success',
             title: 'Promo Applied!',
@@ -163,24 +168,48 @@ const SubscriptionCheckout = () => {
   };
 
   useEffect(() => {
-    if (selectedPlan && facilityInfo) {
-      handlePreviewCheckout(selectedPlan);
-    }
-  }, [selectedPlan, facilityInfo]);
+    if (!selectedPlan || !facilityInfo) return;
+    let isMounted = true;
+
+    const previewCheckout = async () => {
+      try {
+        const isLab = facilityType === 'lab';
+        const token = isLab ? localStorage.getItem('labToken') : localStorage.getItem('token');
+        const checkoutUrl = isLab 
+          ? `${API_URL}/api/superadmin/subscription/lab-checkout`
+          : `${API_URL}/api/superadmin/subscription/checkout`;
+
+        const res = await axios.post(checkoutUrl, {
+          plan: selectedPlan,
+          promoCode: promoCode || undefined
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.data.success && isMounted) {
+          setCheckoutData(res.data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error("Preview checkout failed:", err);
+        }
+      }
+    };
+
+    previewCheckout();
+    return () => { isMounted = false; };
+  }, [selectedPlan, facilityInfo, facilityType, promoCode]);
 
   const handleApplyPromo = (e) => {
     e.preventDefault();
     if (!promoCode.trim()) return;
-    handlePreviewCheckout(selectedPlan);
+    executePreviewCheckout(selectedPlan, promoCode);
   };
 
   const handleRemovePromo = () => {
     setPromoCode('');
     setAppliedPromo(null);
-    // Re-evaluate pricing without promo
-    setTimeout(() => {
-      handlePreviewCheckout(selectedPlan);
-    }, 100);
+    executePreviewCheckout(selectedPlan, '');
   };
 
   const handlePayment = async () => {
@@ -343,7 +372,7 @@ const SubscriptionCheckout = () => {
           });
           Swal.fire('Ticket Submitted', 'Our super admin team will investigate and respond soon.', 'success');
         } catch (err) {
-          Swal.fire('Error', 'Failed to file support ticket.', 'error');
+          Swal.fire('Error', 'Failed to file support ticket.', err);
         }
       }
     });
@@ -446,7 +475,12 @@ const SubscriptionCheckout = () => {
                       className={`p-5 rounded-3xl border cursor-pointer transition flex justify-between items-center bg-white ${selectedPlan === plan.key ? 'border-blue-600 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}
                     >
                       <div className="space-y-1">
-                        <h4 className="font-black text-slate-800 text-base">{plan.name}</h4>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-black text-slate-800 text-base">{plan.name}</h4>
+                          <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-blue-100 text-blue-700">
+                            {plan.serviceType === 'full' ? 'Full Suite' : plan.serviceType === 'bundle' ? 'Service Bundle' : (plan.serviceType || 'Standard')}
+                          </span>
+                        </div>
                         <p className="text-xs text-slate-500">{plan.durationDays} Days Duration</p>
                         
                         {plan.features?.length > 0 && (

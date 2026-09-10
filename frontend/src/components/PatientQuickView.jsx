@@ -24,14 +24,20 @@ const PatientQuickView = ({ phone, onClose }) => {
   const [bmi, setBmi] = useState("");
 
   useEffect(() => {
+    let active = true;
     if (patientData) {
-      const latest = patientData.vitals?.[0] || {};
-      const latestComplete = patientData.vitals?.find(v => v.weight && v.bmi) || latest;
-      setBp(latest.bloodPressure || "");
-      setPulse(latest.pulseRate || "");
-      setWeight(latestComplete.weight || "");
-      setBmi(latestComplete.bmi || "");
+      Promise.resolve().then(() => {
+        if (active) {
+          const latest = patientData.vitals?.[0] || {};
+          const latestComplete = patientData.vitals?.find(v => v.weight && v.bmi) || latest;
+          setBp(latest.bloodPressure || "");
+          setPulse(latest.pulseRate || "");
+          setWeight(latestComplete.weight || "");
+          setBmi(latestComplete.bmi || "");
+        }
+      });
     }
+    return () => { active = false; };
   }, [patientData]);
 
   const handleSaveVitals = async (field, value) => {
@@ -78,9 +84,6 @@ const PatientQuickView = ({ phone, onClose }) => {
   );
 
   if (!patientData) return null;
-
-  // 🔑 Find the latest vital record with complete weight/BMI data
-  const latestCompleteVital = patientData.vitals?.find(v => v.weight && v.bmi) || patientData.vitals?.[0] || {};
 
   return (
     <>

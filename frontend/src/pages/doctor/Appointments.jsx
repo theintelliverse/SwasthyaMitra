@@ -29,11 +29,7 @@ const Appointments = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [selectedDate, activeTab]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/queue/stats/doctor`, {
@@ -53,7 +49,15 @@ const Appointments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, activeTab, token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchAppointments();
+    });
+    return () => { active = false; };
+  }, [fetchAppointments]);
 
   const handleStartSession = async (appointmentId) => {
     try {

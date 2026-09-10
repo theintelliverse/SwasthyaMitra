@@ -26,11 +26,7 @@ const AllReports = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchAllReports();
-  }, []);
-
-  const fetchAllReports = async () => {
+  const fetchAllReports = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/lab/reports/recent?limit=200&filter=all`, {
@@ -45,7 +41,15 @@ const AllReports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchAllReports();
+    });
+    return () => { active = false; };
+  }, [fetchAllReports]);
 
   const filteredReports = (reports || []).filter(r => {
     if (!r) return false;
