@@ -270,6 +270,14 @@ app.use('/api/lab-connect', checkSubscription, labConnectionRoutes);
 app.use('/api/superadmin', superadminRoutes);
 
 // Health Check
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 app.get('/', (req, res) => {
     res.send('Appointory Backend is running...');
 });
@@ -313,10 +321,8 @@ if (!isVercel && require.main === module) {
         }
 
         // 🔑 IMPORTANT: Listen using 'server', not 'app'
-        server.listen(PORT, () => {
-            if (!isProduction) {
-                console.log(`🚀 Server & WebSockets running on port ${PORT}`);
-            }
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Server & WebSockets running on port ${PORT} (Production: ${isProduction})`);
         });
     };
 
