@@ -1,24 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
   User, Phone, Search, RefreshCw, ArrowLeft, Stethoscope, 
   Receipt, Plus, Trash2, Printer, CheckCircle2, ShieldCheck, 
   CreditCard, DollarSign, Sparkles, FileText, AlertTriangle, 
-  Beaker, Check, Clock, Eye, Share2, ChevronRight, X, TrendingUp, CalendarCheck
+  Beaker, Check, Clock, Eye, Share2, ChevronRight, X, TrendingUp, CalendarCheck, Settings, QrCode
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
+import QrScannerModal from '../../components/receptionist/QrScannerModal';
 import { API_URL } from '../../config/runtime';
 
 const ReceptionistBilling = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const token = localStorage.getItem('token');
 
   // State Management
   const [billingType, setBillingType] = useState('clinic'); // 'clinic' | 'lab'
   const [searchPhone, setSearchPhone] = useState('');
+  const [showQrScanner, setShowQrScanner] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [autoFetched, setAutoFetched] = useState(false);
@@ -39,6 +42,20 @@ const ReceptionistBilling = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
 
+  // Billing & Tax Settings State
+  const [billingSettings, setBillingSettings] = useState({
+    taxEnabled: true,
+    taxRate: 18,
+    feeConsult: 500,
+    feeFollowupConsult: 300,
+    feeLab: 450,
+    feeEmergency: 300,
+    feeMedicine: 120
+  });
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [customTaxAmount, setCustomTaxAmount] = useState(null);
+
   // Bill Form State
   const [formData, setFormData] = useState({
     patientName: '',
@@ -46,6 +63,7 @@ const ReceptionistBilling = () => {
     doctorId: '',
     doctorName: '',
     onlinePendingDues: 0,
+    discount: 0,
     paymentMode: 'Cash',
     paidAmount: 0,
     queueId: null
@@ -55,7 +73,41 @@ const ReceptionistBilling = () => {
     { description: 'Doctor Consultation Fee', amount: 500, category: 'Consultation' }
   ]);
 
-  const fetchInvoices = React.useCallback(async () => {
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/billing/settings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success && res.data.settings) {
+        setBillingSettings(res.data.settings);
+      }
+    } catch (err) {
+      console.error("Failed to load billing settings:", err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchSettings();
+    });
+    return () => { active = false; };
+  }, [fetchSettings]);
+
+  useEffect(() => {
+    const phoneFromUrl = searchParams.get('phone');
+    if (phoneFromUrl) {
+      const clean = phoneFromUrl.replace(/\D/g, '').slice(-10);
+      const timer = setTimeout(() => {
+        setSearchPhone(clean);
+        const fetchBtn = document.querySelector('button[type="submit"]');
+        fetchBtn?.click();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
+  const fetchInvoices = useCallback(async () => {
     setLoadingInvoices(true);
     try {
       const res = await axios.get(`${API_URL}/api/billing/invoices?billingType=${billingType}`, {
@@ -120,10 +172,15 @@ const ReceptionistBilling = () => {
         // 2. Setup Default Line Items based on Billing Type
         let defaultItems = [];
         if (billingType === 'clinic') {
-          const consultFee = data.clinicFees?.feeConsult || 500;
+          const isFollowup = data.queue?.visitType === 'Follow-up';
+          const consultFee = isFollowup 
+            ? (data.clinicFees?.feeFollowupConsult || billingSettings.feeFollowupConsult || 300) 
+            : (data.clinicFees?.feeConsult || billingSettings.feeConsult || 500);
           defaultItems = [
             { 
-              description: data.queue ? `Doctor Consultation (${data.queue.doctorName})` : 'Doctor Consultation Fee', 
+              description: data.queue 
+                ? `${isFollowup ? 'Follow-up Consultation' : 'Doctor Consultation'} (${data.queue.doctorName})` 
+                : 'Doctor Consultation Fee', 
               amount: consultFee, 
               category: 'Consultation' 
             }
@@ -240,7 +297,11 @@ const ReceptionistBilling = () => {
   const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const duesAmount = Number(formData.onlinePendingDues || 0);
   const discountAmount = Number(formData.discount || 0);
-  const taxAmount = Number(formData.tax || 0);
+
+  const taxAmount = customTaxAmount !== null 
+    ? Number(customTaxAmount) 
+    : (billingSettings.taxEnabled ? Math.max(0, Math.round((subtotal - discountAmount) * (billingSettings.taxRate / 100))) : 0);
+
   const totalAmount = Math.max(0, subtotal + duesAmount - discountAmount + taxAmount);
   const paidAmount = Number(formData.paidAmount || 0);
   const remainingDue = Math.max(0, totalAmount - paidAmount);
@@ -319,12 +380,12 @@ const ReceptionistBilling = () => {
           doctorName: '',
           onlinePendingDues: 0,
           discount: 0,
-          tax: 0,
           paidAmount: 0,
           paymentMode: 'Cash',
           notes: '',
           queueId: null
         });
+        setCustomTaxAmount(null);
         setSearchPhone('');
         setAutoFetched(false);
         setFetchedQueue(null);
@@ -340,12 +401,13 @@ const ReceptionistBilling = () => {
 
   // Quick Preset Items
   const clinicPresets = [
-    { description: 'Doctor Consultation Fee', amount: 500, category: 'Consultation' },
+    { description: 'New Doctor Consultation Fee', amount: billingSettings.feeConsult || 500, category: 'Consultation' },
+    { description: 'Follow-up Consultation Fee', amount: billingSettings.feeFollowupConsult || 300, category: 'Consultation' },
     { description: 'Appointment Booking Charge', amount: 100, category: 'Registration' },
     { description: 'Clinic Registration Fee', amount: 50, category: 'Registration' },
     { description: 'Medicines & Prescription', amount: 150, category: 'Medicine' },
     { description: 'Dressing & Procedure Charge', amount: 250, category: 'Procedure' },
-    { description: 'Emergency Surcharge', amount: 300, category: 'Emergency' },
+    { description: 'Emergency Surcharge', amount: billingSettings.feeEmergency || 300, category: 'Emergency' },
   ];
 
   const labPresets = [
@@ -391,6 +453,34 @@ const ReceptionistBilling = () => {
     });
   };
 
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    setUpdatingSettings(true);
+    try {
+      const res = await axios.put(`${API_URL}/api/billing/settings`, billingSettings, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setBillingSettings(res.data.settings);
+        setCustomTaxAmount(null);
+        setShowSettingsModal(false);
+        Swal.fire({
+          icon: 'success',
+          title: 'Settings Saved!',
+          text: 'Billing tax rates and consultation fees updated.',
+          timer: 1800,
+          showConfirmButton: false,
+          background: '#EEF6FA'
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', err.response?.data?.message || 'Failed to save settings.', 'error');
+    } finally {
+      setUpdatingSettings(false);
+    }
+  };
+
   const filteredInvoices = invoices.filter(inv => 
     !historySearch || 
     inv.patientName?.toLowerCase().includes(historySearch.toLowerCase()) ||
@@ -420,34 +510,45 @@ const ReceptionistBilling = () => {
                 <Receipt className="text-teal-600" size={26} /> Receptionist Billing & Receipts
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-                Generate invoices, auto-book appointments & track live revenue & pending dues ("Paisa Bakki").
+                Generate invoices, auto-book appointments & track live revenue & pending balance.
               </p>
             </div>
 
-            {/* Clinic vs Lab Billing Type Switcher */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 w-full sm:w-auto">
+            {/* Billing Actions & Type Switcher */}
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
-                onClick={() => handleBillingTypeSwitch('clinic')}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                  billingType === 'clinic' 
-                    ? 'bg-teal-700 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                onClick={() => setShowSettingsModal(true)}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 border border-slate-200"
+                title="Configure Tax Rates & Consultation Fees"
               >
-                <Stethoscope size={15} /> Clinic Billing
+                <Settings size={15} className="text-teal-700" /> Settings
               </button>
-              <button
-                type="button"
-                onClick={() => handleBillingTypeSwitch('lab')}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                  billingType === 'lab' 
-                    ? 'bg-indigo-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Beaker size={15} /> Lab Billing
-              </button>
+
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 flex-grow sm:flex-initial">
+                <button
+                  type="button"
+                  onClick={() => handleBillingTypeSwitch('clinic')}
+                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                    billingType === 'clinic' 
+                      ? 'bg-teal-700 text-white shadow-sm' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Stethoscope size={15} /> Clinic Billing
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBillingTypeSwitch('lab')}
+                  className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                    billingType === 'lab' 
+                      ? 'bg-indigo-600 text-white shadow-sm' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Beaker size={15} /> Lab Billing
+                </button>
+              </div>
             </div>
           </header>
 
@@ -471,7 +572,7 @@ const ReceptionistBilling = () => {
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
               <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
-                <AlertTriangle size={12} className="text-rose-500" /> Pending Dues ("Bakki")
+                <AlertTriangle size={12} className="text-rose-500" /> Pending Dues
               </span>
               <p className="text-lg sm:text-2xl font-black text-rose-600">₹{(revenueStats.totalPendingDues || 0).toLocaleString()}</p>
               <span className="text-[10px] text-rose-500 font-semibold">Uncollected Balance</span>
@@ -520,6 +621,14 @@ const ReceptionistBilling = () => {
               </div>
 
               <button
+                type="button"
+                onClick={() => setShowQrScanner(true)}
+                className="px-5 py-3 bg-white/10 hover:bg-white/20 text-teal-200 border border-white/20 font-black rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+              >
+                <QrCode size={16} /> Scan Patient QR
+              </button>
+
+              <button
                 type="submit"
                 disabled={fetching}
                 className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
@@ -543,7 +652,7 @@ const ReceptionistBilling = () => {
                       <span className="text-amber-200 font-bold"> 🎫 Note: Submitting this bill will auto-book today's appointment token!</span>
                     )}
                     {formData.onlinePendingDues > 0 && (
-                      <span className="text-amber-300 font-bold"> ⚠️ Pending Dues ("Paisa Bakki"): ₹{formData.onlinePendingDues}</span>
+                      <span className="text-amber-300 font-bold"> ⚠️ Pending Dues: ₹{formData.onlinePendingDues}</span>
                     )}
                   </p>
                 </div>
@@ -754,7 +863,7 @@ const ReceptionistBilling = () => {
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
                   <div className="flex justify-between items-center">
                     <label className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                      <AlertTriangle size={15} className="text-amber-600" /> Online Pending Dues ("Paisa Bakki"):
+                      <AlertTriangle size={15} className="text-amber-600" /> Online Pending Dues:
                     </label>
                     <span className="text-xs font-black text-amber-700">₹{duesAmount}</span>
                   </div>
@@ -780,7 +889,7 @@ const ReceptionistBilling = () => {
 
                   {duesAmount > 0 && (
                     <div className="flex justify-between text-amber-700">
-                      <span>Online Pending Dues ("Bakki"):</span>
+                      <span>Online Pending Dues:</span>
                       <span className="font-bold">+ ₹{duesAmount}</span>
                     </div>
                   )}
@@ -799,13 +908,18 @@ const ReceptionistBilling = () => {
 
                   {/* Tax Input */}
                   <div className="flex justify-between items-center py-1">
-                    <span>Tax / GST (₹):</span>
+                    <span className="flex items-center gap-1.5">
+                      Tax / GST (₹):
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${billingSettings.taxEnabled ? 'bg-teal-100 text-teal-800' : 'bg-slate-200 text-slate-500'}`}>
+                        {billingSettings.taxEnabled ? `Auto ${billingSettings.taxRate}%` : 'Off'}
+                      </span>
+                    </span>
                     <input
                       type="number"
                       min="0"
-                      value={formData.tax}
-                      onChange={(e) => setFormData({ ...formData, tax: Number(e.target.value) })}
-                      className="w-24 px-2 py-1 bg-white border border-slate-300 rounded-md text-right text-xs font-bold text-slate-800 focus:outline-none"
+                      value={customTaxAmount !== null ? customTaxAmount : taxAmount}
+                      onChange={(e) => setCustomTaxAmount(Number(e.target.value))}
+                      className="w-24 px-2 py-1 bg-white border border-slate-300 rounded-md text-right text-xs font-bold text-slate-800 focus:outline-none focus:border-teal-600"
                     />
                   </div>
 
@@ -858,7 +972,7 @@ const ReceptionistBilling = () => {
                   }`}>
                     <span>Status: <strong>{getPaymentStatus()}</strong></span>
                     <span>
-                      {remainingDue > 0 ? `Remaining Due ("Bakki"): ₹${remainingDue}` : '✓ Fully Paid'}
+                      {remainingDue > 0 ? `Remaining Balance: ₹${remainingDue}` : '✓ Fully Paid'}
                     </span>
                   </div>
                 </div>
@@ -1010,108 +1124,284 @@ const ReceptionistBilling = () => {
               </div>
             </div>
 
-            {/* PRINTABLE RECEIPT BODY */}
-            <div id="printable-receipt-area" className="p-6 space-y-5 text-slate-800 text-xs font-body">
+            {/* PRINTABLE RECEIPT BODY - Full Page Professional Layout */}
+            <div id="printable-receipt-area" className="p-6 md:p-8 space-y-6 text-slate-800 text-xs font-body bg-white">
               
-              {/* Header Info */}
-              <div className="border-b border-slate-200 pb-4 text-center space-y-1">
-                <h2 className="text-xl font-black text-teal-800 tracking-wide uppercase">APPOINTORY HEALTHCARE</h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Official Payment Receipt / Bill</p>
-                <p className="text-xs text-slate-600 font-medium">Receipt No: <strong>{selectedInvoice.invoiceNumber}</strong></p>
-                <p className="text-[11px] text-slate-400">Date: {new Date(selectedInvoice.billingDate).toLocaleString()}</p>
+              {/* Header Info with Clinic Personalization */}
+              <div className="border-b-2 border-slate-900 pb-5 flex justify-between items-start gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm print:border print:border-slate-900">
+                      🏥
+                    </div>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">
+                      {selectedInvoice.clinicName || localStorage.getItem('clinicName') || 'SANJIVANI HEALTHCARE CLINIC'}
+                    </h2>
+                  </div>
+                  <p className="text-[11px] font-bold text-slate-600">
+                    {selectedInvoice.clinicAddress || 'Multi-Specialty Medical & Diagnostic Center'}
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-medium">
+                    Contact: +91 98765 43210 | GSTIN / Reg: 24AAACS9081F1Z8
+                  </p>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1.5 border ${
+                    selectedInvoice.paymentStatus === 'Paid' 
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                      : 'bg-rose-50 text-rose-800 border-rose-300'
+                  }`}>
+                    {selectedInvoice.paymentStatus === 'Paid' ? '✓ PAID RECEIPT' : '⚠️ BALANCE DUE'}
+                  </span>
+                  <h3 className="text-sm font-black text-slate-900 tracking-wider uppercase block">
+                    TAX INVOICE
+                  </h3>
+                  <p className="text-xs font-bold text-slate-700">
+                    No: <span className="font-black text-slate-900">{selectedInvoice.invoiceNumber}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-medium">
+                    Date: {new Date(selectedInvoice.billingDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
               </div>
 
-              {/* Patient & Doctor Meta */}
-              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-xs">
-                <div>
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase">Patient Details</span>
-                  <strong className="text-slate-900 block text-sm">{selectedInvoice.patientName}</strong>
-                  <span className="text-slate-600">Ph: {selectedInvoice.patientPhone}</span>
+              {/* Patient & Practitioner Details Grid */}
+              <div className="grid grid-cols-2 gap-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200 text-xs">
+                <div className="space-y-1">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Billed To (Patient)</span>
+                  <strong className="text-slate-900 block text-sm font-black">{selectedInvoice.patientName}</strong>
+                  <p className="text-slate-600 font-medium">Mobile: {selectedInvoice.patientPhone}</p>
                 </div>
-                <div>
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase">Practitioner / Mode</span>
-                  <strong className="text-slate-900 block text-sm">{selectedInvoice.doctorName || 'Clinic Staff'}</strong>
-                  <span className="text-teal-700 font-bold uppercase">{selectedInvoice.billingType} RECEIPT</span>
+
+                <div className="space-y-1">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultant / Service Mode</span>
+                  <strong className="text-slate-900 block text-sm font-black">Dr. {selectedInvoice.doctorName || 'General Practitioner'}</strong>
+                  <p className="text-teal-700 font-bold uppercase tracking-wider text-[11px]">
+                    {selectedInvoice.billingType || 'Clinic'} Services
+                  </p>
                 </div>
               </div>
 
-              {/* Items Table */}
+              {/* Itemized Charges Table */}
               <div className="space-y-2">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Services & Charges Billed:</span>
-                <table className="w-full border-collapse text-left">
+                <table className="w-full border-collapse text-left border border-slate-200">
                   <thead>
-                    <tr className="border-b border-slate-200 text-slate-500 text-[10px] uppercase font-bold">
-                      <th className="py-1.5">Description</th>
-                      <th className="py-1.5 text-right">Amount</th>
+                    <tr className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-wider">
+                      <th className="py-2.5 px-3 w-12 text-center">#</th>
+                      <th className="py-2.5 px-3">Service / Item Description</th>
+                      <th className="py-2.5 px-3 w-28">Category</th>
+                      <th className="py-2.5 px-3 text-right w-28">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
+                  <tbody className="divide-y divide-slate-200 text-xs font-medium">
                     {selectedInvoice.items?.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="py-2 text-slate-800">{item.description}</td>
-                        <td className="py-2 text-right font-bold text-slate-900">₹{item.amount}</td>
+                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
+                        <td className="py-2.5 px-3 text-center text-slate-400 font-bold">{idx + 1}</td>
+                        <td className="py-2.5 px-3 text-slate-900 font-bold">{item.description}</td>
+                        <td className="py-2.5 px-3 text-slate-500 uppercase text-[10px] font-bold">{item.category || 'General'}</td>
+                        <td className="py-2.5 px-3 text-right font-black text-slate-900">₹{item.amount}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Calculations Summary */}
-              <div className="border-t border-slate-200 pt-3 space-y-1.5 text-xs font-semibold">
-                <div className="flex justify-between text-slate-600">
-                  <span>Subtotal:</span>
-                  <span>₹{selectedInvoice.subtotal}</span>
+              {/* Calculation Summary & Totals */}
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-2">
+                <div className="text-[11px] text-slate-500 space-y-1 max-w-xs">
+                  <p className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Payment Information:</p>
+                  <p>• Payment Mode: <strong className="text-slate-900">{selectedInvoice.paymentMode}</strong></p>
+                  <p>• Status: <strong className="text-slate-900">{selectedInvoice.paymentStatus}</strong></p>
+                  <p className="italic text-[10px] text-slate-400 pt-1">Computer generated electronic bill. Valid without physical stamp.</p>
                 </div>
 
-                {selectedInvoice.onlinePendingDues > 0 && (
-                  <div className="flex justify-between text-amber-700">
-                    <span>Online Pending Dues ("Bakki"):</span>
-                    <span>+ ₹{selectedInvoice.onlinePendingDues}</span>
-                  </div>
-                )}
-
-                {selectedInvoice.discount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
-                    <span>Discount:</span>
-                    <span>- ₹{selectedInvoice.discount}</span>
-                  </div>
-                )}
-
-                {selectedInvoice.tax > 0 && (
+                <div className="w-full sm:w-64 space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs font-semibold">
                   <div className="flex justify-between text-slate-600">
-                    <span>Tax / GST:</span>
-                    <span>+ ₹{selectedInvoice.tax}</span>
+                    <span>Subtotal:</span>
+                    <span className="font-bold text-slate-900">₹{selectedInvoice.subtotal}</span>
                   </div>
-                )}
 
-                <div className="flex justify-between text-sm font-black text-slate-900 border-t border-slate-200 pt-2">
-                  <span>Grand Total:</span>
-                  <span className="text-teal-700">₹{selectedInvoice.totalAmount}</span>
-                </div>
+                  {selectedInvoice.onlinePendingDues > 0 && (
+                    <div className="flex justify-between text-amber-700">
+                      <span>Online Pending Dues:</span>
+                      <span className="font-bold">+ ₹{selectedInvoice.onlinePendingDues}</span>
+                    </div>
+                  )}
 
-                <div className="flex justify-between text-xs font-bold text-emerald-800 pt-1">
-                  <span>Paid Amount ({selectedInvoice.paymentMode}):</span>
-                  <span>₹{selectedInvoice.paidAmount}</span>
-                </div>
+                  {selectedInvoice.discount > 0 && (
+                    <div className="flex justify-between text-emerald-700">
+                      <span>Discount:</span>
+                      <span className="font-bold">- ₹{selectedInvoice.discount}</span>
+                    </div>
+                  )}
 
-                {selectedInvoice.remainingDue > 0 && (
-                  <div className="flex justify-between text-xs font-bold text-rose-700 pt-1">
-                    <span>Remaining Due ("Bakki"):</span>
-                    <span>₹{selectedInvoice.remainingDue}</span>
+                  {selectedInvoice.tax > 0 && (
+                    <div className="flex justify-between text-slate-600">
+                      <span>Tax / GST:</span>
+                      <span className="font-bold">+ ₹{selectedInvoice.tax}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-base font-black text-slate-900 border-t-2 border-slate-900 pt-2">
+                    <span>Grand Total:</span>
+                    <span className="text-slate-900">₹{selectedInvoice.totalAmount}</span>
                   </div>
-                )}
+
+                  <div className="flex justify-between text-xs font-bold text-emerald-800 pt-1">
+                    <span>Amount Paid ({selectedInvoice.paymentMode}):</span>
+                    <span className="font-black">₹{selectedInvoice.paidAmount}</span>
+                  </div>
+
+                  {selectedInvoice.remainingDue > 0 && (
+                    <div className="flex justify-between text-rose-700 font-bold border-t border-rose-200 pt-1">
+                      <span>Balance Dues:</span>
+                      <span className="font-black">₹{selectedInvoice.remainingDue}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Receipt Footer */}
-              <div className="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 space-y-1">
-                <p className="font-bold text-slate-500">Thank you for choosing Appointory Healthcare!</p>
-                <p>This is a computer-generated digital receipt. No signature required.</p>
+              {/* Signatory & Footer */}
+              <div className="pt-6 border-t border-slate-200 flex justify-between items-end text-[10px]">
+                <div className="space-y-1">
+                  <p className="font-black text-slate-700 uppercase tracking-wider">Thank you for visiting!</p>
+                  <p className="text-slate-500">Wishing you good health and a speedy recovery.</p>
+                </div>
+
+                <div className="text-center space-y-8">
+                  <div className="border-b border-slate-400 w-36 mx-auto" />
+                  <p className="font-black text-slate-800 uppercase tracking-wider">Authorized Signatory</p>
+                </div>
+              </div>
+
+              {/* Appointory Powered Footer Credit */}
+              <div className="pt-3 border-t border-slate-100 text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                Bill Generated via Appointory Healthcare Platform • www.appointory.in
               </div>
 
             </div>
           </div>
         </div>
       )}
+
+      {/* ⚙️ BILLING & TAX SETTINGS MODAL */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl p-6 space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Settings className="text-teal-600" size={20} /> Billing & Tax Settings
+              </h3>
+              <button 
+                onClick={() => setShowSettingsModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-4">
+              {/* Tax Auto Calculation Toggle */}
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-bold text-slate-800 block">Automatic Tax / GST Calculation</label>
+                  <p className="text-[11px] text-slate-500">Enable automatic tax addition on bill subtotal.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={billingSettings.taxEnabled}
+                  onChange={(e) => setBillingSettings({ ...billingSettings, taxEnabled: e.target.checked })}
+                  className="w-5 h-5 accent-teal-700 rounded cursor-pointer"
+                />
+              </div>
+
+              {/* Tax Rate % Input */}
+              {billingSettings.taxEnabled && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Default Tax / GST Rate (%)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      required
+                      value={billingSettings.taxRate}
+                      onChange={(e) => setBillingSettings({ ...billingSettings, taxRate: Number(e.target.value) })}
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    />
+                    <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-bold">%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Consultation Fees Configuration */}
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">Fixed Consultation Fee Rates</h4>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">New Consultation (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={billingSettings.feeConsult}
+                      onChange={(e) => setBillingSettings({ ...billingSettings, feeConsult: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Follow-up Visit (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={billingSettings.feeFollowupConsult}
+                      onChange={(e) => setBillingSettings({ ...billingSettings, feeFollowupConsult: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-teal-600 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingSettings}
+                  className="px-5 py-2 bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold rounded-xl transition-colors shadow-xs"
+                >
+                  {updatingSettings ? 'Saving...' : 'Save Settings'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 📷 QR SCANNER MODAL */}
+      <QrScannerModal
+        isOpen={showQrScanner}
+        onClose={() => setShowQrScanner(false)}
+        onScanSuccess={(scannedPatient) => {
+          setSearchPhone(scannedPatient.phone);
+          setShowQrScanner(false);
+          // auto trigger fetch
+          setTimeout(() => {
+            const fetchBtn = document.querySelector('button[type="submit"]');
+            fetchBtn?.click();
+          }, 150);
+        }}
+        navigate={navigate}
+      />
     </div>
   );
 };

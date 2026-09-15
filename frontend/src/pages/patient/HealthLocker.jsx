@@ -7,12 +7,12 @@ import ReportViewer from '../../components/ReportViewer';
 import {
   User, FileText, Activity, History, Download, Calendar, Eye,
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCcw, Smartphone, Hash,
-  Droplet, Heart, Weight, Pill, Zap, Thermometer, Droplets, ArrowUpRight, Search, Database
+  Droplet, Heart, Weight, Pill, Zap, Thermometer, Droplets, ArrowUpRight, Search, Database,
+  Upload, X, Plus, Trash2, Loader2, FileUp, CheckCircle, AlertCircle
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
 import PatientBottomNav from '../../components/patient/PatientBottomNav';
-import RecordRow from '../../components/patient/RecordRow';
 
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -23,6 +23,16 @@ const HealthLocker = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('vitals');
   const [selectedReportIndex, setSelectedReportIndex] = useState(null);
+
+  // Upload Modal State
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadFileType, setUploadFileType] = useState('Lab Report');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const fetchHealthData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -59,6 +69,67 @@ const HealthLocker = () => {
       socket.off('queueUpdate');
     };
   }, [fetchHealthData]);
+
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setUploadError("Please select a file to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+    setUploadSuccess(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', uploadTitle.trim() || selectedFile.name);
+      formData.append('fileType', uploadFileType);
+
+      await axios.post(`${API_URL}/api/auth/patient/upload-document`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setUploadSuccess(true);
+      setTimeout(() => {
+        setShowUploadModal(false);
+        setSelectedFile(null);
+        setUploadTitle('');
+        setUploadSuccess(false);
+        fetchHealthData(true);
+      }, 1200);
+    } catch (err) {
+      console.error("Upload error", err);
+      setUploadError(err.response?.data?.message || "Failed to upload document. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteDoc = async (docId) => {
+    if (!docId) return;
+    if (!window.confirm("Are you sure you want to delete this document?")) return;
+
+    setDeletingId(docId);
+    try {
+      const token = localStorage.getItem('token');
+      const userPhone = localStorage.getItem('userPhone') || data?.phone;
+      await axios.post(`${API_URL}/api/auth/patient/remove-document/${docId}`, { phone: userPhone }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchHealthData(true);
+    } catch (err) {
+      console.error("Delete document error", err);
+      alert(err.response?.data?.message || "Failed to delete document.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4">
@@ -98,12 +169,19 @@ const HealthLocker = () => {
             <p className="text-slate-400 font-bold text-[14px] mt-0.5 uppercase tracking-wider">Authenticated clinical records & wellness logs.</p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex-1 sm:flex-initial px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-md shadow-teal-600/20 active:scale-95 transition-all"
+            >
+              <Upload size={14} /> Upload Report
+            </button>
             <button 
               onClick={() => fetchHealthData(true)}
-              className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
+              className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
+              title="Refresh"
             >
-              <RefreshCcw size={13} className={isSyncing ? 'animate-spin text-teal-500' : ''} />
+              <RefreshCcw size={14} className={isSyncing ? 'animate-spin text-teal-500' : ''} />
             </button>
           </div>
         </header>
@@ -141,7 +219,7 @@ const HealthLocker = () => {
         <div className="flex bg-white border border-slate-100 p-1 rounded-xl shadow-sm mb-4 md:mb-5 overflow-x-auto hide-scrollbar whitespace-nowrap snap-x snap-mandatory shrink-0 w-full">
           <TabBtn active={activeTab === 'vitals'} onClick={() => setActiveTab('vitals')} icon={<Heart size={11} />} label="Vitals" />
           <TabBtn active={activeTab === 'medicine'} onClick={() => setActiveTab('medicine')} icon={<Pill size={11} />} label="Prescriptions" />
-          <TabBtn active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon={<FileText size={11} />} label="Records" />
+          <TabBtn active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon={<FileText size={11} />} label={`Records (${data.documents?.length || 0})`} />
           <TabBtn active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={<History size={11} />} label="Timeline" />
         </div>
 
@@ -302,25 +380,48 @@ const HealthLocker = () => {
 
           {activeTab === 'reports' && (
             <div className="space-y-4 md:space-y-5">
+              <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">Lab Reports & Scans</h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Store & view all your medical files securely</p>
+                </div>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                >
+                  <Plus size={14} /> Add Document
+                </button>
+              </div>
+
               {data.documents?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                   {data.documents.map((doc, i) => (
-                    <div key={i} className="bg-white border border-slate-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm hover:border-teal-500/50 hover:shadow-lg transition-all group flex flex-col">
+                    <div key={i} className="bg-white border border-slate-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm hover:border-teal-500/50 hover:shadow-lg transition-all group flex flex-col relative">
                       <div className="flex justify-between items-start mb-3 md:mb-4">
                         <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
                           <FileText size={14} className="md:hidden" />
                           <FileText size={18} className="hidden md:block" />
                         </div>
-                        <div className="text-right">
-                          <span className="text-[14px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                            {doc.fileType}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                            {doc.fileType || 'Report'}
                           </span>
+                          {doc._id && (
+                            <button
+                              onClick={() => handleDeleteDoc(doc._id)}
+                              disabled={deletingId === doc._id}
+                              className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                              title="Delete document"
+                            >
+                              {deletingId === doc._id ? <Loader2 size={13} className="animate-spin text-rose-600" /> : <Trash2 size={13} />}
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      <h4 className="text-sm md:text-base font-black text-slate-900 tracking-tight mb-0.5 md:mb-1 group-hover:text-teal-600 transition-colors">{doc.title}</h4>
-                      <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4">
-                        {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      <h4 className="text-sm md:text-base font-black text-slate-900 tracking-tight mb-0.5 md:mb-1 group-hover:text-teal-600 transition-colors line-clamp-1">{doc.title}</h4>
+                      <p className="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4">
+                        {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Uploaded'}
                       </p>
 
                       {doc.fileUrl && (
@@ -340,7 +441,7 @@ const HealthLocker = () => {
                       <div className="mt-auto flex gap-2">
                         <button 
                           onClick={() => setSelectedReportIndex(i)}
-                          className="flex-1 py-2 md:py-2.5 bg-slate-900 text-white rounded-lg md:rounded-xl font-black text-[14px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 md:py-2.5 bg-slate-900 text-white rounded-lg md:rounded-xl font-black text-[12px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                         >
                           <Eye size={11} /> Open
                         </button>
@@ -349,6 +450,7 @@ const HealthLocker = () => {
                           target="_blank" 
                           rel="noreferrer"
                           className="p-2 md:p-2.5 bg-teal-50 text-teal-600 rounded-lg md:rounded-xl border border-teal-100 hover:bg-teal-600 hover:text-white transition-all active:scale-95"
+                          title="Download / Open Fullscreen"
                         >
                           <Download size={11} />
                         </a>
@@ -356,7 +458,13 @@ const HealthLocker = () => {
                     </div>
                   ))}
                 </div>
-              ) : <EmptyState message="No clinical reports found." />}
+              ) : (
+                <EmptyState 
+                  message="No clinical reports found." 
+                  onAction={() => setShowUploadModal(true)} 
+                  actionLabel="Upload First Report"
+                />
+              )}
             </div>
           )}
 
@@ -412,6 +520,135 @@ const HealthLocker = () => {
         </div>
       </div>
 
+      {/* --- Upload Document Modal --- */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <FileUp className="text-teal-400" size={20} />
+                <h3 className="font-black text-base tracking-tight">Upload Health Document</h3>
+              </div>
+              <button 
+                onClick={() => setShowUploadModal(false)}
+                className="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleFileUpload} className="p-5 space-y-4 overflow-y-auto">
+              {uploadError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-2">
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {uploadSuccess && (
+                <div className="p-3 bg-teal-50 border border-teal-200 text-teal-700 rounded-xl text-xs font-bold flex items-center gap-2">
+                  <CheckCircle size={16} className="shrink-0" />
+                  <span>Document uploaded successfully!</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-500 tracking-wider mb-1.5">Document Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Blood Test, Chest X-Ray, Prescription"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-teal-500 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-500 tracking-wider mb-1.5">Document Category</label>
+                <select
+                  value={uploadFileType}
+                  onChange={(e) => setUploadFileType(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-teal-500 focus:bg-white transition-all"
+                >
+                  <option value="Lab Report">Lab Report</option>
+                  <option value="Prescription">Prescription</option>
+                  <option value="Imaging / X-Ray">Imaging / X-Ray</option>
+                  <option value="Scan Report">Scan Report</option>
+                  <option value="Discharge Summary">Discharge Summary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-500 tracking-wider mb-1.5">Select File (PDF or Image)</label>
+                <div 
+                  className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${selectedFile ? 'border-teal-500 bg-teal-50/30' : 'border-slate-200 hover:border-teal-400 bg-slate-50/50'}`}
+                  onClick={() => document.getElementById('locker-file-input').click()}
+                >
+                  <input
+                    id="locker-file-input"
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setSelectedFile(e.target.files[0]);
+                        if (!uploadTitle) setUploadTitle(e.target.files[0].name.replace(/\.[^/.]+$/, ""));
+                      }
+                    }}
+                  />
+                  {selectedFile ? (
+                    <div className="space-y-1">
+                      <FileText size={32} className="mx-auto text-teal-600" />
+                      <p className="text-sm font-black text-slate-900 line-clamp-1">{selectedFile.name}</p>
+                      <p className="text-xs font-bold text-teal-600">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                      <button 
+                        type="button" 
+                        onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
+                        className="text-xs text-rose-600 font-bold hover:underline pt-1 inline-block"
+                      >
+                        Choose different file
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload size={32} className="mx-auto text-slate-400" />
+                      <p className="text-sm font-bold text-slate-700">Click to browse or drag & drop</p>
+                      <p className="text-xs text-slate-400 font-medium">Supports PNG, JPG, JPEG, PDF (Max 10MB)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedFile}
+                  className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-teal-600/20 transition-all"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} /> Upload Now
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Report Viewer Overlay */}
       {selectedReportIndex !== null && (
         <ReportViewer
@@ -460,13 +697,21 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
   );
 };
 
-const EmptyState = ({ message }) => (
+const EmptyState = ({ message, onAction, actionLabel }) => (
   <div className="flex flex-col items-center justify-center py-16 bg-white border border-slate-100 rounded-2xl shadow-sm">
     <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
       <Database size={28} className="text-slate-200" />
     </div>
     <p className="text-sm font-black text-slate-900 tracking-tight mb-1">{message}</p>
-    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">No active records in this section</p>
+    <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mb-4">No active records in this section</p>
+    {onAction && (
+      <button
+        onClick={onAction}
+        className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md shadow-teal-600/20 active:scale-95 transition-all"
+      >
+        {actionLabel || 'Action'}
+      </button>
+    )}
   </div>
 );
 

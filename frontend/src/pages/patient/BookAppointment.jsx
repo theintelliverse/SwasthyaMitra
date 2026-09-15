@@ -91,7 +91,7 @@ const BookAppointment = () => {
                 if (res.data.success) {
                     setClinics(res.data.data);
                 }
-            } catch (error) {
+            } catch {
                 setError('Failed to load clinical facilities.');
             } finally {
                 setLoading(false);
@@ -109,7 +109,7 @@ const BookAppointment = () => {
                     if (res.data.success) {
                         setDoctors(res.data.data);
                     }
-                } catch (error) {
+                } catch {
                     setError('Could not retrieve specialist list.');
                 } finally {
                     setLoading(false);
@@ -120,7 +120,7 @@ const BookAppointment = () => {
     }, [formData.clinicId]);
 
     const getSelectedClinic = () => clinics.find(c => c._id === formData.clinicId);
-    const getSelectedDoctor = () => doctors.find(d => d._id === formData.doctorId);
+    const getSelectedDoctor = useCallback(() => doctors.find(d => d._id === formData.doctorId), [doctors, formData.doctorId]);
 
     const getClinicTimingConfig = useCallback(() => {
         const selectedClinic = clinics.find(c => c._id === formData.clinicId) || {};
@@ -149,7 +149,7 @@ const BookAppointment = () => {
                 return bookedTimeSlots;
             }
             return [];
-        } catch (error) {
+        } catch {
             setBookedSlots([]);
             return [];
         }
@@ -245,7 +245,7 @@ const BookAppointment = () => {
             };
             fetchWaitTime();
         }
-    }, [formData.clinicId, formData.doctorId, formData.appointmentType, formData.appointmentDate, selectedDate]);
+    }, [formData.clinicId, formData.doctorId, formData.appointmentType, formData.appointmentDate, selectedDate, getSelectedDoctor]);
 
     const handleConfirmBooking = async () => {
         if (!formData.appointmentDate) { setError('Selection required: Please pick a clinical slot.'); return; }

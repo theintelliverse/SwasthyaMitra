@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
+import PdfPreviewModal from '../../components/lab/PdfPreviewModal';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
@@ -111,6 +112,16 @@ const LabDashboard = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalPatient, setUploadModalPatient] = useState(null);
   const [selectedUploadFiles, setSelectedUploadFiles] = useState([]);
+  const [previewPdfData, setPreviewPdfData] = useState({
+    isOpen: false,
+    pdfBlob: null,
+    pdfFile: null,
+    patientName: '',
+    testName: '',
+    patientPhone: '',
+    queueId: ''
+  });
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const itemsPerPage = 3;
 
   const token = localStorage.getItem('token');
@@ -594,23 +605,48 @@ const LabDashboard = () => {
         type: 'application/pdf'
       });
 
-      // Call our robust handleFileUpload method to sync it to Cloudinary & Locker!
-      await handleFileUpload(activeDigitalPatient.patientPhone, activeDigitalPatient._id, pdfFile);
-
-      // Close the modal
+      // Close digital report creation modal and open PDF Preview Modal
       setShowDigitalReportModal(false);
-
-      // Reset form
-      setDigitalReportForm({
-        title: 'Diagnostic Lab Report',
-        findings: '',
-        notes: 'Results are within reference intervals. Clinically correlate if needed.',
-        doctorName: 'Laboratory'
+      setPreviewPdfData({
+        isOpen: true,
+        pdfBlob,
+        pdfFile,
+        patientName: activeDigitalPatient.patientName,
+        testName: activeDigitalPatient.requiredTest || 'Diagnostic Lab Report',
+        patientPhone: activeDigitalPatient.patientPhone,
+        queueId: activeDigitalPatient._id
       });
 
     } catch (err) {
       console.error("Failed to generate digital report:", err);
       Swal.fire('Error', 'Failed to generate digital report PDF.', 'error');
+    }
+  };
+
+  const handleConfirmUploadPdf = async () => {
+    if (!previewPdfData.pdfFile) return;
+    setIsUploadingPdf(true);
+    try {
+      await handleFileUpload(previewPdfData.patientPhone, previewPdfData.queueId, previewPdfData.pdfFile);
+      setPreviewPdfData({ isOpen: false, pdfBlob: null, pdfFile: null, patientName: '', testName: '', patientPhone: '', queueId: '' });
+      setDigitalReportForm({
+        title: 'Diagnostic Lab Report',
+        findings: '',
+        notes: localStorage.getItem('defaultNotes') || 'Results are within reference intervals. Clinically correlate if needed.',
+        doctorName: localStorage.getItem('defaultDoctorName') || 'Laboratory'
+      });
+      Swal.fire({
+        icon: 'success',
+        title: 'Report Uploaded',
+        text: 'Lab Report uploaded to Cloudinary & Health Locker successfully!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error("Failed to upload previewed PDF:", err);
+      Swal.fire('Error', 'Failed to upload PDF report to Cloudinary.', 'error');
+    } finally {
+      setIsUploadingPdf(false);
     }
   };
 
@@ -1926,6 +1962,17 @@ const LabDashboard = () => {
             {showQuickActions ? <X size={28} className="transform rotate-0 transition-transform duration-300" /> : <Plus size={28} className="transform rotate-90 transition-transform duration-300 group-hover:rotate-180" />}
           </button>
         </div>
+
+        <PdfPreviewModal
+          isOpen={previewPdfData.isOpen}
+          pdfBlob={previewPdfData.pdfBlob}
+          pdfFile={previewPdfData.pdfFile}
+          patientName={previewPdfData.patientName}
+          testName={previewPdfData.testName}
+          onConfirmUpload={handleConfirmUploadPdf}
+          onCancel={() => setPreviewPdfData({ isOpen: false, pdfBlob: null, pdfFile: null, patientName: '', testName: '', patientPhone: '', queueId: '' })}
+          isUploading={isUploadingPdf}
+        />
 
         <Footer />
       </div>

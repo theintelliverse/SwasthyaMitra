@@ -107,3 +107,52 @@
 .animate-fade-in {
   animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ─── PRINT OPTIMIZATION STYLES (SINGLE A4 PAGE) ─── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  /* Hide entire page body elements when printing */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Make printable area and all children visible */
+  #printable-receipt-area,
+  #printable-receipt-area * {
+    visibility: visible !important;
+  }
+
+  /* Expand receipt to full A4 page width, remove margins, overlays & borders */
+  #printable-receipt-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    float: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure sharp text & crisp border colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Avoid page breaks inside table rows */
+  tr, .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

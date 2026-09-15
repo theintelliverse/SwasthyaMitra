@@ -91,6 +91,7 @@ const Sidebar = ({ role = 'lab' }) => {
       lab: isIndLab ? [
         { name: 'Dashboard', path: '/lab/portal/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Connections', path: '/lab/portal/connections', icon: <Users size={20} /> },
+        { name: 'Billing', path: '/lab/portal/billing', icon: <Receipt size={20} /> },
         { name: 'Past Reports', path: '/lab/portal/reports', icon: <FileCheck size={20} /> },
         { name: 'Analytics', path: '/lab/portal/analytics', icon: <Activity size={20} /> },
       ] : [

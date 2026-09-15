@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
@@ -7,24 +7,25 @@ import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   User, Phone, Stethoscope, AlertCircle, Clipboard,
   Beaker, Activity, UserCheck, XCircle, Coffee,
-  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link, ArrowLeft, Receipt
+  CheckCircle2, Users, LayoutDashboard, Search, Siren, RefreshCw, Copy, Link, ArrowLeft, Receipt, QrCode
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
-import { useLocation } from 'react-router-dom';
+import QrScannerModal from '../../components/receptionist/QrScannerModal';
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
 const ReceptionDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showQrScanner, setShowQrScanner] = useState(false);
   const [queue, setQueue] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [scheduledAppointments, setScheduledAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('live');
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [lastQueueUpdate, setLastQueueUpdate] = useState(Date.now());
+  const [lastQueueUpdate, setLastQueueUpdate] = useState(() => Date.now());
 
   const [formData, setFormData] = useState({
     patientName: '',
@@ -39,8 +40,7 @@ const ReceptionDashboard = () => {
   const userRole = localStorage.getItem('role');
   const clinicCode = localStorage.getItem('clinicCode') || 'CITY01';
 
-  const fetchDashboardData = async (silent = false) => {
-    if (!silent) setLoading(true);
+  const fetchDashboardData = useCallback(async () => {
     try {
       const [queueRes, staffRes, pendingRes, scheduledRes] = await Promise.all([
         axios.get(`${API_URL}/api/queue/live`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -53,16 +53,14 @@ const ReceptionDashboard = () => {
       setPendingRequests(pendingRes.data.data);
       setScheduledAppointments(scheduledRes.data.data);
       setLastQueueUpdate(Date.now()); // 🔴 Update timestamp for live indicator
-      setLoading(false);
     } catch (err) {
       console.error("Dashboard Sync Error:", err);
-      setLoading(false);
     }
-  };
+  }, [token]);
 
   // 🔌 WebSocket Lifecycle with Debugging
   useEffect(() => {
-    fetchDashboardData();
+    Promise.resolve().then(() => fetchDashboardData());
 
     if (clinicId) {
       console.log("🔌 Attempting to join Socket Room:", clinicId);
@@ -110,7 +108,7 @@ const ReceptionDashboard = () => {
       socket.off('connect');
       clearInterval(pollInterval);
     };
-  }, [token, clinicId]);
+  }, [token, clinicId, fetchDashboardData]);
 
   // --- 🛠️ OPERATION: ADD VITALS ---
   const handleAddVitals = async (patientPhone) => {
@@ -250,7 +248,7 @@ const ReceptionDashboard = () => {
         setFormData({ patientName: '', patientPhone: '', doctorId: '', visitType: 'Walk-in', isEmergency: false });
         await fetchDashboardData(true);
       }
-    } catch (err) { Swal.fire('Error', 'Registration failed', 'error'); } finally { setIsProcessing(false); }
+    } catch { Swal.fire('Error', 'Registration failed', 'error'); } finally { setIsProcessing(false); }
   };
 
   const handleApprove = async (id) => {
@@ -264,7 +262,7 @@ const ReceptionDashboard = () => {
         await fetchDashboardData(true);
         if (activeTab === 'pending' && pendingRequests.length <= 1) setActiveTab('live');
       }
-    } catch (err) { Swal.fire('Error', 'Approval failed', 'error'); } finally { setIsProcessing(false); }
+    } catch { Swal.fire('Error', 'Approval failed', 'error'); } finally { setIsProcessing(false); }
   };
 
   const getDoctorLiveStatus = (docId) => {
@@ -276,7 +274,6 @@ const ReceptionDashboard = () => {
     return { label: 'Available', color: 'text-green-600', bg: 'bg-green-50', icon: <CheckCircle2 size={14} /> };
   };
 
-  const location = useLocation();
   const fromAdmin = new URLSearchParams(location.search).get('fromAdmin') === 'true';
   const showBackButton = fromAdmin || userRole === 'admin';
 
@@ -287,6 +284,22 @@ const ReceptionDashboard = () => {
     const today = new Date();
     return aptDate.toDateString() !== today.toDateString();
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const phoneParam = params.get('phone');
+    const nameParam = params.get('name');
+    if (phoneParam) {
+      const timer = setTimeout(() => {
+        setFormData(prev => ({
+          ...prev,
+          patientPhone: phoneParam.replace(/\D/g, '').slice(-10),
+          patientName: nameParam ? decodeURIComponent(nameParam) : prev.patientName
+        }));
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [location.search]);
 
   return (
     <div className="flex min-h-screen bg-parchment font-body text-teak flex-col md:flex-row">
@@ -317,6 +330,14 @@ const ReceptionDashboard = () => {
                 {futureAppointments.length > 0 && <span className="absolute -top-1 -right-1 w-4 md:w-5 h-4 md:h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[14px] md:text-[14px] border-2 border-white">{futureAppointments.length}</span>}
               </button>
             </div>
+            <button
+              onClick={() => setShowQrScanner(true)}
+              className="p-3 md:p-3.5 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 flex flex-col items-center justify-center text-center group hover:bg-emerald-700 hover:text-white transition-all duration-300 flex-shrink-0 shadow-xs"
+              title="Scan Patient QR Code"
+            >
+              <QrCode className="text-emerald-700 group-hover:text-white transition-colors mb-1.5" size={18} />
+              <p className="text-[14px] font-black group-hover:text-white uppercase tracking-widest leading-none">Scan QR</p>
+            </button>
             <button
               onClick={() => navigate('/receptionist/billing')}
               className="p-3 md:p-3.5 bg-teal-50/80 rounded-2xl border border-teal-200/80 flex flex-col items-center justify-center text-center group hover:bg-teal-700 transition-all duration-300 flex-shrink-0 shadow-xs"
@@ -518,6 +539,21 @@ const ReceptionDashboard = () => {
         </main>
         <Footer />
       </div>
+
+      {/* 📷 RECEPTIONIST QR SCANNER MODAL */}
+      <QrScannerModal
+        isOpen={showQrScanner}
+        onClose={() => setShowQrScanner(false)}
+        onScanSuccess={(patient) => {
+          setShowQrScanner(false);
+          setFormData(prev => ({
+            ...prev,
+            patientPhone: patient.phone,
+            patientName: patient.name || prev.patientName
+          }));
+        }}
+        navigate={navigate}
+      />
     </div>
   );
 };

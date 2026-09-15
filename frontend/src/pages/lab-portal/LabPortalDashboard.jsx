@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as ChartTooltip } from 'recharts';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import SEO from '../../components/SEO';
 import Sidebar from '../../components/Sidebar';
 import { API_URL, SOCKET_URL } from '../../config/runtime';
@@ -23,6 +22,7 @@ import LabSettingsModal from './components/LabSettingsModal';
 import SampleCollectionModal from './components/SampleCollectionModal';
 import DigitalReportModal from './components/DigitalReportModal';
 import UploadReportModal from './components/UploadReportModal';
+import PdfPreviewModal from '../../components/lab/PdfPreviewModal';
 
 const socket = io(SOCKET_URL || API_URL || 'http://localhost:5000');
 
@@ -64,7 +64,7 @@ const LabPortalDashboard = () => {
   const [filter, setFilter] = useState('all');
   const [queueDateFilter, setQueueDateFilter] = useState('today');
   const [expandedId, setExpandedId] = useState(null);
-  const [uploading, setUploading] = useState(null); 
+  const [uploading, setUploading] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Pagination & Search
@@ -87,7 +87,6 @@ const LabPortalDashboard = () => {
   const [showNewTestModal, setShowNewTestModal] = useState(false);
   const [connectedClinics, setConnectedClinics] = useState([]);
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const [showAllRequests, setShowAllRequests] = useState(false);
   const [newTestForm, setNewTestForm] = useState({
     patientName: '',
     patientPhone: '',
@@ -115,6 +114,16 @@ const LabPortalDashboard = () => {
     notes: reportConfig.defaultNotes || 'Results are clinically validated. Correlate with symptoms.',
     doctorName: reportConfig.defaultDoctorName || 'Pathologist'
   });
+
+  const [previewPdfData, setPreviewPdfData] = useState({
+    isOpen: false,
+    pdfBlob: null,
+    pdfFile: null,
+    patientName: '',
+    testName: '',
+    requestId: ''
+  });
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
 
   const fetchRequests = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -166,10 +175,12 @@ const LabPortalDashboard = () => {
     const token = localStorage.getItem('labToken');
     const labId = localStorage.getItem('labId');
     if (!token) { navigate('/lab/login'); return; }
-    
-    fetchRequests();
-    fetchConnectedClinics();
-    fetchSettings();
+
+    Promise.resolve().then(() => {
+      fetchRequests();
+      fetchConnectedClinics();
+      fetchSettings();
+    });
 
     if (labId) {
       console.log("🔌 Initializing socket for Independent Lab:", labId);
@@ -217,7 +228,7 @@ const LabPortalDashboard = () => {
         socket.off('queueUpdate');
       };
     }
-  }, [fetchRequests, fetchConnectedClinics, navigate]);
+  }, [fetchRequests, fetchConnectedClinics, fetchSettings, navigate]);
 
   const handleNewTestRequest = async () => {
     const { clinicId, patientName, patientPhone, testType, notes } = newTestForm;
@@ -429,11 +440,39 @@ const LabPortalDashboard = () => {
         type: 'application/pdf'
       });
 
-      await handleUpload(activeDigitalPatient._id, [pdfFile]);
       setShowDigitalReportModal(false);
+      setPreviewPdfData({
+        isOpen: true,
+        pdfBlob,
+        pdfFile,
+        patientName: activeDigitalPatient.patientName,
+        testName: activeDigitalPatient.testName || 'Diagnostic Report',
+        requestId: activeDigitalPatient._id
+      });
     } catch (err) {
       console.error("Failed to generate digital report:", err);
       Swal.fire('Error', 'Failed to generate digital report PDF.', 'error');
+    }
+  };
+
+  const handleConfirmUploadPdf = async () => {
+    if (!previewPdfData.pdfFile) return;
+    setIsUploadingPdf(true);
+    try {
+      await handleUpload(previewPdfData.requestId, [previewPdfData.pdfFile]);
+      setPreviewPdfData({ isOpen: false, pdfBlob: null, pdfFile: null, patientName: '', testName: '', requestId: '' });
+      Swal.fire({
+        icon: 'success',
+        title: 'Report Uploaded',
+        text: 'Lab Report uploaded to Cloudinary & Health Locker successfully!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error("Failed to upload previewed PDF:", err);
+      Swal.fire('Error', 'Failed to upload PDF report to Cloudinary.', 'error');
+    } finally {
+      setIsUploadingPdf(false);
     }
   };
 
@@ -497,23 +536,6 @@ const LabPortalDashboard = () => {
       icon: 'info',
       confirmButtonColor: '#1B6CA8',
       confirmButtonText: 'Dismiss'
-    });
-  };
-
-  const handleLogout = () => {
-    Swal.fire({
-      title: 'Logout?',
-      text: 'You will be signed out of the Lab Portal.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#1B6CA8',
-      cancelButtonText: 'Stay'
-    }).then(result => {
-      if (result.isConfirmed) {
-        ['labToken', 'labRole', 'labName', 'labCode', 'labId', 'labEmail', 'labPhone', 'labAddress']
-          .forEach(k => localStorage.removeItem(k));
-        navigate('/lab/login');
-      }
     });
   };
 
@@ -581,19 +603,7 @@ const LabPortalDashboard = () => {
     return { revenue, completed, pending, label };
   };
 
-  // Recharts configuration
-  const getSampleStatusData = () => {
-    return [
-      { name: 'Pending', value: stats.pending, color: '#f59e0b' },
-      { name: 'Processing', value: stats.processing, color: '#7c3aed' },
-      { name: 'Completed', value: stats.completed, color: '#10b981' },
-      { name: 'Rejected', value: stats.rejected, color: '#ef4444' }
-    ].filter(item => item.value > 0);
-  };
-
-  const chartData = getSampleStatusData();
-
-  // Search & Filtering & Pagination
+  // Search & Filtering
   const filteredRequests = requests.filter(r => {
     if (!r) return false;
 
@@ -801,7 +811,7 @@ const LabPortalDashboard = () => {
             ) : (
               <div className="bg-white rounded-3xl border border-blue-50/60 shadow-sm flex flex-col h-[380px] justify-between overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-5 space-y-3 hide-scrollbar">
-                  {filteredRequests.map(req => {
+                  {paginatedRequests.map(req => {
                     const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.Pending;
                     const isExpanded = expandedId === req._id;
 
@@ -881,9 +891,10 @@ const LabPortalDashboard = () => {
                                 <>
                                   <button
                                     onClick={() => handleOpenUploadModal(req)}
-                                    className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all flex items-center gap-1.5"
+                                    disabled={uploading === req._id}
+                                    className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all flex items-center gap-1.5 disabled:opacity-50"
                                   >
-                                    <Upload size={14} /> Upload Scans
+                                    {uploading === req._id ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Upload Scans
                                   </button>
                                   <button
                                     onClick={() => handleOpenDigitalReportModal(req)}
@@ -923,14 +934,25 @@ const LabPortalDashboard = () => {
                     );
                   })}
                 </div>
-                {filteredRequests.length > 3 && (
-                  <div className="p-3 border-t border-slate-100 flex justify-center shrink-0 bg-slate-50/50">
-                    <button
-                      onClick={() => setShowAllRequests(!showAllRequests)}
-                      className="px-4 py-2 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 rounded-xl transition-all"
-                    >
-                      {showAllRequests ? 'Show Less' : `Show More (${filteredRequests.length - 3} more)`}
-                    </button>
+                {totalPages > 1 && (
+                  <div className="p-3 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50 text-xs font-bold text-slate-500">
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 disabled:opacity-40"
+                      >
+                        Prev
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-slate-700 disabled:opacity-40"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1159,6 +1181,17 @@ const LabPortalDashboard = () => {
           {showQuickActions ? <X size={28} className="transform rotate-0 transition-transform duration-300" /> : <Plus size={28} className="transform rotate-90 transition-transform duration-300 group-hover:rotate-180" />}
         </button>
       </div>
+
+      <PdfPreviewModal
+        isOpen={previewPdfData.isOpen}
+        pdfBlob={previewPdfData.pdfBlob}
+        pdfFile={previewPdfData.pdfFile}
+        patientName={previewPdfData.patientName}
+        testName={previewPdfData.testName}
+        onConfirmUpload={handleConfirmUploadPdf}
+        onCancel={() => setPreviewPdfData({ isOpen: false, pdfBlob: null, pdfFile: null, patientName: '', testName: '', requestId: '' })}
+        isUploading={isUploadingPdf}
+      />
 
     </div>
   );
