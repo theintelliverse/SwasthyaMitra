@@ -149,24 +149,24 @@ const HealthLocker = () => {
   const latestVitals = data.vitals?.[0];
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body pb-safe">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
       <SEO title="Health Locker" noindex={true} />
       <Sidebar role="patient" />
       
-      <div className="flex-grow p-3 pb-32 lg:p-4 lg:pb-4 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
+      <div className="flex-grow px-3 py-3 pb-28 md:p-4 md:pb-4 lg:p-6 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
         {/* Header Section */}
-        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-6">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
+              <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest border border-teal-100">
                 Health Locker
               </span>
               {isSyncing && <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-ping"></div>}
             </div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               Medical Vault <span className="text-teal-600">.</span>
             </h1>
-            <p className="text-slate-400 font-bold text-[14px] mt-0.5 uppercase tracking-wider">Authenticated clinical records & wellness logs.</p>
+            <p className="text-slate-400 font-bold text-[10px] md:text-[11px] mt-0.5 uppercase tracking-wider hidden sm:block">Authenticated clinical records &amp; wellness logs.</p>
           </div>
 
           <div className="flex gap-2 w-full sm:w-auto">

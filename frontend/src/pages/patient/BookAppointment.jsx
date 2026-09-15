@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { 
+import {
     Building2, Stethoscope, Calendar, ArrowRight, ArrowLeft,
     MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck, GraduationCap, Briefcase
 } from 'lucide-react';
@@ -173,7 +173,7 @@ const BookAppointment = () => {
         const [closeHour, closeMinute] = closingTime.split(':').map(Number);
         const [breakStartHour, breakStartMinute] = breakStartTime.split(':').map(Number);
         const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
-        
+
         const currentDay = WEEKDAY_MAP[selectedDate.getDay()];
         if (!workingDays.includes(currentDay)) {
             setAvailableSlots([]);
@@ -250,7 +250,7 @@ const BookAppointment = () => {
     const handleConfirmBooking = async () => {
         if (!formData.appointmentDate) { setError('Selection required: Please pick a clinical slot.'); return; }
         if (!formData.reason.trim()) { setError('Required: Please state the purpose of your visit.'); return; }
-        
+
         setLoading(true);
         setError(null);
         try {
@@ -272,8 +272,8 @@ const BookAppointment = () => {
                 Swal.fire({
                     icon: 'success',
                     title: formData.rescheduleAppointmentId ? 'Reschedule Submitted!' : 'Booking Confirmed!',
-                    text: formData.rescheduleAppointmentId 
-                        ? 'Your reschedule request has been submitted to the receptionist for confirmation.' 
+                    text: formData.rescheduleAppointmentId
+                        ? 'Your reschedule request has been submitted to the receptionist for confirmation.'
                         : 'Your request is being processed by the clinical team.',
                     background: '#F8FAFC',
                     confirmButtonColor: '#0D9488',
@@ -296,103 +296,124 @@ const BookAppointment = () => {
         <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
             <SEO title="Book Appointment" noindex={true} />
             <Sidebar role="patient" />
-            
-            <div className="flex-grow p-6 pb-32 lg:p-10 lg:pb-10 overflow-y-auto h-screen custom-scrollbar max-w-6xl mx-auto w-full">
+
+            <div className="flex-grow px-4 py-4 pb-28 md:p-6 md:pb-32 lg:p-10 lg:pb-10 overflow-y-auto h-screen custom-scrollbar max-w-6xl mx-auto w-full">
                 {/* Header Section */}
-                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
-                                {step === 4 ? 'Final Review' : `Phase ${step} of 4`}
+                <header className="flex items-center justify-between gap-3 mb-5 md:mb-8 lg:mb-12">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2.5 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-teal-100">
+                                {step === 4 ? 'Final Review' : `Step ${step}/4`}
                             </span>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                            Book Slot <span className="text-teal-600">.</span>
+                        <h1 className="text-xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            Book Appointment <span className="text-teal-600 hidden md:inline">.</span>
                         </h1>
-                        <p className="text-slate-400 font-bold text-[14px] mt-1 uppercase tracking-[0.2em]">Schedule your next clinical consultation.</p>
+                        <p className="text-slate-400 font-bold text-[11px] md:text-[14px] mt-0.5 uppercase tracking-[0.15em] hidden sm:block">Schedule your next clinical consultation.</p>
                     </div>
 
                     {step > 1 && (
-                        <button 
+                        <button
                             onClick={() => setStep(step - 1)}
-                            className="group flex items-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 font-black text-[14px] uppercase tracking-widest"
+                            className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 font-black text-xs uppercase tracking-widest shrink-0"
                         >
-                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back
+                            <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
+                            <span className="hidden sm:inline">Back</span>
                         </button>
                     )}
                 </header>
 
-                {/* Progress Tracker - Premium Design */}
-                <div className="grid grid-cols-4 gap-4 mb-12">
+                {/* Progress Tracker - Responsive */}
+                <div className="grid grid-cols-4 gap-1.5 md:gap-4 mb-5 md:mb-12">
                     <StepBar num={1} label="Clinic" active={step >= 1} current={step === 1} />
-                    <StepBar num={2} label="Specialist" active={step >= 2} current={step === 2} />
-                    <StepBar num={3} label="Timeline" active={step >= 3} current={step === 3} />
+                    <StepBar num={2} label="Doctor" active={step >= 2} current={step === 2} />
+                    <StepBar num={3} label="Time" active={step >= 3} current={step === 3} />
                     <StepBar num={4} label="Confirm" active={step >= 4} current={step === 4} />
                 </div>
 
                 {/* Main Content Area */}
                 <main className="animate-in fade-in slide-in-from-bottom-6 duration-700">
                     {step === 1 && (
-                        <div className="space-y-10">
-                            <div className="relative group max-w-2xl">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-600 transition-colors" size={22} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search clinical facility or city..."
-                                    className="w-full pl-16 pr-8 py-6 bg-white border border-slate-100 rounded-3xl outline-none focus:border-teal-500 text-lg font-black shadow-sm group-hover:shadow-md transition-all placeholder:text-slate-200 placeholder:font-bold"
+                        <div className="space-y-4 md:space-y-10">
+                            {/* Search Bar */}
+                            <div className="relative group">
+                                <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-600 transition-colors" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Search clinic or city..."
+                                    className="w-full pl-12 md:pl-16 pr-4 py-3.5 md:py-6 bg-white border border-slate-100 rounded-2xl md:rounded-3xl outline-none focus:border-teal-500 text-sm md:text-lg font-bold md:font-black shadow-sm transition-all placeholder:text-slate-300"
                                     value={searchClinic}
                                     onChange={(e) => setSearchClinic(e.target.value)}
                                 />
                             </div>
 
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Clinic Grid — 1 column on mobile, 2 on md, 3 on lg */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                                 {loading ? (
-                                    [1, 2, 3].map(i => <div key={i} className="h-64 bg-slate-50 animate-pulse rounded-[2.5rem]" />)
+                                    [1, 2, 3].map(i => <div key={i} className="h-24 md:h-64 bg-slate-50 animate-pulse rounded-2xl md:rounded-[2.5rem]" />)
                                 ) : filteredClinics.length > 0 ? (
                                     filteredClinics.map(clinic => (
                                         <button
                                             key={clinic._id}
                                             onClick={() => { setFormData({ ...formData, clinicId: clinic._id }); setStep(2); }}
-                                            className="bg-white p-8 rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-500 hover:shadow-2xl transition-all group relative overflow-hidden"
+                                            className="bg-white w-full rounded-2xl md:rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-400 hover:shadow-xl transition-all group relative overflow-hidden active:scale-[0.99]"
                                         >
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 rounded-bl-[4rem] -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                                            <div className="flex justify-between items-start mb-8 relative z-10">
-                                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                                                    <Building2 size={28} />
+                                            {/* Mobile: horizontal row layout */}
+                                            <div className="md:hidden flex items-center gap-3 p-4">
+                                                <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-500 group-active:bg-teal-600 group-active:text-white transition-all shrink-0">
+                                                    <Building2 size={20} />
                                                 </div>
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-green-100">
-                                                    <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" /> Available
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-sm font-black text-slate-900 truncate group-hover:text-teal-600 transition-colors">{clinic.name}</h3>
+                                                    <p className="text-xs font-bold text-slate-400 truncate flex items-center gap-1 mt-0.5">
+                                                        <MapPin size={10} className="text-teal-500 shrink-0" /> {clinic.address}
+                                                    </p>
                                                 </div>
-                                            </div>
-                                            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-3 group-hover:text-teal-600 transition-colors">{clinic.name}</h3>
-                                            <div className="space-y-3 mb-8">
-                                                <div className="flex items-start gap-3 text-slate-400 text-[14px] font-bold">
-                                                    <MapPin size={14} className="text-teal-500 shrink-0" /> {clinic.address}
-                                                </div>
-                                                <div className="flex items-center gap-3 text-slate-400 text-[14px] font-bold">
-                                                    <Phone size={14} className="text-teal-500 shrink-0" /> {clinic.contactPhone}
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    <span className="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-100">{clinic.doctorCount || '0'} Dr</span>
+                                                    <ArrowRight size={16} className="text-slate-300 group-hover:text-teal-500 transition-colors" />
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-[14px] font-black uppercase">
-                                                        {clinic.doctorCount || '0'}
-                                                    </span>
-                                                    <span className="text-[14px] font-black uppercase tracking-widest text-slate-400">Specialists</span>
+
+                                            {/* Desktop: vertical card layout */}
+                                            <div className="hidden md:block p-8">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 rounded-bl-[4rem] -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                                                <div className="flex justify-between items-start mb-8 relative z-10">
+                                                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                                                        <Building2 size={28} />
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-100">
+                                                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" /> Available
+                                                    </div>
                                                 </div>
-                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
-                                                    <ArrowRight size={18} />
+                                                <h3 className="text-xl font-black text-slate-900 tracking-tight mb-3 group-hover:text-teal-600 transition-colors">{clinic.name}</h3>
+                                                <div className="space-y-3 mb-8">
+                                                    <div className="flex items-start gap-3 text-slate-400 text-sm font-bold">
+                                                        <MapPin size={14} className="text-teal-500 shrink-0" /> {clinic.address}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-slate-400 text-sm font-bold">
+                                                        <Phone size={14} className="text-teal-500 shrink-0" /> {clinic.contactPhone}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-sm font-black">{clinic.doctorCount || '0'}</span>
+                                                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Specialists</span>
+                                                    </div>
+                                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
+                                                        <ArrowRight size={18} />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="col-span-full py-20 text-center">
-                                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <Search size={32} className="text-slate-200" />
+                                    <div className="col-span-full py-12 md:py-20 text-center">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Search size={28} className="text-slate-200" />
                                         </div>
-                                        <h3 className="text-xl font-black text-slate-400">No Clinics Found</h3>
-                                        <p className="text-sm font-bold text-slate-300 mt-2">Try searching for a different name or city.</p>
+                                        <h3 className="text-base md:text-xl font-black text-slate-400">No Clinics Found</h3>
+                                        <p className="text-xs md:text-sm font-bold text-slate-300 mt-1">Try a different name or city.</p>
                                     </div>
                                 )}
                             </div>
@@ -400,78 +421,93 @@ const BookAppointment = () => {
                     )}
 
                     {step === 2 && (
-                        <div className="space-y-10">
-                            <div className="bg-slate-900 p-10 rounded-[3rem] text-white flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12"><Activity size={180} /></div>
-                                <div className="relative z-10">
-                                    <p className="text-[14px] font-black text-teal-400 uppercase tracking-[0.3em] mb-3">Facility Confirmed</p>
-                                    <h3 className="text-3xl font-black tracking-tight">{getSelectedClinic()?.name}</h3>
-                                    <p className="text-slate-400 text-[14px] font-bold mt-2 flex items-center gap-2">
-                                        <MapPin size={14} className="text-teal-500" /> {getSelectedClinic()?.address}
+                        <div className="space-y-4 md:space-y-10">
+                            {/* Selected clinic banner — compact on mobile */}
+                            <div className="bg-slate-900 p-4 md:p-10 rounded-2xl md:rounded-[3rem] text-white flex items-center md:flex-row justify-between gap-3 md:gap-8 shadow-lg md:shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-6 md:p-12 opacity-5 rotate-12 hidden md:block"><Activity size={180} /></div>
+                                <div className="relative z-10 flex-1 min-w-0">
+                                    <p className="text-[10px] md:text-[14px] font-black text-teal-400 uppercase tracking-[0.2em] mb-0.5 md:mb-3">Facility Confirmed</p>
+                                    <h3 className="text-base md:text-3xl font-black tracking-tight truncate">{getSelectedClinic()?.name}</h3>
+                                    <p className="text-slate-400 text-xs md:text-[14px] font-bold mt-0.5 md:mt-2 flex items-center gap-1.5 truncate">
+                                        <MapPin size={12} className="text-teal-500 shrink-0" /> {getSelectedClinic()?.address}
                                     </p>
                                 </div>
-                                <button onClick={() => setStep(1)} className="relative z-10 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white font-black text-[14px] uppercase tracking-widest transition-all border border-white/10 backdrop-blur-md">
-                                    Switch Facility
+                                <button onClick={() => setStep(1)} className="relative z-10 px-3 md:px-8 py-2 md:py-4 bg-white/10 hover:bg-white/15 rounded-xl md:rounded-2xl text-white font-black text-xs md:text-[14px] uppercase tracking-wider transition-all border border-white/10 shrink-0">
+                                    Change
                                 </button>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-8">
                                 {doctors.map(doctor => (
                                     <div
                                         key={doctor._id}
-                                        className="bg-white p-8 rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-500 hover:shadow-2xl transition-all group flex flex-col justify-between"
+                                        className="bg-white rounded-2xl md:rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-400 hover:shadow-xl transition-all group flex flex-col"
                                     >
-                                        <div>
-                                            <div className="flex items-start gap-6 mb-6">
-                                                <div className="relative shrink-0">
-                                                    <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-[2rem] flex items-center justify-center text-slate-400 text-3xl font-black group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500 shadow-xl">
-                                                        {doctor.name?.charAt(0)}
-                                                    </div>
-                                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
+                                        {/* Mobile: compact row */}
+                                        <div className="md:hidden flex items-center gap-3 p-4">
+                                            <div className="relative shrink-0">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center text-slate-500 text-xl font-black group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-md">
+                                                    {doctor.name?.charAt(0)}
                                                 </div>
-                                                <div className="flex-grow min-w-0">
-                                                    <p className="text-[14px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization || 'General Practitioner'}</p>
-                                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight truncate">Dr. {doctor.name}</h3>
-                                                    {doctor.education && (
-                                                        <p className="text-sm font-bold text-slate-500 mt-1 flex items-center gap-1.5">
-                                                            <GraduationCap size={14} className="text-teal-500 shrink-0" /> {doctor.education}
-                                                        </p>
-                                                    )}
-                                                </div>
+                                                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
                                             </div>
-
-                                            {doctor.bio && (
-                                                <p className="text-[14px] text-slate-600 italic line-clamp-2 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100/50 mb-6">
-                                                    "{doctor.bio}"
-                                                </p>
-                                            )}
-
-                                            <div className="grid grid-cols-2 gap-2 text-[14px] font-semibold text-slate-500 mb-6">
-                                                <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
-                                                    <Briefcase size={14} className="text-teal-500" /> {doctor.experience || 0} Yrs Exp
-                                                </div>
-                                                <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
-                                                    <Clock size={14} className="text-teal-500" /> Active
-                                                </div>
-                                                {doctor.clinicLocation && (
-                                                    <div className="col-span-2 flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
-                                                        <MapPin size={14} className="text-teal-500 shrink-0" /> Room: {doctor.clinicLocation}
-                                                    </div>
-                                                )}
-                                                {doctor.clinicContact && (
-                                                    <div className="col-span-2 flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
-                                                        <Phone size={14} className="text-teal-500 shrink-0" /> Call: {doctor.clinicContact}
-                                                    </div>
-                                                )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-black text-teal-600 uppercase tracking-wide truncate">{doctor.specialization || 'General'}</p>
+                                                <h3 className="text-sm font-black text-slate-900 truncate">Dr. {doctor.name}</h3>
+                                                <p className="text-[11px] font-bold text-slate-400 mt-0.5">{doctor.experience || 0} yrs exp</p>
                                             </div>
+                                            <button
+                                                onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
+                                                className="px-3 py-2 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-xl font-black text-xs uppercase tracking-wide transition-all active:scale-95 shrink-0 flex items-center gap-1"
+                                            >
+                                                Pick <ArrowRight size={12} />
+                                            </button>
                                         </div>
 
-                                        <button
-                                            onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
-                                            className="w-full py-4 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 group-hover:shadow-md active:scale-95"
-                                        >
-                                            Select Doctor <ArrowRight size={16} />
-                                        </button>
+                                        {/* Desktop: full card */}
+                                        <div className="hidden md:flex flex-col flex-1 p-8">
+                                            <div>
+                                                <div className="flex items-start gap-6 mb-6">
+                                                    <div className="relative shrink-0">
+                                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-[2rem] flex items-center justify-center text-slate-400 text-3xl font-black group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                                                            {doctor.name?.charAt(0)}
+                                                        </div>
+                                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
+                                                    </div>
+                                                    <div className="flex-grow min-w-0">
+                                                        <p className="text-[11px] font-black text-teal-600 uppercase tracking-[0.2em] mb-1">{doctor.specialization || 'General Practitioner'}</p>
+                                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight truncate">Dr. {doctor.name}</h3>
+                                                        {doctor.education && (
+                                                            <p className="text-sm font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                                                                <GraduationCap size={14} className="text-teal-500 shrink-0" /> {doctor.education}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {doctor.bio && (
+                                                    <p className="text-sm text-slate-600 italic line-clamp-2 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100/50 mb-6">
+                                                        &ldquo;{doctor.bio}&rdquo;
+                                                    </p>
+                                                )}
+
+                                                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-500 mb-6">
+                                                    <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                        <Briefcase size={13} className="text-teal-500" /> {doctor.experience || 0} Yrs Exp
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
+                                                        <Clock size={13} className="text-teal-500" /> Active
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
+                                                className="w-full py-4 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                            >
+                                                Select Doctor <ArrowRight size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -495,7 +531,7 @@ const BookAppointment = () => {
                                 </div>
                             )}
 
-                            {/* â”€â”€ DATE SELECTION â”€â”€ */}
+                            {/* ─── DATE SELECTION ─── */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                                 <div className="flex items-center justify-between px-5 pt-5 pb-3">
                                     <div className="flex items-center gap-2.5">
@@ -512,7 +548,7 @@ const BookAppointment = () => {
                                     <span className="text-[14px] font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full uppercase tracking-widest border border-teal-100">14 Days</span>
                                 </div>
 
-                                {/* Date Strip â€” tight, scrollable */}
+                                {/* Date Strip – tight, scrollable */}
                                 <div className="flex gap-2.5 overflow-x-auto px-5 pb-5 no-scrollbar">
                                     {dateStrip.map((date, idx) => {
                                         const isSelected = selectedDate.toDateString() === date.toDateString();
@@ -520,11 +556,10 @@ const BookAppointment = () => {
                                             <button
                                                 key={idx}
                                                 onClick={() => { setSelectedDate(date); setFormData({ ...formData, appointmentDate: '' }); }}
-                                                className={`flex flex-col items-center shrink-0 w-[58px] py-3 px-1 rounded-2xl border-2 transition-all ${
-                                                    isSelected
-                                                        ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/25 scale-105'
-                                                        : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white'
-                                                }`}
+                                                className={`flex flex-col items-center shrink-0 w-[58px] py-3 px-1 rounded-2xl border-2 transition-all ${isSelected
+                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/25 scale-105'
+                                                    : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white'
+                                                    }`}
                                             >
                                                 <span className={`text-[14px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-300'}`}>
                                                     {idx === 0 ? 'Today' : WEEKDAY_MAP[date.getDay()].slice(0, 3)}
@@ -536,7 +571,7 @@ const BookAppointment = () => {
                                 </div>
                             </div>
 
-                            {/* â”€â”€ SLOT SELECTION â”€â”€ */}
+                            {/* ─── SLOT SELECTION ─── */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                                 {/* Header + Mode Toggle */}
                                 <div className="px-5 pt-5 pb-3">
@@ -550,15 +585,14 @@ const BookAppointment = () => {
                                     </div>
                                     {/* Slot Mode Tabs */}
                                     <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 gap-1">
-                                        {[['quick','Hourly Slots'],['shift','Shift Booking'],['manual','Custom Time']].map(([mode, label]) => (
+                                        {[['quick', 'Hourly Slots'], ['shift', 'Shift Booking'], ['manual', 'Custom Time']].map(([mode, label]) => (
                                             <button
                                                 key={mode}
                                                 onClick={() => setFormData({ ...formData, slotMode: mode, appointmentDate: '' })}
-                                                className={`flex-1 py-2 rounded-lg text-[14px] font-black uppercase tracking-widest transition-all ${
-                                                    formData.slotMode === mode
-                                                        ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
-                                                        : 'text-slate-400'
-                                                }`}
+                                                className={`flex-1 py-2 rounded-lg text-[14px] font-black uppercase tracking-widest transition-all ${formData.slotMode === mode
+                                                    ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
+                                                    : 'text-slate-400'
+                                                    }`}
                                             >
                                                 {label}
                                             </button>
@@ -566,7 +600,7 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
 
-                                {/* Slot Grid â€” quick mode */}
+                                {/* Slot Grid – quick mode */}
                                 {formData.slotMode === 'quick' && (
                                     <div className="px-5 pb-5">
                                         {availableSlots.length > 0 ? (
@@ -578,11 +612,10 @@ const BookAppointment = () => {
                                                         <button
                                                             key={idx}
                                                             onClick={() => setFormData({ ...formData, appointmentDate: slotKey })}
-                                                            className={`py-3 px-2 rounded-xl border-2 transition-all text-center ${
-                                                                isActive
-                                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
-                                                                    : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-teal-200 hover:bg-white'
-                                                            }`}
+                                                            className={`py-3 px-2 rounded-xl border-2 transition-all text-center ${isActive
+                                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
+                                                                : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-teal-200 hover:bg-white'
+                                                                }`}
                                                         >
                                                             <div className="text-[14px] font-black tracking-tight leading-none">
                                                                 {slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
@@ -618,11 +651,10 @@ const BookAppointment = () => {
                                                 const slotKey = `${selectedDate.toISOString().split('T')[0]}T${openingTime}`;
                                                 setFormData({ ...formData, appointmentDate: slotKey });
                                             }}
-                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${
-                                                formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime)
-                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
-                                                    : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
-                                            }`}
+                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime)
+                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
+                                                : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
+                                                }`}
                                         >
                                             <h4 className="text-sm font-black mb-1">Morning Shift</h4>
                                             <p className={`text-[14px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
@@ -645,11 +677,10 @@ const BookAppointment = () => {
                                                 const slotKey = `${selectedDate.toISOString().split('T')[0]}T${breakEndTime}`;
                                                 setFormData({ ...formData, appointmentDate: slotKey });
                                             }}
-                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${
-                                                formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime)
-                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
-                                                    : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
-                                            }`}
+                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime)
+                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
+                                                : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
+                                                }`}
                                         >
                                             <h4 className="text-sm font-black mb-1">Afternoon Shift</h4>
                                             <p className={`text-[14px] font-bold ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
@@ -682,11 +713,11 @@ const BookAppointment = () => {
                                 )}
                             </div>
 
-                            {/* â”€â”€ WAIT INTELLIGENCE + VERIFY BOOKING â”€â”€ */}
+                            {/* ─── WAIT INTELLIGENCE + VERIFY BOOKING ─── */}
                             <div
                                 onClick={() => {
                                     Swal.fire({
-                                        title: 'Predictive Wait Intelligence ðŸ§ ',
+                                        title: 'Predictive Wait Intelligence 🧠',
                                         html: `
                                             <div class="text-left space-y-4 text-slate-600 font-sans mt-4">
                                                 <p>This estimate is dynamically computed using Appointory's AI Engine based on:</p>
@@ -734,7 +765,6 @@ const BookAppointment = () => {
                                             const [year, month, day] = parts[0].split('-').map(Number);
                                             const [hour, min] = parts[1].split(':').map(Number);
                                             const selectedDateTime = new Date(year, month - 1, day, hour, min);
-                                            
                                             if (selectedDateTime < new Date()) {
                                                 errorMsg = 'Time has passed';
                                             } else {
@@ -743,24 +773,15 @@ const BookAppointment = () => {
                                                 const [oh, om] = openingTime.split(':').map(Number);
                                                 const closeDateTime = new Date(year, month - 1, day, ch, cm);
                                                 const openDateTime = new Date(year, month - 1, day, oh, om);
-                                                
-                                                if (selectedDateTime > closeDateTime) {
-                                                    errorMsg = 'Clinic Closed';
-                                                } else if (selectedDateTime < openDateTime) {
-                                                    errorMsg = 'Before Clinic Opens';
-                                                } else {
-                                                    isValid = true;
-                                                }
+                                                if (selectedDateTime > closeDateTime) { errorMsg = 'Clinic Closed'; }
+                                                else if (selectedDateTime < openDateTime) { errorMsg = 'Before Clinic Opens'; }
+                                                else { isValid = true; }
                                             }
                                         }
                                     }
-                                    
                                     return (
                                         <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setStep(4);
-                                            }}
+                                            onClick={(e) => { e.stopPropagation(); setStep(4); }}
                                             disabled={!isValid}
                                             className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-black text-[14px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-95"
                                         >
@@ -775,91 +796,91 @@ const BookAppointment = () => {
                     )}
 
                     {step === 4 && (
-                        <div className="max-w-4xl mx-auto">
-                            <div className="bg-white border border-slate-100 rounded-[4rem] shadow-2xl overflow-hidden">
-                                <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                                    <div>
-                                        <h3 className="font-black text-2xl text-slate-900 tracking-tight">Final Confirmation</h3>
-                                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Review your visit details below</p>
-                                    </div>
-                                    <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center border border-teal-100"><ShieldCheck size={24} /></div>
-                                </div>
-                                
-                                <div className="p-12 space-y-12">
-                                    <div className="grid md:grid-cols-2 gap-12">
-                                        <div className="space-y-8">
-                                            <ReviewItem icon={<Building2 size={18} />} label="Clinic Facility" val={getSelectedClinic()?.name} sub={getSelectedClinic()?.address} />
-                                            <ReviewItem icon={<Stethoscope size={18} />} label="Consulting Specialist" val={`Dr. ${getSelectedDoctor()?.name}`} sub={getSelectedDoctor()?.specialization} />
-                                            <ReviewItem 
-                                                icon={<Calendar size={18} />} 
-                                                label="Appointment Date" 
-                                                val={formData.appointmentDate ? new Date(formData.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : ''} 
-                                                sub={formData.appointmentDate ? WEEKDAY_MAP[new Date(formData.appointmentDate).getDay()] : ''} 
-                                            />
-                                            <ReviewItem 
-                                                icon={<Clock size={18} />} 
-                                                label="Arrival Window" 
-                                                val={
-                                                    formData.appointmentDate 
-                                                        ? (formData.slotMode === 'shift' 
-                                                            ? (formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'Morning Shift' : 'Afternoon / Evening Shift')
-                                                            : new Date(formData.appointmentDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }))
-                                                        : ''
-                                                } 
-                                                sub={
-                                                    formData.slotMode === 'shift'
-                                                        ? `Arrival around start time: ${formData.appointmentDate ? formData.appointmentDate.split('T')[1] : ''}`
-                                                        : "Check-in required 10m early"
-                                                } 
-                                            />
-                                        </div>
-                                        
-                                        <div className="space-y-8">
-                                            <div className="space-y-4">
-                                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Consultation Type</label>
-                                                <div className="flex gap-4">
-                                                    {['new', 'followup'].map(type => (
-                                                        <button 
-                                                            key={type}
-                                                            onClick={() => setFormData({ ...formData, appointmentType: type })}
-                                                            className={`flex-1 py-4 rounded-2xl border-2 font-black text-[14px] uppercase tracking-widest transition-all ${formData.appointmentType === type ? 'border-teal-500 bg-teal-50 text-teal-600 shadow-md' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
-                                                        >
-                                                            {type} Visit
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Clinical Notes / Reason</label>
-                                                <textarea 
-                                                    className="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 text-sm font-bold resize-none shadow-inner"
-                                                    rows="4"
-                                                    placeholder="Briefly describe your symptoms or reason for visit..."
-                                                    value={formData.reason}
-                                                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+        <div className="max-w-4xl mx-auto">
+            <div className="bg-white border border-slate-100 rounded-[4rem] shadow-2xl overflow-hidden">
+                <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <div>
+                        <h3 className="font-black text-2xl text-slate-900 tracking-tight">Final Confirmation</h3>
+                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Review your visit details below</p>
+                    </div>
+                    <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center border border-teal-100"><ShieldCheck size={24} /></div>
+                </div>
 
-                                    {error && (
-                                        <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4 text-rose-600 text-[14px] font-black uppercase tracking-widest animate-in shake duration-500">
-                                            <AlertCircle size={20} /> {error}
-                                        </div>
-                                    )}
+                <div className="p-12 space-y-12">
+                    <div className="grid md:grid-cols-2 gap-12">
+                        <div className="space-y-8">
+                            <ReviewItem icon={<Building2 size={18} />} label="Clinic Facility" val={getSelectedClinic()?.name} sub={getSelectedClinic()?.address} />
+                            <ReviewItem icon={<Stethoscope size={18} />} label="Consulting Specialist" val={`Dr. ${getSelectedDoctor()?.name}`} sub={getSelectedDoctor()?.specialization} />
+                            <ReviewItem
+                                icon={<Calendar size={18} />}
+                                label="Appointment Date"
+                                val={formData.appointmentDate ? new Date(formData.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+                                sub={formData.appointmentDate ? WEEKDAY_MAP[new Date(formData.appointmentDate).getDay()] : ''}
+                            />
+                            <ReviewItem
+                                icon={<Clock size={18} />}
+                                label="Arrival Window"
+                                val={
+                                    formData.appointmentDate
+                                        ? (formData.slotMode === 'shift'
+                                            ? (formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'Morning Shift' : 'Afternoon / Evening Shift')
+                                            : new Date(formData.appointmentDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }))
+                                        : ''
+                                }
+                                sub={
+                                    formData.slotMode === 'shift'
+                                        ? `Arrival around start time: ${formData.appointmentDate ? formData.appointmentDate.split('T')[1] : ''}`
+                                        : "Check-in required 10m early"
+                                }
+                            />
+                        </div>
 
-                                    <button 
-                                        onClick={handleConfirmBooking}
-                                        disabled={loading}
-                                        className="w-full py-7 bg-teal-600 hover:bg-teal-700 text-white rounded-[2.5rem] font-black text-[14px] uppercase tracking-[0.3em] shadow-2xl shadow-teal-600/30 flex items-center justify-center gap-5 transition-all active:scale-95 disabled:opacity-50"
-                                    >
-                                        {loading ? <Loader className="animate-spin" size={24} /> : <><CheckCircle size={24} /> Finalize Appointment</>}
-                                    </button>
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Consultation Type</label>
+                                <div className="flex gap-4">
+                                    {['new', 'followup'].map(type => (
+                                        <button
+                                            key={type}
+                                            onClick={() => setFormData({ ...formData, appointmentType: type })}
+                                            className={`flex-1 py-4 rounded-2xl border-2 font-black text-[14px] uppercase tracking-widest transition-all ${formData.appointmentType === type ? 'border-teal-500 bg-teal-50 text-teal-600 shadow-md' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+                                        >
+                                            {type} Visit
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
+                            <div className="space-y-4">
+                                <label className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Clinical Notes / Reason</label>
+                                <textarea
+                                    className="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 text-sm font-bold resize-none shadow-inner"
+                                    rows="4"
+                                    placeholder="Briefly describe your symptoms or reason for visit..."
+                                    value={formData.reason}
+                                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="p-5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4 text-rose-600 text-[14px] font-black uppercase tracking-widest animate-in shake duration-500">
+                            <AlertCircle size={20} /> {error}
                         </div>
                     )}
-                </main>
+
+                    <button
+                        onClick={handleConfirmBooking}
+                        disabled={loading}
+                        className="w-full py-7 bg-teal-600 hover:bg-teal-700 text-white rounded-[2.5rem] font-black text-[14px] uppercase tracking-[0.3em] shadow-2xl shadow-teal-600/30 flex items-center justify-center gap-5 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        {loading ? <Loader className="animate-spin" size={24} /> : <><CheckCircle size={24} /> Finalize Appointment</>}
+                    </button>
+                    </div>
+                </div>
+            </div>
+        )}
+    </main>
             </div>
             <PatientBottomNav activeTab="clinics" />
         </div>
@@ -869,12 +890,12 @@ const BookAppointment = () => {
 // UI Components
 const StepBar = ({ num, label, active, current }) => (
     <div className={`relative transition-all duration-700 ${active ? 'opacity-100' : 'opacity-30'}`}>
-        <div className={`h-1.5 w-full rounded-full transition-all duration-700 ${active ? 'bg-teal-600 shadow-[0_0_15px_rgba(13,148,136,0.5)]' : 'bg-slate-200'}`} />
-        <div className="mt-4 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[14px] transition-all duration-700 ${current ? 'bg-teal-600 text-white shadow-xl rotate-12' : active ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
-                {active && !current ? <Check size={14} /> : num}
+        <div className={`h-1 md:h-1.5 w-full rounded-full transition-all duration-700 ${active ? 'bg-teal-600 shadow-[0_0_12px_rgba(13,148,136,0.4)]' : 'bg-slate-200'}`} />
+        <div className="mt-2 md:mt-4 flex items-center gap-1.5 md:gap-3">
+            <div className={`w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-[14px] transition-all duration-700 ${current ? 'bg-teal-600 text-white shadow-lg md:shadow-xl md:rotate-12' : active ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
+                {active && !current ? <Check size={11} /> : num}
             </div>
-            <span className={`text-[14px] font-black uppercase tracking-widest ${current ? 'text-teal-600' : 'text-slate-400'}`}>{label}</span>
+            <span className={`text-[9px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest ${current ? 'text-teal-600' : 'text-slate-400'} hidden sm:inline`}>{label}</span>
         </div>
     </div>
 );

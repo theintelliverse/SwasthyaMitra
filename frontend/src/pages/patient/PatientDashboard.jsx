@@ -160,23 +160,32 @@ const PatientDashboard = () => {
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-4 py-3 shadow-sm">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center font-black text-base shadow-md shadow-teal-600/20">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-teal-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center font-black text-sm md:text-base shadow-md shadow-teal-600/20">
               A
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-slate-900 text-base tracking-tight">Appointory</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-black text-slate-900 text-sm md:text-base tracking-tight">Appointory</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Smart Healthcare Platform</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Smart Healthcare Platform</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Mobile: icon-only compact QR button */}
             <button
               onClick={() => setShowQrModal(true)}
-              className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2 text-xs font-black tracking-wide"
+              className="sm:hidden p-2.5 bg-slate-900 hover:bg-slate-800 text-teal-400 rounded-xl transition-all shadow-md active:scale-95"
+              aria-label="Digital Health Card"
+            >
+              <QrCode size={17} />
+            </button>
+            {/* Desktop: full button with text */}
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="hidden sm:flex px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all shadow-md active:scale-95 items-center gap-2 text-xs font-black tracking-wide"
             >
               <QrCode size={15} className="text-teal-400" />
               <span>Digital Health Card</span>

@@ -5,6 +5,9 @@ import { Home, Calendar, FolderHeart, Stethoscope, User } from 'lucide-react';
 const PatientBottomNav = ({ activeTab, onTabChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const currentPath = location.pathname;
+  const currentTab = searchParams.get('tab');
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home, path: '/patient/dashboard' },
@@ -14,37 +17,59 @@ const PatientBottomNav = ({ activeTab, onTabChange }) => {
     { id: 'profile', label: 'Profile', icon: User, path: '/patient/profile' }
   ];
 
-  const currentPath = location.pathname;
-
   const handleNav = (item) => {
-    if (onTabChange && item.id === 'appointments') {
-      onTabChange('appointments');
+    if (item.id === 'appointments') {
+      if (onTabChange) onTabChange('appointments');
+    } else if (item.id === 'home') {
+      if (onTabChange) onTabChange('home');
     }
-    if (currentPath !== item.path.split('?')[0]) {
+
+    const targetBasePath = item.path.split('?')[0];
+    const isAppointmentsNav = item.id === 'appointments';
+    const isHomeNav = item.id === 'home';
+
+    const shouldNavigate = 
+      currentPath !== targetBasePath || 
+      (isAppointmentsNav && currentTab !== 'appointments') || 
+      (isHomeNav && currentTab === 'appointments');
+
+    if (shouldNavigate) {
       navigate(item.path);
     }
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 pb-safe md:hidden shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200/80 px-2 py-1.5 pb-safe md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = (onTabChange && item.id === 'appointments' && activeTab === 'appointments') ||
-            (currentPath === item.path.split('?')[0] && item.id !== 'appointments');
+          
+          let isActive = false;
+          if (item.id === 'home') {
+            isActive = (currentPath === '/patient/dashboard' && (!currentTab || currentTab === 'home') && activeTab !== 'appointments');
+          } else if (item.id === 'appointments') {
+            isActive = (currentPath === '/patient/dashboard' && currentTab === 'appointments') || activeTab === 'appointments';
+          } else {
+            isActive = currentPath.startsWith(item.path);
+          }
 
           return (
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all duration-200 ${
+              className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-300 group ${
                 isActive 
-                  ? 'text-teal-700 font-bold bg-teal-50/80 scale-105' 
-                  : 'text-slate-400 hover:text-slate-600 font-medium'
+                  ? 'text-teal-700 bg-teal-50/90 scale-105 shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/50'
               }`}
             >
-              <Icon size={20} className={isActive ? 'stroke-[2.5px] text-teal-700' : 'stroke-[1.8px]'} />
-              <span className={`text-[11px] mt-1 tracking-tight ${isActive ? 'font-semibold text-teal-800' : 'font-normal'}`}>
+              <div className="relative">
+                <Icon size={21} className={`transition-transform duration-300 ${isActive ? 'stroke-[2.5px] text-teal-700 -translate-y-0.5' : 'stroke-[1.8px] group-hover:scale-105'}`} />
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-teal-600 rounded-full animate-pulse" />
+                )}
+              </div>
+              <span className={`text-[11px] mt-1 tracking-tight transition-all duration-300 ${isActive ? 'font-bold text-teal-900' : 'font-medium text-slate-500'}`}>
                 {item.label}
               </span>
             </button>

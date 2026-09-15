@@ -10,7 +10,6 @@ import { API_URL } from '../../config/runtime';
 const PatientProfile = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -30,8 +29,6 @@ const PatientProfile = () => {
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
-      } finally {
-        if (active) setLoading(false);
       }
     });
 
@@ -60,18 +57,23 @@ const PatientProfile = () => {
   const email = profile?.email || 'patient@appointory.in';
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans pb-safe">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-28">
       <SEO title="Profile - Appointory" />
 
       {/* Context Top Bar */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3.5 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-slate-900 tracking-tight">Account Profile</h1>
-        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-          Verified
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center font-black text-sm shadow-md">
+            A
+          </div>
+          <h1 className="text-base font-black text-slate-900 tracking-tight">My Profile</h1>
+        </div>
+        <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 uppercase tracking-wide">
+          ✓ Verified
         </span>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-md mx-auto px-4 py-5 space-y-5">
         {/* User Card */}
         <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-sm">
