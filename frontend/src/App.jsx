@@ -101,7 +101,17 @@ const PlatformGuard = ({ children }) => {
           return;
         }
 
-        // 2. Subscription Enforced check
+        // 2. Patients never require any subscription and are permanently exempt
+        if (role === 'patient') {
+          if (window.location.pathname === '/subscription-checkout') {
+            window.location.assign('/patient/dashboard');
+            return;
+          }
+          setChecking(false);
+          return;
+        }
+
+        // 3. Subscription Enforced check (only for clinics and labs)
         if (res.data.isSubscriptionEnforced && token && role !== 'superadmin' && window.location.pathname !== '/subscription-checkout' && window.location.pathname !== '/maintenance') {
           const isLab = localStorage.getItem('labRole') === 'independent_lab';
           const authToken = isLab ? (localStorage.getItem('labToken') || token) : token;
@@ -360,6 +370,14 @@ const App = () => {
               />
               <Route
                 path="/patient/locker"
+                element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <HealthLocker />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/patient/health-locker"
                 element={
                   <ProtectedRoute allowedRoles={['patient']}>
                     <HealthLocker />

@@ -22,10 +22,10 @@ const socket = SOCKET_URL ? io(SOCKET_URL, {
 
 // Modern Mobile Patient Summary Header
 const MobileSummary = ({ patientData, displayName, onShowQr }) => {
-  const pulse = patientData?.vitals?.[0]?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--';
-  const temp = patientData?.vitals?.[0]?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--';
-  const weight = patientData?.vitals?.[0]?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--';
-  const bp = patientData?.vitals?.[0]?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--';
+  const pulse = patientData?.vitals?.[0]?.pulseRate || patientData?.medicalHistory?.[0]?.vitals?.pulseRate || patientData?.visitHistory?.[0]?.vitals?.pulseRate || '--';
+  const temp = patientData?.vitals?.[0]?.temperature || patientData?.medicalHistory?.[0]?.vitals?.temperature || patientData?.visitHistory?.[0]?.vitals?.temperature || '--';
+  const weight = patientData?.vitals?.[0]?.weight || patientData?.medicalHistory?.[0]?.vitals?.weight || patientData?.visitHistory?.[0]?.vitals?.weight || '--';
+  const bp = patientData?.vitals?.[0]?.bloodPressure || patientData?.medicalHistory?.[0]?.vitals?.bloodPressure || patientData?.visitHistory?.[0]?.vitals?.bloodPressure || '--';
 
   return (
     <div className="md:hidden space-y-3 mb-5">
@@ -120,8 +120,12 @@ const PatientDashboard = () => {
       if (active) fetchProfile();
     });
 
-    const patientPhone = localStorage.getItem('userPhone')?.replace(/\D/g, '').slice(-10);
+    const rawPhone = localStorage.getItem('userPhone') || patientData?.phone;
+    const patientPhone = rawPhone ? rawPhone.toString().replace(/\D/g, '').slice(-10) : null;
     if (patientPhone) {
+      if (!localStorage.getItem('userPhone')) {
+        localStorage.setItem('userPhone', patientPhone);
+      }
       socket.emit('joinClinic', patientPhone);
       socket.on('queueUpdate', () => fetchProfile());
     }
@@ -135,7 +139,7 @@ const PatientDashboard = () => {
       socket.off('queueUpdate');
       clearInterval(visitPollInterval);
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, patientData?.phone]);
 
   const displayName = patientData?.name || "Patient";
 
@@ -153,6 +157,51 @@ const PatientDashboard = () => {
 
   const nextHeroAppointment = upcomingAppointments[0];
 
+  const recentActivities = useMemo(() => {
+    const list = [];
+
+    // 1. Clinical visits from Medical History (from doctor/EHR)
+    const history = patientData?.medicalHistory || patientData?.visitHistory || [];
+    history.forEach((visit, idx) => {
+      list.push({
+        id: visit.visitId || visit._id || `visit-${idx}`,
+        type: 'visit',
+        title: visit.clinicName || visit.clinicId?.name || 'Clinic Consultation',
+        doctorName: visit.doctorName || 'Consultant Specialist',
+        subtitle: visit.diagnosis || visit.symptoms || visit.notes || 'Consultation Logged',
+        date: visit.date || visit.createdAt || visit.visitDate,
+        badge: 'Medical Record',
+        badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
+        raw: visit,
+      });
+    });
+
+    // 2. Appointments / Consultations (Upcoming & Recent)
+    (appointments || []).forEach((apt, idx) => {
+      const isPast = apt.status === 'Completed' || apt.status === 'Cancelled' || new Date(apt.appointmentDate || apt.createdAt) < new Date();
+      list.push({
+        id: apt._id || `apt-${idx}`,
+        type: 'appointment',
+        title: apt.clinicName || apt.clinicId?.name || 'Clinic Consultation',
+        doctorName: apt.doctorName || apt.doctorId?.name || 'Consultant Specialist',
+        subtitle: apt.tokenNumber ? `Queue Token #${apt.tokenNumber}` : (apt.status || (isPast ? 'Completed' : 'Scheduled')),
+        date: apt.appointmentDate || apt.createdAt,
+        badge: apt.status || (isPast ? 'Completed' : 'Scheduled'),
+        badgeColor: (apt.status === 'Completed' || isPast)
+          ? 'bg-slate-100 text-slate-600 border-slate-200'
+          : apt.status === 'Waiting'
+          ? 'bg-teal-50 text-teal-700 border-teal-200'
+          : apt.status === 'Cancelled'
+          ? 'bg-rose-50 text-rose-700 border-rose-200'
+          : 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        raw: apt,
+      });
+    });
+
+    // Sort descending by date (most recent first)
+    return list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  }, [patientData, appointments]);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-28 md:pb-10">
       <SEO title="Patient Hub - Appointory" />
@@ -160,9 +209,9 @@ const PatientDashboard = () => {
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-4 py-3 shadow-sm">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-teal-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center font-black text-sm md:text-base shadow-md shadow-teal-600/20">
-              A
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-2xl flex items-center justify-center shadow-md shadow-teal-600/20 overflow-hidden border border-teal-500/20 shrink-0">
+              <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
@@ -352,7 +401,7 @@ const PatientDashboard = () => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/patient/health-locker')}
+                  onClick={() => navigate('/patient/health-locker?action=upload')}
                   className="p-4 bg-white border border-slate-100 hover:border-teal-500/50 hover:shadow-xl hover:-translate-y-1 rounded-2xl flex flex-col items-start transition-all duration-300 group text-left shadow-sm"
                 >
                   <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all">
@@ -379,35 +428,65 @@ const PatientDashboard = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div>
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Clinical Activity</h4>
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Clinical Activity & Consultations</h4>
                 </div>
-                <button onClick={() => navigate('/patient/health-locker')} className="text-xs font-black text-teal-600 hover:underline flex items-center gap-1">
-                  <span>View All Records</span>
-                  <ChevronRight size={14} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {appointments.length > 0 && (
+                    <button
+                      onClick={() => setActiveTab('appointments')}
+                      className="text-xs font-black text-teal-600 hover:underline flex items-center gap-1"
+                    >
+                      <span>Appointments ({appointments.length})</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => navigate('/patient/health-locker')}
+                    className="text-xs font-black text-slate-500 hover:text-teal-600 hover:underline flex items-center gap-1"
+                  >
+                    <span>Health Vault</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
 
               <div className="bg-white border border-slate-100 rounded-3xl p-2 shadow-sm divide-y divide-slate-100">
-                {patientData?.visitHistory && patientData.visitHistory.length > 0 ? (
-                  patientData.visitHistory.slice(0, 4).map((visit, idx) => (
-                    <div key={idx} className="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 rounded-2xl transition-all">
+                {recentActivities.length > 0 ? (
+                  recentActivities.slice(0, 5).map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      onClick={() => {
+                        if (item.type === 'appointment') {
+                          setSelectedAppointment(item.raw);
+                        } else {
+                          navigate('/patient/health-locker');
+                        }
+                      }}
+                      className="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 font-black border border-teal-100">
-                          <Activity size={18} />
+                        <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center shrink-0 font-black border border-teal-100 transition-all">
+                          {item.type === 'appointment' ? <Calendar size={18} /> : <Activity size={18} />}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-black text-slate-900 truncate">
-                            {visit.clinicId?.name || visit.doctorName || 'Clinic Visit'}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-black text-slate-900 truncate group-hover:text-teal-600 transition-colors">
+                              {item.title}
+                            </p>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0 ${item.badgeColor}`}>
+                              {item.badge}
+                            </span>
+                          </div>
                           <p className="text-xs font-bold text-slate-400 truncate mt-0.5">
-                            {visit.diagnosis || visit.notes || 'Consultation Logged'}
+                            Dr. {item.doctorName} • {item.subtitle}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
+                      <div className="text-right shrink-0 flex items-center gap-2">
                         <span className="text-xs font-black text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
-                          {visit.createdAt ? new Date(visit.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}
+                          {item.date ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}
                         </span>
+                        <ChevronRight size={16} className="text-slate-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
                   ))

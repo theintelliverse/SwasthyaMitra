@@ -59,6 +59,7 @@ const PatientLogin = () => {
                 localStorage.setItem('token', res.data.token);
                 localStorage.setItem('role', 'patient');
                 localStorage.setItem('patientName', res.data.patient?.name || 'Valued Patient');
+                localStorage.setItem('userPhone', res.data.patient?.phone || formData.phone);
 
                 Swal.fire({
                     icon: 'success',

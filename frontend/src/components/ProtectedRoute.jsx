@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   // 2. If logged in but role is not authorized for this specific route
-  if (allowedRoles && !allowedRoles.includes(userRole) && !['independent_lab', 'lab', 'doctor', 'admin'].includes(userRole)) {
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

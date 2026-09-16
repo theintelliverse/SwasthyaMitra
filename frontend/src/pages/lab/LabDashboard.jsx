@@ -84,7 +84,6 @@ const LabDashboard = () => {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('All');
-  const [recentReports, setRecentReports] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [showNewTestModal, setShowNewTestModal] = useState(false);
   const [showAddSampleModal, setShowAddSampleModal] = useState(false);
@@ -126,6 +125,12 @@ const LabDashboard = () => {
 
   const token = localStorage.getItem('token');
   const clinicId = localStorage.getItem('clinicId');
+
+  const authError = !token
+    ? 'No authentication token found. Please login again.'
+    : (!clinicId ? 'No clinic information found. Please login again.' : null);
+  const currentError = authError || error;
+  const isLoading = !authError && loading;
 
   // Calculate statistics
   const getStats = () => {
@@ -182,10 +187,11 @@ const LabDashboard = () => {
   };
 
   const fetchLabDashboardStats = async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError(null);
-    setIsSyncing(true);
     try {
+      await Promise.resolve();
+      if (!silent) setLoading(true);
+      setError(null);
+      setIsSyncing(true);
       console.log("🧪 Fetching lab stats from:", `${API_URL}/api/lab/dashboard/stats`);
       console.log("🔐 Token:", token ? "exists" : "missing");
       console.log("🏥 Clinic ID:", clinicId ? "exists" : "missing");
@@ -218,36 +224,18 @@ const LabDashboard = () => {
     }
   };
 
-  const fetchRecentReports = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/lab/reports/recent?limit=3`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.data.success) {
-        setRecentReports(Array.isArray(res.data.data) ? res.data.data : []);
-      }
-    } catch (err) {
-      console.error("Recent Reports Fetch Error:", err);
-    }
-  };
-
   useEffect(() => {
-    if (!token) {
-      setError('No authentication token found. Please login again.');
-      setLoading(false);
+    if (!token || !clinicId) {
       return;
     }
 
-    if (!clinicId) {
-      setError('No clinic information found. Please login again.');
-      setLoading(false);
-      return;
-    }
-
-    // Initial data load
-    fetchLabDashboardStats();
-    fetchRecentReports();
+    let isMounted = true;
+    // Initial data load via microtask
+    Promise.resolve().then(() => {
+      if (isMounted) {
+        fetchLabDashboardStats();
+      }
+    });
     console.log("🔌 Initializing Socket.io connections...");
 
     // Socket connection handlers
@@ -282,7 +270,6 @@ const LabDashboard = () => {
         console.log("♻️ Lab Dashboard received queueUpdate event - syncing...");
         setLastUpdate(new Date());
         fetchLabDashboardStats(true);
-        fetchRecentReports();
       });
 
       // Live queue updates (real-time patient data)
@@ -300,6 +287,7 @@ const LabDashboard = () => {
     }, 15000); // Poll every 15 seconds
 
     return () => {
+      isMounted = false;
       clearInterval(pollInterval);
       socket.off('connect');
       socket.off('disconnect');
@@ -497,6 +485,7 @@ const LabDashboard = () => {
             <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>In Process:</strong></span> <span style="color: #f59e0b; font-weight: bold;">${inProcess}</span></p>
             <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Completed:</strong></span> <span style="color: #10b981; font-weight: bold;">${completed}</span></p>
             <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Pending:</strong></span> <span style="color: #ef4444; font-weight: bold;">${pending}</span></p>
+            <p style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span><strong>Rejected:</strong></span> <span style="color: #64748b; font-weight: bold;">${rejected}</span></p>
           </div>
           <div style="border-top: 1px solid #e5e7eb; margin: 10px 0; padding-top: 10px; display: flex; justify-content: space-between;">
             <span><strong>Completion Rate:</strong></span>
@@ -769,7 +758,6 @@ const LabDashboard = () => {
 
         // Manually trigger a refresh to remove the patient from the list immediately
         fetchLabDashboardStats(true);
-        fetchRecentReports();
       }
     } catch (err) {
       console.error("Upload Error Details:", err.response?.data);
@@ -849,7 +837,7 @@ const LabDashboard = () => {
         {/* Main Content */}
         <main className="p-3 md:p-5 flex-grow max-w-7xl mx-auto w-full overflow-y-auto">
           {/* Loading State - Show on first load only */}
-          {loading && labQueue.length === 0 && (
+          {isLoading && labQueue.length === 0 && (
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
               <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin"></div>
               <p className="text-gray-600 font-semibold">Loading lab dashboard...</p>
@@ -858,13 +846,13 @@ const LabDashboard = () => {
           )}
 
           {/* Error State */}
-          {error && !loading && (
+          {currentError && !isLoading && (
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600">
                 <span className="text-2xl">⚠️</span>
               </div>
               <p className="text-lg font-semibold text-gray-900">Connection Error</p>
-              <p className="text-sm text-gray-600 max-w-md text-center">{error}</p>
+              <p className="text-sm text-gray-600 max-w-md text-center">{currentError}</p>
               <div className="text-[14px] text-gray-500 text-center max-w-md mt-4 bg-gray-50 p-4 rounded-lg">
                 <p className="font-semibold mb-2">Quick fixes:</p>
                 <ul className="list-disc list-inside space-y-1 text-left">
@@ -880,7 +868,7 @@ const LabDashboard = () => {
             </div>
           )}
 
-          {!error && (
+          {!currentError && (
             <>
               {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -1096,9 +1084,18 @@ const LabDashboard = () => {
                                   </td>
                                   <td className="px-4 py-4 align-middle text-center">
                                     {request.currentStage === 'Lab-Completed' ? (
-                                      <span className="inline-flex items-center gap-1 text-[13px] font-black text-slate-400 uppercase tracking-widest">
-                                        <FileCheck size={14} className="text-slate-400" /> Published
-                                      </span>
+                                      <div className="flex items-center justify-center gap-1.5">
+                                        <span className="inline-flex items-center gap-1 text-[13px] font-black text-slate-400 uppercase tracking-widest">
+                                          <FileCheck size={14} className="text-slate-400" /> Published
+                                        </span>
+                                        <button
+                                          onClick={() => handleDownloadReport(request)}
+                                          className="p-1.5 text-teal-600 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all active:scale-95 border border-teal-200"
+                                          title="Download PDF Report"
+                                        >
+                                          <Download size={13} />
+                                        </button>
+                                      </div>
                                     ) : (
                                       <div className="flex items-center justify-center gap-2 w-full min-w-[120px] mx-auto">
                                         <button
@@ -1177,7 +1174,17 @@ const LabDashboard = () => {
                                 {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                               {request.currentStage === 'Lab-Completed' ? (
-                                <span className="text-[14px] font-bold text-gray-400">Published</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[14px] font-bold text-gray-400">Published</span>
+                                  <button
+                                    onClick={() => handleDownloadReport(request)}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-lg text-[14px] font-bold transition-all active:scale-95"
+                                    title="Download PDF Report"
+                                  >
+                                    <Download size={12} />
+                                    <span>Download</span>
+                                  </button>
+                                </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
@@ -1260,7 +1267,7 @@ const LabDashboard = () => {
                             <div className="flex justify-between items-center mb-0.5">
                               <p className="text-[14px] font-bold text-gray-900 truncate">SMP-{patient.tokenNumber}</p>
                               <span className="text-[14px] font-bold text-gray-500">
-                                {new Date(patient.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {patient.createdAt ? new Date(patient.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">

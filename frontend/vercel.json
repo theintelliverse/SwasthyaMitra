@@ -20,6 +20,10 @@
       "handle": "filesystem"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "https://api.appointory.in/api/$1"
+    },
+    {
       "src": "/.*",
       "dest": "/index.html"
     }

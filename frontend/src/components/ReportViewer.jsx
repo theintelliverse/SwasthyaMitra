@@ -29,6 +29,7 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
     const [isRemoving, setIsRemoving] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
+    const [pdfViewMode, setPdfViewMode] = useState('preview'); // 'preview' | 'embed'
 
     const MAX_RETRY_ATTEMPTS = 3;
     const TIMEOUT_DURATION = 60000; // 60 seconds for slow networks
@@ -38,6 +39,32 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
     const isPdfDocument =
         (currentDoc?.fileType || '').toLowerCase().includes('pdf') ||
         (currentDoc?.fileUrl || '').toLowerCase().includes('.pdf');
+
+    const getCloudinaryPreviewImage = (url) => {
+        if (!url) return '';
+        if (url.includes('cloudinary.com')) {
+            // Convert page 1 of PDF to crisp high-res image
+            return url.replace(/\.pdf(\?.*)?$/i, '.png$1').replace('/upload/', '/upload/f_auto,q_auto,pg_1/');
+        }
+        return url;
+    };
+
+    const getDirectPdfUrl = (url) => {
+        if (!url) return '';
+        if (url.includes('cloudinary.com') && !url.includes('fl_inline')) {
+            return url.replace('/upload/', '/upload/fl_inline/');
+        }
+        return url;
+    };
+
+    const getDownloadUrl = (url, title) => {
+        if (!url) return '';
+        if (url.includes('cloudinary.com')) {
+            const cleanTitle = encodeURIComponent((title || 'report').replace(/[^a-zA-Z0-9_-]/g, '_'));
+            return url.replace('/upload/', `/upload/fl_attachment:${cleanTitle}/`);
+        }
+        return url;
+    };
 
     // Effect to update image URL when document changes
     useEffect(() => {
@@ -125,9 +152,11 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
             const isPdf =
                 (currentDoc.fileType || '').toLowerCase().includes('pdf') ||
                 currentDoc.fileUrl.toLowerCase().includes('.pdf');
+            const targetUrl = isPdf ? getDownloadUrl(currentDoc.fileUrl, currentDoc.title) : currentDoc.fileUrl;
             const a = document.createElement('a');
-            a.href = currentDoc.fileUrl;
+            a.href = targetUrl;
             a.download = `${currentDoc.title || 'report'}.${isPdf ? 'pdf' : 'jpg'}`;
+            a.target = '_blank';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -460,30 +489,85 @@ const ReportViewer = ({ documents, initialIndex = 0, onClose, onReportRemoved })
 
                     {!error && imageUrl && (
                         isPdfDocument ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-lg p-2">
-                                <object
-                                    key={currentDoc._id}
-                                    data={imageUrl}
-                                    type="application/pdf"
-                                    className="w-full flex-grow rounded-lg border border-gray-100"
-                                    onLoad={handleImageLoad}
-                                >
-                                    <iframe
-                                        src={`https://docs.google.com/gview?url=${encodeURIComponent(imageUrl)}&embedded=true`}
-                                        title={currentDoc.title || 'Diagnostic Report PDF'}
-                                        className="w-full h-full rounded-lg border border-gray-100"
-                                        onLoad={handleImageLoad}
-                                    />
-                                </object>
-                                <div className="py-2.5 flex justify-center w-full bg-slate-50 border-t border-gray-100 rounded-b-lg mt-2">
+                            <div className="w-full h-full flex flex-col items-center justify-between bg-white rounded-2xl p-2 md:p-3 overflow-hidden shadow-inner">
+                                {/* Top Mode Selector Bar */}
+                                <div className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl mb-2 text-xs font-bold">
+                                    <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPdfViewMode('preview')}
+                                            className={`px-3 py-1 rounded-md transition-all ${
+                                                pdfViewMode === 'preview'
+                                                    ? 'bg-teal-600 text-white shadow-sm font-black'
+                                                    : 'text-slate-600 hover:text-slate-900'
+                                            }`}
+                                        >
+                                            📄 Report View
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPdfViewMode('embed')}
+                                            className={`px-3 py-1 rounded-md transition-all ${
+                                                pdfViewMode === 'embed'
+                                                    ? 'bg-teal-600 text-white shadow-sm font-black'
+                                                    : 'text-slate-600 hover:text-slate-900'
+                                            }`}
+                                        >
+                                            📑 Native PDF Frame
+                                        </button>
+                                    </div>
+                                    <span className="text-slate-400 text-[11px] hidden sm:inline">
+                                        {pdfViewMode === 'preview' ? 'Rendered high-res document' : 'Browser native PDF viewer'}
+                                    </span>
+                                </div>
+
+                                {/* Main Viewer Area */}
+                                <div className="w-full flex-1 min-h-[380px] max-h-[70vh] flex items-center justify-center overflow-auto rounded-xl bg-slate-900/5 p-1 relative">
+                                    {pdfViewMode === 'preview' && imageUrl.includes('cloudinary.com') ? (
+                                        <img
+                                            key={`${currentDoc._id}-img`}
+                                            src={getCloudinaryPreviewImage(imageUrl)}
+                                            alt={currentDoc.title || 'Diagnostic Report'}
+                                            style={{
+                                                transform: `scale(${zoom / 100})`,
+                                                maxWidth: '100%',
+                                                maxHeight: '100%',
+                                                width: 'auto',
+                                                height: 'auto'
+                                            }}
+                                            className="object-contain rounded-lg shadow-md transition-transform cursor-zoom-in"
+                                            onLoad={handleImageLoad}
+                                            onError={() => setPdfViewMode('embed')}
+                                        />
+                                    ) : (
+                                        <iframe
+                                            key={`${currentDoc._id}-iframe`}
+                                            src={getDirectPdfUrl(imageUrl)}
+                                            title={currentDoc.title || 'Diagnostic Report PDF'}
+                                            className="w-full h-full min-h-[420px] rounded-lg border-0 bg-white"
+                                            onLoad={handleImageLoad}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Bottom Action Bar */}
+                                <div className="py-2.5 flex flex-wrap items-center justify-center gap-3 w-full bg-slate-50 border-t border-slate-100 rounded-b-xl mt-2">
                                     <a
-                                        href={imageUrl}
+                                        href={getDirectPdfUrl(imageUrl)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-teal-600/10 flex items-center gap-1.5"
+                                        className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs transition-all shadow-md shadow-teal-600/15 flex items-center gap-1.5 active:scale-95"
                                     >
                                         <span>↗ Open PDF in New Tab</span>
                                     </a>
+                                    <button
+                                        type="button"
+                                        onClick={handleDownload}
+                                        className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-black text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+                                    >
+                                        <Download size={14} />
+                                        <span>Download PDF</span>
+                                    </button>
                                 </div>
                             </div>
                         ) : (

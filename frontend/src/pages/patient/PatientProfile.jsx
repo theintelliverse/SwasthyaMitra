@@ -62,9 +62,9 @@ const PatientProfile = () => {
 
       {/* Context Top Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-400 text-white flex items-center justify-center font-black text-sm shadow-md">
-            A
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-md shadow-teal-600/20 overflow-hidden border border-teal-500/20 shrink-0">
+            <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-base font-black text-slate-900 tracking-tight">My Profile</h1>
         </div>

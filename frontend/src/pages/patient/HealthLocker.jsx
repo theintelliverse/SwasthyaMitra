@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { SOCKET_URL, API_URL } from '../../config/runtime';
@@ -18,14 +18,21 @@ const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, em
 
 const HealthLocker = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isUploadRequested = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('action') === 'upload' || Boolean(location.state?.openUpload);
+  }, [location.search, location.state]);
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('vitals');
+  const [activeTab, setActiveTab] = useState(() => isUploadRequested ? 'reports' : 'vitals');
   const [selectedReportIndex, setSelectedReportIndex] = useState(null);
 
   // Upload Modal State
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(() => isUploadRequested);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadFileType, setUploadFileType] = useState('Lab Report');
@@ -70,6 +77,15 @@ const HealthLocker = () => {
     };
   }, [fetchHealthData]);
 
+  useEffect(() => {
+    if (isUploadRequested) {
+      Promise.resolve().then(() => {
+        setShowUploadModal(true);
+        setActiveTab('reports');
+      });
+    }
+  }, [isUploadRequested]);
+
   const handleFileUpload = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -84,7 +100,7 @@ const HealthLocker = () => {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('document', selectedFile);
       formData.append('title', uploadTitle.trim() || selectedFile.name);
       formData.append('fileType', uploadFileType);
 
@@ -152,7 +168,7 @@ const HealthLocker = () => {
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
       <SEO title="Health Locker" noindex={true} />
       <Sidebar role="patient" />
-      
+
       <div className="flex-grow px-3 py-3 pb-28 md:p-4 md:pb-4 lg:p-6 overflow-y-auto h-screen custom-scrollbar max-w-7xl mx-auto w-full">
         {/* Header Section */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
@@ -176,7 +192,7 @@ const HealthLocker = () => {
             >
               <Upload size={14} /> Upload Report
             </button>
-            <button 
+            <button
               onClick={() => fetchHealthData(true)}
               className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95"
               title="Refresh"
@@ -426,10 +442,10 @@ const HealthLocker = () => {
 
                       {doc.fileUrl && (
                         <div className="mb-3 md:mb-4 rounded-xl overflow-hidden border border-slate-100 h-24 md:h-32 bg-slate-50 flex items-center justify-center relative group/img">
-                          <img 
-                            src={doc.fileUrl} 
-                            alt={doc.title} 
-                            className="w-full h-full object-cover opacity-60 group-hover/img:opacity-100 transition-opacity" 
+                          <img
+                            src={doc.fileUrl}
+                            alt={doc.title}
+                            className="w-full h-full object-cover opacity-60 group-hover/img:opacity-100 transition-opacity"
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                           <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
@@ -439,15 +455,15 @@ const HealthLocker = () => {
                       )}
 
                       <div className="mt-auto flex gap-2">
-                        <button 
+                        <button
                           onClick={() => setSelectedReportIndex(i)}
                           className="flex-1 py-2 md:py-2.5 bg-slate-900 text-white rounded-lg md:rounded-xl font-black text-[12px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                         >
                           <Eye size={11} /> Open
                         </button>
-                        <a 
-                          href={doc.fileUrl} 
-                          target="_blank" 
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
                           rel="noreferrer"
                           className="p-2 md:p-2.5 bg-teal-50 text-teal-600 rounded-lg md:rounded-xl border border-teal-100 hover:bg-teal-600 hover:text-white transition-all active:scale-95"
                           title="Download / Open Fullscreen"
@@ -459,9 +475,9 @@ const HealthLocker = () => {
                   ))}
                 </div>
               ) : (
-                <EmptyState 
-                  message="No clinical reports found." 
-                  onAction={() => setShowUploadModal(true)} 
+                <EmptyState
+                  message="No clinical reports found."
+                  onAction={() => setShowUploadModal(true)}
                   actionLabel="Upload First Report"
                 />
               )}
@@ -529,7 +545,7 @@ const HealthLocker = () => {
                 <FileUp className="text-teal-400" size={20} />
                 <h3 className="font-black text-base tracking-tight">Upload Health Document</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowUploadModal(false)}
                 className="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
               >
@@ -581,7 +597,7 @@ const HealthLocker = () => {
 
               <div>
                 <label className="block text-xs font-black uppercase text-slate-500 tracking-wider mb-1.5">Select File (PDF or Image)</label>
-                <div 
+                <div
                   className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${selectedFile ? 'border-teal-500 bg-teal-50/30' : 'border-slate-200 hover:border-teal-400 bg-slate-50/50'}`}
                   onClick={() => document.getElementById('locker-file-input').click()}
                 >
@@ -602,8 +618,8 @@ const HealthLocker = () => {
                       <FileText size={32} className="mx-auto text-teal-600" />
                       <p className="text-sm font-black text-slate-900 line-clamp-1">{selectedFile.name}</p>
                       <p className="text-xs font-bold text-teal-600">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
                         className="text-xs text-rose-600 font-bold hover:underline pt-1 inline-block"
                       >
@@ -666,7 +682,7 @@ const HealthLocker = () => {
 
 // UI Components
 const TabBtn = ({ active, onClick, icon, label }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`px-3 md:px-5 py-2 rounded-lg text-[14px] md:text-[14px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 snap-start ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
   >
@@ -682,7 +698,7 @@ const VitalCard = ({ icon, label, val, unit, color }) => {
     rose: "bg-rose-50 text-rose-600 border-rose-100",
     indigo: "bg-indigo-50 text-indigo-600 border-indigo-100",
   };
-  
+
   return (
     <div className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl border ${colors[color]} shadow-sm transition-all hover:scale-[1.03] duration-300`}>
       <div className="flex items-center gap-1.5 mb-1.5 md:mb-2">

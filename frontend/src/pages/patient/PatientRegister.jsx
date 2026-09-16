@@ -158,6 +158,7 @@ const PatientRegister = () => {
                 localStorage.setItem('token', res.data.token);
                 localStorage.setItem('role', 'patient');
                 localStorage.setItem('patientName', res.data.patient.name);
+                localStorage.setItem('userPhone', res.data.patient?.phone || formData.phone);
 
                 Swal.fire({
                     icon: 'success',
