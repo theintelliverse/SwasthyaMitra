@@ -33,11 +33,13 @@ const FacilityOverviewModal = ({
   const [rejectionReason, setRejectionReason] = useState('Application did not meet operational criteria.');
   const [customGreeting, setCustomGreeting] = useState('Hope you are doing well.');
 
+  const facilityId = facility?._id;
+
   const fetchFacilityOverview = useCallback(async () => {
-    if (!facility?._id) return;
+    if (!facilityId) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/superadmin/facility/${facility._id}/overview?type=${facilityType}`, {
+      const res = await fetch(`${API_URL}/api/superadmin/facility/${facilityId}/overview?type=${facilityType}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -49,14 +51,33 @@ const FacilityOverviewModal = ({
     } finally {
       setLoading(false);
     }
-  }, [facility?._id, facilityType, token]);
+  }, [facilityId, facilityType, token]);
 
-  // Fetch detailed facility overview data when modal opens
+  // Fetch detailed facility overview data when modal opens or facility changes
   useEffect(() => {
-    if (isOpen && facility?._id) {
-      fetchFacilityOverview();
-    }
-  }, [isOpen, facility?._id, fetchFacilityOverview]);
+    let ignore = false;
+    if (!isOpen || !facilityId) return;
+
+    const loadData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/superadmin/facility/${facilityId}/overview?type=${facilityType}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!ignore && data.success) {
+          setOverviewData(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch facility overview:', err);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isOpen, facilityId, facilityType, token]);
 
   const fac = overviewData?.facility || facility || {};
   const members = overviewData?.members || [];
@@ -69,6 +90,8 @@ const FacilityOverviewModal = ({
     monthly: { labels: [], patients: [], revenue: [], consultations: [] },
     yearly: { labels: [], patients: [], revenue: [], consultations: [] }
   };
+
+  const isLoading = loading || !overviewData || overviewData?.facility?._id !== facilityId;
 
   const facName = fac.name || fac.labName || '';
   const expiryDateStr = fac.subscriptionExpiresAt ? new Date(fac.subscriptionExpiresAt).toLocaleDateString() : 'N/A';
@@ -335,7 +358,7 @@ const FacilityOverviewModal = ({
 
         {/* Modal Body Content */}
         <div className="p-6 overflow-y-auto flex-1 bg-parchment/20 space-y-6">
-          {loading ? (
+          {isLoading ? (
             <div className="py-20 text-center space-y-3">
               <RefreshCw className="animate-spin text-teal-700 mx-auto" size={32} />
               <p className="text-sm font-bold text-slate-600">Loading comprehensive overview data...</p>

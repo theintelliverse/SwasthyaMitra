@@ -47,7 +47,7 @@ const AppointmentDetailSheet = ({ appointment, onClose, onReschedule, onCancel }
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           );
-        } catch (_err) {
+        } catch {
           // Non-fatal: local status update failed, the queue entry is still deleted
         }
       }
