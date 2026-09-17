@@ -344,7 +344,7 @@ const PatientDashboard = () => {
                     <ArrowRight size={16} />
                   </button>
                   <button
-                    onClick={() => navigate('/patient/book-appointment')}
+                    onClick={() => navigate('/patient/book-appointment', { state: { rescheduleApp: nextHeroAppointment } })}
                     className="w-full sm:w-auto py-3 px-5 bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-widest rounded-2xl border border-white/15 transition-all"
                   >
                     Reschedule
@@ -584,9 +584,10 @@ const PatientDashboard = () => {
         <AppointmentDetailSheet
           appointment={selectedAppointment}
           onClose={() => setSelectedAppointment(null)}
-          onReschedule={() => {
+          onReschedule={(apt) => {
+            const targetApt = apt || selectedAppointment;
             setSelectedAppointment(null);
-            navigate('/patient/book-appointment');
+            navigate('/patient/book-appointment', { state: { rescheduleApp: targetApt } });
           }}
           onCancel={() => {
             setSelectedAppointment(null);

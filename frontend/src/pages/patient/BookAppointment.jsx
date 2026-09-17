@@ -29,7 +29,21 @@ const BookAppointment = () => {
     const location = useLocation();
     const rescheduleApp = location.state?.rescheduleApp;
 
-    const [step, setStep] = useState(1);
+    const initialClinicId = rescheduleApp?.clinicId?._id 
+        || (typeof rescheduleApp?.clinicId === 'string' ? rescheduleApp.clinicId : '') 
+        || rescheduleApp?.clinicId?.toString?.() 
+        || '';
+    const initialDoctorId = rescheduleApp?.doctorId?._id 
+        || (typeof rescheduleApp?.doctorId === 'string' ? rescheduleApp.doctorId : '') 
+        || rescheduleApp?.doctorId?.toString?.() 
+        || '';
+    const initialQueueId = rescheduleApp?.queueId?._id 
+        || (typeof rescheduleApp?.queueId === 'string' ? rescheduleApp.queueId : '') 
+        || rescheduleApp?.queueId?.toString?.() 
+        || rescheduleApp?._id?.toString?.() 
+        || '';
+
+    const [step, setStep] = useState(rescheduleApp ? 3 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [clinics, setClinics] = useState([]);
@@ -38,39 +52,81 @@ const BookAppointment = () => {
     const [bookedSlots, setBookedSlots] = useState([]);
     const [estimatedWaitTime, setEstimatedWaitTime] = useState(null);
     const [searchClinic, setSearchClinic] = useState('');
-    const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today
+    const [selectedDate, setSelectedDate] = useState(() => {
+        if (rescheduleApp?.appointmentDate) {
+            const d = new Date(rescheduleApp.appointmentDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (!isNaN(d.getTime()) && d >= today) {
+                return d;
+            }
+        }
+        return new Date();
+    });
 
     const [formData, setFormData] = useState({
-        clinicId: '',
-        doctorId: '',
+        clinicId: initialClinicId,
+        doctorId: initialDoctorId,
         appointmentDate: '',
-        appointmentType: 'new',
-        reason: '',
+        appointmentType: rescheduleApp?.appointmentType || 'new',
+        reason: rescheduleApp?.reason || 'Rescheduled consultation visit',
         slotMode: 'quick',
-        rescheduleAppointmentId: ''
+        rescheduleAppointmentId: initialQueueId
     });
 
     useEffect(() => {
-        let active = true;
         if (rescheduleApp) {
-            Promise.resolve().then(() => {
-                if (active) {
-                    setFormData(prev => ({
-                        ...prev,
-                        clinicId: rescheduleApp.clinicId?._id || rescheduleApp.clinicId,
-                        doctorId: rescheduleApp.doctorId?._id || rescheduleApp.doctorId,
-                        appointmentType: rescheduleApp.appointmentType || 'new',
-                        reason: rescheduleApp.reason || '',
-                        rescheduleAppointmentId: rescheduleApp.queueId
-                    }));
-                    if (rescheduleApp.appointmentDate) {
-                        setSelectedDate(new Date(rescheduleApp.appointmentDate));
-                    }
+            const cId = rescheduleApp.clinicId?._id || (typeof rescheduleApp.clinicId === 'string' ? rescheduleApp.clinicId : '') || rescheduleApp.clinicId?.toString?.() || '';
+            const dId = rescheduleApp.doctorId?._id || (typeof rescheduleApp.doctorId === 'string' ? rescheduleApp.doctorId : '') || rescheduleApp.doctorId?.toString?.() || '';
+            const qId = rescheduleApp.queueId?._id || (typeof rescheduleApp.queueId === 'string' ? rescheduleApp.queueId : '') || rescheduleApp.queueId?.toString?.() || rescheduleApp._id?.toString?.() || '';
+
+            setFormData(prev => ({
+                ...prev,
+                clinicId: cId || prev.clinicId,
+                doctorId: dId || prev.doctorId,
+                appointmentType: rescheduleApp.appointmentType || prev.appointmentType,
+                reason: rescheduleApp.reason !== undefined ? rescheduleApp.reason : prev.reason,
+                rescheduleAppointmentId: qId || prev.rescheduleAppointmentId
+            }));
+
+            if (rescheduleApp.appointmentDate) {
+                const d = new Date(rescheduleApp.appointmentDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (!isNaN(d.getTime()) && d >= today) {
+                    setSelectedDate(d);
                 }
-            });
+            }
+            setStep(3);
         }
-        return () => { active = false; };
     }, [rescheduleApp]);
+
+    // Fallback: match clinic by name if clinicId was not resolved from object
+    useEffect(() => {
+        if (rescheduleApp && !formData.clinicId && clinics.length > 0) {
+            const nameToFind = rescheduleApp.clinicName || rescheduleApp.clinicId?.name;
+            if (nameToFind) {
+                const matched = clinics.find(c => c.name?.toLowerCase().trim() === nameToFind.toLowerCase().trim());
+                if (matched) {
+                    setFormData(prev => ({ ...prev, clinicId: matched._id }));
+                }
+            }
+        }
+    }, [clinics, rescheduleApp, formData.clinicId]);
+
+    // Fallback: match doctor by name once doctors list is available
+    useEffect(() => {
+        if (rescheduleApp && !formData.doctorId && doctors.length > 0) {
+            const nameToFind = rescheduleApp.doctorName || rescheduleApp.doctorId?.name;
+            if (nameToFind) {
+                const clean = nameToFind.replace(/^Dr\.?\s*/i, '').trim().toLowerCase();
+                const matched = doctors.find(d => d.name?.toLowerCase().includes(clean) || clean.includes(d.name?.toLowerCase()));
+                if (matched) {
+                    setFormData(prev => ({ ...prev, doctorId: matched._id }));
+                }
+            }
+        }
+    }, [doctors, rescheduleApp, formData.doctorId]);
 
     // Generate date strip for Step 3
     const dateStrip = useMemo(() => {
@@ -119,8 +175,31 @@ const BookAppointment = () => {
         }
     }, [formData.clinicId]);
 
-    const getSelectedClinic = () => clinics.find(c => c._id === formData.clinicId);
-    const getSelectedDoctor = useCallback(() => doctors.find(d => d._id === formData.doctorId), [doctors, formData.doctorId]);
+    const getSelectedClinic = useCallback(() => {
+        const found = clinics.find(c => c._id === formData.clinicId);
+        if (found) return found;
+        if (rescheduleApp) {
+            return {
+                _id: formData.clinicId,
+                name: rescheduleApp.clinicName || rescheduleApp.clinicId?.name || 'Clinic Facility',
+                address: rescheduleApp.clinicAddress || rescheduleApp.clinicId?.address || 'Clinical Facility'
+            };
+        }
+        return null;
+    }, [clinics, formData.clinicId, rescheduleApp]);
+
+    const getSelectedDoctor = useCallback(() => {
+        const found = doctors.find(d => d._id === formData.doctorId);
+        if (found) return found;
+        if (rescheduleApp) {
+            return {
+                _id: formData.doctorId,
+                name: rescheduleApp.doctorName || rescheduleApp.doctorId?.name || 'Consultant Specialist',
+                specialization: rescheduleApp.doctorSpecialization || rescheduleApp.doctorId?.specialization || 'Specialist'
+            };
+        }
+        return null;
+    }, [doctors, formData.doctorId, rescheduleApp]);
 
     const getClinicTimingConfig = useCallback(() => {
         const selectedClinic = clinics.find(c => c._id === formData.clinicId) || {};
@@ -303,18 +382,26 @@ const BookAppointment = () => {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="px-2.5 py-0.5 bg-teal-50 text-teal-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-teal-100">
-                                {step === 4 ? 'Final Review' : `Step ${step}/4`}
+                                {rescheduleApp ? (step === 4 ? 'Review Reschedule' : 'Step 1/2 • Pick Date & Slot') : (step === 4 ? 'Final Review' : `Step ${step}/4`)}
                             </span>
                         </div>
                         <h1 className="text-xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                            Book Appointment <span className="text-teal-600 hidden md:inline">.</span>
+                            {rescheduleApp ? 'Reschedule Appointment' : 'Book Appointment'} <span className="text-teal-600 hidden md:inline">.</span>
                         </h1>
-                        <p className="text-slate-400 font-bold text-[11px] md:text-[14px] mt-0.5 uppercase tracking-[0.15em] hidden sm:block">Schedule your next clinical consultation.</p>
+                        <p className="text-slate-400 font-bold text-[11px] md:text-[14px] mt-0.5 uppercase tracking-[0.15em] hidden sm:block">
+                            {rescheduleApp ? 'Pick a new date and convenient time slot for your consultation.' : 'Schedule your next clinical consultation.'}
+                        </p>
                     </div>
 
                     {step > 1 && (
                         <button
-                            onClick={() => setStep(step - 1)}
+                            onClick={() => {
+                                if (rescheduleApp && step === 3) {
+                                    navigate('/patient/dashboard');
+                                } else {
+                                    setStep(step - 1);
+                                }
+                            }}
                             className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-teal-600 hover:border-teal-100 transition-all shadow-sm active:scale-95 font-black text-xs uppercase tracking-widest shrink-0"
                         >
                             <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -325,8 +412,8 @@ const BookAppointment = () => {
 
                 {/* Progress Tracker - Responsive */}
                 <div className="grid grid-cols-4 gap-1.5 md:gap-4 mb-5 md:mb-12">
-                    <StepBar num={1} label="Clinic" active={step >= 1} current={step === 1} />
-                    <StepBar num={2} label="Doctor" active={step >= 2} current={step === 2} />
+                    <StepBar num={1} label="Clinic" active={step >= 1 || !!rescheduleApp} current={step === 1} />
+                    <StepBar num={2} label="Doctor" active={step >= 2 || !!rescheduleApp} current={step === 2} />
                     <StepBar num={3} label="Time" active={step >= 3} current={step === 3} />
                     <StepBar num={4} label="Confirm" active={step >= 4} current={step === 4} />
                 </div>
@@ -517,17 +604,45 @@ const BookAppointment = () => {
                     {step === 3 && (
                         <div className="space-y-5">
 
-                            {/* Rescheduling Banner */}
+                            {/* Reschedule Overview Card */}
                             {formData.rescheduleAppointmentId && (
-                                <div className="flex items-center gap-3 p-4 bg-teal-50 border border-teal-100 rounded-2xl animate-in fade-in duration-300">
-                                    <div className="w-9 h-9 bg-teal-600 rounded-xl flex items-center justify-center text-white shrink-0">
-                                        <Clock size={16} />
+                                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 p-5 md:p-6 rounded-3xl text-white shadow-xl border border-teal-500/20 relative overflow-hidden animate-in fade-in duration-300">
+                                    <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+                                        <Calendar size={120} />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-black text-slate-900 text-sm">Rescheduling Visit</h4>
-                                        <p className="text-[14px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Select your new preferred slot below</p>
+                                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div className="space-y-2">
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/20 border border-teal-400/30 rounded-full text-teal-300 text-[11px] font-black uppercase tracking-wider">
+                                                <Clock size={12} className="animate-pulse" /> Rescheduling Appointment
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl md:text-2xl font-black tracking-tight">
+                                                    {getSelectedClinic()?.name || 'Clinic Consultation'}
+                                                </h3>
+                                                <p className="text-teal-300 text-sm font-bold flex items-center gap-1.5 mt-0.5">
+                                                    <Stethoscope size={15} />
+                                                    Dr. {getSelectedDoctor()?.name || 'Specialist'}
+                                                    {getSelectedDoctor()?.specialization && (
+                                                        <span className="text-xs text-slate-400 font-semibold">• {getSelectedDoctor()?.specialization}</span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                            {rescheduleApp?.appointmentDate && (
+                                                <p className="text-xs text-slate-400 font-medium">
+                                                    Original Date: <span className="text-slate-300 font-semibold">{new Date(rescheduleApp.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 self-start md:self-center">
+                                            <button
+                                                onClick={() => setStep(1)}
+                                                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-xs font-black text-slate-200 uppercase tracking-wider transition-all active:scale-95"
+                                            >
+                                                Change Clinic/Dr
+                                            </button>
+                                        </div>
                                     </div>
-                                    <span className="shrink-0 px-2.5 py-1 bg-teal-600 text-white text-[14px] font-black uppercase tracking-widest rounded-xl">Active</span>
                                 </div>
                             )}
 
@@ -539,13 +654,32 @@ const BookAppointment = () => {
                                             <CalendarDays size={16} />
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-black text-slate-900">Choose Date</h3>
-                                            <p className="text-[14px] font-bold text-slate-400 uppercase tracking-wider">
-                                                Today: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            <h3 className="text-sm font-black text-slate-900">Choose New Date</h3>
+                                            <p className="text-xs font-bold text-slate-400">
+                                                Selected: {selectedDate.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-[14px] font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full uppercase tracking-widest border border-teal-100">14 Days</span>
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-[11px] font-black text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-xl uppercase tracking-wider border border-teal-100 cursor-pointer flex items-center gap-1.5 transition-colors">
+                                            <Calendar size={13} />
+                                            <span>Pick Date</span>
+                                            <input
+                                                type="date"
+                                                min={new Date().toISOString().split('T')[0]}
+                                                className="sr-only"
+                                                value={selectedDate.toISOString().split('T')[0]}
+                                                onChange={(e) => {
+                                                    if (e.target.value) {
+                                                        const [y, m, d] = e.target.value.split('-').map(Number);
+                                                        const newD = new Date(y, m - 1, d);
+                                                        setSelectedDate(newD);
+                                                        setFormData(prev => ({ ...prev, appointmentDate: '' }));
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
 
                                 {/* Date Strip – tight, scrollable */}
@@ -561,7 +695,7 @@ const BookAppointment = () => {
                                                     : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white'
                                                     }`}
                                             >
-                                                <span className={`text-[14px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-300'}`}>
+                                                <span className={`text-[11px] font-black uppercase tracking-widest mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-300'}`}>
                                                     {idx === 0 ? 'Today' : WEEKDAY_MAP[date.getDay()].slice(0, 3)}
                                                 </span>
                                                 <span className="text-lg font-black leading-none">{date.getDate()}</span>
@@ -874,7 +1008,7 @@ const BookAppointment = () => {
                         disabled={loading}
                         className="w-full py-7 bg-teal-600 hover:bg-teal-700 text-white rounded-[2.5rem] font-black text-[14px] uppercase tracking-[0.3em] shadow-2xl shadow-teal-600/30 flex items-center justify-center gap-5 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        {loading ? <Loader className="animate-spin" size={24} /> : <><CheckCircle size={24} /> Finalize Appointment</>}
+                        {loading ? <Loader className="animate-spin" size={24} /> : <><CheckCircle size={24} /> {formData.rescheduleAppointmentId ? 'Confirm Reschedule' : 'Finalize Appointment'}</>}
                     </button>
                     </div>
                 </div>
