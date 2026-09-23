@@ -208,7 +208,7 @@ const PatientDashboard = () => {
   }, [patientData, appointments]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-body">
+    <div className="w-full text-slate-800 font-body">
       <SEO title="Patient Hub - Appointory" />
 
       {/* Top Header Navigation */}

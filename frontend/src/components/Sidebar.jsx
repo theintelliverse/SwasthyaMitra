@@ -284,10 +284,19 @@ const Sidebar = ({ role = 'lab' }) => {
         </div>
       </aside>
 
-      {/* Mobile & Tablet Bottom Navigation - Permanently Sticky at Bottom of Screen */}
+      {/* Mobile & Tablet Bottom Navigation - Permanently Docked at Bottom of Screen (Native App Shell) */}
       <nav 
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/80 flex items-center justify-around z-50 px-2 pt-1.5 pb-[max(8px,env(safe-area-inset-bottom,8px))] shadow-[0_-8px_30px_rgba(15,23,42,0.08)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 flex items-center justify-around z-[100] px-2 pt-1.5 pb-[max(10px,env(safe-area-inset-bottom,10px))] shadow-[0_-8px_30px_rgba(15,23,42,0.08)] transform-gpu"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)'
+        }}
       >
         <div className="flex items-center justify-around w-full max-w-md mx-auto gap-0.5">
           {menuItems.map((item) => {
@@ -375,13 +384,12 @@ const Sidebar = ({ role = 'lab' }) => {
               onClick={() => { navigate('/profile'); setShowQuickActions(false); }} 
             />
 
-            <a 
-              href="tel:+919876543210" 
-              className="col-span-2 mt-2 w-full flex items-center justify-center gap-2.5 px-4 py-4 bg-red-50 text-red-600 rounded-xl font-black text-[14px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 text-center"
+            <button 
+              className="col-span-2 mt-2 w-full flex items-center justify-center gap-2.5 px-4 py-4 bg-red-50 text-red-600 rounded-xl font-black text-[14px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 text-center cursor-pointer"
             >
               <Bell size={14} className="animate-bounce" />
               Emergency Support
-            </a>
+            </button>
           </div>
         </div>
       )}

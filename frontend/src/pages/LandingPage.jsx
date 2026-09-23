@@ -17,7 +17,9 @@ import {
   ChevronUp,
   Sparkles,
   ShieldCheck,
+  FolderHeart,
   ArrowRight,
+  ArrowUp,
   Activity,
   TrendingUp,
   BarChart3,
@@ -35,19 +37,21 @@ import {
   Zap,
   Building2,
   DollarSign,
-  Percent,
-  Calendar
+  Copy,
+  Maximize2,
+  Minimize2,
+  X
 } from 'lucide-react';
 
 import { API_URL } from '../config/runtime';
 
-// Minimal fallback mock clinics used when backend data is unavailable
+// Fallback clinics showing realistic active OPD queues
 const MOCK_CLINICS = [
-  { id: 'm1', name: 'City Care Clinic', clinicCode: 'CCC01', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
-  { id: 'm2', name: 'Green Valley Health', clinicCode: 'GVH02', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
-  { id: 'm3', name: 'Sunrise Clinic', clinicCode: 'SC03', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
-  { id: 'm4', name: 'City Diagnostics', clinicCode: 'CD04', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] },
-  { id: 'm5', name: 'Community Health', clinicCode: 'CH05', isReal: false, activeToken: '#00', patients: [{ name: 'Walk-ins Welcome', time: 'Ready', active: false }] }
+  { id: 'm1', name: 'Apex Multi-Speciality Clinic', clinicCode: 'APX-01', isReal: true, activeToken: 'A-14', waitingCount: 3, patients: [{ name: 'Token A-14', time: 'In Cabin', active: true }] },
+  { id: 'm2', name: 'Dr. Anita Gupta Family Clinic', clinicCode: 'DAG-02', isReal: true, activeToken: 'B-08', waitingCount: 2, patients: [{ name: 'Token B-08', time: 'In Cabin', active: true }] },
+  { id: 'm3', name: 'Airmed Diagnostic & Path Lab', clinicCode: 'ADL-03', isReal: true, activeToken: 'L-22', waitingCount: 5, patients: [{ name: 'Token L-22', time: 'Processing', active: true }] },
+  { id: 'm4', name: 'Sanjivani Polyclinic & Care', clinicCode: 'SPC-04', isReal: true, activeToken: 'A-05', waitingCount: 1, patients: [{ name: 'Token A-05', time: 'In Cabin', active: true }] },
+  { id: 'm5', name: 'Metro Healthcare & Diagnostics', clinicCode: 'MHD-05', isReal: true, activeToken: 'C-19', waitingCount: 4, patients: [{ name: 'Token C-19', time: 'In Cabin', active: true }] }
 ];
 
 const LandingPage = () => {
@@ -134,6 +138,29 @@ const LandingPage = () => {
 
   // 6. Accessible FAQ Accordion State (AEO & AI Search)
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  // 7. Modals & Interactive Viewers
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showTvFullscreenModal, setShowTvFullscreenModal] = useState(false);
+  const [copiedRx, setCopiedRx] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [liveTime, setLiveTime] = useState(() => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const clockTimer = setInterval(() => {
+      setLiveTime(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(clockTimer);
+    };
+  }, []);
 
   // Grand Stepper Tracker computation
   const questProgress = useMemo(() => {
@@ -485,6 +512,27 @@ const LandingPage = () => {
     }
   };
 
+  const handleCopyPrescription = () => {
+    const current = doctorTemplates[selectedTemplateKey];
+    if (!current) return;
+    const text = `PRESCRIPTION - APPOINTORY CLINICAL EMR
+Condition: ${current.title}
+Vitals: ${current.vitals}
+Complaints: ${current.complaint}
+
+MEDICATIONS:
+${current.rx.map(m => `- ${m.name} | ${m.dosage} | ${m.duration} (${m.note})`).join('\n')}
+
+Advice: ${current.advice}
+Doctor: Dr. Anita Gupta (Reg: MCI-49210-A)`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    }
+    setCopiedRx(true);
+    setTimeout(() => setCopiedRx(false), 2200);
+  };
+
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "MedicalOrganization",
@@ -721,39 +769,52 @@ const LandingPage = () => {
         url="/"
         schemaMarkup={[organizationSchema, softwareAppSchema, breadcrumbSchema, faqSchema, howToSchema, ...serviceSchemas]}
       />
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-7xl mx-auto border-b border-sandstone/30">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8.5 h-8.5 rounded-xl flex items-center justify-center shadow-md shadow-marigold/20 overflow-hidden">
-            <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
+      {/* Sticky Navigation Bar with Glassmorphism */}
+      <nav className="sticky top-0 z-40 bg-parchment/90 backdrop-blur-xl border-b border-sandstone/30 transition-all duration-200">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="w-8.5 h-8.5 rounded-xl flex items-center justify-center shadow-md shadow-marigold/20 overflow-hidden border border-sandstone/30">
+              <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h1 className="font-heading text-base sm:text-xl tracking-tight font-black text-teak leading-none">
+                Appointory
+              </h1>
+              <span className="text-[8.5px] uppercase font-mono font-bold tracking-widest text-emerald-700">Healthcare OS</span>
+            </div>
           </div>
-          <h1 className="font-heading text-base sm:text-xl tracking-tight font-black text-teak">
-            Appointory
-          </h1>
-        </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <a
-            href="#features"
-            aria-label="Learn how Appointory works"
-            className="text-[9.5px] font-black uppercase tracking-widest hover:text-marigold transition-colors hidden md:block"
-          >
-            How it works
-          </a>
-          <button
-            onClick={() => navigate('/lab/login')}
-            aria-label="Lab Portal Login"
-            className="px-4 py-2 border border-blue-200 text-blue-700 bg-blue-50 rounded-full text-[9.5px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer hidden sm:block"
-          >
-            🔬 Lab Portal
-          </button>
-          <button
-            onClick={() => navigate('/login')}
-            aria-label="Staff Portal Login"
-            className="px-5 py-2 bg-teak text-parchment rounded-full text-[9.5px] font-black uppercase tracking-widest hover:bg-marigold transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            Staff Portal
-          </button>
+          {/* Quick Jump Links */}
+          <div className="hidden lg:flex items-center gap-6">
+            <a href="#capabilities" className="text-xs font-bold text-teak/80 hover:text-emerald-700 transition-colors uppercase tracking-wider">Capabilities</a>
+            <a href="#features" className="text-xs font-bold text-teak/80 hover:text-emerald-700 transition-colors uppercase tracking-wider">How It Works</a>
+            <a href="#faq" className="text-xs font-bold text-teak/80 hover:text-emerald-700 transition-colors uppercase tracking-wider">FAQ</a>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => navigate('/patient/login')}
+              aria-label="Patient Health Locker Login"
+              className="px-3.5 py-1.5 border border-teal-300 text-teal-800 bg-teal-50/70 hover:bg-teal-600 hover:text-white rounded-full text-xs font-bold tracking-wide transition-all shadow-2xs active:scale-95 cursor-pointer hidden md:flex items-center gap-1.5"
+            >
+              <span>🩺</span> Health Locker
+            </button>
+            <button
+              onClick={() => navigate('/lab/login')}
+              aria-label="Diagnostic Lab Portal Login"
+              className="px-3.5 py-1.5 border border-cyan-200 text-cyan-800 bg-cyan-50/70 hover:bg-cyan-700 hover:text-white rounded-full text-xs font-bold tracking-wide transition-all shadow-2xs active:scale-95 cursor-pointer hidden sm:flex items-center gap-1.5"
+            >
+              <span>🔬</span> Lab Portal
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              aria-label="Staff Portal Login"
+              className="px-4.5 py-1.5 bg-teak text-parchment hover:bg-emerald-700 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Staff Portal</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -901,42 +962,36 @@ const LandingPage = () => {
                 }}
                 onTransitionEnd={handleTransitionEnd}
               >
-                {extendedClinics.map((clinic, index) => {
-                  const hasActiveToken = clinic.activeToken !== '#00' && clinic.activeToken !== 'T-00';
-
-                  return (
-                    <div
-                      key={`${clinic.id}-${index}`}
-                      style={{
-                        height: `calc(${100 / 3}% - 7px)`
-                      }}
-                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all ${hasActiveToken
-                        ? 'bg-parchment border-marigold'
-                        : 'bg-white border-sandstone opacity-60'
-                        } flex justify-between items-center flex-shrink-0`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${hasActiveToken ? 'bg-marigold animate-pulse' : 'bg-sandstone'
-                            }`}
-                        ></div>
-                        <div className="min-w-0">
-                          <p className={`text-[11.5px] sm:text-[11.5px] font-bold truncate ${hasActiveToken ? 'text-teak' : 'text-khaki'
-                            }`}>
-                            {clinic.name}
-                          </p>
-                          <p className="text-[11.5px] sm:text-[11.5px] text-khaki font-medium">
-                            Code: {clinic.clinicCode}
-                          </p>
-                        </div>
+                {extendedClinics.map((clinic, index) => (
+                  <div
+                    key={`${clinic.id}-${index}`}
+                    style={{
+                      height: `calc(${100 / 3}% - 7px)`
+                    }}
+                    className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-emerald-500/20 bg-white/95 shadow-xs flex justify-between items-center flex-shrink-0 hover:border-emerald-500/50 transition-all"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="relative flex h-2.5 w-2.5 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                          {clinic.name}
+                        </p>
+                        <p className="text-[10px] text-khaki font-mono font-medium">
+                          Facility: {clinic.clinicCode} • Live Queue
+                        </p>
                       </div>
+                    </div>
 
-                      <span className="text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-widest bg-sandstone/20 px-1.5 sm:px-2 py-0.5 rounded flex-shrink-0">
-                        {hasActiveToken ? `Token ${clinic.activeToken}` : 'Ready'}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10.5px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-1 rounded-lg">
+                        Token #{clinic.activeToken}
                       </span>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -2093,13 +2148,12 @@ const LandingPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveFeatureTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? 'bg-marigold text-white shadow-md shadow-marigold/30 scale-102'
-                      : 'bg-white/80 hover:bg-white text-teak border border-sandstone/40 hover:border-marigold/60'
-                  }`}
+                  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 cursor-pointer select-none ${isActive
+                    ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-700/30 scale-[1.04]'
+                    : 'bg-white hover:bg-emerald-50 text-teak border border-sandstone/50 hover:border-emerald-500/60 hover:text-emerald-800'
+                    }`}
                 >
-                  <TabIcon size={16} />
+                  <TabIcon size={16} className={isActive ? 'text-emerald-200' : ''} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -2124,6 +2178,28 @@ const LandingPage = () => {
                   <p className="text-khaki text-sm mt-2 leading-relaxed">
                     Our dynamic Poisson distribution algorithm analyzes active token velocity, doctor specialty, patient rush coefficient, and consultation complexity in real-time.
                   </p>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-bold text-khaki uppercase tracking-wider">Presets:</span>
+                  {[
+                    { label: 'Morning OPD (4 pts)', count: 4, pace: 6, rush: 1.0 },
+                    { label: 'Afternoon (8 pts)', count: 8, pace: 10, rush: 1.15 },
+                    { label: 'Evening Peak (16 pts)', count: 16, pace: 12, rush: 1.35 },
+                  ].map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setCalcPatients(p.count);
+                        setCalcPace(p.pace);
+                        setCalcRushFactor(p.rush);
+                      }}
+                      className="px-2.5 py-1 bg-sandstone/15 hover:bg-sandstone/30 text-teak text-[10.5px] font-bold rounded-lg transition-colors cursor-pointer"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Interactive Sliders */}
@@ -2154,11 +2230,10 @@ const LandingPage = () => {
                         <button
                           key={item.pace}
                           onClick={() => setCalcPace(item.pace)}
-                          className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                            calcPace === item.pace
-                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                              : 'bg-white text-teak border-sandstone/30 hover:border-emerald-500'
-                          }`}
+                          className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${calcPace === item.pace
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                            : 'bg-white text-teak border-sandstone/30 hover:border-emerald-500'
+                            }`}
                         >
                           {item.label}
                         </button>
@@ -2177,11 +2252,10 @@ const LandingPage = () => {
                         <button
                           key={item.factor}
                           onClick={() => setCalcRushFactor(item.factor)}
-                          className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                            calcRushFactor === item.factor
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                              : 'bg-white text-teak border-sandstone/30 hover:border-indigo-500'
-                          }`}
+                          className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${calcRushFactor === item.factor
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                            : 'bg-white text-teak border-sandstone/30 hover:border-indigo-500'
+                            }`}
                         >
                           {item.label}
                         </button>
@@ -2202,21 +2276,39 @@ const LandingPage = () => {
 
                 <div className="flex justify-between items-center pb-4 border-b border-slate-800">
                   <span className="text-xs uppercase font-bold tracking-widest text-slate-400">Live AI Output</span>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    congestionLevel === 'Smooth Flow' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${congestionLevel === 'Smooth Flow' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
                     congestionLevel === 'Moderate Flow' ? 'bg-amber-950 text-amber-400 border border-amber-800' :
-                    'bg-rose-950 text-rose-400 border border-rose-800'
-                  }`}>
+                      'bg-rose-950 text-rose-400 border border-rose-800'
+                    }`}>
                     {congestionLevel}
                   </span>
                 </div>
 
-                <div className="py-6 text-center">
+                <div className="py-4 text-center">
                   <p className="text-xs uppercase font-bold tracking-wider text-slate-400">Estimated Patient Wait Time</p>
-                  <div className="text-5xl sm:text-6xl font-heading font-black text-white mt-2">
-                    {predictedWaitMins} <span className="text-2xl font-body font-normal text-slate-400">mins</span>
+
+                  {/* Radial SVG Gauge */}
+                  <div className="relative w-40 h-40 mx-auto my-3 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" className="text-slate-800" fill="transparent" />
+                      <circle
+                        cx="50" cy="50" r="40"
+                        stroke="currentColor" strokeWidth="8"
+                        strokeDasharray={251.3}
+                        strokeDashoffset={251.3 - (Math.min(100, (predictedWaitMins / 120) * 100) / 100) * 251.3}
+                        strokeLinecap="round"
+                        className={`transition-all duration-700 ${predictedWaitMins > 90 ? 'text-rose-500' : predictedWaitMins > 45 ? 'text-amber-400' : 'text-emerald-400'
+                          }`}
+                        fill="transparent"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center text-center">
+                      <span className="text-4xl sm:text-5xl font-heading font-black text-white">{predictedWaitMins}</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 -mt-1">Minutes</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-emerald-400 font-semibold mt-2">
+
+                  <p className="text-xs text-emerald-400 font-semibold">
                     Arrival window: {Math.max(5, predictedWaitMins - 15)} to {predictedWaitMins + 5} mins from now
                   </p>
                 </div>
@@ -2270,16 +2362,14 @@ const LandingPage = () => {
                     <div
                       key={item.id}
                       onClick={() => setBillingItems(billingItems.map(i => i.id === item.id ? { ...i, selected: !i.selected } : i))}
-                      className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                        item.selected
-                          ? 'bg-white border-marigold/80 shadow-sm'
-                          : 'bg-white/40 border-sandstone/20 opacity-60'
-                      }`}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${item.selected
+                        ? 'bg-white border-marigold/80 shadow-sm'
+                        : 'bg-white/40 border-sandstone/20 opacity-60'
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold ${
-                          item.selected ? 'bg-marigold text-white' : 'border border-sandstone text-transparent'
-                        }`}>
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold ${item.selected ? 'bg-marigold text-white' : 'border border-sandstone text-transparent'
+                          }`}>
                           ✓
                         </div>
                         <span className="text-xs font-bold text-teak">{item.name}</span>
@@ -2298,11 +2388,10 @@ const LandingPage = () => {
                         <button
                           key={rate}
                           onClick={() => setBillingGstRate(rate)}
-                          className={`py-1.5 font-bold text-xs rounded-lg border transition-all cursor-pointer ${
-                            billingGstRate === rate
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                              : 'bg-white text-teak border-sandstone/30'
-                          }`}
+                          className={`py-1.5 font-bold text-xs rounded-lg border transition-all cursor-pointer ${billingGstRate === rate
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                            : 'bg-white text-teak border-sandstone/30'
+                            }`}
                         >
                           {rate}%
                         </button>
@@ -2380,6 +2469,7 @@ const LandingPage = () => {
                   <button
                     onClick={() => {
                       setInvoiceDownloaded(true);
+                      setShowReceiptModal(true);
                       setTimeout(() => setInvoiceDownloaded(false), 2500);
                     }}
                     className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-emerald-600/20"
@@ -2560,11 +2650,10 @@ const LandingPage = () => {
 
                   <button
                     onClick={playChimeSound}
-                    className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      tvChimePlaying
-                        ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 scale-102'
-                        : 'bg-white text-teak border border-sandstone/30 hover:border-amber-500'
-                    }`}
+                    className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${tvChimePlaying
+                      ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 scale-102'
+                      : 'bg-white text-teak border border-sandstone/30 hover:border-amber-500'
+                      }`}
                   >
                     <Volume2 size={16} className={tvChimePlaying ? 'animate-bounce' : ''} />
                     <span>{tvChimePlaying ? 'Playing Lobby Chime...' : 'Test Audio Chime Tone'}</span>
@@ -2578,6 +2667,22 @@ const LandingPage = () => {
                     className="w-full py-3 px-4 bg-marigold hover:bg-marigold/90 text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-marigold/20"
                   >
                     <span>Call Next Token (#A-{tvTokenCall + 1})</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowTvFullscreenModal(true);
+                      playChimeSound();
+                    }}
+                    className="w-full py-3.5 px-4 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 transition-all duration-300 cursor-pointer relative overflow-hidden group"
+                    style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)', border: '1px solid rgba(251,191,36,0.35)', boxShadow: '0 0 0 0 rgba(251,191,36,0)', color: '#fbbf24' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 24px rgba(251,191,36,0.25), inset 0 1px 0 rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.3)'}
+                  >
+                    <span className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/8 to-amber-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    <Maximize2 size={16} className="text-amber-300 group-hover:scale-110 transition-transform duration-200" />
+                    <span className="relative z-10">Launch Fullscreen TV Monitor Simulator</span>
+                    <span className="ml-auto text-amber-400/50 text-[10px] font-mono">HDTV</span>
                   </button>
                 </div>
 
@@ -2596,7 +2701,19 @@ const LandingPage = () => {
                     <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
                     <span className="font-heading font-black text-sm tracking-wide text-white">METRO CLINIC OPD LOBBY</span>
                   </div>
-                  <span className="font-mono text-xs text-slate-400">TV DISPLAY MODE</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-slate-400 hidden sm:inline">TV DISPLAY MODE</span>
+                    <button
+                      onClick={() => {
+                        setShowTvFullscreenModal(true);
+                        playChimeSound();
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-400/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Maximize2 size={12} />
+                      <span>Fullscreen</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* TV Main Body */}
@@ -2660,11 +2777,10 @@ const LandingPage = () => {
                     <button
                       key={tpl.key}
                       onClick={() => setSelectedTemplateKey(tpl.key)}
-                      className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                        selectedTemplateKey === tpl.key
-                          ? 'bg-emerald-700 text-white border-emerald-700 shadow-md'
-                          : 'bg-white text-teak border-sandstone/30 hover:border-emerald-600'
-                      }`}
+                      className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${selectedTemplateKey === tpl.key
+                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-md'
+                        : 'bg-white text-teak border-sandstone/30 hover:border-emerald-600'
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <span>{tpl.icon}</span>
@@ -2691,9 +2807,19 @@ const LandingPage = () => {
                     <h4 className="text-lg font-black text-teak mt-0.5">{doctorTemplates[selectedTemplateKey].title}</h4>
                     <p className="text-xs text-khaki font-mono mt-0.5">{doctorTemplates[selectedTemplateKey].vitals}</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-khaki uppercase font-bold block">Patient Record</span>
-                    <span className="text-xs font-bold text-teak font-mono">#P-2026-9041</span>
+                  <div className="text-right flex flex-col items-end gap-1.5">
+                    <div>
+                      <span className="text-[10px] text-khaki uppercase font-bold block">Patient Record</span>
+                      <span className="text-xs font-bold text-teak font-mono">#P-2026-9041</span>
+                    </div>
+                    <button
+                      onClick={handleCopyPrescription}
+                      className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                      title="Copy Rx text to clipboard"
+                    >
+                      {copiedRx ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                      <span>{copiedRx ? 'Copied!' : 'Copy Rx'}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -2921,9 +3047,8 @@ const LandingPage = () => {
                   <span className="font-heading font-black text-teak text-base sm:text-lg leading-snug">
                     {item.q}
                   </span>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${
-                    isOpen ? 'bg-marigold text-white border-marigold' : 'bg-sandstone/15 text-khaki border-sandstone/30'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${isOpen ? 'bg-marigold text-white border-marigold' : 'bg-sandstone/15 text-khaki border-sandstone/30'
+                    }`}>
                     {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
                 </button>
@@ -2972,47 +3097,402 @@ const LandingPage = () => {
       {/* ══════════════════════════════════════════════════════════════════════
           SECTION 4: HIGH-CONVERSION PLATFORM CTA BANNER
           ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white rounded-3xl p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden shadow-2xl border border-slate-800">
-          <div className="absolute -top-24 -left-24 w-80 h-80 bg-marigold/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <section className="py-20 px-4 sm:px-6 max-w-7xl mx-auto" id="get-started">
+        <div className="relative rounded-[2.5rem] overflow-hidden text-white shadow-[0_40px_80px_-20px_rgba(6,20,16,0.75)] border border-white/8"
+          style={{ background: 'linear-gradient(135deg, #061410 0%, #0a2218 25%, #0d3327 50%, #072e20 75%, #041410 100%)' }}
+        >
+          {/* Layered ambient glow orbs */}
+          <div className="absolute -top-40 -left-40 w-[480px] h-[480px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)' }} />
+          <div className="absolute -bottom-40 -right-40 w-[480px] h-[480px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(45,155,111,0.08) 0%, transparent 70%)' }} />
+          {/* Dot grid texture */}
+          <div className="absolute inset-0 pointer-events-none opacity-30" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          {/* Horizontal separator glow */}
+          <div className="absolute top-0 left-1/4 right-1/4 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent)' }} />
 
-          <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-            <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-marigold text-xs font-bold uppercase tracking-widest inline-block">
-              Get Started with Appointory Today
-            </span>
+          <div className="relative z-10 p-8 sm:p-14 lg:p-16">
+            {/* Top badge */}
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest border backdrop-blur-md"
+                style={{ background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(52,211,153,0.35)', color: '#6ee7b7' }}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                <span>Get Started with Appointory Today</span>
+              </div>
+            </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight text-white leading-tight">
-              Ready to Modernize Your Clinic, Diagnostic Lab, or Practice?
-            </h2>
+            {/* Headline */}
+            <div className="text-center max-w-3xl mx-auto mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight leading-tight mb-5">
+                Ready to Modernize Your{' '}
+                <span style={{ background: 'linear-gradient(90deg, #34d399, #5eead4, #34d399)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Clinic, Lab, or Practice?
+                </span>
+              </h2>
+              <p className="text-base sm:text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: 'rgba(209,250,229,0.75)' }}>
+                Join hundreds of medical practitioners, polyclinics, pathology centers, and thousands of patients experiencing{' '}
+                <span style={{ color: '#6ee7b7', fontWeight: 700 }}>zero waiting room delays</span>,{' '}
+                <span style={{ color: '#6ee7b7', fontWeight: 700 }}>automated GST billing</span>, and{' '}
+                <span style={{ color: '#6ee7b7', fontWeight: 700 }}>secure health lockers</span>.
+              </p>
+            </div>
 
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-medium">
-              Join hundreds of medical practitioners, polyclinics, pathology centers, and thousands of patients experiencing zero waiting room delays, automated GST billing, and secure health lockers.
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-3 pt-4">
+            {/* Three premium action cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-10">
+              {/* Card 1: Clinic */}
               <button
                 onClick={() => navigate('/login')}
-                className="px-8 py-3.5 bg-marigold hover:bg-marigold/90 text-white rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg shadow-marigold/30 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="group relative flex flex-col items-center gap-3.5 p-6 rounded-2xl font-black text-sm text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))', boxShadow: '0 0 0 1px rgba(52,211,153,0.35), 0 16px 40px rgba(5,150,105,0.45)', color: '#022c22' }}
               >
-                Register Clinic / Staff Login
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.25), transparent)' }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.25)' }}>
+                  <Building2 size={22} style={{ color: '#022c22' }} />
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(2,44,34,0.7)' }}>For Clinics &amp; Hospitals</div>
+                  <div className="text-base font-black">Register Clinic</div>
+                  <div className="text-[11px] font-bold" style={{ color: 'rgba(2,44,34,0.75)' }}>or Staff Login →</div>
+                </div>
               </button>
+
+              {/* Card 2: Lab */}
               <button
                 onClick={() => navigate('/lab/login')}
-                className="px-8 py-3.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg shadow-cyan-700/30 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="group relative flex flex-col items-center gap-3.5 p-6 rounded-2xl font-black text-sm text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(52,211,153,0.3)', color: '#d1fae5', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
               >
-                Diagnostic Lab Portal
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.1), transparent)' }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)' }}>
+                  <FlaskConical size={22} style={{ color: '#5eead4' }} />
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(209,250,229,0.55)' }}>For Pathology Labs</div>
+                  <div className="text-base font-black">Diagnostic Lab Portal</div>
+                  <div className="text-[11px] font-bold" style={{ color: 'rgba(209,250,229,0.65)' }}>NABL-ready integration →</div>
+                </div>
               </button>
+
+              {/* Card 3: Patient */}
               <button
                 onClick={() => navigate('/patient/register')}
-                className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-2xl font-black text-sm uppercase tracking-wider hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="group relative flex flex-col items-center gap-3.5 p-6 rounded-2xl font-black text-sm text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(110,231,183,0.2)', color: '#a7f3d0', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}
               >
-                Free Patient Health Locker
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.07), transparent)' }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  <FolderHeart size={22} style={{ color: '#34d399' }} />
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(167,243,208,0.5)' }}>For Patients</div>
+                  <div className="text-base font-black">Free Health Locker</div>
+                  <div className="text-[11px] font-bold" style={{ color: 'rgba(167,243,208,0.65)' }}>Lifetime secure storage →</div>
+                </div>
               </button>
+            </div>
+
+            {/* Trust strip */}
+            <div className="flex flex-wrap justify-center items-center gap-x-7 gap-y-2 mt-10 text-xs font-semibold" style={{ color: 'rgba(110,231,183,0.6)' }}>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} style={{ color: '#34d399' }} />
+                Setup in under 2 minutes
+              </span>
+              <span className="hidden sm:block w-px h-4" style={{ background: 'rgba(110,231,183,0.2)' }} />
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} style={{ color: '#34d399' }} />
+                No credit card required
+              </span>
+              <span className="hidden sm:block w-px h-4" style={{ background: 'rgba(110,231,183,0.2)' }} />
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} style={{ color: '#34d399' }} />
+                ABDM &amp; GST Compliant
+              </span>
+              <span className="hidden sm:block w-px h-4" style={{ background: 'rgba(110,231,183,0.2)' }} />
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={13} style={{ color: '#34d399' }} />
+                AES-256 Encrypted
+              </span>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          RECEIPT / TAX INVOICE PRINT MODAL
+          ══════════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showReceiptModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-sandstone/30 text-teak my-8 relative"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowReceiptModal(false)}
+                className="absolute top-5 right-5 p-2 rounded-full hover:bg-sandstone/15 text-khaki hover:text-teak transition-colors cursor-pointer"
+                aria-label="Close Receipt"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Receipt Content */}
+              <div id="printable-receipt" className="space-y-4">
+                {/* Header */}
+                <div className="text-center pb-4 border-b border-sandstone/30">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <CheckCircle2 size={13} />
+                    <span>Official Tax Invoice / Bill of Supply</span>
+                  </div>
+                  <h3 className="font-heading text-xl sm:text-2xl font-black text-teak">Apex Multi-Speciality Clinic</h3>
+                  <p className="text-xs text-khaki mt-0.5">Ring Road, Medical Enclave, Ahmedabad, Gujarat 380015</p>
+                  <div className="flex justify-center gap-4 text-[10px] text-khaki font-mono mt-1">
+                    <span>GSTIN: 24AABCU9603R1ZM</span>
+                    <span>ARN: AA24092601920</span>
+                  </div>
+                </div>
+
+                {/* Patient & Invoice Meta */}
+                <div className="grid grid-cols-2 gap-2 text-xs bg-sandstone/10 p-3 rounded-xl border border-sandstone/20">
+                  <div>
+                    <span className="text-[10px] text-khaki uppercase font-bold block">Patient Name</span>
+                    <span className="font-bold text-teak">Mr. Ramesh Patel (42y / M)</span>
+                    <span className="text-[10px] text-khaki block">Token #A-14 • General OPD</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-khaki uppercase font-bold block">Invoice No & Date</span>
+                    <span className="font-mono font-bold text-teak">INV-2026-08492</span>
+                    <span className="text-[10px] text-khaki block">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                </div>
+
+                {/* Itemized Table */}
+                <div className="border border-sandstone/30 rounded-xl overflow-hidden text-xs">
+                  <table className="w-full text-left">
+                    <thead className="bg-sandstone/15 text-teak font-black text-[10px] uppercase border-b border-sandstone/30">
+                      <tr>
+                        <th className="p-2.5">Service Description</th>
+                        <th className="p-2.5 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-sandstone/20">
+                      {billingItems.filter(i => i.selected).map((item) => (
+                        <tr key={item.id}>
+                          <td className="p-2.5 font-medium">{item.name}</td>
+                          <td className="p-2.5 text-right font-mono font-bold text-teak">₹{item.price.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Summary calculation */}
+                <div className="space-y-1.5 text-xs pt-2">
+                  <div className="flex justify-between text-khaki">
+                    <span>Subtotal:</span>
+                    <span className="font-mono">₹{billingSubtotal.toFixed(2)}</span>
+                  </div>
+                  {billingDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>Discount:</span>
+                      <span className="font-mono">-₹{billingDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-khaki">
+                    <span>CGST ({billingGstRate / 2}%):</span>
+                    <span className="font-mono">₹{(billingGstAmount / 2).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-khaki">
+                    <span>SGST ({billingGstRate / 2}%):</span>
+                    <span className="font-mono">₹{(billingGstAmount / 2).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-base font-black text-teak pt-2 border-t border-dashed border-sandstone/40">
+                    <span>Total Amount Due:</span>
+                    <span className="text-marigold font-mono text-lg font-black">₹{billingGrandTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+
+
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 mt-6 pt-4 border-t border-sandstone/20">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-emerald-600/20"
+                >
+                  <Printer size={16} />
+                  <span>Print Tax Invoice</span>
+                </button>
+                <button
+                  onClick={() => setShowReceiptModal(false)}
+                  className="py-3 px-5 bg-sandstone/15 hover:bg-sandstone/25 text-teak rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TV DISPLAY FULLSCREEN MONITOR SIMULATOR
+          ══════════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showTvFullscreenModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-950 text-white flex flex-col justify-between p-4 sm:p-8 select-none overflow-hidden"
+          >
+            {/* Top Bar */}
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+                </span>
+                <div>
+                  <h2 className="font-heading font-black text-lg sm:text-2xl tracking-wide text-white">
+                    APEX MULTI-SPECIALITY OPD LOBBY DISPLAY
+                  </h2>
+                  <p className="text-xs text-slate-400 font-mono">Counter 01 & 02 • Live Token Audio System</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="text-right hidden sm:block">
+                  <div className="font-mono text-xl sm:text-2xl font-black text-amber-400">{liveTime}</div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-widest">Digital Clock Synced</div>
+                </div>
+                <button
+                  onClick={() => setShowTvFullscreenModal(false)}
+                  className="p-2 sm:p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
+                  title="Exit Fullscreen TV Mode"
+                >
+                  <Minimize2 size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Main Center Display Stage */}
+            <div className="grid lg:grid-cols-12 gap-8 my-auto items-center py-6">
+              {/* Calling Token Giant Box */}
+              <div className="lg:col-span-8 bg-slate-900/90 border-2 border-amber-500/40 rounded-3xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-400 animate-pulse"></div>
+
+                <span className="text-sm sm:text-base uppercase font-black tracking-widest text-amber-400/80 block mb-2">
+                  Now Calling Token
+                </span>
+
+                <motion.div
+                  key={tvTokenCall}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-7xl sm:text-9xl font-heading font-black text-amber-400 tracking-tight my-4 drop-shadow-[0_10px_20px_rgba(251,191,36,0.3)]"
+                >
+                  #A-{tvTokenCall}
+                </motion.div>
+
+                <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500/15 border border-emerald-500/40 rounded-full text-base sm:text-xl font-black text-emerald-300">
+                  <span>👉 Please Proceed to Cabin Room 02</span>
+                </div>
+
+                <div className="mt-6 text-slate-300 text-sm sm:text-base font-medium flex items-center justify-center gap-3">
+                  <span>Dr. Anita Gupta</span>
+                  <span className="text-slate-600">•</span>
+                  <span>Senior Consultant Physician</span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-emerald-400">Cabin Ready</span>
+                </div>
+              </div>
+
+              {/* Next In Line Sidebar */}
+              <div className="lg:col-span-4 space-y-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs uppercase font-black tracking-widest text-slate-400">
+                    Next Tokens in Line
+                  </span>
+                  <span className="text-xs text-emerald-400 font-mono font-bold">Estimated 10m/pt</span>
+                </div>
+
+                {[tvTokenCall + 1, tvTokenCall + 2, tvTokenCall + 3, tvTokenCall + 4].map((num, idx) => (
+                  <div
+                    key={num}
+                    className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center"
+                  >
+                    <div>
+                      <span className="font-mono font-black text-xl text-slate-200">#A-{num}</span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">General OPD Queue</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-2.5 py-1 bg-slate-800 rounded-lg text-xs font-bold text-amber-300">
+                        Position #{idx + 1}
+                      </span>
+                      <span className="text-[10px] text-slate-500 block mt-1 font-mono">
+                        ~ {(idx + 1) * 10} Mins
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Controls & Marquee */}
+            <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    setTvTokenCall(prev => prev + 1);
+                    playChimeSound();
+                  }}
+                  className="px-5 py-2.5 bg-marigold hover:bg-marigold/90 text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-md shadow-marigold/20"
+                >
+                  <span>Call Next (#A-{tvTokenCall + 1})</span>
+                </button>
+                <button
+                  onClick={playChimeSound}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+                >
+                  <Volume2 size={16} className={tvChimePlaying ? 'animate-bounce text-amber-400' : ''} />
+                  <span>Re-chime Audio</span>
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-400 font-mono text-center sm:text-right">
+                <span>Appointory TV Smart Monitor OS • Auto Sync Active</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          FLOATING BACK TO TOP BUTTON
+          ══════════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-6 right-6 z-40 p-3.5 bg-white/95 hover:bg-white text-teak border-2 border-sandstone/40 hover:border-marigold shadow-2xl rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 cursor-pointer group"
+            aria-label="Back to Top"
+          >
+            <ArrowUp size={20} className="group-hover:-translate-y-0.5 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

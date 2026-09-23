@@ -155,4 +155,14 @@
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+}
+
+/* Native Mobile App Shell Viewport Pinned Bottom Bar */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 1023px) {
+    .patient-mobile-shell {
+      height: -webkit-fill-available;
+      min-height: -webkit-fill-available;
+    }
+  }
 }
