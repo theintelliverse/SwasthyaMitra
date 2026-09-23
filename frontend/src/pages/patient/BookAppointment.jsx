@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
-    Building2, Stethoscope, Calendar, ArrowRight, ArrowLeft,
+    Building2, Stethoscope, Calendar, CalendarOff, ArrowRight, ArrowLeft,
     MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck, GraduationCap, Briefcase
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
@@ -48,6 +48,8 @@ const BookAppointment = () => {
     const [error, setError] = useState(null);
     const [clinics, setClinics] = useState([]);
     const [doctors, setDoctors] = useState([]);
+    const [clinicHolidays, setClinicHolidays] = useState([]);
+    const [doctorLeaves, setDoctorLeaves] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [bookedSlots, setBookedSlots] = useState([]);
     const [estimatedWaitTime, setEstimatedWaitTime] = useState(null);
@@ -172,6 +174,20 @@ const BookAppointment = () => {
                 }
             };
             fetchDoctors();
+
+            const fetchClinicLeaves = async () => {
+                try {
+                    const res = await axios.get(`${API_URL}/api/clinic/public/leaves/${formData.clinicId}`);
+                    if (res.data.success) {
+                        setClinicHolidays(res.data.data.holidays || []);
+                        setDoctorLeaves(res.data.data.doctorLeaves || []);
+                    }
+                } catch {
+                    setClinicHolidays([]);
+                    setDoctorLeaves([]);
+                }
+            };
+            fetchClinicLeaves();
         }
     }, [formData.clinicId]);
 
@@ -200,6 +216,83 @@ const BookAppointment = () => {
         }
         return null;
     }, [doctors, formData.doctorId, rescheduleApp]);
+
+    const getDateAvailability = useCallback((date) => {
+        if (!date || isNaN(date.getTime())) {
+            return { isAvailable: true };
+        }
+
+        const weekday = WEEKDAY_MAP[date.getDay()];
+        const selectedClinic = getSelectedClinic();
+        const workingDays = selectedClinic?.workingDays?.length
+            ? selectedClinic.workingDays.map(w => w.toLowerCase())
+            : DEFAULT_WORKING_DAYS;
+
+        // 1. Clinic weekly schedule (e.g. Sunday or off-days)
+        if (!workingDays.includes(weekday)) {
+            const isSunday = weekday === 'sunday';
+            return {
+                isAvailable: false,
+                type: isSunday ? 'sunday_off' : 'weekly_off',
+                badgeText: isSunday ? 'Sun Closed' : 'Closed',
+                reason: isSunday
+                    ? 'The clinic is closed on Sundays (Weekly Holiday).'
+                    : `The clinic is closed on ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}s (Weekly Off).`
+            };
+        }
+
+        // 2. Doctor custom weekly available days
+        const selectedDoc = getSelectedDoctor();
+        if (selectedDoc && Array.isArray(selectedDoc.availableDays) && selectedDoc.availableDays.length > 0) {
+            const docDays = selectedDoc.availableDays.map(d => d.toLowerCase());
+            if (!docDays.includes(weekday)) {
+                return {
+                    isAvailable: false,
+                    type: 'doctor_weekly_off',
+                    badgeText: 'Doc Off',
+                    reason: `Dr. ${selectedDoc.name} is not available on ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}s.`
+                };
+            }
+        }
+
+        // 3. Clinic-wide holiday
+        const checkTime = new Date(date).setHours(12, 0, 0, 0);
+        for (const holiday of clinicHolidays) {
+            const start = new Date(holiday.startDate).setHours(0, 0, 0, 0);
+            const end = new Date(holiday.endDate).setHours(23, 59, 59, 999);
+            if (checkTime >= start && checkTime <= end) {
+                return {
+                    isAvailable: false,
+                    type: 'clinic_holiday',
+                    badgeText: 'Holiday',
+                    title: holiday.title,
+                    reason: `Clinic Holiday: ${holiday.title}${holiday.reason ? ` (${holiday.reason})` : ''}`
+                };
+            }
+        }
+
+        // 4. Doctor-specific leave
+        if (formData.doctorId) {
+            for (const leave of doctorLeaves) {
+                const leaveDocId = leave.doctorId?._id || leave.doctorId;
+                if (leaveDocId && leaveDocId.toString() === formData.doctorId.toString()) {
+                    const start = new Date(leave.startDate).setHours(0, 0, 0, 0);
+                    const end = new Date(leave.endDate).setHours(23, 59, 59, 999);
+                    if (checkTime >= start && checkTime <= end) {
+                        return {
+                            isAvailable: false,
+                            type: 'doctor_leave',
+                            badgeText: 'On Leave',
+                            title: leave.title,
+                            reason: `Dr. ${selectedDoc?.name || 'Specialist'} is on leave on this date: "${leave.title}"${leave.reason ? ` (${leave.reason})` : ''}`
+                        };
+                    }
+                }
+            }
+        }
+
+        return { isAvailable: true };
+    }, [getSelectedClinic, getSelectedDoctor, clinicHolidays, doctorLeaves, formData.doctorId]);
 
     const getClinicTimingConfig = useCallback(() => {
         const selectedClinic = clinics.find(c => c._id === formData.clinicId) || {};
@@ -254,7 +347,7 @@ const BookAppointment = () => {
         const [breakEndHour, breakEndMinute] = breakEndTime.split(':').map(Number);
 
         const currentDay = WEEKDAY_MAP[selectedDate.getDay()];
-        if (!workingDays.includes(currentDay)) {
+        if (!workingDays.includes(currentDay) || !getDateAvailability(selectedDate).isAvailable) {
             setAvailableSlots([]);
             return;
         }
@@ -280,7 +373,7 @@ const BookAppointment = () => {
             slots.push(new Date(slot));
         }
         setAvailableSlots(slots);
-    }, [bookedSlots, getClinicTimingConfig, selectedDate, formData.slotMode]);
+    }, [bookedSlots, getClinicTimingConfig, selectedDate, formData.slotMode, getDateAvailability]);
 
     useEffect(() => {
         let active = true;
@@ -329,6 +422,21 @@ const BookAppointment = () => {
     const handleConfirmBooking = async () => {
         if (!formData.appointmentDate) { setError('Selection required: Please pick a clinical slot.'); return; }
         if (!formData.reason.trim()) { setError('Required: Please state the purpose of your visit.'); return; }
+
+        const datePart = formData.appointmentDate.split('T')[0];
+        const [y, m, d] = datePart.split('-').map(Number);
+        const targetDate = new Date(y, m - 1, d);
+        const dateAvail = getDateAvailability(targetDate);
+        if (!dateAvail.isAvailable) {
+            setError(`Cannot book appointment: ${dateAvail.reason}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Date Unavailable',
+                text: dateAvail.reason,
+                confirmButtonColor: '#0D9488'
+            });
+            return;
+        }
 
         setLoading(true);
         setError(null);
@@ -682,169 +790,230 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
 
-                                {/* Date Strip – tight, scrollable */}
+                                {/* Date Strip – tight, scrollable with availability badges */}
                                 <div className="flex gap-2.5 overflow-x-auto px-5 pb-5 no-scrollbar">
                                     {dateStrip.map((date, idx) => {
                                         const isSelected = selectedDate.toDateString() === date.toDateString();
+                                        const dateAvail = getDateAvailability(date);
                                         return (
                                             <button
                                                 key={idx}
                                                 onClick={() => { setSelectedDate(date); setFormData({ ...formData, appointmentDate: '' }); }}
-                                                className={`flex flex-col items-center shrink-0 w-[58px] py-3 px-1 rounded-2xl border-2 transition-all ${isSelected
-                                                    ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/25 scale-105'
-                                                    : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white'
+                                                className={`relative flex flex-col items-center shrink-0 min-w-[62px] py-2.5 px-1 rounded-2xl border-2 transition-all ${isSelected
+                                                    ? (dateAvail.isAvailable
+                                                        ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/25 scale-105'
+                                                        : 'border-rose-500 bg-rose-600 text-white shadow-lg shadow-rose-500/25 scale-105')
+                                                    : (!dateAvail.isAvailable
+                                                        ? 'border-rose-100 bg-rose-50/50 text-rose-500 hover:border-rose-300'
+                                                        : 'border-slate-100 bg-slate-50/60 text-slate-500 hover:border-teal-200 hover:bg-white')
                                                     }`}
                                             >
-                                                <span className={`text-xs font-semibold mb-1 ${isSelected ? 'text-teal-100' : 'text-slate-400'}`}>
+                                                <span className={`text-[11px] font-semibold mb-0.5 ${isSelected ? (dateAvail.isAvailable ? 'text-teal-100' : 'text-rose-100') : (!dateAvail.isAvailable ? 'text-rose-400' : 'text-slate-400')}`}>
                                                     {idx === 0 ? 'Today' : WEEKDAY_MAP[date.getDay()].slice(0, 3)}
                                                 </span>
                                                 <span className="text-lg font-bold leading-none">{date.getDate()}</span>
+                                                {!dateAvail.isAvailable && (
+                                                    <span className={`mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded leading-none whitespace-nowrap ${
+                                                        isSelected ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
+                                                    }`}>
+                                                        {dateAvail.badgeText}
+                                                    </span>
+                                                )}
                                             </button>
                                         );
                                     })}
                                 </div>
+
+                                {/* Unavailable Alert Banner for Selected Date */}
+                                {(() => {
+                                    const selectedAvail = getDateAvailability(selectedDate);
+                                    if (!selectedAvail.isAvailable) {
+                                        return (
+                                            <div className="mx-5 mb-5 p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-center gap-3 text-rose-700 animate-in fade-in duration-200">
+                                                <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0 text-rose-600">
+                                                    <CalendarOff size={18} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-xs font-bold leading-tight">Bookings Closed on this Date</p>
+                                                        <span className="text-[10px] uppercase font-black px-1.5 py-0.5 bg-rose-200/70 rounded text-rose-800">
+                                                            {selectedAvail.badgeText}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-rose-600/90 mt-0.5 leading-snug">{selectedAvail.reason}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </div>
 
                             {/* ─── SLOT SELECTION ─── */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                                {/* Header + Mode Toggle */}
-                                <div className="px-5 pt-5 pb-3">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
-                                                <Clock size={16} />
+                                {(() => {
+                                    const selectedAvail = getDateAvailability(selectedDate);
+                                    if (!selectedAvail.isAvailable) {
+                                        return (
+                                            <div className="p-8 text-center bg-rose-50/30">
+                                                <div className="w-14 h-14 mx-auto mb-3 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                                    <CalendarOff size={26} />
+                                                </div>
+                                                <h4 className="text-sm font-bold text-slate-800">
+                                                    {selectedAvail.type === 'weekly_off' ? 'Weekly Closed Day' :
+                                                     selectedAvail.type === 'doctor_weekly_off' ? 'Specialist Weekly Off' :
+                                                     selectedAvail.type === 'clinic_holiday' ? 'Clinic Holiday / Festival Closure' : 'Specialist on Leave'}
+                                                </h4>
+                                                <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
+                                                    {selectedAvail.reason}. Please select another date from the calendar strip above to view open slots.
+                                                </p>
                                             </div>
-                                            <h3 className="text-sm font-bold text-slate-900">Select Time Slot</h3>
-                                        </div>
-                                    </div>
-                                    {/* Slot Mode Tabs */}
-                                    <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 gap-1">
-                                        {[['quick', 'Hourly Slots'], ['shift', 'Shift Booking'], ['manual', 'Custom Time']].map(([mode, label]) => (
-                                            <button
-                                                key={mode}
-                                                onClick={() => setFormData({ ...formData, slotMode: mode, appointmentDate: '' })}
-                                                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${formData.slotMode === mode
-                                                    ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
-                                                    : 'text-slate-400'
-                                                    }`}
-                                            >
-                                                {label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                        );
+                                    }
 
-                                {/* Slot Grid – quick mode */}
-                                {formData.slotMode === 'quick' && (
-                                    <div className="px-5 pb-5">
-                                        {availableSlots.length > 0 ? (
-                                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
-                                                {availableSlots.map((slot, idx) => {
-                                                    const slotKey = toLocalDateTimeKey(slot);
-                                                    const isActive = formData.appointmentDate === slotKey;
-                                                    return (
+                                    return (
+                                        <>
+                                            {/* Header + Mode Toggle */}
+                                            <div className="px-5 pt-5 pb-3">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
+                                                            <Clock size={16} />
+                                                        </div>
+                                                        <h3 className="text-sm font-bold text-slate-900">Select Time Slot</h3>
+                                                    </div>
+                                                </div>
+                                                {/* Slot Mode Tabs */}
+                                                <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 gap-1">
+                                                    {[['quick', 'Hourly Slots'], ['shift', 'Shift Booking'], ['manual', 'Custom Time']].map(([mode, label]) => (
                                                         <button
-                                                            key={idx}
-                                                            onClick={() => setFormData({ ...formData, appointmentDate: slotKey })}
-                                                            className={`py-3 px-2 rounded-xl border-2 transition-all text-center ${isActive
-                                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
-                                                                : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-teal-200 hover:bg-white'
+                                                            key={mode}
+                                                            onClick={() => setFormData({ ...formData, slotMode: mode, appointmentDate: '' })}
+                                                            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${formData.slotMode === mode
+                                                                ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
+                                                                : 'text-slate-400'
                                                                 }`}
                                                         >
-                                                            <div className="text-sm font-bold tracking-tight leading-none">
-                                                                {slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                                            </div>
+                                                            {label}
                                                         </button>
-                                                    );
-                                                })}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        ) : (
-                                            <div className="py-10 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">
-                                                <p className="text-slate-400 font-medium text-xs">No availability on this date</p>
-                                                <p className="text-xs text-slate-400 mt-1">Try another date from the strip above.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
 
-                                {/* Shift Mode */}
-                                {formData.slotMode === 'shift' && (
-                                    <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {/* Morning */}
-                                        <button
-                                            disabled={(() => {
-                                                const now = new Date();
-                                                if (selectedDate.toDateString() !== now.toDateString()) return false;
-                                                const [bh, bm] = getClinicTimingConfig().breakStartTime.split(':').map(Number);
-                                                const breakStart = new Date(selectedDate);
-                                                breakStart.setHours(bh, bm, 0, 0);
-                                                return now >= breakStart;
-                                            })()}
-                                            onClick={() => {
-                                                const { openingTime } = getClinicTimingConfig();
-                                                const slotKey = `${selectedDate.toISOString().split('T')[0]}T${openingTime}`;
-                                                setFormData({ ...formData, appointmentDate: slotKey });
-                                            }}
-                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime)
-                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
-                                                : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
-                                                }`}
-                                        >
-                                            <h4 className="text-sm font-bold mb-1">Morning Shift</h4>
-                                            <p className={`text-xs font-medium ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().breakStartTime}
-                                            </p>
-                                        </button>
+                                            {/* Slot Grid – quick mode */}
+                                            {formData.slotMode === 'quick' && (
+                                                <div className="px-5 pb-5">
+                                                    {availableSlots.length > 0 ? (
+                                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
+                                                            {availableSlots.map((slot, idx) => {
+                                                                const slotKey = toLocalDateTimeKey(slot);
+                                                                const isActive = formData.appointmentDate === slotKey;
+                                                                return (
+                                                                    <button
+                                                                        key={idx}
+                                                                        onClick={() => setFormData({ ...formData, appointmentDate: slotKey })}
+                                                                        className={`py-3 px-2 rounded-xl border-2 transition-all text-center ${isActive
+                                                                            ? 'border-teal-500 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
+                                                                            : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-teal-200 hover:bg-white'
+                                                                            }`}
+                                                                    >
+                                                                        <div className="text-sm font-bold tracking-tight leading-none">
+                                                                            {slot.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                                        </div>
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="py-10 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">
+                                                            <p className="text-slate-400 font-medium text-xs">No availability on this date</p>
+                                                            <p className="text-xs text-slate-400 mt-1">Try another date from the strip above.</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
 
-                                        {/* Afternoon */}
-                                        <button
-                                            disabled={(() => {
-                                                const now = new Date();
-                                                if (selectedDate.toDateString() !== now.toDateString()) return false;
-                                                const [ch, cm] = getClinicTimingConfig().closingTime.split(':').map(Number);
-                                                const closeTime = new Date(selectedDate);
-                                                closeTime.setHours(ch, cm, 0, 0);
-                                                return now >= closeTime;
-                                            })()}
-                                            onClick={() => {
-                                                const { breakEndTime } = getClinicTimingConfig();
-                                                const slotKey = `${selectedDate.toISOString().split('T')[0]}T${breakEndTime}`;
-                                                setFormData({ ...formData, appointmentDate: slotKey });
-                                            }}
-                                            className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime)
-                                                ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
-                                                : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
-                                                }`}
-                                        >
-                                            <h4 className="text-sm font-bold mb-1">Afternoon Shift</h4>
-                                            <p className={`text-xs font-medium ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
-                                                {getClinicTimingConfig().breakEndTime} - {getClinicTimingConfig().closingTime}
-                                            </p>
-                                        </button>
-                                    </div>
-                                )}
+                                            {/* Shift Mode */}
+                                            {formData.slotMode === 'shift' && (
+                                                <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {/* Morning */}
+                                                    <button
+                                                        disabled={(() => {
+                                                            const now = new Date();
+                                                            if (selectedDate.toDateString() !== now.toDateString()) return false;
+                                                            const [bh, bm] = getClinicTimingConfig().breakStartTime.split(':').map(Number);
+                                                            const breakStart = new Date(selectedDate);
+                                                            breakStart.setHours(bh, bm, 0, 0);
+                                                            return now >= breakStart;
+                                                        })()}
+                                                        onClick={() => {
+                                                            const { openingTime } = getClinicTimingConfig();
+                                                            const slotKey = `${selectedDate.toISOString().split('T')[0]}T${openingTime}`;
+                                                            setFormData({ ...formData, appointmentDate: slotKey });
+                                                        }}
+                                                        className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime)
+                                                            ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
+                                                            : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
+                                                            }`}
+                                                    >
+                                                        <h4 className="text-sm font-bold mb-1">Morning Shift</h4>
+                                                        <p className={`text-xs font-medium ${formData.appointmentDate.endsWith(getClinicTimingConfig().openingTime) ? 'text-teal-100' : 'text-slate-400'}`}>
+                                                            {getClinicTimingConfig().openingTime} - {getClinicTimingConfig().breakStartTime}
+                                                        </p>
+                                                    </button>
 
-                                {/* Custom Time */}
-                                {formData.slotMode === 'manual' && (
-                                    <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-slate-500 ml-1">Selected Date</label>
-                                            <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl font-semibold text-slate-900 text-sm flex items-center justify-between">
-                                                {selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                <Calendar size={16} className="text-teal-500" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-slate-500 ml-1">Select Time</label>
-                                            <input
-                                                type="time"
-                                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-teal-500 font-semibold text-slate-900 text-sm"
-                                                value={formData.appointmentDate.split('T')[1] || '10:00'}
-                                                onChange={(e) => setFormData({ ...formData, appointmentDate: `${selectedDate.toISOString().split('T')[0]}T${e.target.value}` })}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
+                                                    {/* Afternoon */}
+                                                    <button
+                                                        disabled={(() => {
+                                                            const now = new Date();
+                                                            if (selectedDate.toDateString() !== now.toDateString()) return false;
+                                                            const [ch, cm] = getClinicTimingConfig().closingTime.split(':').map(Number);
+                                                            const closeTime = new Date(selectedDate);
+                                                            closeTime.setHours(ch, cm, 0, 0);
+                                                            return now >= closeTime;
+                                                        })()}
+                                                        onClick={() => {
+                                                            const { breakEndTime } = getClinicTimingConfig();
+                                                            const slotKey = `${selectedDate.toISOString().split('T')[0]}T${breakEndTime}`;
+                                                            setFormData({ ...formData, appointmentDate: slotKey });
+                                                        }}
+                                                        className={`p-5 rounded-2xl border-2 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime)
+                                                            ? 'border-teal-500 bg-teal-600 text-white shadow-lg'
+                                                            : 'border-slate-100 bg-slate-50/50 text-slate-700 hover:border-teal-200 hover:bg-white'
+                                                            }`}
+                                                    >
+                                                        <h4 className="text-sm font-bold mb-1">Afternoon Shift</h4>
+                                                        <p className={`text-xs font-medium ${formData.appointmentDate.endsWith(getClinicTimingConfig().breakEndTime) ? 'text-teal-100' : 'text-slate-400'}`}>
+                                                            {getClinicTimingConfig().breakEndTime} - {getClinicTimingConfig().closingTime}
+                                                        </p>
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Custom Time */}
+                                            {formData.slotMode === 'manual' && (
+                                                <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-xs font-medium text-slate-500 ml-1">Selected Date</label>
+                                                        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl font-semibold text-slate-900 text-sm flex items-center justify-between">
+                                                            {selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            <Calendar size={16} className="text-teal-500" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-xs font-medium text-slate-500 ml-1">Select Time</label>
+                                                        <input
+                                                            type="time"
+                                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-teal-500 font-semibold text-slate-900 text-sm"
+                                                            value={formData.appointmentDate.split('T')[1] || '10:00'}
+                                                            onChange={(e) => setFormData({ ...formData, appointmentDate: `${selectedDate.toISOString().split('T')[0]}T${e.target.value}` })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             {/* ─── WAIT INTELLIGENCE + VERIFY BOOKING ─── */}
@@ -893,7 +1062,11 @@ const BookAppointment = () => {
                                 {(() => {
                                     let isValid = false;
                                     let errorMsg = '';
-                                    if (formData.appointmentDate) {
+                                    const selectedAvail = getDateAvailability(selectedDate);
+
+                                    if (!selectedAvail.isAvailable) {
+                                        errorMsg = selectedAvail.badgeText || 'Date Closed';
+                                    } else if (formData.appointmentDate) {
                                         const parts = formData.appointmentDate.split('T');
                                         if (parts.length === 2) {
                                             const [year, month, day] = parts[0].split('-').map(Number);
@@ -917,9 +1090,17 @@ const BookAppointment = () => {
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setStep(4); }}
                                             disabled={!isValid}
-                                            className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-30 disabled:grayscale text-white font-semibold text-sm transition-all flex items-center justify-center gap-3 active:scale-95"
+                                            className="w-full py-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-40 disabled:grayscale text-white font-semibold text-sm transition-all flex items-center justify-center gap-3 active:scale-95"
                                         >
-                                            {!formData.appointmentDate ? <><Clock size={16} /> Select a Slot First</> : !isValid ? <><Clock size={16} /> {errorMsg}</> : <><CheckCircle size={16} /> Verify Booking</>}
+                                            {!selectedAvail.isAvailable ? (
+                                                <><CalendarOff size={16} /> {selectedAvail.badgeText || 'Bookings Closed on this Date'}</>
+                                            ) : !formData.appointmentDate ? (
+                                                <><Clock size={16} /> Select a Slot First</>
+                                            ) : !isValid ? (
+                                                <><Clock size={16} /> {errorMsg}</>
+                                            ) : (
+                                                <><CheckCircle size={16} /> Verify Booking</>
+                                            )}
                                             {isValid && <ArrowRight size={16} />}
                                         </button>
                                     );
