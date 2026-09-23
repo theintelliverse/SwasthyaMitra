@@ -97,17 +97,17 @@ const PatientLogin = () => {
                         <div className="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-teal-500/20">
                             <Lock size={24} className="text-white" />
                         </div>
-                        <h2 className="text-3xl font-black tracking-tight leading-tight mb-4">Patient <br />Portal <span className="text-teal-500">.</span></h2>
-                        <p className="text-slate-400 text-sm font-bold leading-relaxed">Securely access your clinical records, vitals, and appointment history.</p>
+                        <h2 className="text-3xl font-bold tracking-tight leading-tight mb-4">Patient <br />Portal <span className="text-teal-500">.</span></h2>
+                        <p className="text-slate-400 text-sm font-normal leading-relaxed">Securely access your clinical records, vitals, and appointment history.</p>
                     </div>
 
                     <div className="relative z-10 mt-12 md:mt-0">
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-[14px] font-black uppercase tracking-widest text-teal-400">Security Active</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-teal-400">Security Active</span>
                             </div>
-                            <p className="text-[14px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">Your health data is encrypted using clinical-grade protocols.</p>
+                            <p className="text-xs font-normal text-slate-300 leading-relaxed">Your health data is encrypted using clinical-grade protocols.</p>
                         </div>
                     </div>
                 </div>
@@ -116,25 +116,25 @@ const PatientLogin = () => {
                 <div className="w-full md:w-7/12 p-10 md:p-12">
                     <header className="mb-12">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold uppercase tracking-wider border border-teal-100">
                                 {step === 1 ? 'Step 1: Identity' : 'Step 2: Access'}
                             </span>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                             {step === 1 ? "Sign In" : "Unlock Vault"}
                         </h3>
-                        <p className="text-slate-400 font-bold text-[14px] mt-1 uppercase tracking-wider">Access your clinical health locker.</p>
+                        <p className="text-slate-500 font-normal text-sm mt-1">Access your clinical health locker.</p>
                     </header>
 
                     {step === 1 ? (
                         <form onSubmit={handlePhoneSubmit} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Mobile Number</label>
                                 <div className="relative group">
                                     <Smartphone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type="tel" required placeholder="91XXXXXXXXXX"
-                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-base text-slate-900 shadow-sm transition-all"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
@@ -142,12 +142,12 @@ const PatientLogin = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
                             >
                                 Continue <ArrowRight size={18} />
                             </button>
                             <div className="pt-6 border-t border-slate-50 text-center">
-                                <button type="button" onClick={() => navigate('/patient/forgot-password')} className="text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
+                                <button type="button" onClick={() => navigate('/patient/forgot-password')} className="text-xs text-slate-500 font-medium hover:text-teal-600 transition-colors">
                                     Lost access to your account?
                                 </button>
                             </div>
@@ -156,18 +156,18 @@ const PatientLogin = () => {
                         <form onSubmit={handlePasswordLogin} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest">Signing in as</p>
-                                    <p className="text-sm font-black text-slate-900">{formData.phone}</p>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Signing in as</p>
+                                    <p className="text-sm font-bold text-slate-900">{formData.phone}</p>
                                 </div>
-                                <button type="button" onClick={() => setStep(1)} className="text-[14px] font-black text-teal-600 uppercase tracking-widest hover:underline">Change</button>
+                                <button type="button" onClick={() => setStep(1)} className="text-xs font-semibold text-teal-600 hover:underline">Change</button>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-end px-4">
-                                    <label className="text-[14px] font-black uppercase text-slate-400 tracking-widest">Master Password</label>
+                                    <label className="text-xs font-medium text-slate-500">Master Password</label>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/patient/forgot-password')}
-                                        className="text-[14px] text-slate-400 hover:text-teal-600 font-bold uppercase tracking-widest transition-colors"
+                                        className="text-xs text-slate-400 hover:text-teal-600 font-medium transition-colors"
                                     >
                                         Forgot?
                                     </button>
@@ -176,7 +176,7 @@ const PatientLogin = () => {
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type={showPassword ? 'text' : 'password'} required placeholder="Enter password"
-                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-base text-slate-900 shadow-sm transition-all"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                         disabled={loading}
@@ -188,7 +188,7 @@ const PatientLogin = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-semibold text-sm shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Verify & Open Locker <ShieldCheck size={18} /></>}
                             </button>
@@ -196,8 +196,8 @@ const PatientLogin = () => {
                     )}
 
                     <div className="mt-12 text-center">
-                        <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest">
-                            New to Appointory? <button onClick={() => navigate('/patient/register')} className="text-teal-600 hover:underline">Create Account</button>
+                        <p className="text-sm text-slate-500 font-normal">
+                            New to Appointory? <button onClick={() => navigate('/patient/register')} className="text-teal-600 hover:underline font-medium">Create Account</button>
                         </p>
                     </div>
                 </div>

@@ -191,8 +191,8 @@ const PatientRegister = () => {
                         <div className="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-teal-500/20">
                             <ShieldCheck size={24} className="text-white" />
                         </div>
-                        <h2 className="text-3xl font-black tracking-tight leading-tight mb-4">Patient <br />Registration <span className="text-teal-500">.</span></h2>
-                        <p className="text-slate-400 text-sm font-bold leading-relaxed">Join thousands of patients managing their health journey digitally.</p>
+                        <h2 className="text-3xl font-bold tracking-tight leading-tight mb-4">Patient <br />Registration <span className="text-teal-500">.</span></h2>
+                        <p className="text-slate-400 text-sm font-normal leading-relaxed">Join thousands of patients managing their health journey digitally.</p>
                     </div>
 
                     <div className="relative z-10 mt-12 md:mt-0">
@@ -208,11 +208,11 @@ const PatientRegister = () => {
                 <div className="w-full md:w-7/12 p-10 md:p-12">
                     <header className="mb-10">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[14px] font-black uppercase tracking-widest border border-teal-100">
+                            <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold uppercase tracking-wider border border-teal-100">
                                 Step {step} of 5
                             </span>
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                             {step === 1 && "Start Registration"}
                             {step === 2 && "Verify OTP"}
                             {step === 3 && "Secure Account"}
@@ -225,12 +225,12 @@ const PatientRegister = () => {
                     {step === 1 && (
                         <form onSubmit={handleSendOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Mobile Number</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Mobile Number</label>
                                 <div className="relative group">
                                     <Phone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type="tel" required placeholder="10-digit number"
-                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-base text-slate-900 shadow-sm transition-all"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         disabled={loading}
@@ -239,12 +239,12 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Next Step <ArrowRight size={18} /></>}
                             </button>
-                            <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest text-center mt-6">
-                                Already registered? <button type="button" onClick={() => navigate('/patient/login')} className="text-teal-600 hover:underline">Log in</button>
+                            <p className="text-sm text-slate-500 font-normal text-center mt-6">
+                                Already registered? <button type="button" onClick={() => navigate('/patient/login')} className="text-teal-600 hover:underline font-medium">Log in</button>
                             </p>
                         </form>
                     )}
@@ -253,14 +253,14 @@ const PatientRegister = () => {
                     {step === 2 && (
                         <form onSubmit={handleVerifyOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100 text-center mb-6">
-                                <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest">Verification Sent to</p>
-                                <p className="text-sm font-black text-slate-900">{formData.phone}</p>
+                                <p className="text-xs font-semibold text-teal-700 uppercase tracking-wider">Verification Sent to</p>
+                                <p className="text-base font-bold text-slate-900">{formData.phone}</p>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 block text-center tracking-widest">6-Digit Code</label>
+                                <label className="text-xs font-medium text-slate-500 block text-center">6-Digit Code</label>
                                 <input
                                     type="text" required maxLength="6" placeholder="000000"
-                                    className="w-full py-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 font-black text-center text-3xl tracking-[0.3em] text-slate-900 shadow-inner"
+                                    className="w-full py-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:border-teal-500 font-bold text-center text-2xl tracking-[0.25em] text-slate-900 shadow-inner"
                                     value={formData.otp}
                                     onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
                                     disabled={loading}
@@ -268,11 +268,11 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : 'Verify Code'}
                             </button>
-                            <button type="button" onClick={() => setStep(1)} className="w-full text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
+                            <button type="button" onClick={() => setStep(1)} className="w-full text-xs text-slate-500 font-medium hover:text-teal-600 transition-colors">
                                 ← Change Phone Number
                             </button>
                         </form>
@@ -282,12 +282,12 @@ const PatientRegister = () => {
                     {step === 3 && (
                         <form onSubmit={handleCreatePassword} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Create Password</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Create Password</label>
                                 <div className="relative group">
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type={showPassword ? 'text' : 'password'} required placeholder="Min 6 characters"
-                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-base text-slate-900 shadow-sm transition-all"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     />
@@ -297,12 +297,12 @@ const PatientRegister = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Confirm Password</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Confirm Password</label>
                                 <div className="relative group">
                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type={showConfirmPassword ? 'text' : 'password'} required placeholder="Repeat password"
-                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 shadow-sm transition-all"
+                                        className="w-full pl-16 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-base text-slate-900 shadow-sm transition-all"
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     />
@@ -313,7 +313,7 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
+                                className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95"
                             >
                                 Continue <ArrowRight size={18} />
                             </button>
@@ -324,12 +324,12 @@ const PatientRegister = () => {
                     {step === 4 && (
                         <form onSubmit={handlePersonalInfo} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Full Name</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Full Name</label>
                                 <div className="relative group">
                                     <User size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
                                     <input
                                         type="text" required placeholder="Enter your full name"
-                                        className="w-full pl-16 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900"
+                                        className="w-full pl-16 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-slate-900"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
@@ -337,18 +337,18 @@ const PatientRegister = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Age</label>
+                                    <label className="text-xs font-medium text-slate-500 ml-2">Age</label>
                                     <input
                                         type="number" placeholder="Years"
-                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900"
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-slate-900"
                                         value={formData.age}
                                         onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Gender</label>
+                                    <label className="text-xs font-medium text-slate-500 ml-2">Gender</label>
                                     <select
-                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer"
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-slate-900 appearance-none cursor-pointer"
                                         value={formData.gender}
                                         onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                     >
@@ -360,9 +360,9 @@ const PatientRegister = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[14px] font-black uppercase text-slate-400 ml-4 tracking-widest">Blood Group</label>
+                                <label className="text-xs font-medium text-slate-500 ml-2">Blood Group</label>
                                 <select
-                                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-bold text-slate-900 appearance-none cursor-pointer"
+                                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-teal-500 font-medium text-slate-900 appearance-none cursor-pointer"
                                     value={formData.bloodGroup}
                                     onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
                                 >
@@ -373,7 +373,7 @@ const PatientRegister = () => {
                                     <option value="AB+">AB+</option><option value="AB-">AB-</option>
                                 </select>
                             </div>
-                            <button type="submit" className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-black text-[14px] uppercase tracking-widest shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95">
+                            <button type="submit" className="w-full py-5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-teal-600/20 flex items-center justify-center gap-3 transition-all active:scale-95">
                                 Review Profile <ArrowRight size={18} />
                             </button>
                         </form>
@@ -389,11 +389,11 @@ const PatientRegister = () => {
                             </div>
                             <button
                                 type="submit" disabled={loading}
-                                className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[2rem] font-black text-[14px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[2rem] font-semibold text-sm shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Create Secure Account <CheckCircle size={18} /></>}
                             </button>
-                            <button type="button" onClick={() => setStep(4)} className="w-full text-[14px] text-slate-400 font-black uppercase tracking-widest hover:text-teal-600 transition-colors">
+                            <button type="button" onClick={() => setStep(4)} className="w-full text-xs text-slate-500 font-medium hover:text-teal-600 transition-colors">
                                 ← Edit Information
                             </button>
                         </form>
@@ -405,7 +405,7 @@ const PatientRegister = () => {
 };
 
 const FeatureItem = ({ icon, text }) => (
-    <div className="flex items-center gap-3 text-[14px] font-bold text-slate-400">
+    <div className="flex items-center gap-3 text-sm font-normal text-slate-300">
         <span className="text-teal-500">{icon}</span>
         {text}
     </div>
@@ -413,8 +413,8 @@ const FeatureItem = ({ icon, text }) => (
 
 const ReviewRow = ({ label, value }) => (
     <div>
-        <p className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-sm font-black text-slate-900">{value}</p>
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+        <p className="text-sm font-bold text-slate-900">{value}</p>
     </div>
 );
 

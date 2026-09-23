@@ -74,6 +74,7 @@ import { API_URL } from './config/runtime';
 // Import Security Guard & Loaders
 import ProtectedRoute from './components/ProtectedRoute';
 import SkeletonLoader from './components/SkeletonLoader';
+import PatientLayout from './components/patient/PatientLayout';
 
 const routeFallback = <SkeletonLoader />;
 
@@ -286,36 +287,29 @@ const App = () => {
                 }
               />
 
-              {/* --- 📱 Patient Routes (QR & OTP) --- */}
+              {/* --- 📱 Patient Routes (Public Auth) --- */}
               <Route path="/patient/checkin" element={<PatientCheckIn />} />
               <Route path="/patient/status" element={<PatientStatus />} />
               <Route path="/patient/login" element={<PatientLogin />} />
               <Route path="/patient/register" element={<PatientRegister />} />
               <Route path="/patient/forgot-password" element={<PatientForgotPassword />} />
+
+              {/* --- 📱 Protected Patient Hub (with Persistent Mobile Bottom Nav) --- */}
               <Route
-                path="/patient/book-appointment"
+                path="/patient"
                 element={
                   <ProtectedRoute allowedRoles={['patient']}>
-                    <BookAppointment />
+                    <PatientLayout />
                   </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/patient/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={['patient']}>
-                    <PatientDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/patient/profile"
-                element={
-                  <ProtectedRoute allowedRoles={['patient']}>
-                    <PatientProfile />
-                  </ProtectedRoute>
-                }
-              />
+              >
+                <Route index element={<Navigate to="/patient/dashboard" replace />} />
+                <Route path="dashboard" element={<PatientDashboard />} />
+                <Route path="profile" element={<PatientProfile />} />
+                <Route path="book-appointment" element={<BookAppointment />} />
+                <Route path="health-locker" element={<HealthLocker />} />
+                <Route path="locker" element={<HealthLocker />} />
+              </Route>
 
               {/* --- 🔐 Protected Staff Routes --- */}
 
@@ -365,22 +359,6 @@ const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['doctor']}>
                     <DoctorTemplates />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/patient/locker"
-                element={
-                  <ProtectedRoute allowedRoles={['patient']}>
-                    <HealthLocker />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/patient/health-locker"
-                element={
-                  <ProtectedRoute allowedRoles={['patient']}>
-                    <HealthLocker />
                   </ProtectedRoute>
                 }
               />

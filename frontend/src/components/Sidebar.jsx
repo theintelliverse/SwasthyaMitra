@@ -104,9 +104,9 @@ const Sidebar = ({ role = 'lab' }) => {
       ],
       patient: [
         { name: 'Health Hub', path: '/patient/dashboard', icon: <LayoutDashboard size={20} /> },
-        { name: 'Health Locker', path: '/patient/locker', icon: <ShieldCheck size={20} /> },
+        { name: 'Health Locker', path: '/patient/health-locker', icon: <ShieldCheck size={20} /> },
         { name: 'Book Slot', path: '/patient/book-appointment', icon: <Calendar size={20} /> },
-        { name: 'My Profile', path: '/profile', icon: <UserCircle size={20} /> },
+        { name: 'My Profile', path: '/patient/profile', icon: <UserCircle size={20} /> },
       ]
     };
     // Normalize role key to lowercase to match config
@@ -202,7 +202,7 @@ const Sidebar = ({ role = 'lab' }) => {
         {/* User Card & Logout */}
         <div className="p-6 border-t border-gray-50 bg-gray-50/30">
           <div
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate(userRole === 'patient' ? '/patient/profile' : '/profile')}
             className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm mb-4 cursor-pointer hover:border-teal-500 hover:shadow-md transition-all group/card"
           >
             <div className="flex items-center gap-3 mb-4">
