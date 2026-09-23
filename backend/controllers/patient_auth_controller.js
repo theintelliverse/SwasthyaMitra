@@ -436,6 +436,61 @@ exports.bookAppointment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid appointment date format." });
         }
 
+        // 🛑 STRICT HOLIDAY, LEAVE & WEEKLY OFF VALIDATION
+        const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const apptWeekday = WEEKDAY_NAMES[parsedAppointmentDate.getDay()];
+
+        // 1️⃣ Validate Clinic Working Days (e.g. Sunday or custom off-days)
+        const clinicWorkingDays = clinic.workingDays && clinic.workingDays.length > 0
+            ? clinic.workingDays.map(d => d.toLowerCase())
+            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        if (!clinicWorkingDays.includes(apptWeekday)) {
+            const formattedDay = apptWeekday.charAt(0).toUpperCase() + apptWeekday.slice(1);
+            return res.status(400).json({
+                success: false,
+                message: `Clinic is closed on ${formattedDay}s (Weekly Holiday). Please select a working day.`
+            });
+        }
+
+        // 2️⃣ Validate Doctor Available Days
+        if (doctor.availableDays && doctor.availableDays.length > 0) {
+            const docAvailableDays = doctor.availableDays.map(d => d.toLowerCase());
+            if (!docAvailableDays.includes(apptWeekday)) {
+                const formattedDay = apptWeekday.charAt(0).toUpperCase() + apptWeekday.slice(1);
+                return res.status(400).json({
+                    success: false,
+                    message: `Dr. ${doctor.name} is not available on ${formattedDay}s. Please choose another date or doctor.`
+                });
+            }
+        }
+
+        // 3️⃣ Validate Clinic Holidays and Doctor Leaves from Leave model
+        const Leave = require('../models/Leave');
+        const activeLeaves = await Leave.find({
+            clinicId,
+            startDate: { $lte: parsedAppointmentDate },
+            endDate: { $gte: parsedAppointmentDate }
+        });
+
+        // Check for clinic-wide holiday
+        const clinicHoliday = activeLeaves.find(l => !l.doctorId || l.type === 'clinic_holiday');
+        if (clinicHoliday) {
+            return res.status(400).json({
+                success: false,
+                message: `Clinic is closed on this date for "${clinicHoliday.title}". Appointments cannot be booked on holidays.`
+            });
+        }
+
+        // Check for doctor-specific leave
+        const doctorLeave = activeLeaves.find(l => l.doctorId && l.doctorId.toString() === doctorId.toString());
+        if (doctorLeave) {
+            return res.status(400).json({
+                success: false,
+                message: `Dr. ${doctor.name} is on leave on this date ("${doctorLeave.title}"). Appointments cannot be booked on this date.`
+            });
+        }
+
         if (rescheduleAppointmentId) {
             // Find existing queue entry (supports queueId or patient appointment subdocument ID)
             let queueEntry = null;
