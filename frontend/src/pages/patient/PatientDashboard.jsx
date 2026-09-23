@@ -8,10 +8,8 @@ import {
   ShieldCheck, Activity, Search, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle,
   Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle
 } from 'lucide-react';
-import Sidebar from '../../components/Sidebar';
 import { QRCodeSVG } from 'qrcode.react';
 import SEO from '../../components/SEO';
-import PatientBottomNav from '../../components/patient/PatientBottomNav';
 import AppointmentCard from '../../components/patient/AppointmentCard';
 import AppointmentDetailSheet from '../../components/patient/AppointmentDetailSheet';
 

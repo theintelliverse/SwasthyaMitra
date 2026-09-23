@@ -996,7 +996,7 @@ const FacilityOverviewModal = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {[
                         { key: 'billing', name: 'Patient Billing & Invoicing', desc: 'Invoices, GST receipts, payment logs' },
-                        { key: 'messaging', name: 'WhatsApp & SMS Alerts', desc: 'Automated appointment reminders' },
+                        { key: 'messaging', name: 'Instant SMS & Queue Alerts', desc: 'Automated appointment reminders' },
                         { key: 'appointments', name: 'Online Booking Engine', desc: 'Patient portal & slot booking' },
                         { key: 'lab-connect', name: 'Lab Integration & Routing', desc: 'Diagnostic test dispatch to labs' },
                         { key: 'analytics', name: 'Advanced Clinic Analytics', desc: 'Revenue graphs & patient metrics' },

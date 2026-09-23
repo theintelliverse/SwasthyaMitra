@@ -120,7 +120,7 @@ const RegisterClinic = () => {
               </p>
 
               <ul className="space-y-2">
-                {['Multi-role Staff Management', 'AI Wait-time Prediction', 'WhatsApp Notifications'].map((item, idx) => (
+                {['Multi-role Staff Management', 'AI Wait-time Prediction', 'Instant SMS & Queue Alerts'].map((item, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-sm font-semibold">
                     <div className="w-5 h-5 rounded-full bg-marigold flex items-center justify-center text-[14px] text-white">✓</div>
                     {item}

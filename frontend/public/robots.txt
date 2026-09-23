@@ -2,28 +2,37 @@
 # Version 2.0
 # Generated for appointory.in
 
-# 1. Block Bad Bots & aggressive crawlers
+# 1. Block malicious scrapers only
 User-agent: MJ12bot
 User-agent: DotBot
 User-agent: MojeekBot
-User-agent: AhrefsBot
 User-agent: SemrushBot
 User-agent: SemrushBot-SA
 Disallow: /
 
-# 2. Block AI scraper bots from training on Appointory data
+# 2. Allow AI Search Engines & Answer Engines (Perplexity, ChatGPT Search, Claude, Gemini, Apple Intelligence)
 User-agent: GPTBot
 User-agent: ChatGPT-User
+User-agent: PerplexityBot
 User-agent: ClaudeBot
 User-agent: Claude-Web
 User-agent: Anthropic-ai
-User-agent: CCBot
 User-agent: Google-Extended
-User-agent: Omgilibot
-User-agent: Omgili
+User-agent: Applebot
+User-agent: Applebot-Extended
 User-agent: cohere-ai
-User-agent: PerplexityBot
-Disallow: /
+User-agent: Amazonbot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /ai.txt
+Allow: /sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/
+Disallow: /receptionist/
+Disallow: /lab/dashboard
+Disallow: /*.json$
 
 # 3. Allow YandexBot (limited)
 User-agent: YandexBot

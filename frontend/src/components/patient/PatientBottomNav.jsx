@@ -22,7 +22,9 @@ const PatientBottomNav = ({ activeTab: forcedActiveTab, onTabChange }) => {
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate(10);
       }
-    } catch (_) {}
+    } catch {
+      // Vibration not supported or permitted
+    }
   };
 
   const handleNav = (item) => {
@@ -51,7 +53,7 @@ const PatientBottomNav = ({ activeTab: forcedActiveTab, onTabChange }) => {
   return (
     <nav 
       aria-label="Patient Bottom Navigation"
-      className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-6px_25px_rgba(15,23,42,0.06)] px-2 pt-1.5 pb-[max(8px,env(safe-area-inset-bottom,8px))]"
+      className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-6px_25px_rgba(15,23,42,0.06)] px-2 pt-1.5 pb-[max(8px,env(safe-area-inset-bottom,8px))]"
     >
       <div className="flex items-center justify-around max-w-md mx-auto gap-0.5">
         {navItems.map((item) => {

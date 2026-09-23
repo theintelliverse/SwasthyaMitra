@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -34,7 +34,7 @@ const PatientProfile = () => {
     allergies: ''
   });
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/patient/login');
@@ -88,11 +88,11 @@ const PatientProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     loadProfile();
-  }, [navigate]);
+  }, [loadProfile]);
 
   const handleOpenEdit = () => {
     if (profile) {
@@ -235,6 +235,15 @@ const PatientProfile = () => {
   const bloodGroup = profile?.bloodGroup || '—';
   const recordsCount = profile?.documents?.length || 0;
   const visitsCount = (profile?.medicalHistory?.length || profile?.visitHistory?.length) || 0;
+
+  if (loading && !profile) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 text-slate-400">
+        <Loader2 size={32} className="animate-spin text-teal-600 mb-3" />
+        <p className="text-sm font-semibold text-slate-600">Loading your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-body">
@@ -421,7 +430,7 @@ const PatientProfile = () => {
               <div className="flex items-center gap-3">
                 <Bell size={18} className="text-teal-600" />
                 <div>
-                  <span className="text-sm font-semibold text-slate-900 block">SMS &amp; WhatsApp Notifications</span>
+                  <span className="text-sm font-semibold text-slate-900 block">SMS &amp; Digital Queue Alerts</span>
                   <span className="text-xs text-slate-400 font-normal">Queue live tokens &amp; appointment reminders</span>
                 </div>
               </div>

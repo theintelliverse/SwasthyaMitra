@@ -10,9 +10,7 @@ import {
   Droplet, Heart, Weight, Pill, Zap, Thermometer, Droplets, ArrowUpRight, Search, Database,
   Upload, X, Plus, Trash2, Loader2, FileUp, CheckCircle, AlertCircle
 } from 'lucide-react';
-import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
-import PatientBottomNav from '../../components/patient/PatientBottomNav';
 
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -165,11 +163,8 @@ const HealthLocker = () => {
   const latestVitals = data.vitals?.[0];
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+    <div className="px-3 py-3 md:p-4 lg:p-6 max-w-7xl mx-auto w-full">
       <SEO title="Health Locker" noindex={true} />
-      <Sidebar role="patient" />
-
-      <div className="flex-grow px-3 py-3 md:p-4 lg:p-6 max-w-7xl mx-auto w-full">
         {/* Header Section */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
           <div>
@@ -558,7 +553,6 @@ const HealthLocker = () => {
             </div>
           )}
         </div>
-      </div>
 
       {/* --- Upload Document Modal --- */}
       {showUploadModal && (

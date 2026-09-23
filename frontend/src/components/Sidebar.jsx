@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   LayoutDashboard,
@@ -20,7 +20,9 @@ import {
   FolderHeart,
   Plus,
   Bell,
-  Receipt
+  Receipt,
+  Home,
+  Stethoscope
 } from 'lucide-react';
 
 import { API_URL } from '../config/runtime';
@@ -29,6 +31,7 @@ const Sidebar = ({ role = 'lab' }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [isSubscriptionEnforced, setIsSubscriptionEnforced] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   React.useEffect(() => {
     let active = true;
@@ -57,10 +60,32 @@ const Sidebar = ({ role = 'lab' }) => {
   };
 
   const clinicName = getSafeStorageItem('clinicName', 'Appointory Hub');
-  const userName = getSafeStorageItem('userName', '') || getSafeStorageItem('labName', 'Healthcare Professional');
+  const userName = getSafeStorageItem('userName', '') || getSafeStorageItem('patientName', '') || getSafeStorageItem('labName', 'Healthcare Professional');
   const userRole = role || getSafeStorageItem('role', 'staff');
   const userSpecialization = getSafeStorageItem('specialization', '');
   const userEducation = getSafeStorageItem('education', '');
+
+  // Accurate active item detection handling both pathnames and search params (e.g. ?tab=appointments)
+  const isItemActive = (itemPath) => {
+    const [pathPart, queryPart] = itemPath.split('?');
+    if (queryPart) {
+      const params = new URLSearchParams(queryPart);
+      const currentParams = new URLSearchParams(location.search);
+      let match = location.pathname === pathPart;
+      for (const [k, v] of params.entries()) {
+        if (currentParams.get(k) !== v) match = false;
+      }
+      return match;
+    }
+    // Prevent root /patient/dashboard matching when specific tab query is present
+    if (itemPath === '/patient/dashboard' && location.search.includes('tab=appointments')) {
+      return false;
+    }
+    if (itemPath === '/receptionist/dashboard' && location.search.includes('fromAdmin=true')) {
+      return false;
+    }
+    return location.pathname === pathPart;
+  };
 
   const menuItems = useMemo(() => {
     const isIndLab = getSafeStorageItem('labRole', '') === 'independent_lab';
@@ -103,10 +128,11 @@ const Sidebar = ({ role = 'lab' }) => {
         { name: 'Settings', path: '/lab/settings', icon: <Settings size={20} /> },
       ],
       patient: [
-        { name: 'Health Hub', path: '/patient/dashboard', icon: <LayoutDashboard size={20} /> },
-        { name: 'Health Locker', path: '/patient/health-locker', icon: <ShieldCheck size={20} /> },
-        { name: 'Book Slot', path: '/patient/book-appointment', icon: <Calendar size={20} /> },
-        { name: 'My Profile', path: '/patient/profile', icon: <UserCircle size={20} /> },
+        { name: 'Home', path: '/patient/dashboard', icon: <Home size={20} /> },
+        { name: 'Appointments', path: '/patient/dashboard?tab=appointments', icon: <Calendar size={20} /> },
+        { name: 'Records', path: '/patient/health-locker', icon: <FolderHeart size={20} /> },
+        { name: 'Clinics', path: '/patient/book-appointment', icon: <Stethoscope size={20} /> },
+        { name: 'Profile', path: '/patient/profile', icon: <UserCircle size={20} /> },
       ]
     };
     // Normalize role key to lowercase to match config
@@ -155,7 +181,7 @@ const Sidebar = ({ role = 'lab' }) => {
   return (
     <>
       {/* Desktop Sidebar (Hidden on Mobile) */}
-      <aside className="hidden lg:flex sticky top-0 left-0 h-screen z-40 w-72 bg-white border-r border-gray-100 flex-col shadow-none">
+      <aside className="hidden lg:flex sticky top-0 left-0 h-screen z-40 w-72 bg-white border-r border-gray-100 flex-col shadow-none shrink-0">
         {/* Logo Section */}
         <div className="p-8">
           <div
@@ -176,27 +202,31 @@ const Sidebar = ({ role = 'lab' }) => {
 
         {/* Navigation Menu */}
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto py-4 custom-scrollbar">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `
-                flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold text-sm transition-all duration-200 group
-                ${isActive
-                  ? 'bg-teal-50 text-teal-600 shadow-sm shadow-teal-100/50'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
-              `}
-            >
-              <div className={`transition-transform group-hover:scale-110 duration-200`}>
-                {item.icon}
-              </div>
-              <span className="flex-1">{item.name}</span>
-              {item.name === 'Dashboard' && (
-                <div className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
-              )}
-              <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-            </NavLink>
-          ))}
+          {menuItems.map((item) => {
+            const active = isItemActive(item.path);
+            return (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => navigate(item.path)}
+                className={`
+                  w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold text-sm transition-all duration-200 group text-left cursor-pointer
+                  ${active
+                    ? 'bg-teal-50 text-teal-600 shadow-sm shadow-teal-100/50'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
+                `}
+              >
+                <div className="transition-transform group-hover:scale-110 duration-200">
+                  {item.icon}
+                </div>
+                <span className="flex-1">{item.name}</span>
+                {active && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
+                )}
+                <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            );
+          })}
         </nav>
 
         {/* User Card & Logout */}
@@ -207,7 +237,7 @@ const Sidebar = ({ role = 'lab' }) => {
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-100 group-hover/card:bg-teal-600 group-hover/card:text-white transition-colors">
-                {userName.substring(0, 2).toUpperCase()}
+                {userName.substring(0, 2).toUpperCase() || 'PT'}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] font-black text-teal-600 uppercase tracking-widest mb-0.5">
@@ -225,7 +255,7 @@ const Sidebar = ({ role = 'lab' }) => {
                 <p className="text-[14px] font-bold text-gray-400 uppercase mt-0.5 truncate">
                   {userRole === 'doctor' 
                     ? (userEducation || userSpecialization || 'Chief Physician')
-                    : (userSpecialization || (userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Wellness Member' : 'Staff Member'))}
+                    : (userSpecialization || (userRole === 'lab' ? 'Diagnostics Lead' : userRole === 'patient' ? 'Verified Member' : 'Staff Member'))}
                 </p>
               </div>
             </div>
@@ -245,7 +275,7 @@ const Sidebar = ({ role = 'lab' }) => {
           {/* Sign Out Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-[13px] uppercase tracking-widest border border-red-100 transition-all active:scale-95 group/logout"
+            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-[13px] uppercase tracking-widest border border-red-100 transition-all active:scale-95 group/logout cursor-pointer"
           >
             <LogOut size={16} className="group-hover/logout:rotate-12 transition-transform" />
             Sign Out
@@ -254,29 +284,56 @@ const Sidebar = ({ role = 'lab' }) => {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation (Hidden on Desktop) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex items-center justify-around z-40 px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => `
-              flex flex-col items-center justify-center min-w-[4rem] p-1.5 rounded-2xl transition-all duration-200
-              ${isActive ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'}
-            `}
-          >
-            {({ isActive }) => (
-              <>
-                <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-teal-50 scale-110' : ''}`}>
-                  {item.icon}
+      {/* Mobile & Tablet Bottom Navigation - Permanently Sticky at Bottom of Screen */}
+      <nav 
+        aria-label="Mobile Navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/80 flex items-center justify-around z-50 px-2 pt-1.5 pb-[max(8px,env(safe-area-inset-bottom,8px))] shadow-[0_-8px_30px_rgba(15,23,42,0.08)]"
+      >
+        <div className="flex items-center justify-around w-full max-w-md mx-auto gap-0.5">
+          {menuItems.map((item) => {
+            const active = isItemActive(item.path);
+            return (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => {
+                  try {
+                    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+                      navigator.vibrate(8);
+                    }
+                  } catch {
+                    // Ignore haptic error
+                  }
+                  navigate(item.path);
+                }}
+                aria-label={item.name}
+                className="relative flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-transform duration-150 active:scale-90 select-none group focus:outline-none cursor-pointer"
+              >
+                <div
+                  className={`relative flex items-center justify-center w-11 h-7 rounded-full transition-all duration-300 ${
+                    active
+                      ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-600/10'
+                      : 'text-slate-400 group-hover:text-slate-600 group-hover:bg-slate-50/70'
+                  }`}
+                >
+                  <div className={`transition-all duration-300 ${active ? 'scale-105' : 'group-hover:scale-105'}`}>
+                    {item.icon}
+                  </div>
+                  {active && (
+                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-teal-600 rounded-full shadow-sm shadow-teal-600/40 animate-pulse" />
+                  )}
                 </div>
-                <span className={`text-[14px] font-black mt-1 uppercase tracking-widest truncate w-full text-center ${isActive ? 'text-teal-600' : 'text-gray-400'}`}>
+                <span
+                  className={`text-[11px] tracking-tight transition-all duration-200 mt-0.5 select-none leading-none ${
+                    active ? 'font-bold text-teal-900 scale-105' : 'font-medium text-slate-500'
+                  }`}
+                >
                   {item.name.split(' ')[0]}
                 </span>
-              </>
-            )}
-          </NavLink>
-        ))}
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* 🌟 Mobile Floating Quick Action Panel for Patients */}

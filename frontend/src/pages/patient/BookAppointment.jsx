@@ -6,9 +6,7 @@ import {
     Building2, Stethoscope, Calendar, CalendarOff, ArrowRight, ArrowLeft,
     MapPin, Phone, CheckCircle, AlertCircle, Loader, Search, Clock, Activity, Zap, Check, ChevronRight, X, CalendarDays, ShieldCheck, GraduationCap, Briefcase
 } from 'lucide-react';
-import Sidebar from '../../components/Sidebar';
 import SEO from '../../components/SEO';
-import PatientBottomNav from '../../components/patient/PatientBottomNav';
 import { API_URL } from '../../config/runtime';
 const MAX_BOOKING_DAYS = 14;
 const DEFAULT_WORKING_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -480,11 +478,10 @@ const BookAppointment = () => {
     const filteredClinics = clinics.filter(c => c.name.toLowerCase().includes(searchClinic.toLowerCase()) || c.address.toLowerCase().includes(searchClinic.toLowerCase()));
 
     return (
-        <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-body">
+        <div className="px-4 py-4 md:p-6 lg:p-10 max-w-6xl mx-auto w-full">
             <SEO title="Book Appointment" noindex={true} />
-            <Sidebar role="patient" />
 
-            <div className="flex-grow px-4 py-4 md:p-6 lg:p-10 max-w-6xl mx-auto w-full">
+            <div className="w-full">
                 {/* Header Section */}
                 <header className="flex items-center justify-between gap-3 mb-5 md:mb-8 lg:mb-10">
                     <div className="flex-1 min-w-0">

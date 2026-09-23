@@ -190,7 +190,7 @@ const SubscriptionDetails = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {[
                     { key: 'billing', name: 'Patient Billing & Invoicing', desc: 'GST invoices, receipt PDFs, collection reports' },
-                    { key: 'messaging', name: 'WhatsApp & SMS Alerts', desc: 'Automated appointment & lab alerts' },
+                    { key: 'messaging', name: 'Instant SMS & Queue Alerts', desc: 'Automated appointment & lab alerts' },
                     { key: 'appointments', name: 'Online Booking Engine', desc: 'Slot management & online queue booking' },
                     { key: 'lab-connect', name: 'Lab Integration & Routing', desc: 'Electronic lab order dispatch' },
                     { key: 'analytics', name: 'Advanced Clinic Analytics', desc: 'Revenue graphs & patient metrics' },

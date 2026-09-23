@@ -5,9 +5,9 @@ const SEO = ({ title, description, url, keywords, image, schemaMarkup, noindex }
     const brandName = import.meta.env.VITE_BRAND_NAME || "Appointory";
     const siteUrl = import.meta.env.VITE_SITE_URL || "https://appointory.in";
 
-    const defaultTitle = `${brandName} | Real-time Clinical Management & Digital Health Locker`;
-    const defaultDescription = `${brandName} is a real-time clinical management and digital health locker platform with live queue tracking, lab referrals, OTP-secured patient access, and role-based clinic dashboards.`;
-    const defaultKeywords = `${brandName}, clinic management system, patient queue management, digital health locker, medical records, healthcare app, EMR system`;
+    const defaultTitle = `${brandName} | Real-time Clinical Management, Smart Billing & Digital Health Locker`;
+    const defaultDescription = `${brandName} is India's premier AI-powered clinic management system, OPD queue intelligence, smart medical billing with GST invoicing, instant patient messaging alerts, independent diagnostic lab network, and AES-256 encrypted digital health locker.`;
+    const defaultKeywords = `${brandName}, appointory, doctor appointment booking software, clinic management system, clinic billing software, GST medical invoice, OPD queue token system, live queue tracking, patient messaging alerts, digital health locker, medical report storage, pathology lab referral, independent diagnostic lab portal, waiting room TV token display, doctor prescription templates, healthcare IT India, EMR system, ABHA ABDM health record`;
 
     const imageUrl = image
         ? (image.startsWith('http') ? image : `${siteUrl}${image}`)
@@ -53,11 +53,17 @@ const SEO = ({ title, description, url, keywords, image, schemaMarkup, noindex }
                 </>
             )}
 
-            {/* Region / Language */}
+            {/* Region / Language & AI Crawlers */}
             <meta name="language" content="English" />
             <meta name="geo.region" content="IN" />
             <meta name="geo.placename" content="India" />
             <meta name="ICBM" content="20.5937,78.9629" />
+            <meta name="theme-color" content="#0D9488" />
+            <meta name="application-name" content={brandName} />
+            <meta name="apple-mobile-web-app-title" content={brandName} />
+            <meta name="format-detection" content="telephone=no" />
+            <meta name="rating" content="General" />
+            <meta name="revisit-after" content="2 days" />
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="website" />

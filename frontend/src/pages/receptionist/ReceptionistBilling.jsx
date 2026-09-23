@@ -447,7 +447,7 @@ const ReceptionistBilling = () => {
       toast: true,
       position: 'top-end',
       icon: 'success',
-      title: 'Receipt text copied for WhatsApp/SMS!',
+      title: 'Receipt text copied for SMS/Digital share!',
       showConfirmButton: false,
       timer: 2500
     });
