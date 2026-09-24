@@ -9,11 +9,17 @@ import {
   ShieldCheck, TrendingUp, ArrowLeft, RefreshCcw, Smartphone, Hash,
   Droplet, Heart, Weight, Pill, Zap, Thermometer, Droplets, ArrowUpRight, Search, Database,
   Upload, X, Plus, Trash2, Loader2, FileUp, CheckCircle, AlertCircle,
-  Receipt, DollarSign, Printer, ChevronLeft, ChevronRight, CheckCircle2, Beaker, Stethoscope, Clock, FileDown
+  Receipt, DollarSign, Printer, ChevronLeft, ChevronRight, CheckCircle2, Beaker, Stethoscope, Clock, FileDown,
+  Sunrise, Sun, Moon, Utensils, Timer, Share2, Check, Sparkles, Filter
 } from 'lucide-react';
 import SEO from '../../components/SEO';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  categorizePrescriptions,
+  getPrescriptionSchedule,
+  getDosageTimingSlots
+} from '../../utils/medicationTracker';
 
 const socket = SOCKET_URL ? io(SOCKET_URL) : { on: () => { }, off: () => { }, emit: () => { } };
 
@@ -36,10 +42,45 @@ const HealthLocker = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     if (queryTab === 'bills') return 'bills';
+    if (queryTab === 'medicine' || queryTab === 'prescriptions') return 'medicine';
     if (isUploadRequested) return 'reports';
     return 'vitals';
   });
   const [selectedReportIndex, setSelectedReportIndex] = useState(null);
+
+  // Medication / Prescription Tab State
+  const [prescriptionFilter, setPrescriptionFilter] = useState('all'); // 'all' | 'active' | 'completed'
+  const [prescriptionSearch, setPrescriptionSearch] = useState('');
+
+  const prescriptionData = useMemo(() => {
+    return categorizePrescriptions(data?.medicalHistory || []);
+  }, [data?.medicalHistory]);
+
+  const displayPrescriptions = useMemo(() => {
+    let list = [];
+    if (prescriptionFilter === 'active') {
+      list = prescriptionData.activePrescriptions;
+    } else if (prescriptionFilter === 'completed') {
+      list = prescriptionData.completedPrescriptions;
+    } else {
+      list = [
+        ...prescriptionData.activePrescriptions,
+        ...prescriptionData.completedPrescriptions,
+        ...prescriptionData.upcomingPrescriptions
+      ];
+    }
+
+    if (prescriptionSearch.trim()) {
+      const q = prescriptionSearch.toLowerCase().trim();
+      list = list.filter(r =>
+        (r.doctorName || '').toLowerCase().includes(q) ||
+        (r.clinicName || '').toLowerCase().includes(q) ||
+        (r.diagnosis || '').toLowerCase().includes(q) ||
+        (r.medicines || []).some(m => (m.name || '').toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [prescriptionData, prescriptionFilter, prescriptionSearch]);
 
   // Billing Tab State
   const [billSearch, setBillSearch] = useState('');
@@ -98,6 +139,8 @@ const HealthLocker = () => {
   useEffect(() => {
     if (queryTab === 'bills') {
       setActiveTab('bills');
+    } else if (queryTab === 'medicine' || queryTab === 'prescriptions') {
+      setActiveTab('medicine');
     } else if (isUploadRequested) {
       Promise.resolve().then(() => {
         setShowUploadModal(true);
@@ -202,6 +245,123 @@ const HealthLocker = () => {
     } catch (err) {
       console.error("PDF generation error:", err);
     }
+  };
+
+  const handleDownloadPrescriptionPdf = (record, schedule) => {
+    try {
+      const doc = new jsPDF();
+      const clinicName = record.clinicName || 'SwasthyaMitra Healthcare';
+      const doctorName = record.doctorName ? `Dr. ${record.doctorName}` : 'Consultant Specialist';
+      const patientName = data?.name || 'Valued Patient';
+      const dateStr = new Date(record.date || record.visitDate || Date.now()).toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
+
+      // Header Banner
+      doc.setFillColor(15, 118, 110);
+      doc.rect(0, 0, 210, 36, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text(clinicName.toUpperCase(), 14, 16);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`${doctorName} ${record.doctorSpecialization ? `· ${record.doctorSpecialization}` : ''}`, 14, 23);
+      doc.text(record.clinicAddress || 'Healthcare Consultation Center', 14, 29);
+
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text('RX PRESCRIPTION', 196, 16, { align: 'right' });
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Date: ${dateStr}`, 196, 23, { align: 'right' });
+      if (schedule?.totalDays) {
+        doc.text(`Course: ${schedule.totalDays} Days (${schedule.isActive ? 'Active Course' : 'Concluded'})`, 196, 29, { align: 'right' });
+      }
+
+      // Patient Details
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('PATIENT RECORD', 14, 46);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Patient Name: ${patientName}`, 14, 53);
+      doc.text(`Mobile: ${data?.phone || 'N/A'}`, 14, 59);
+      doc.text(`Age/Gender: ${data?.age ? `${data.age} Yrs` : 'N/A'} / ${data?.gender || 'N/A'}`, 110, 53);
+      doc.text(`Diagnosis: ${record.diagnosis || 'Clinical Consultation'}`, 110, 59);
+
+      // Divider line
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 65, 196, 65);
+
+      // Medicines Table
+      const medsList = schedule?.medicinesSchedule || record.medicines || [];
+      const tableRows = medsList.map((m, idx) => [
+        idx + 1,
+        `${m.name || 'Medicine'} ${m.strength ? `(${m.strength})` : ''}`,
+        m.whenToTake || m.time || 'As Directed',
+        m.beforeAfter || 'After Meals',
+        m.duration || (m.parsedDays ? `${m.parsedDays} Days` : '-'),
+        m.instructions || '-'
+      ]);
+
+      autoTable(doc, {
+        startY: 70,
+        head: [['#', 'Medicine Name & Strength', 'Frequency', 'Meal Relation', 'Duration', 'Instructions']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+        bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: { left: 14, right: 14 }
+      });
+
+      const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : 130;
+
+      if (record.notes || record.symptoms) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(30, 41, 59);
+        doc.text('DOCTOR ADVICE & INSTRUCTIONS:', 14, finalY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(71, 85, 105);
+        doc.text(`"${record.notes || record.symptoms}"`, 14, finalY + 6);
+      }
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('This is a verified digital prescription from SwasthyaMitra Healthcare Portal.', 14, 280);
+      doc.text(`Printed: ${new Date().toLocaleString('en-IN')}`, 196, 280, { align: 'right' });
+
+      doc.save(`Prescription_${patientName.replace(/\s+/g, '_')}_${dateStr.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error("Prescription PDF error:", err);
+    }
+  };
+
+  const handleSharePrescriptionWhatsApp = (record, schedule) => {
+    const doctor = record.doctorName ? `Dr. ${record.doctorName}` : 'Doctor';
+    const clinic = record.clinicName || 'Clinic';
+    const dateStr = new Date(record.date || record.visitDate || Date.now()).toLocaleDateString('en-IN');
+    
+    let medsText = '';
+    const medsList = schedule?.medicinesSchedule || record.medicines || [];
+    medsList.forEach((m, idx) => {
+      medsText += `\n${idx + 1}. *${m.name}* ${m.strength ? `(${m.strength})` : ''}\n   ⏰ Timing: ${m.whenToTake || m.time || 'Daily'} | 🍽️ ${m.beforeAfter || 'After Meals'} | ⏱️ ${m.duration || `${m.parsedDays || 3} Days`}`;
+      if (m.instructions) medsText += `\n   📝 _${m.instructions}_`;
+    });
+
+    const statusBadge = schedule?.isActive
+      ? `🟢 Active Course (Day ${schedule.currentDay} of ${schedule.totalDays})`
+      : `✓ Course Concluded (${schedule.totalDays} Days)`;
+
+    const msg = `*Prescription from ${doctor}*\n🏥 *${clinic}*\n📅 Date: ${dateStr}\n📋 Diagnosis: ${record.diagnosis || 'Clinical Consultation'}\nStatus: ${statusBadge}\n\n*Prescribed Medications:*${medsText}\n\n_View digital records on SwasthyaMitra Portal_`;
+    
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   const handleFileUpload = async (e) => {
@@ -360,6 +520,7 @@ const HealthLocker = () => {
               onClick={() => setActiveTab('medicine')} 
               icon={<Pill size={15} />} 
               label="Prescriptions" 
+              count={prescriptionData.activeCount > 0 ? `${prescriptionData.activeCount} Active` : (prescriptionData.totalCount || undefined)}
             />
             <TabBtn 
               active={activeTab === 'reports'} 
@@ -479,63 +640,367 @@ const HealthLocker = () => {
           )}
 
           {activeTab === 'medicine' && (
-            <div className="space-y-4 md:space-y-5">
-              {data.medicalHistory?.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                  {data.medicalHistory.map((record, i) => (
-                    <div key={i} className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm hover:border-teal-500/50 transition-all group">
-                      <div className="flex justify-between items-start mb-3 md:mb-4">
-                        <div>
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <span className="px-2.5 py-0.5 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold uppercase tracking-wider border border-teal-100">
-                              Prescription
-                            </span>
-                          </div>
-                          <h4 className="text-sm md:text-base font-bold text-slate-900 tracking-tight">Dr. {record.doctorName}</h4>
-                          <p className="text-xs font-medium text-slate-500 mt-0.5">{record.clinicName}</p>
-                        </div>
-                        <div className="p-2 md:p-2.5 bg-slate-50 rounded-lg md:rounded-xl text-slate-400 group-hover:text-teal-600 group-hover:bg-teal-50 transition-all">
-                          <Calendar size={14} />
-                        </div>
-                      </div>
+            <div className="space-y-4 md:space-y-6">
+              {/* Prescriptions Header & Course Filter Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight flex items-center gap-2">
+                    <Pill className="text-teal-600" size={18} />
+                    <span>Prescriptions &amp; Daily Medication Courses</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-normal mt-0.5">
+                    Live day-wise course progress. Active medications expire automatically once their duration ends.
+                  </p>
+                </div>
 
-                      <div className="p-3 md:p-4 bg-slate-900 rounded-lg md:rounded-xl text-white mb-3 md:mb-4">
-                        <div className="flex items-center gap-2 mb-2.5">
-                          <div className="p-1.5 bg-white/10 rounded-lg text-teal-400"><Pill size={12} /></div>
-                          <span className="text-xs font-semibold uppercase tracking-wider text-teal-200">Medicine Course</span>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-60">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={prescriptionSearch}
+                      onChange={(e) => setPrescriptionSearch(e.target.value)}
+                      placeholder="Search medicine or doctor..."
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-teal-500 focus:bg-white transition-all"
+                    />
+                    {prescriptionSearch && (
+                      <button
+                        onClick={() => setPrescriptionSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Course Status Filter Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  onClick={() => setPrescriptionFilter('all')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                    prescriptionFilter === 'all'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <span>All Prescriptions</span>
+                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${prescriptionFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                    {prescriptionData.totalCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setPrescriptionFilter('active')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                    prescriptionFilter === 'active'
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                      : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50/50'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>🟢 Active Courses Today</span>
+                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${prescriptionFilter === 'active' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'}`}>
+                    {prescriptionData.activeCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setPrescriptionFilter('completed')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+                    prescriptionFilter === 'completed'
+                      ? 'bg-slate-800 text-white shadow-sm'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <Check size={13} className={prescriptionFilter === 'completed' ? 'text-teal-300' : 'text-slate-400'} />
+                  <span>📁 Completed / Expired History</span>
+                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${prescriptionFilter === 'completed' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                    {prescriptionData.completedCount}
+                  </span>
+                </button>
+              </div>
+
+              {/* Prescription Cards List */}
+              {displayPrescriptions.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                  {displayPrescriptions.map((record, i) => {
+                    const schedule = record.schedule || getPrescriptionSchedule(record);
+                    const isActive = schedule.isActive;
+
+                    return (
+                      <div
+                        key={record.uniqueKey || i}
+                        className={`rounded-2xl transition-all flex flex-col justify-between overflow-hidden ${
+                          isActive
+                            ? 'bg-white border-2 border-teal-500/40 shadow-md hover:border-teal-500 hover:shadow-xl'
+                            : 'bg-white/90 border border-slate-200/90 shadow-sm opacity-95 hover:opacity-100'
+                        }`}
+                      >
+                        {/* Top Course Status Ribbon */}
+                        <div
+                          className={`px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b ${
+                            isActive
+                              ? 'bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50/50 border-teal-100'
+                              : 'bg-slate-100/70 border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            {isActive ? (
+                              <>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold tracking-wide shadow-xs">
+                                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                                  <span>Active · Day {schedule.currentDay} of {schedule.totalDays}</span>
+                                </span>
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 text-teal-800 border border-teal-200 rounded-full text-xs font-semibold">
+                                  <Timer size={12} className="text-teal-600" />
+                                  <span>{schedule.remainingDays} Day{schedule.remainingDays > 1 ? 's' : ''} Remaining</span>
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-bold tracking-wide">
+                                  <Check size={12} className="text-emerald-600 stroke-[3]" />
+                                  <span>Course Concluded ({schedule.totalDays} Days Completed)</span>
+                                </span>
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  Ended on {new Date(schedule.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-white/80 px-2.5 py-1 rounded-xl border border-slate-200/60 shadow-2xs">
+                            <Calendar size={13} className="text-teal-600" />
+                            <span>{new Date(record.date || record.visitDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          </div>
                         </div>
-                        <div className="space-y-2 md:space-y-2.5">
-                          {record.medicines?.map((med, idx) => (
-                            <div key={idx} className="flex justify-between items-center py-1.5 md:py-2 border-b border-white/5 last:border-0">
-                              <div>
-                                <p className="font-semibold text-sm">{med.name}</p>
-                                <p className="text-xs text-slate-400">{med.time}</p>
+
+                        {/* Card Content */}
+                        <div className="p-4 sm:p-5 space-y-4 flex-grow">
+                          {/* Doctor & Clinic Details */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-[11px] font-bold text-teal-700 uppercase tracking-wider">Prescribing Physician</p>
+                              <h4 className="text-base font-bold text-slate-900 tracking-tight mt-0.5">
+                                Dr. {record.doctorName}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium">
+                                {record.clinicName} {record.clinicAddress ? `· ${record.clinicAddress}` : ''}
+                              </p>
+                            </div>
+                            <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center shrink-0 shadow-2xs">
+                              <Stethoscope size={18} />
+                            </div>
+                          </div>
+
+                          {/* Dynamic Course Day Progress Bar (Only for active courses) */}
+                          {isActive && (
+                            <div className="p-3.5 bg-gradient-to-r from-teal-50/70 to-emerald-50/70 rounded-xl border border-teal-100/80 space-y-2">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="font-bold text-teal-900 flex items-center gap-1.5">
+                                  <Sparkles size={13} className="text-teal-600" />
+                                  Course Progress: {schedule.progressPercent}%
+                                </span>
+                                <span className="font-semibold text-teal-800">
+                                  Day {schedule.currentDay} of {schedule.totalDays} Days
+                                </span>
                               </div>
-                              <div className="text-right">
-                                <p className="font-semibold text-teal-400 text-sm">{med.amount}</p>
-                                <p className="text-xs text-slate-400">Total: {med.total}</p>
+                              <div className="w-full bg-white/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-teal-200/50 shadow-inner">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-700 shadow-sm"
+                                  style={{ width: `${Math.max(5, schedule.progressPercent)}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between items-center text-[11px] text-slate-500 pt-0.5">
+                                <span>Started: {new Date(schedule.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                                <span>Ends: {new Date(schedule.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          )}
 
-                      <div className="space-y-2 md:space-y-2.5">
-                        <div className="p-2.5 md:p-3 bg-slate-50 rounded-lg md:rounded-xl border border-slate-100">
-                          <p className="text-xs font-semibold text-teal-700 uppercase tracking-wider mb-0.5">Diagnosis</p>
-                          <p className="text-sm font-medium text-slate-700 leading-relaxed">{record.diagnosis || 'N/A'}</p>
-                        </div>
-                        {record.notes && (
-                          <div className="p-2.5 md:p-3 bg-slate-50 rounded-lg md:rounded-xl border border-slate-100">
-                            <p className="text-xs font-semibold text-teal-700 uppercase tracking-wider mb-0.5">Instructions</p>
-                            <p className="text-sm font-medium text-slate-700 leading-relaxed italic">"{record.notes}"</p>
+                          {/* Prescribed Medicines Course List */}
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                <Pill size={14} className="text-teal-600" />
+                                <span>Prescribed Medicines ({record.medicines?.length || 0})</span>
+                              </p>
+                              {isActive && (
+                                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                  Take Doses Today
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              {(schedule.medicinesSchedule || record.medicines || []).map((med, mIdx) => (
+                                <div
+                                  key={mIdx}
+                                  className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:border-teal-200 transition-all space-y-2"
+                                >
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-7 h-7 rounded-lg bg-teal-100/70 text-teal-700 flex items-center justify-center font-bold text-xs shrink-0">
+                                        {mIdx + 1}
+                                      </div>
+                                      <div>
+                                        <h5 className="font-bold text-slate-900 text-sm">
+                                          {med.name}
+                                          {med.strength && (
+                                            <span className="ml-1.5 font-semibold text-teal-700 text-xs bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                                              {med.strength}
+                                            </span>
+                                          )}
+                                        </h5>
+                                      </div>
+                                    </div>
+
+                                    {/* Per Medicine Day Badge */}
+                                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                                      {med.isSos ? (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                          SOS / As Needed
+                                        </span>
+                                      ) : med.isCompleted ? (
+                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
+                                          ✓ Course Done
+                                        </span>
+                                      ) : (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                          Day {med.currentDay} of {med.parsedDays || schedule.totalDays}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Timing Slots & Meal Instruction Chips */}
+                                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                    {/* Timing slots */}
+                                    {(med.timingSlots || getDosageTimingSlots(med.whenToTake, med.time)).map((slot, sIdx) => (
+                                      <span
+                                        key={sIdx}
+                                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.8 bg-white border border-slate-200 rounded-lg text-slate-700 shadow-2xs"
+                                      >
+                                        {slot.id === 'morning' ? (
+                                          <Sunrise size={12} className="text-amber-500" />
+                                        ) : slot.id === 'afternoon' ? (
+                                          <Sun size={12} className="text-orange-500" />
+                                        ) : slot.id === 'night' ? (
+                                          <Moon size={12} className="text-indigo-500" />
+                                        ) : (
+                                          <Clock size={12} className="text-teal-600" />
+                                        )}
+                                        <span>{slot.label}</span>
+                                        {slot.timeSlot && <span className="text-slate-400 font-normal">({slot.timeSlot})</span>}
+                                      </span>
+                                    ))}
+
+                                    {/* Food relation */}
+                                    {med.beforeAfter && (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.8 bg-teal-50 border border-teal-100 text-teal-800 rounded-lg">
+                                        <Utensils size={11} className="text-teal-600" />
+                                        <span>{med.beforeAfter}</span>
+                                      </span>
+                                    )}
+
+                                    {/* Duration Tag */}
+                                    {med.duration && (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.8 bg-slate-100 text-slate-600 rounded-lg">
+                                        <Timer size={11} />
+                                        <span>{med.duration}</span>
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Medicine instructions note */}
+                                  {med.instructions && (
+                                    <p className="text-xs text-slate-600 italic font-medium bg-white/80 p-2 rounded-lg border border-slate-100">
+                                      "{med.instructions}"
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        )}
+
+                          {/* Diagnosis & Instructions */}
+                          <div className="space-y-2 pt-1">
+                            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/70">
+                              <p className="text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-0.5">Clinical Diagnosis</p>
+                              <p className="text-xs font-semibold text-slate-800 leading-relaxed">
+                                {record.diagnosis || 'Clinical Consultation'}
+                              </p>
+                            </div>
+
+                            {record.notes && (
+                              <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/70">
+                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Doctor's Clinical Notes</p>
+                                <p className="text-xs font-medium text-slate-700 italic leading-relaxed">
+                                  "{record.notes}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Card Actions Footer */}
+                        <div className="p-3 sm:px-5 sm:py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadPrescriptionPdf(record, schedule)}
+                            className="flex-1 py-2 px-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95"
+                          >
+                            <FileDown size={14} />
+                            <span>Download PDF Slip</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleSharePrescriptionWhatsApp(record, schedule)}
+                            className="py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95"
+                            title="Share on WhatsApp"
+                          >
+                            <Share2 size={14} />
+                            <span className="hidden sm:inline">WhatsApp</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              ) : <EmptyState message="No prescriptions found." />}
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 text-center space-y-3">
+                  <div className="w-14 h-14 bg-teal-50 border border-teal-100 text-teal-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                    <Pill size={24} />
+                  </div>
+                  <h4 className="text-base font-bold text-slate-900 tracking-tight">
+                    {prescriptionFilter === 'active'
+                      ? 'No Active Medication Courses Today'
+                      : prescriptionFilter === 'completed'
+                      ? 'No Completed Prescriptions Archived'
+                      : 'No Prescriptions Found'}
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    {prescriptionFilter === 'active'
+                      ? "All your prescribed medicine courses have reached their full duration and ended. If you need a renewal, please consult your doctor."
+                      : prescriptionFilter === 'completed'
+                      ? "Prescriptions whose duration has ended will automatically move into this archive."
+                      : "When your doctor prescribes day-wise medication during clinic visits, it will be monitored here automatically."}
+                  </p>
+                  {prescriptionFilter === 'active' && prescriptionData.completedCount > 0 && (
+                    <button
+                      onClick={() => setPrescriptionFilter('completed')}
+                      className="mt-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-all inline-flex items-center gap-1.5"
+                    >
+                      <span>View Past Completed History ({prescriptionData.completedCount})</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

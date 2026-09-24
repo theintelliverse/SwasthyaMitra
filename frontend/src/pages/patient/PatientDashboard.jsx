@@ -6,12 +6,17 @@ import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   FileText, Clock, ExternalLink, LogOut,
   ShieldCheck, Activity, Search, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle,
-  Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle, Receipt
+  Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle, Receipt,
+  Sunrise, Sun, Moon, Utensils, Timer
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import SEO from '../../components/SEO';
 import AppointmentCard from '../../components/patient/AppointmentCard';
 import AppointmentDetailSheet from '../../components/patient/AppointmentDetailSheet';
+import {
+  categorizePrescriptions,
+  getPrescriptionSchedule
+} from '../../utils/medicationTracker';
 
 const socket = SOCKET_URL ? io(SOCKET_URL, {
   transports: ['websocket', 'polling'],
@@ -162,12 +167,30 @@ const PatientDashboard = () => {
 
   const nextHeroAppointment = upcomingAppointments[0];
 
+  const prescriptionSummary = useMemo(() => {
+    const history = patientData?.medicalHistory || patientData?.visitHistory || [];
+    return categorizePrescriptions(history);
+  }, [patientData]);
+
   const recentActivities = useMemo(() => {
     const list = [];
 
     // 1. Clinical visits from Medical History (from doctor/EHR)
     const history = patientData?.medicalHistory || patientData?.visitHistory || [];
     history.forEach((visit, idx) => {
+      const schedule = getPrescriptionSchedule(visit);
+      let badge = 'Medical Record';
+      let badgeColor = 'bg-teal-50 text-teal-700 border-teal-200';
+      if (visit.medicines?.length > 0) {
+        if (schedule.isActive) {
+          badge = `🟢 Active (Day ${schedule.currentDay}/${schedule.totalDays})`;
+          badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        } else if (schedule.isCompleted) {
+          badge = `✓ Completed (${schedule.totalDays}d)`;
+          badgeColor = 'bg-slate-100 text-slate-600 border-slate-200';
+        }
+      }
+
       list.push({
         id: visit.visitId || visit._id || `visit-${idx}`,
         type: 'visit',
@@ -175,8 +198,8 @@ const PatientDashboard = () => {
         doctorName: visit.doctorName || 'Consultant Specialist',
         subtitle: visit.diagnosis || visit.symptoms || visit.notes || 'Consultation Logged',
         date: visit.date || visit.createdAt || visit.visitDate,
-        badge: 'Medical Record',
-        badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
+        badge,
+        badgeColor,
         raw: visit,
       });
     });
@@ -395,6 +418,141 @@ const PatientDashboard = () => {
               </div>
             )}
 
+            {/* ACTIVE MEDICATION SCHEDULE (DAY-WISE DURATION TRACKER) */}
+            {prescriptionSummary.activePrescriptions.length > 0 && (
+              <div className="bg-gradient-to-br from-white via-white to-teal-50/40 rounded-3xl border-2 border-teal-500/35 p-5 md:p-6 shadow-xl shadow-teal-900/5 relative overflow-hidden space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center shadow-md shadow-teal-600/30 shrink-0">
+                      <Pill size={22} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">
+                          Active Medication Schedule
+                        </h3>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-full border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                          <span>{prescriptionSummary.activeCount} Ongoing Course{prescriptionSummary.activeCount > 1 ? 's' : ''}</span>
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Day-wise medication course prescribed by your doctor. Automatically ends once duration concludes.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/patient/health-locker?tab=medicine')}
+                    className="self-start sm:self-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                  >
+                    <span>View Prescriptions</span>
+                    <ArrowRight size={13} className="text-teal-400" />
+                  </button>
+                </div>
+
+                {/* Active Courses Cards */}
+                <div className="space-y-3">
+                  {prescriptionSummary.activePrescriptions.map((record, rIdx) => {
+                    const schedule = record.schedule;
+                    return (
+                      <div
+                        key={record.uniqueKey || rIdx}
+                        className="bg-white/95 rounded-2xl border border-teal-100 p-4 shadow-xs hover:border-teal-300 transition-all space-y-3"
+                      >
+                        {/* Course Header */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-full shadow-xs flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                              Day {schedule.currentDay} of {schedule.totalDays}
+                            </span>
+                            <span className="text-xs font-semibold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+                              ⏱️ {schedule.remainingDays} Day{schedule.remainingDays > 1 ? 's' : ''} Remaining
+                            </span>
+                          </div>
+
+                          <p className="text-xs font-semibold text-slate-700">
+                            Dr. {record.doctorName} <span className="text-slate-400 font-normal">({record.clinicName})</span>
+                          </p>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                            <span className="text-teal-700">Course Progress: {schedule.progressPercent}%</span>
+                            <span className="text-slate-400 font-normal">
+                              Ends {new Date(schedule.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-700"
+                              style={{ width: `${Math.max(5, schedule.progressPercent)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Prescribed Medicines to Take Today */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+                          {(schedule.medicinesSchedule || []).map((med, mIdx) => (
+                            <div
+                              key={mIdx}
+                              className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/70 hover:bg-white hover:border-teal-200 transition-all space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <h5 className="font-bold text-slate-900 text-xs truncate">
+                                  {med.name}
+                                </h5>
+                                {med.strength && (
+                                  <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-100">
+                                    {med.strength}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Timing Badges */}
+                              <div className="flex flex-wrap items-center gap-1">
+                                {(med.timingSlots || []).map((slot, sIdx) => (
+                                  <span
+                                    key={sIdx}
+                                    className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 shadow-2xs"
+                                  >
+                                    {slot.id === 'morning' ? (
+                                      <Sunrise size={10} className="text-amber-500" />
+                                    ) : slot.id === 'afternoon' ? (
+                                      <Sun size={10} className="text-orange-500" />
+                                    ) : slot.id === 'night' ? (
+                                      <Moon size={10} className="text-indigo-500" />
+                                    ) : (
+                                      <Clock size={10} className="text-teal-600" />
+                                    )}
+                                    <span>{slot.label}</span>
+                                  </span>
+                                ))}
+                                {med.beforeAfter && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 bg-teal-50 text-teal-700 rounded border border-teal-100">
+                                    <Utensils size={9} />
+                                    <span>{med.beforeAfter}</span>
+                                  </span>
+                                )}
+                              </div>
+
+                              {med.instructions && (
+                                <p className="text-[11px] text-slate-500 italic truncate">
+                                  "{med.instructions}"
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* QUICK ACTIONS GRID */}
             <div>
               <div className="flex justify-between items-center mb-3 px-1">
@@ -497,7 +655,7 @@ const PatientDashboard = () => {
                         } else if (item.type === 'invoice') {
                           navigate('/patient/health-locker?tab=bills');
                         } else {
-                          navigate('/patient/health-locker');
+                          navigate('/patient/health-locker?tab=medicine');
                         }
                       }}
                       className="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 rounded-xl transition-all cursor-pointer group"
