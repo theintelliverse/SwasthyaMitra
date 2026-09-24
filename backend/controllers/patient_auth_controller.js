@@ -491,6 +491,27 @@ exports.bookAppointment = async (req, res) => {
             });
         }
 
+        // 4️⃣ Block appointments if doctor is LIVE on the walk-in queue for this date range
+        if (doctor.isAvailable === false) {
+            const apptDateOnly = new Date(parsedAppointmentDate); apptDateOnly.setHours(0, 0, 0, 0);
+            const serverTodayOnly = new Date(); serverTodayOnly.setHours(0, 0, 0, 0);
+            // Determine the end of the live period (liveUntilDate or today only)
+            const liveEndDate = doctor.liveUntilDate
+                ? new Date(doctor.liveUntilDate)
+                : new Date(serverTodayOnly);
+            liveEndDate.setHours(23, 59, 59, 999);
+
+            if (apptDateOnly >= serverTodayOnly && apptDateOnly <= liveEndDate) {
+                const untilStr = doctor.liveUntilDate
+                    ? `until ${new Date(doctor.liveUntilDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
+                    : 'today';
+                return res.status(400).json({
+                    success: false,
+                    message: `Dr. ${doctor.name} is on live walk-in queue ${untilStr} and is not accepting appointments during this period. Please book after that date.`
+                });
+            }
+        }
+
         if (rescheduleAppointmentId) {
             // Find existing queue entry (supports queueId or patient appointment subdocument ID)
             let queueEntry = null;

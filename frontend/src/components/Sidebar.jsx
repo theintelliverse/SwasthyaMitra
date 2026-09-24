@@ -124,6 +124,7 @@ const Sidebar = ({ role = 'lab' }) => {
         { name: 'Test Requests', path: '/lab/requests', icon: <ClipboardList size={20} /> },
         { name: 'Samples', path: '/lab/samples', icon: <TestTubes size={20} /> },
         { name: 'Reports', path: '/lab/reports', icon: <FileCheck size={20} /> },
+        { name: 'Lab Billing', path: '/receptionist/billing?type=lab', icon: <Receipt size={20} /> },
         { name: 'Analytics', path: '/lab/analytics', icon: <Activity size={20} /> },
         { name: 'Settings', path: '/lab/settings', icon: <Settings size={20} /> },
       ],

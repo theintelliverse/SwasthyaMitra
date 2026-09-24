@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Save, User, Building2, Clock, Phone, LogOut,
   FlaskConical, PenTool, FileDigit, CheckCircle2,
   AlertCircle, ChevronRight, RefreshCcw, Shield,
-  MapPin, Microscope, Star
+  MapPin, Microscope, Star, CalendarOff
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
@@ -27,6 +27,7 @@ const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded
 const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [leaves, setLeaves] = useState([]);
   const token = localStorage.getItem('token');
 
   const [clinicData, setClinicData] = useState({
@@ -45,16 +46,17 @@ const Settings = () => {
     digitalReportEnabled: true
   });
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
-      const [clinicRes, userRes] = await Promise.all([
+      const [clinicRes, userRes, leavesRes] = await Promise.all([
         axios.get(`${API_URL}/api/clinic/me`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/clinic/leaves`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { success: false } }))
       ]);
+
+      if (leavesRes?.data?.success) {
+        setLeaves(leavesRes.data.data || []);
+      }
 
       if (clinicRes.data.success) {
         const d = clinicRes.data.data;
@@ -86,7 +88,11 @@ const Settings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -389,6 +395,70 @@ const Settings = () => {
                       When enabled, lab staff can fill in test parameters directly in the portal. The system auto-generates a printable/shareable PDF with the lab's branding and the Authorized Signatory's name.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* --- Scheduled Lab & Clinic Holidays Card --- */}
+              <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden mt-4">
+                <div className="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                      <CalendarOff size={14} />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-black text-slate-900">Lab & Clinic Holidays (રજા)</h2>
+                      <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Facility closures & maintenance schedule</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-slate-500 font-semibold">Managed by Clinic Admin</span>
+                </div>
+
+                <div className="p-4">
+                  {leaves.filter(l => l.type === 'lab_leave' || !l.doctorId || l.type === 'clinic_holiday').length === 0 ? (
+                    <div className="py-8 text-center text-slate-400 space-y-1">
+                      <CalendarOff size={24} className="mx-auto opacity-30 text-slate-400" />
+                      <p className="text-xs font-bold text-slate-600">No Upcoming Lab Holidays Scheduled</p>
+                      <p className="text-[11px] text-slate-400">The in-house lab is available for processing on all operating days.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {leaves.filter(l => l.type === 'lab_leave' || !l.doctorId || l.type === 'clinic_holiday').map((leave) => {
+                        const s = new Date(leave.startDate);
+                        const e = new Date(leave.endDate);
+                        const now = new Date();
+                        const isActive = now >= s && now <= e;
+                        const isLabSpecific = leave.type === 'lab_leave';
+                        return (
+                          <div 
+                            key={leave._id} 
+                            className={`p-3.5 rounded-xl border transition-all ${
+                              isActive 
+                                ? 'bg-amber-50 border-amber-200' 
+                                : isLabSpecific
+                                ? 'bg-teal-50/50 border-teal-100'
+                                : 'bg-slate-50 border-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <span className="font-bold text-xs text-slate-800 truncate">{leave.title}</span>
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                                isActive ? 'bg-amber-500 text-white animate-pulse' : 'bg-white border text-slate-600'
+                              }`}>
+                                {isActive ? 'Today' : (isLabSpecific ? 'Lab Raja' : 'Holiday')}
+                              </span>
+                            </div>
+                            <p className="text-[11px] font-semibold text-slate-600">
+                              📅 {s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              {leave.startDate !== leave.endDate && ` - ${e.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
+                            </p>
+                            {leave.reason && (
+                              <p className="text-[10px] text-slate-500 italic mt-0.5 truncate">"{leave.reason}"</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -84,6 +84,13 @@ const ClinicSettings = () => {
     reason: ''
   });
 
+  const [labLeaveForm, setLabLeaveForm] = useState({
+    title: '',
+    startDate: '',
+    endDate: '',
+    reason: ''
+  });
+
   const weekdayOptions = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const token = localStorage.getItem('token');
 
@@ -310,6 +317,40 @@ const ClinicSettings = () => {
         icon: 'error',
         title: 'Error Recording Leave',
         text: err.response?.data?.message || 'Failed to record doctor leave.',
+        confirmButtonColor: '#0F766E'
+      });
+    }
+  };
+
+  const handleAddLabLeave = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(
+        `${API_URL}/api/clinic/leaves`,
+        {
+          type: 'lab_leave',
+          title: labLeaveForm.title,
+          startDate: labLeaveForm.startDate,
+          endDate: labLeaveForm.endDate,
+          reason: labLeaveForm.reason
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'In-House Lab Holiday Added',
+          text: `"${labLeaveForm.title}" recorded. Doctors and receptionists will be notified that the in-house lab is closed on these dates.`,
+          confirmButtonColor: '#0F766E'
+        });
+        setLabLeaveForm({ title: '', startDate: '', endDate: '', reason: '' });
+        fetchLeaves();
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error Adding Lab Holiday',
+        text: err.response?.data?.message || 'Failed to record in-house lab holiday.',
         confirmButtonColor: '#0F766E'
       });
     }
@@ -1123,6 +1164,137 @@ const ClinicSettings = () => {
                   </div>
                 </div>
 
+              </div>
+
+              {/* 5. IN-HOUSE LAB HOLIDAYS & CLOSURES */}
+              <div className="bg-white border border-sandstone rounded-3xl p-6 md:p-8 shadow-sm">
+                <div className="border-b border-sandstone pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-heading text-lg font-bold text-teak flex items-center gap-2">
+                      <FlaskConical size={18} className="text-teal-600" /> In-House Diagnostic Lab Holidays & Raja
+                    </h3>
+                    <p className="text-xs text-khaki mt-0.5">
+                      Schedule planned closures, calibration days, or technician leave for your internal clinic lab.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded-full text-xs font-bold w-fit">
+                    In-House Pathology
+                  </span>
+                </div>
+
+                <div className="grid lg:grid-cols-5 gap-6">
+                  {/* Form */}
+                  <form onSubmit={handleAddLabLeave} className="lg:col-span-2 bg-parchment/60 p-5 rounded-2xl border border-sandstone/60 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-teak flex items-center gap-1.5">
+                      <Plus size={14} className="text-teal-600" /> Schedule In-House Lab Holiday
+                    </h4>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-black uppercase tracking-wider text-khaki">Occasion / Reason *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Analyzer Maintenance, Deep Cleaning, Pathologist Leave"
+                        className="w-full px-4 py-2.5 bg-white border border-sandstone rounded-xl outline-none focus:border-marigold text-sm font-semibold text-teak"
+                        value={labLeaveForm.title}
+                        onChange={(e) => setLabLeaveForm({ ...labLeaveForm, title: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-khaki">Start Date *</label>
+                        <input
+                          type="date"
+                          required
+                          className="w-full px-3 py-2 bg-white border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-semibold text-teak"
+                          value={labLeaveForm.startDate}
+                          onChange={(e) => setLabLeaveForm({ ...labLeaveForm, startDate: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-khaki">End Date *</label>
+                        <input
+                          type="date"
+                          required
+                          min={labLeaveForm.startDate || undefined}
+                          className="w-full px-3 py-2 bg-white border border-sandstone rounded-xl outline-none focus:border-marigold text-xs font-semibold text-teak"
+                          value={labLeaveForm.endDate}
+                          onChange={(e) => setLabLeaveForm({ ...labLeaveForm, endDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-black uppercase tracking-wider text-khaki">Public Note (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. In-house test turnaround delayed by 24 hrs"
+                        className="w-full px-4 py-2 bg-white border border-sandstone rounded-xl outline-none focus:border-marigold text-xs text-teak font-medium"
+                        value={labLeaveForm.reason}
+                        onChange={(e) => setLabLeaveForm({ ...labLeaveForm, reason: e.target.value })}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                    >
+                      <Plus size={14} /> Schedule Lab Holiday
+                    </button>
+                  </form>
+
+                  {/* List */}
+                  <div className="lg:col-span-3 flex flex-col">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-khaki mb-3">
+                      Scheduled In-House Lab Holidays ({leaves.filter(l => l.type === 'lab_leave').length})
+                    </h4>
+                    {loadingLeaves ? (
+                      <p className="text-xs text-khaki text-center py-6">Loading lab holidays...</p>
+                    ) : leaves.filter(l => l.type === 'lab_leave').length === 0 ? (
+                      <div className="p-8 text-center bg-parchment/30 rounded-2xl border border-dashed border-sandstone flex-1 flex flex-col items-center justify-center">
+                        <FlaskConical size={28} className="text-khaki/50 mb-2" />
+                        <p className="text-xs font-bold text-teak">No In-House Lab Holidays</p>
+                        <p className="text-[11px] text-khaki mt-0.5">In-house lab is available for patient referrals every working day.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                        {leaves.filter(l => l.type === 'lab_leave').map((leave) => {
+                          const s = new Date(leave.startDate);
+                          const e = new Date(leave.endDate);
+                          const now = new Date();
+                          const isActive = now >= s && now <= e;
+                          return (
+                            <div key={leave._id} className="p-3.5 bg-parchment/40 border border-sandstone rounded-2xl flex items-center justify-between gap-3 hover:border-marigold/60 transition-all">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-sm text-teak truncate">{leave.title}</span>
+                                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                                    isActive ? 'bg-amber-100 text-amber-800 animate-pulse' : 'bg-slate-100 text-slate-600'
+                                  }`}>
+                                    {isActive ? 'Closed Today' : 'Scheduled'}
+                                  </span>
+                                </div>
+                                <p className="text-xs font-semibold text-teal-700 mt-0.5">
+                                  📅 {s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                  {leave.startDate !== leave.endDate && ` – ${e.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                                </p>
+                                {leave.reason && <p className="text-[11px] text-khaki italic mt-0.5 truncate">{leave.reason}</p>}
+                              </div>
+                              <button
+                                onClick={() => handleDeleteLeave(leave._id, leave.title)}
+                                className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-all shrink-0 border border-transparent hover:border-rose-200"
+                                title="Delete Lab Holiday"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

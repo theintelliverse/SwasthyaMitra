@@ -6,20 +6,30 @@ import {
   User, Phone, Search, RefreshCw, ArrowLeft, Stethoscope, 
   Receipt, Plus, Trash2, Printer, CheckCircle2, ShieldCheck, 
   CreditCard, DollarSign, Sparkles, FileText, AlertTriangle, 
-  Beaker, Check, Clock, Eye, Share2, ChevronRight, X, TrendingUp, CalendarCheck, Settings, QrCode
+  Beaker, Check, Clock, Eye, Share2, ChevronRight, X, TrendingUp, CalendarCheck, Settings, QrCode,
+  Tag, Percent, MessageCircle, FileDown, FlaskConical, Download, Ticket
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
 import QrScannerModal from '../../components/receptionist/QrScannerModal';
 import { API_URL } from '../../config/runtime';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ReceptionistBilling = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('role') || 'receptionist';
 
   // State Management
-  const [billingType, setBillingType] = useState('clinic'); // 'clinic' | 'lab'
+  const [billingType, setBillingType] = useState(() => {
+    const paramType = searchParams.get('type');
+    if (paramType === 'lab') return 'lab';
+    if (userRole === 'lab') return 'lab';
+    return 'clinic';
+  }); // 'clinic' | 'lab'
+
   const [searchPhone, setSearchPhone] = useState('');
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -28,10 +38,21 @@ const ReceptionistBilling = () => {
   const [fetchedQueue, setFetchedQueue] = useState(null);
   const [doctors, setDoctors] = useState([]);
   
+  // Doctor Appointment Booking Option (Optional, defaults to false)
+  const [bookAppointment, setBookAppointment] = useState(false);
+
+  // Doctor Prescribed Lab Investigations Detected from Queue / Doctor Requests
+  const [doctorPrescriptions, setDoctorPrescriptions] = useState([]);
+
+  // Discount Type: Flat (₹) vs Percent (%)
+  const [discountType, setDiscountType] = useState('flat'); // 'flat' | 'percent'
+  const [discountValue, setDiscountValue] = useState(0);
+
   // History & Stats State
   const [invoices, setInvoices] = useState([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [historySearch, setHistorySearch] = useState('');
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all' | 'clinic' | 'lab' | 'due'
   const [revenueStats, setRevenueStats] = useState({
     todayRevenue: 0,
     todayBillsCount: 0,
@@ -94,6 +115,22 @@ const ReceptionistBilling = () => {
     return () => { active = false; };
   }, [fetchSettings]);
 
+  // Synchronize billingType if URL parameter changes
+  useEffect(() => {
+    const typeParam = searchParams.get('type');
+    if (typeParam === 'lab') {
+      setBillingType('lab');
+      setItems([
+        { description: 'Complete Blood Count (CBC)', amount: 350, category: 'Lab Test' }
+      ]);
+    } else if (typeParam === 'clinic') {
+      setBillingType('clinic');
+      setItems([
+        { description: 'Doctor Consultation Fee', amount: 500, category: 'Consultation' }
+      ]);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const phoneFromUrl = searchParams.get('phone');
     if (phoneFromUrl) {
@@ -110,7 +147,7 @@ const ReceptionistBilling = () => {
   const fetchInvoices = useCallback(async () => {
     setLoadingInvoices(true);
     try {
-      const res = await axios.get(`${API_URL}/api/billing/invoices?billingType=${billingType}`, {
+      const res = await axios.get(`${API_URL}/api/billing/invoices`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -124,7 +161,7 @@ const ReceptionistBilling = () => {
     } finally {
       setLoadingInvoices(false);
     }
-  }, [billingType, token]);
+  }, [token]);
 
   // Load Initial Data (Doctors & Invoice History)
   useEffect(() => {
@@ -169,7 +206,34 @@ const ReceptionistBilling = () => {
 
         setFetchedQueue(data.queue || null);
 
-        // 2. Setup Default Line Items based on Billing Type
+        // 2. Detect Doctor Prescriptions (Queue requiredTest & labRequests)
+        const detectedPrescriptions = [];
+        if (data.queue?.requiredTest) {
+          const parts = data.queue.requiredTest.split(',').map(p => p.trim()).filter(Boolean);
+          parts.forEach(name => {
+            detectedPrescriptions.push({
+              testName: name,
+              doctorName: data.queue.doctorName,
+              source: 'Queue / Consultation Prescription',
+              fee: data.clinicFees?.feeLab || billingSettings.feeLab || 450
+            });
+          });
+        }
+        if (data.labRequests && Array.isArray(data.labRequests)) {
+          data.labRequests.forEach(req => {
+            if (!detectedPrescriptions.some(d => d.testName.toLowerCase() === (req.testName || '').toLowerCase())) {
+              detectedPrescriptions.push({
+                testName: req.testName,
+                doctorName: req.doctorName || data.queue?.doctorName || '',
+                source: 'Doctor Lab Request Order',
+                fee: req.fee || data.clinicFees?.feeLab || 450
+              });
+            }
+          });
+        }
+        setDoctorPrescriptions(detectedPrescriptions);
+
+        // 3. Setup Default Line Items based on Billing Type
         let defaultItems = [];
         if (billingType === 'clinic') {
           const isFollowup = data.queue?.visitType === 'Follow-up';
@@ -193,9 +257,9 @@ const ReceptionistBilling = () => {
             });
           }
         } else {
-          // Lab mode
-          if (data.labRequests && data.labRequests.length > 0) {
-            defaultItems = data.labRequests.map(req => ({
+          // Lab mode: if doctor ordered tests, load them!
+          if (detectedPrescriptions.length > 0) {
+            defaultItems = detectedPrescriptions.map(req => ({
               description: req.testName,
               amount: req.fee || data.clinicFees?.feeLab || 450,
               category: 'Lab Test'
@@ -228,8 +292,8 @@ const ReceptionistBilling = () => {
         Swal.fire({
           icon: 'success',
           title: 'Details Auto-Fetched!',
-          text: `Fetched info for ${pName || pPhone}.`,
-          timer: 1800,
+          text: `Fetched info for ${pName || pPhone}.${detectedPrescriptions.length > 0 ? ` Found ${detectedPrescriptions.length} prescribed lab test(s)!` : ''}`,
+          timer: 2000,
           showConfirmButton: false,
           background: '#EEF6FA'
         });
@@ -260,14 +324,70 @@ const ReceptionistBilling = () => {
   const handleBillingTypeSwitch = (type) => {
     setBillingType(type);
     if (type === 'lab') {
-      setItems([
-        { description: 'Complete Blood Count (CBC)', amount: 350, category: 'Lab Test' }
-      ]);
+      if (doctorPrescriptions.length > 0) {
+        setItems(doctorPrescriptions.map(p => ({
+          description: p.testName,
+          amount: p.fee || billingSettings.feeLab || 450,
+          category: 'Lab Test'
+        })));
+      } else {
+        setItems([
+          { description: 'Complete Blood Count (CBC)', amount: 350, category: 'Lab Test' }
+        ]);
+      }
     } else {
+      const isFollowup = fetchedQueue?.visitType === 'Follow-up';
+      const fee = isFollowup 
+        ? (billingSettings.feeFollowupConsult || 300) 
+        : (billingSettings.feeConsult || 500);
       setItems([
-        { description: 'Doctor Consultation Fee', amount: 500, category: 'Consultation' }
+        { 
+          description: fetchedQueue 
+            ? `${isFollowup ? 'Follow-up Consultation' : 'Doctor Consultation'} (${formData.doctorName || fetchedQueue.doctorName})` 
+            : 'Doctor Consultation Fee', 
+          amount: fee, 
+          category: 'Consultation' 
+        }
       ]);
     }
+  };
+
+  // 1-Click Load Doctor Prescriptions into Lab Bill
+  const handleLoadDoctorPrescriptions = () => {
+    if (!doctorPrescriptions || doctorPrescriptions.length === 0) return;
+    setBillingType('lab');
+    const newItems = doctorPrescriptions.map(p => ({
+      description: p.testName,
+      amount: p.fee || billingSettings.feeLab || 450,
+      category: 'Lab Test'
+    }));
+    setItems(newItems);
+    const newSub = newItems.reduce((s, i) => s + Number(i.amount || 0), 0);
+    const newGrand = newSub + Number(formData.onlinePendingDues || 0);
+    setFormData(prev => ({ ...prev, paidAmount: newGrand }));
+    Swal.fire({
+      icon: 'success',
+      title: 'Lab Investigations Loaded!',
+      text: `${newItems.length} test(s) prescribed by ${formData.doctorName || 'Doctor'} loaded into bill items.`,
+      timer: 1600,
+      showConfirmButton: false,
+      background: '#EEF6FA'
+    });
+  };
+
+  const handleAddSinglePrescription = (presc) => {
+    const exists = items.some(i => i.description.toLowerCase() === presc.testName.toLowerCase());
+    if (exists) {
+      Swal.fire({ toast: true, icon: 'info', title: 'Test already in bill items', showConfirmButton: false, timer: 1500 });
+      return;
+    }
+    const newItem = {
+      description: presc.testName,
+      amount: presc.fee || billingSettings.feeLab || 450,
+      category: 'Lab Test'
+    };
+    setItems(prev => [...prev, newItem]);
+    if (billingType !== 'lab') setBillingType('lab');
   };
 
   // Item Operations
@@ -296,7 +416,11 @@ const ReceptionistBilling = () => {
   // Calculate Financial Metrics
   const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const duesAmount = Number(formData.onlinePendingDues || 0);
-  const discountAmount = Number(formData.discount || 0);
+  
+  // Calculate discount based on Flat (₹) vs Percent (%)
+  const discountAmount = discountType === 'percent'
+    ? Math.round((subtotal * (Number(discountValue) || 0)) / 100)
+    : (Number(discountValue) || 0);
 
   const taxAmount = customTaxAmount !== null 
     ? Number(customTaxAmount) 
@@ -344,7 +468,8 @@ const ReceptionistBilling = () => {
         paymentMode: formData.paymentMode,
         paymentStatus: getPaymentStatus(),
         queueId: formData.queueId,
-        notes: formData.notes
+        notes: formData.notes,
+        bookAppointment: bookAppointment
       };
 
       const res = await axios.post(`${API_URL}/api/billing/create`, payload, {
@@ -359,19 +484,6 @@ const ReceptionistBilling = () => {
           setRevenueStats(res.data.revenueStats);
         }
 
-        setSelectedInvoice(createdInv);
-        setShowPrintModal(true);
-
-        Swal.fire({
-          icon: 'success',
-          title: tokenNum ? `🎫 Token ${tokenNum} Booked & Invoice Issued!` : 'Invoice Issued Successfully!',
-          html: `<p class="font-bold text-lg text-teal-700">Receipt No: ${createdInv.invoiceNumber}</p>` +
-                (tokenNum ? `<p class="font-black text-emerald-800 my-2 bg-emerald-100 p-2 rounded-xl border border-emerald-300">🎫 Queue Token #${tokenNum} created & active in live queue!</p>` : '') +
-                `<p class="text-xs text-slate-500 mt-1">Total: ₹${createdInv.totalAmount} | Paid: ₹${createdInv.paidAmount}</p>`,
-          confirmButtonColor: '#0F766E',
-          background: '#EEF6FA'
-        });
-
         // Reset Form
         setFormData({
           patientName: '',
@@ -385,11 +497,81 @@ const ReceptionistBilling = () => {
           notes: '',
           queueId: null
         });
+        setItems(
+          billingType === 'lab'
+            ? [{ description: 'Complete Blood Count (CBC)', amount: 350, category: 'Hematology' }]
+            : [{ description: 'Doctor Consultation Fee', amount: billingSettings.feeConsult || 500, category: 'Consultation' }]
+        );
+        setBookAppointment(false);
+        setDiscountValue(0);
         setCustomTaxAmount(null);
         setSearchPhone('');
         setAutoFetched(false);
         setFetchedQueue(null);
+        setDoctorPrescriptions([]);
         fetchInvoices();
+
+        if (tokenNum) {
+          // Token booked during creation (or already in queue)
+          setSelectedInvoice(createdInv);
+          setShowPrintModal(true);
+
+          Swal.fire({
+            icon: 'success',
+            title: `🎫 Token ${tokenNum} Booked & Invoice Issued!`,
+            html: `<p class="font-bold text-lg text-teal-700">Receipt No: ${createdInv.invoiceNumber}</p>` +
+                  `<p class="font-black text-emerald-800 my-2 bg-emerald-100 p-2 rounded-xl border border-emerald-300">🎫 Queue Token #${tokenNum} created & active in live queue!</p>` +
+                  `<p class="text-xs text-slate-500 mt-1">Total: ₹${createdInv.totalAmount} | Paid: ₹${createdInv.paidAmount}</p>`,
+            confirmButtonColor: '#0F766E',
+            background: '#EEF6FA'
+          });
+        } else if (createdInv.billingType === 'clinic') {
+          // Bill issued without queue token -> Give Receptionist the option to book token or just receipt
+          const askBook = await Swal.fire({
+            title: 'Invoice Issued Successfully!',
+            html: `
+              <div class="space-y-3 text-center">
+                <p class="font-bold text-lg text-teal-700">Receipt No: ${createdInv.invoiceNumber}</p>
+                <p class="text-xs text-slate-500 mb-3">Total: ₹${createdInv.totalAmount} | Paid: ₹${createdInv.paidAmount}</p>
+                <div class="p-3.5 bg-teal-50 border border-teal-200 rounded-xl text-left">
+                  <p class="text-sm font-bold text-teal-900 flex items-center gap-1.5">
+                    ❓ Book Appointment Token for Patient?
+                  </p>
+                  <p class="text-xs text-teal-700 mt-1">
+                    Would you like to book a doctor appointment token in today's live queue for <strong>${createdInv.patientName}</strong>?
+                  </p>
+                </div>
+              </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '🎫 Yes, Book Token Now',
+            cancelButtonText: '📄 Just Receipt / Done',
+            confirmButtonColor: '#0F766E',
+            cancelButtonColor: '#64748B',
+            reverseButtons: true
+          });
+
+          if (askBook.isConfirmed) {
+            await handleBookTokenForInvoice(createdInv);
+          } else {
+            setSelectedInvoice(createdInv);
+            setShowPrintModal(true);
+          }
+        } else {
+          // Lab Invoice
+          setSelectedInvoice(createdInv);
+          setShowPrintModal(true);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Lab Invoice Issued Successfully!',
+            html: `<p class="font-bold text-lg text-teal-700">Receipt No: ${createdInv.invoiceNumber}</p>` +
+                  `<p class="text-xs text-slate-500 mt-1">Total: ₹${createdInv.totalAmount} | Paid: ₹${createdInv.paidAmount}</p>`,
+            confirmButtonColor: '#0F766E',
+            background: '#EEF6FA'
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -411,15 +593,293 @@ const ReceptionistBilling = () => {
   ];
 
   const labPresets = [
-    { description: 'Complete Blood Count (CBC)', amount: 350, category: 'Lab Test' },
-    { description: 'Blood Sugar Fasting / PP', amount: 150, category: 'Lab Test' },
-    { description: 'HbA1c Glycated Hemoglobin', amount: 450, category: 'Lab Test' },
-    { description: 'Lipid Profile Complete', amount: 600, category: 'Lab Test' },
-    { description: 'Thyroid Profile (T3, T4, TSH)', amount: 500, category: 'Lab Test' },
-    { description: 'Urine Routine & Micro', amount: 200, category: 'Lab Test' },
+    { description: 'Complete Blood Count (CBC)', amount: 350, category: 'Hematology' },
+    { description: 'Lipid Profile (Cholesterol & Triglycerides)', amount: 650, category: 'Biochemistry' },
+    { description: 'Thyroid Profile (T3, T4, TSH)', amount: 550, category: 'Endocrinology' },
+    { description: 'Diabetes Screen (HbA1c & Fasting Glucose)', amount: 450, category: 'Diabetes' },
+    { description: 'Liver Function Test (LFT)', amount: 750, category: 'Biochemistry' },
+    { description: 'Kidney Function Test (KFT / Renal Profile)', amount: 700, category: 'Renal' },
+    { description: 'Vitamin D3 & B12 Panel', amount: 1200, category: 'Vitamins' },
+    { description: 'Urine Routine & Microscopic Examination', amount: 200, category: 'Clinical Pathology' },
+    { description: 'Blood Sugar Fasting / PP', amount: 150, category: 'Biochemistry' },
     { description: 'Chest X-Ray Digital', amount: 400, category: 'Imaging' },
     { description: 'Sample Collection Fee', amount: 50, category: 'Service' },
   ];
+
+  // Settle Outstanding Due on Invoice
+  const handleSettleDue = async (inv) => {
+    const { value: formValues } = await Swal.fire({
+      title: `Collect Balance Due: ₹${(inv.remainingDue || 0).toLocaleString('en-IN')}`,
+      html: `
+        <div style="text-align:left; font-size:13px; margin-top:10px;">
+          <p style="margin-bottom:6px;"><strong>Patient:</strong> ${inv.patientName} (${inv.patientPhone})</p>
+          <p style="margin-bottom:12px;"><strong>Invoice:</strong> #${inv.invoiceNumber} (${inv.billingType === 'lab' ? '🔬 Lab' : '🏥 Clinic'})</p>
+          <label style="display:block; margin-bottom:4px; font-weight:bold; font-size:12px;">Amount to Collect (₹)</label>
+          <input id="swal-settle-amount" type="number" class="swal2-input" value="${inv.remainingDue}" style="margin:0 0 12px 0; width:100%;" />
+          <label style="display:block; margin-bottom:4px; font-weight:bold; font-size:12px;">Payment Mode</label>
+          <select id="swal-settle-mode" class="swal2-select" style="margin:0; width:100%;">
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI / QR</option>
+            <option value="Card">Card</option>
+            <option value="Net Banking">Net Banking</option>
+          </select>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Collect & Settle',
+      confirmButtonColor: '#0F766E',
+      cancelButtonColor: '#64748B',
+      preConfirm: () => {
+        const amt = document.getElementById('swal-settle-amount').value;
+        const mode = document.getElementById('swal-settle-mode').value;
+        if (!amt || Number(amt) <= 0) {
+          Swal.showValidationMessage('Please enter a valid amount.');
+          return false;
+        }
+        return { amount: Number(amt), paymentMode: mode };
+      }
+    });
+
+    if (formValues) {
+      try {
+        const res = await axios.patch(
+          `${API_URL}/api/billing/invoices/${inv._id}/settle-due`,
+          formValues,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Payment Recorded!',
+            text: res.data.message || 'Balance settled successfully.',
+            timer: 1600,
+            showConfirmButton: false,
+            background: '#EEF6FA'
+          });
+          fetchInvoices();
+        }
+      } catch (err) {
+        Swal.fire('Error', err.response?.data?.message || 'Failed to settle due.', 'error');
+      }
+    }
+  };
+
+  // Book Appointment Token for an Existing Clinic Invoice
+  const handleBookTokenForInvoice = async (inv) => {
+    const doctorOptions = doctors.map(d => 
+      `<option value="${d._id}" ${d._id === inv.doctorId ? 'selected' : ''}>${d.name} (${d.specialization || 'General'})</option>`
+    ).join('');
+
+    const { value: selectedDocId } = await Swal.fire({
+      title: '🎫 Book Appointment Token',
+      html: `
+        <div style="text-align:left; font-size:13px; margin-top:10px;">
+          <p style="margin-bottom:6px;"><strong>Patient:</strong> ${inv.patientName} (${inv.patientPhone})</p>
+          <p style="margin-bottom:12px;"><strong>Receipt:</strong> #${inv.invoiceNumber}</p>
+          <label style="display:block; margin-bottom:4px; font-weight:bold; font-size:12px;">Select Doctor for Today's Queue:</label>
+          <select id="swal-book-doc-id" class="swal2-select" style="margin:0; width:100%;">
+            ${doctorOptions || '<option value="">-- No Doctors Available --</option>'}
+          </select>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '🎫 Confirm & Generate Token',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#0F766E',
+      cancelButtonColor: '#64748B',
+      preConfirm: () => {
+        const docId = document.getElementById('swal-book-doc-id')?.value;
+        if (!docId) {
+          Swal.showValidationMessage('Please select a doctor.');
+          return false;
+        }
+        return docId;
+      }
+    });
+
+    if (selectedDocId) {
+      try {
+        const res = await axios.post(
+          `${API_URL}/api/billing/invoices/${inv._id}/book-appointment`,
+          { doctorId: selectedDocId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (res.data.success) {
+          const updatedInv = res.data.invoice;
+          const tokenNum = res.data.tokenNumber;
+
+          Swal.fire({
+            icon: 'success',
+            title: `🎫 Token #${tokenNum} Booked!`,
+            html: `
+              <p class="font-bold text-base text-teal-800">Patient: ${inv.patientName}</p>
+              <p class="font-black text-emerald-800 my-2 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300">
+                Token #${tokenNum} has been added to live queue!
+              </p>
+              <p class="text-xs text-slate-500">Invoice #${inv.invoiceNumber} linked to appointment queue.</p>
+            `,
+            confirmButtonColor: '#0F766E'
+          });
+
+          if (updatedInv) {
+            setSelectedInvoice(updatedInv);
+            setShowPrintModal(true);
+          }
+          fetchInvoices();
+        }
+      } catch (err) {
+        console.error("Failed to book appointment for invoice:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Booking Failed',
+          text: err.response?.data?.message || 'Could not generate appointment token.',
+          confirmButtonColor: '#0F766E'
+        });
+      }
+    }
+  };
+
+  // Generate & Download PDF Invoice
+  const handleDownloadInvoicePdf = (inv) => {
+    try {
+      const doc = new jsPDF({ margin: 15 });
+      const isLab = inv.billingType === 'lab';
+      const clinicTitle = inv.clinicName || localStorage.getItem('clinicName') || 'SANJIVANI HEALTHCARE';
+
+      // Header Banner
+      if (isLab) {
+        doc.setFillColor(15, 76, 117); // Lab Navy Blue
+      } else {
+        doc.setFillColor(15, 118, 110); // Clinic Teal
+      }
+      doc.rect(0, 0, 210, 35, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text(clinicTitle.toUpperCase(), 15, 15);
+
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        isLab 
+          ? 'DEPARTMENT OF CLINICAL PATHOLOGY & DIAGNOSTICS' 
+          : 'MULTI-SPECIALTY HEALTHCARE & CLINICAL CONSULTATION', 
+        15, 23
+      );
+      doc.text('Valid Electronic Healthcare Receipt • Appointory Network', 15, 29);
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(isLab ? 'LABORATORY INVOICE' : 'CONSULTATION RECEIPT', 140, 16);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Receipt #: ${inv.invoiceNumber}`, 140, 23);
+      doc.text(`Date: ${new Date(inv.billingDate || inv.createdAt).toLocaleDateString('en-IN')}`, 140, 29);
+
+      // Metadata section
+      doc.setTextColor(40, 40, 40);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PATIENT DETAILS', 15, 45);
+      doc.text('PRACTITIONER / DETAILS', 115, 45);
+
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Name: ${inv.patientName}`, 15, 52);
+      doc.text(`Phone: ${inv.patientPhone}`, 15, 58);
+      if (isLab) {
+        doc.text(`Sample ID: LAB-${inv.invoiceNumber}`, 15, 64);
+      }
+
+      doc.text(`Doctor: Dr. ${inv.doctorName || 'General Consultant'}`, 115, 52);
+      doc.text(`Payment: ${inv.paymentMode} (${inv.paymentStatus})`, 115, 58);
+      doc.text(`Billing Type: ${isLab ? 'Laboratory / Diagnostic' : 'Clinical Consultation'}`, 115, 64);
+
+      // Line items table
+      const tableRows = (inv.items || []).map((it, idx) => [
+        idx + 1,
+        it.description,
+        it.category || (isLab ? 'Lab Test' : 'Consultation'),
+        `₹${(it.amount || 0).toLocaleString('en-IN')}`
+      ]);
+
+      autoTable(doc, {
+        startY: 70,
+        head: [['#', isLab ? 'Investigation / Diagnostic Test' : 'Clinical Service / Description', 'Category', 'Amount (₹)']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: isLab ? [15, 76, 117] : [15, 118, 110] },
+        styles: { fontSize: 8.5 }
+      });
+
+      const finalY = (doc.lastAutoTable?.finalY || 100) + 8;
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Subtotal: ₹${(inv.subtotal || 0).toLocaleString('en-IN')}`, 130, finalY);
+
+      let offset = 5;
+      if (inv.onlinePendingDues > 0) {
+        doc.text(`Online Pending Dues: +₹${inv.onlinePendingDues.toLocaleString('en-IN')}`, 130, finalY + offset);
+        offset += 5;
+      }
+      if (inv.discount > 0) {
+        doc.text(`Discount: -₹${inv.discount.toLocaleString('en-IN')}`, 130, finalY + offset);
+        offset += 5;
+      }
+      if (inv.tax > 0) {
+        doc.text(`Tax / GST: +₹${inv.tax.toLocaleString('en-IN')}`, 130, finalY + offset);
+        offset += 5;
+      }
+
+      doc.setFontSize(10.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Grand Total: ₹${(inv.totalAmount || 0).toLocaleString('en-IN')}`, 130, finalY + offset + 2);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`Paid: ₹${(inv.paidAmount || 0).toLocaleString('en-IN')}`, 130, finalY + offset + 8);
+
+      if (inv.remainingDue > 0) {
+        doc.setTextColor(239, 68, 68);
+        doc.text(`Balance Due: ₹${inv.remainingDue.toLocaleString('en-IN')}`, 130, finalY + offset + 14);
+      }
+
+      // Footer
+      doc.setTextColor(140, 140, 140);
+      doc.setFontSize(8);
+      doc.text('Computer-generated healthcare invoice • Valid without physical stamp • Appointory', 15, 280);
+
+      doc.save(`${isLab ? 'Lab' : 'Clinic'}_Invoice_${inv.invoiceNumber}.pdf`);
+    } catch (err) {
+      console.error('PDF error:', err);
+      Swal.fire('Error', 'Failed to generate PDF invoice.', 'error');
+    }
+  };
+
+  // WhatsApp Share Receipt
+  const handleShareWhatsApp = (inv) => {
+    const cleanPhone = (inv.patientPhone || '').replace(/\D/g, '').slice(-10);
+    const isLab = inv.billingType === 'lab';
+    const clinicTitle = inv.clinicName || localStorage.getItem('clinicName') || 'SANJIVANI HEALTHCARE';
+    const header = isLab 
+      ? `🔬 *${clinicTitle.toUpperCase()} — PATHOLOGY LAB RECEIPT*` 
+      : `🏥 *${clinicTitle.toUpperCase()} — CONSULTATION RECEIPT*`;
+    const itemsText = (inv.items || []).map(i => `• ${i.description}: ₹${i.amount}`).join('\n');
+    const msg = `${header}\n` +
+      `Receipt No: #${inv.invoiceNumber}\n` +
+      `Patient: ${inv.patientName} (${inv.patientPhone})\n` +
+      `Doctor: Dr. ${inv.doctorName || 'Consultant'}\n` +
+      `Date: ${new Date(inv.billingDate || inv.createdAt).toLocaleDateString('en-IN')}\n\n` +
+      `*${isLab ? 'Investigations / Diagnostic Tests' : 'Consultation & Services'}:*\n${itemsText}\n\n` +
+      `Total: ₹${(inv.totalAmount || 0).toLocaleString('en-IN')}\n` +
+      `Paid: ₹${(inv.paidAmount || 0).toLocaleString('en-IN')} (${inv.paymentMode})\n` +
+      (inv.remainingDue > 0 ? `*⚠️ Balance Due: ₹${inv.remainingDue.toLocaleString('en-IN')}*\n` : `Status: FULLY PAID ✅\n`) +
+      (isLab ? `\nLab sample recorded. Reports will be provided upon completion.` : `\nThank you for visiting! Wish you good health.`);
+
+    window.open(`https://wa.me/91${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   // Print Invoice Function
   const handlePrint = () => {
@@ -481,17 +941,29 @@ const ReceptionistBilling = () => {
     }
   };
 
-  const filteredInvoices = invoices.filter(inv => 
-    !historySearch || 
-    inv.patientName?.toLowerCase().includes(historySearch.toLowerCase()) ||
-    inv.patientPhone?.includes(historySearch) ||
-    inv.invoiceNumber?.toLowerCase().includes(historySearch.toLowerCase())
-  );
+  // Counts for tabs
+  const clinicCount = invoices.filter(i => i.billingType === 'clinic').length;
+  const labCount = invoices.filter(i => i.billingType === 'lab').length;
+  const dueCount = invoices.filter(i => (i.remainingDue || 0) > 0).length;
+
+  const filteredInvoices = invoices.filter(inv => {
+    const matchesSearch = !historySearch || 
+      inv.patientName?.toLowerCase().includes(historySearch.toLowerCase()) ||
+      inv.patientPhone?.includes(historySearch) ||
+      inv.invoiceNumber?.toLowerCase().includes(historySearch.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (historyFilter === 'clinic') return inv.billingType === 'clinic';
+    if (historyFilter === 'lab') return inv.billingType === 'lab';
+    if (historyFilter === 'due') return (inv.remainingDue || 0) > 0;
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-800 flex-col md:flex-row">
-      {/* Sidebar Navigation */}
-      <Sidebar role="receptionist" />
+      {/* Sidebar Navigation - Dynamic for Receptionist, Admin, or Lab Staff */}
+      <Sidebar role={userRole} />
 
       {/* Main Content Area */}
       <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-32 lg:pb-8">
@@ -649,7 +1121,7 @@ const ReceptionistBilling = () => {
                     {fetchedQueue ? (
                       <span> Assigned Doctor: <strong>{formData.doctorName}</strong> (Token: {fetchedQueue.tokenNumber}).</span>
                     ) : (
-                      <span className="text-amber-200 font-bold"> 🎫 Note: Submitting this bill will auto-book today's appointment token!</span>
+                      <span className="text-teal-200"> (No active appointment token found for today)</span>
                     )}
                     {formData.onlinePendingDues > 0 && (
                       <span className="text-amber-300 font-bold"> ⚠️ Pending Dues: ₹{formData.onlinePendingDues}</span>
@@ -731,7 +1203,7 @@ const ReceptionistBilling = () => {
                   )}
                 </div>
 
-                {/* Queue Context Badge */}
+                {/* Queue Context Badge / Booking Option */}
                 {fetchedQueue ? (
                   <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 flex items-center justify-between text-xs text-teal-900">
                     <span className="font-bold flex items-center gap-1.5">
@@ -741,13 +1213,91 @@ const ReceptionistBilling = () => {
                       {fetchedQueue.status}
                     </span>
                   </div>
-                ) : (
-                  <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-900 font-medium flex items-center gap-2">
-                    <Sparkles size={14} className="text-amber-600 flex-shrink-0" />
-                    <span>Creating this bill will automatically book an active appointment token in live queue!</span>
+                ) : billingType === 'clinic' ? (
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${bookAppointment ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                        <Sparkles size={16} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">
+                          Book Doctor Appointment Token Now?
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {bookAppointment ? 'An active token (T-x) will be booked in live queue upon billing.' : 'Only generate bill/receipt now. Token can be booked after billing or anytime later.'}
+                        </p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={bookAppointment}
+                        onChange={(e) => setBookAppointment(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                    </label>
                   </div>
-                )}
+                ) : null}
               </div>
+
+              {/* 🔬 DOCTOR PRESCRIBED LAB INVESTIGATIONS BANNER */}
+              {doctorPrescriptions.length > 0 && (
+                <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-teal-50 border-2 border-indigo-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 animate-fadeIn">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <FlaskConical size={22} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-md tracking-wider">
+                            Doctor Prescribed Investigations
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-bold">
+                            {doctorPrescriptions.length} test{doctorPrescriptions.length > 1 ? 's' : ''} recommended
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-black text-slate-900 mt-0.5">
+                          Prescribed by Dr. {formData.doctorName || fetchedQueue?.doctorName || 'Consultant'}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleLoadDoctorPrescriptions}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                    >
+                      <Plus size={15} /> Load All to Lab Bill
+                    </button>
+                  </div>
+
+                  {/* Individual test chips */}
+                  <div className="flex flex-wrap gap-2 pt-1 border-t border-indigo-100/80">
+                    {doctorPrescriptions.map((presc, pIdx) => (
+                      <div 
+                        key={pIdx}
+                        className="bg-white/95 border border-indigo-200/90 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-2xs"
+                      >
+                        <Beaker size={13} className="text-indigo-600" />
+                        <span className="text-xs font-bold text-slate-800">{presc.testName}</span>
+                        <span className="text-[11px] font-black text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">
+                          ₹{presc.fee}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddSinglePrescription(presc)}
+                          className="text-[10px] font-black text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded transition-colors"
+                          title="Add this test to bill"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* 2. Billing Line Items Card */}
               <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
@@ -894,16 +1444,41 @@ const ReceptionistBilling = () => {
                     </div>
                   )}
 
-                  {/* Discount Input */}
+                  {/* Discount Input with Flat vs % Toggle */}
                   <div className="flex justify-between items-center py-1">
-                    <span>Discount (₹):</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.discount}
-                      onChange={(e) => setFormData({ ...formData, discount: Number(e.target.value) })}
-                      className="w-24 px-2 py-1 bg-white border border-slate-300 rounded-md text-right text-xs font-bold text-emerald-700 focus:outline-none"
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <span>Discount:</span>
+                      <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-[10px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setDiscountType('flat')}
+                          className={`px-1.5 py-0.5 rounded transition-all ${discountType === 'flat' ? 'bg-white text-emerald-700 shadow-2xs font-black' : 'text-slate-500'}`}
+                        >
+                          ₹ Flat
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDiscountType('percent')}
+                          className={`px-1.5 py-0.5 rounded transition-all ${discountType === 'percent' ? 'bg-white text-emerald-700 shadow-2xs font-black' : 'text-slate-500'}`}
+                        >
+                          % Off
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min="0"
+                        max={discountType === 'percent' ? 100 : undefined}
+                        value={discountValue}
+                        onChange={(e) => setDiscountValue(Number(e.target.value))}
+                        className="w-20 px-2 py-1 bg-white border border-slate-300 rounded-md text-right text-xs font-bold text-emerald-700 focus:outline-none"
+                      />
+                      <span className="text-[11px] font-bold text-slate-500">{discountType === 'flat' ? '₹' : '%'}</span>
+                      {discountType === 'percent' && discountAmount > 0 && (
+                        <span className="text-[10px] font-bold text-emerald-700 ml-1">(-₹{discountAmount})</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Tax Input */}
@@ -996,7 +1571,7 @@ const ReceptionistBilling = () => {
                   className="w-full py-3.5 bg-teal-700 hover:bg-teal-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submitting ? <RefreshCw className="animate-spin" size={16} /> : <Printer size={16} />}
-                  {submitting ? 'Generating Invoice & Booking...' : 'Generate Invoice & Book Appointment'}
+                  {submitting ? 'Generating Invoice...' : (bookAppointment ? 'Generate Invoice & Book Appointment' : 'Generate Invoice')}
                 </button>
               </div>
             </div>
@@ -1004,24 +1579,75 @@ const ReceptionistBilling = () => {
 
           {/* RECENT INVOICES HISTORY SECTION */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Clock size={18} className="text-teal-600" /> Recent Billing Records ({billingType === 'clinic' ? 'Clinic' : 'Lab'})
+                  <Clock size={18} className="text-teal-600" /> Recent Billing Records
                 </h3>
-                <p className="text-xs text-slate-500">History of generated receipts for today and past visits.</p>
+                <p className="text-xs text-slate-500">History of generated receipts for clinic consultations and diagnostic lab tests.</p>
               </div>
 
-              {/* Search History */}
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-2.5 text-slate-400" size={15} />
-                <input
-                  type="text"
-                  placeholder="Filter phone, name or invoice #"
-                  value={historySearch}
-                  onChange={(e) => setHistorySearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none"
-                />
+              {/* Tabs & Search Filter */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Filter Tabs */}
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('all')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      historyFilter === 'all'
+                        ? 'bg-white text-slate-900 shadow-2xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    All ({invoices.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('clinic')}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                      historyFilter === 'clinic'
+                        ? 'bg-teal-700 text-white shadow-2xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Stethoscope size={12} /> Clinic ({clinicCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('lab')}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                      historyFilter === 'lab'
+                        ? 'bg-indigo-600 text-white shadow-2xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Beaker size={12} /> Lab ({labCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('due')}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                      historyFilter === 'due'
+                        ? 'bg-rose-600 text-white shadow-2xs font-black'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <AlertTriangle size={12} /> Dues ({dueCount})
+                  </button>
+                </div>
+
+                {/* Search History */}
+                <div className="relative w-full sm:w-56">
+                  <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+                  <input
+                    type="text"
+                    placeholder="Search patient, phone, inv #"
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:bg-white"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1031,7 +1657,7 @@ const ReceptionistBilling = () => {
               </div>
             ) : filteredInvoices.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400 font-semibold">
-                No billing invoices found matching criteria.
+                No billing invoices found matching the selected filter.
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -1040,26 +1666,58 @@ const ReceptionistBilling = () => {
                     <tr>
                       <th className="p-3">Invoice #</th>
                       <th className="p-3">Date</th>
+                      <th className="p-3">Type</th>
                       <th className="p-3">Patient</th>
                       <th className="p-3">Doctor</th>
                       <th className="p-3">Total (₹)</th>
                       <th className="p-3">Paid (₹)</th>
+                      <th className="p-3">Balance (₹)</th>
                       <th className="p-3">Status</th>
-                      <th className="p-3 text-right">Action</th>
+                      <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                    {filteredInvoices.slice(0, 15).map((inv) => (
+                    {filteredInvoices.slice(0, 20).map((inv) => (
                       <tr key={inv._id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3 font-bold text-teal-700">{inv.invoiceNumber}</td>
                         <td className="p-3 text-slate-500">{new Date(inv.billingDate).toLocaleDateString()}</td>
+                        <td className="p-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            inv.billingType === 'lab'
+                              ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                              : 'bg-teal-100 text-teal-800 border border-teal-200'
+                          }`}>
+                            {inv.billingType === 'lab' ? <Beaker size={10} /> : <Stethoscope size={10} />}
+                            {inv.billingType === 'lab' ? 'Lab' : 'Clinic'}
+                          </span>
+                        </td>
                         <td className="p-3 font-bold text-slate-900">
                           {inv.patientName}
                           <span className="block text-[10px] font-normal text-slate-400">{inv.patientPhone}</span>
                         </td>
-                        <td className="p-3 text-slate-600">{inv.doctorName || 'N/A'}</td>
-                        <td className="p-3 font-bold text-slate-900">₹{inv.totalAmount}</td>
-                        <td className="p-3 font-bold text-emerald-700">₹{inv.paidAmount}</td>
+                        <td className="p-3 text-slate-600">
+                          <div>{inv.doctorName || 'N/A'}</div>
+                          {inv.billingType === 'clinic' && (
+                            inv.queueId ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md mt-0.5">
+                                <Ticket size={10} /> In Queue
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md mt-0.5">
+                                Bill Only
+                              </span>
+                            )
+                          )}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900">₹{(inv.totalAmount || 0).toLocaleString()}</td>
+                        <td className="p-3 font-bold text-emerald-700">₹{(inv.paidAmount || 0).toLocaleString()}</td>
+                        <td className="p-3 font-bold">
+                          {inv.remainingDue > 0 ? (
+                            <span className="text-rose-600 font-black">₹{(inv.remainingDue).toLocaleString()}</span>
+                          ) : (
+                            <span className="text-slate-400 font-normal">₹0</span>
+                          )}
+                        </td>
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
                             inv.paymentStatus === 'Paid' 
@@ -1072,15 +1730,47 @@ const ReceptionistBilling = () => {
                           </span>
                         </td>
                         <td className="p-3 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedInvoice(inv);
-                              setShowPrintModal(true);
-                            }}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 font-bold rounded-lg text-[11px] transition-colors inline-flex items-center gap-1 border border-slate-200"
-                          >
-                            <Eye size={12} /> View Receipt
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            {inv.billingType === 'clinic' && !inv.queueId && (
+                              <button
+                                type="button"
+                                onClick={() => handleBookTokenForInvoice(inv)}
+                                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-lg text-[10px] uppercase tracking-wider transition-colors inline-flex items-center gap-1 shadow-2xs"
+                                title="Book Doctor Appointment Token"
+                              >
+                                <Ticket size={11} /> Book Token
+                              </button>
+                            )}
+                            {inv.remainingDue > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleSettleDue(inv)}
+                                className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-lg text-[10px] uppercase tracking-wider transition-colors inline-flex items-center gap-1 shadow-2xs"
+                                title="Collect Outstanding Dues"
+                              >
+                                <DollarSign size={11} /> Collect Due
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedInvoice(inv);
+                                setShowPrintModal(true);
+                              }}
+                              className="px-2.5 py-1 bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 font-bold rounded-lg text-[11px] transition-colors inline-flex items-center gap-1 border border-slate-200"
+                              title="View & Print Receipt"
+                            >
+                              <Eye size={12} /> View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadInvoicePdf(inv)}
+                              className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[11px] transition-colors inline-flex items-center border border-slate-200"
+                              title="Download PDF"
+                            >
+                              <FileDown size={14} className="text-teal-700" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1098,26 +1788,53 @@ const ReceptionistBilling = () => {
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-200 space-y-4 my-8 animate-scaleIn">
             
             {/* Modal Action Header (Hidden during window.print) */}
-            <div className="bg-slate-900 text-white p-4 flex justify-between items-center print:hidden">
+            <div className={`p-4 flex flex-wrap justify-between items-center gap-2 print:hidden ${
+              selectedInvoice.billingType === 'lab' ? 'bg-slate-900 text-white' : 'bg-slate-900 text-white'
+            }`}>
               <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                <Receipt size={16} className="text-teal-400" /> Digital Payment Receipt
+                {selectedInvoice.billingType === 'lab' ? (
+                  <><Beaker size={16} className="text-indigo-400" /> Lab Diagnostic Invoice</>
+                ) : (
+                  <><Receipt size={16} className="text-teal-400" /> Clinical Receipt</>
+                )}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
+                  type="button"
                   onClick={handleShareReceipt}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1"
+                  className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1"
+                  title="Copy receipt text to clipboard"
                 >
-                  <Share2 size={13} /> Share Text
+                  <Share2 size={13} /> Copy
                 </button>
                 <button
+                  type="button"
+                  onClick={() => handleShareWhatsApp(selectedInvoice)}
+                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1"
+                  title="Share invoice on WhatsApp"
+                >
+                  <MessageCircle size={13} /> WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadInvoicePdf(selectedInvoice)}
+                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1"
+                  title="Download standard PDF receipt"
+                >
+                  <FileDown size={13} /> PDF
+                </button>
+                <button
+                  type="button"
                   onClick={handlePrint}
-                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs transition-colors flex items-center gap-1"
+                  className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1"
+                  title="Print paper receipt"
                 >
-                  <Printer size={13} /> Print PDF
+                  <Printer size={13} /> Print
                 </button>
                 <button
+                  type="button"
                   onClick={() => setShowPrintModal(false)}
-                  className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+                  className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors ml-1"
                 >
                   <X size={18} />
                 </button>
@@ -1127,19 +1844,25 @@ const ReceptionistBilling = () => {
             {/* PRINTABLE RECEIPT BODY - Full Page Professional Layout */}
             <div id="printable-receipt-area" className="p-6 md:p-8 space-y-6 text-slate-800 text-xs font-body bg-white">
               
-              {/* Header Info with Clinic Personalization */}
-              <div className="border-b-2 border-slate-900 pb-5 flex justify-between items-start gap-4">
+              {/* Header Info with Clinic / Lab Personalization */}
+              <div className={`border-b-2 pb-5 flex justify-between items-start gap-4 ${
+                selectedInvoice.billingType === 'lab' ? 'border-indigo-900' : 'border-slate-900'
+              }`}>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm print:border print:border-slate-900">
-                      🏥
+                    <div className={`w-8 h-8 rounded-lg text-white flex items-center justify-center font-black text-sm print:border ${
+                      selectedInvoice.billingType === 'lab' ? 'bg-indigo-800' : 'bg-slate-900'
+                    }`}>
+                      {selectedInvoice.billingType === 'lab' ? '🔬' : '🏥'}
                     </div>
                     <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">
-                      {selectedInvoice.clinicName || localStorage.getItem('clinicName') || 'SANJIVANI HEALTHCARE CLINIC'}
+                      {selectedInvoice.clinicName || localStorage.getItem('clinicName') || 'SANJIVANI HEALTHCARE'}
                     </h2>
                   </div>
                   <p className="text-[11px] font-bold text-slate-600">
-                    {selectedInvoice.clinicAddress || 'Multi-Specialty Medical & Diagnostic Center'}
+                    {selectedInvoice.billingType === 'lab'
+                      ? 'Clinical Pathology & Diagnostic Testing Center'
+                      : (selectedInvoice.clinicAddress || 'Multi-Specialty Medical & Diagnostic Center')}
                   </p>
                   <p className="text-[10px] text-slate-500 font-medium">
                     Contact: +91 98765 43210 | GSTIN / Reg: 24AAACS9081F1Z8
@@ -1154,8 +1877,10 @@ const ReceptionistBilling = () => {
                   }`}>
                     {selectedInvoice.paymentStatus === 'Paid' ? '✓ PAID RECEIPT' : '⚠️ BALANCE DUE'}
                   </span>
-                  <h3 className="text-sm font-black text-slate-900 tracking-wider uppercase block">
-                    TAX INVOICE
+                  <h3 className={`text-sm font-black tracking-wider uppercase block ${
+                    selectedInvoice.billingType === 'lab' ? 'text-indigo-900' : 'text-slate-900'
+                  }`}>
+                    {selectedInvoice.billingType === 'lab' ? 'PATHOLOGY INVOICE' : 'TAX INVOICE'}
                   </h3>
                   <p className="text-xs font-bold text-slate-700">
                     No: <span className="font-black text-slate-900">{selectedInvoice.invoiceNumber}</span>
@@ -1167,18 +1892,29 @@ const ReceptionistBilling = () => {
               </div>
 
               {/* Patient & Practitioner Details Grid */}
-              <div className="grid grid-cols-2 gap-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200 text-xs">
+              <div className={`grid grid-cols-2 gap-4 p-4 rounded-xl border text-xs ${
+                selectedInvoice.billingType === 'lab' ? 'bg-indigo-50/40 border-indigo-200' : 'bg-slate-50/80 border-slate-200'
+              }`}>
                 <div className="space-y-1">
                   <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Billed To (Patient)</span>
                   <strong className="text-slate-900 block text-sm font-black">{selectedInvoice.patientName}</strong>
                   <p className="text-slate-600 font-medium">Mobile: {selectedInvoice.patientPhone}</p>
+                  {selectedInvoice.billingType === 'lab' && (
+                    <p className="text-indigo-700 font-black text-[10px] uppercase">
+                      Sample ID: LAB-{selectedInvoice.invoiceNumber}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultant / Service Mode</span>
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {selectedInvoice.billingType === 'lab' ? 'Referred By / Mode' : 'Consultant / Service Mode'}
+                  </span>
                   <strong className="text-slate-900 block text-sm font-black">Dr. {selectedInvoice.doctorName || 'General Practitioner'}</strong>
-                  <p className="text-teal-700 font-bold uppercase tracking-wider text-[11px]">
-                    {selectedInvoice.billingType || 'Clinic'} Services
+                  <p className={`font-bold uppercase tracking-wider text-[11px] ${
+                    selectedInvoice.billingType === 'lab' ? 'text-indigo-700' : 'text-teal-700'
+                  }`}>
+                    {selectedInvoice.billingType === 'lab' ? '🔬 Diagnostic Lab Testing' : '🏥 Clinical Consultation'}
                   </p>
                 </div>
               </div>
@@ -1187,9 +1923,13 @@ const ReceptionistBilling = () => {
               <div className="space-y-2">
                 <table className="w-full border-collapse text-left border border-slate-200">
                   <thead>
-                    <tr className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-wider">
+                    <tr className={`text-white text-[10px] uppercase font-black tracking-wider ${
+                      selectedInvoice.billingType === 'lab' ? 'bg-indigo-900' : 'bg-slate-900'
+                    }`}>
                       <th className="py-2.5 px-3 w-12 text-center">#</th>
-                      <th className="py-2.5 px-3">Service / Item Description</th>
+                      <th className="py-2.5 px-3">
+                        {selectedInvoice.billingType === 'lab' ? 'Investigation / Diagnostic Test' : 'Service / Item Description'}
+                      </th>
                       <th className="py-2.5 px-3 w-28">Category</th>
                       <th className="py-2.5 px-3 text-right w-28">Amount</th>
                     </tr>
@@ -1199,7 +1939,9 @@ const ReceptionistBilling = () => {
                       <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
                         <td className="py-2.5 px-3 text-center text-slate-400 font-bold">{idx + 1}</td>
                         <td className="py-2.5 px-3 text-slate-900 font-bold">{item.description}</td>
-                        <td className="py-2.5 px-3 text-slate-500 uppercase text-[10px] font-bold">{item.category || 'General'}</td>
+                        <td className="py-2.5 px-3 text-slate-500 uppercase text-[10px] font-bold">
+                          {item.category || (selectedInvoice.billingType === 'lab' ? 'Lab Test' : 'General')}
+                        </td>
                         <td className="py-2.5 px-3 text-right font-black text-slate-900">₹{item.amount}</td>
                       </tr>
                     ))}
@@ -1266,12 +2008,18 @@ const ReceptionistBilling = () => {
               <div className="pt-6 border-t border-slate-200 flex justify-between items-end text-[10px]">
                 <div className="space-y-1">
                   <p className="font-black text-slate-700 uppercase tracking-wider">Thank you for visiting!</p>
-                  <p className="text-slate-500">Wishing you good health and a speedy recovery.</p>
+                  <p className="text-slate-500">
+                    {selectedInvoice.billingType === 'lab'
+                      ? 'Sample verified. Accurate lab reports will be prepared promptly.'
+                      : 'Wishing you good health and a speedy recovery.'}
+                  </p>
                 </div>
 
                 <div className="text-center space-y-8">
                   <div className="border-b border-slate-400 w-36 mx-auto" />
-                  <p className="font-black text-slate-800 uppercase tracking-wider">Authorized Signatory</p>
+                  <p className="font-black text-slate-800 uppercase tracking-wider">
+                    {selectedInvoice.billingType === 'lab' ? 'Chief Pathologist / Lab In-Charge' : 'Authorized Signatory'}
+                  </p>
                 </div>
               </div>
 

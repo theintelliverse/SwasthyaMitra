@@ -696,27 +696,73 @@ const DoctorDashboard = () => {
 
     let selectedLabId = null;
     try {
-      const labsRes = await axios.get(`${API_URL}/api/lab-connect/clinic`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      const [labsRes, clinicLeavesRes] = await Promise.all([
+        axios.get(`${API_URL}/api/lab-connect/clinic`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/api/clinic/leaves`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { success: false } }))
+      ]);
+
+      let inHouseClosed = false;
+      let inHouseClosedReason = '';
+      if (clinicLeavesRes?.data?.success) {
+        const now = new Date();
+        const activeLeaves = clinicLeavesRes.data.data || [];
+        const todayLabLeave = activeLeaves.find(l => {
+          if (l.type !== 'lab_leave') return false;
+          const s = new Date(l.startDate);
+          const e = new Date(l.endDate);
+          return now >= s && now <= e;
+        });
+        if (todayLabLeave) {
+          inHouseClosed = true;
+          inHouseClosedReason = todayLabLeave.title;
+        }
+      }
+
       if (labsRes.data.success) {
         const activeConnections = (labsRes.data.data || []).filter(c => c.status === 'accepted');
         
         if (activeConnections.length > 0) {
+          const inHouseLabel = inHouseClosed 
+            ? `In-House Clinic Lab (⚠️ Closed Today - ${inHouseClosedReason})` 
+            : 'In-House Clinic Lab (Default)';
+
           const inputOptions = {
-            'in-house': 'In-House Clinic Lab (Default)'
+            'in-house': inHouseLabel
           };
+
+          const labStatusMap = {
+            'in-house': { name: 'In-House Clinic Lab', isClosed: inHouseClosed, reason: inHouseClosedReason }
+          };
+
           activeConnections.forEach(c => {
             const lab = c.labId || {};
-            inputOptions[lab._id] = `${lab.labName} (${lab.labCode}) - External`;
+            let label = `${lab.labName} (${lab.labCode}) - External`;
+            let isClosed = false;
+            let reason = '';
+            if (lab.isClosedToday) {
+              isClosed = true;
+              reason = lab.isOnHolidayToday 
+                ? `Holiday: ${lab.todayHolidayTitle}` 
+                : (lab.isWeeklyOffToday ? 'Weekly Off' : 'Service Paused');
+              label = `${lab.labName} (${lab.labCode}) - ⚠️ Closed Today (${reason})`;
+            }
+            inputOptions[lab._id] = label;
+            labStatusMap[lab._id] = { name: lab.labName, isClosed, reason };
           });
           
+          const defaultVal = inHouseClosed && activeConnections.find(c => !c.labId?.isClosedToday)
+            ? activeConnections.find(c => !c.labId?.isClosedToday).labId._id
+            : 'in-house';
+
           const { value: chosenLabId } = await Swal.fire({
             title: 'Choose Destination Lab',
             input: 'select',
             inputOptions,
-            defaultValue: 'in-house',
+            defaultValue: defaultVal,
             showCancelButton: true,
             confirmButtonColor: '#0d9488',
             cancelButtonColor: '#ef4444',
@@ -728,6 +774,22 @@ const DoctorDashboard = () => {
           });
           
           if (!chosenLabId) return;
+
+          const chosenInfo = labStatusMap[chosenLabId];
+          if (chosenInfo && chosenInfo.isClosed) {
+            const proceed = await Swal.fire({
+              title: 'Lab Is Closed Today',
+              html: `<strong>${chosenInfo.name}</strong> is closed today (${chosenInfo.reason}).<br/><br/>Patient referral will still be recorded and processed when the lab reopens. Proceed?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Yes, Proceed Referral',
+              cancelButtonText: 'Select Different Lab',
+              confirmButtonColor: '#0d9488',
+              cancelButtonColor: '#ef4444'
+            });
+            if (!proceed.isConfirmed) return;
+          }
+
           if (chosenLabId !== 'in-house') {
             selectedLabId = chosenLabId;
           }

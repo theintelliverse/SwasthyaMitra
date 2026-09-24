@@ -244,11 +244,12 @@ const BookAppointment = () => {
         if (selectedDoc && Array.isArray(selectedDoc.availableDays) && selectedDoc.availableDays.length > 0) {
             const docDays = selectedDoc.availableDays.map(d => d.toLowerCase());
             if (!docDays.includes(weekday)) {
+                const shortDay = weekday.slice(0, 3).charAt(0).toUpperCase() + weekday.slice(1, 3);
                 return {
                     isAvailable: false,
                     type: 'doctor_weekly_off',
-                    badgeText: 'Doc Off',
-                    reason: `Dr. ${selectedDoc.name} is not available on ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}s.`
+                    badgeText: `No ${shortDay}`,
+                    reason: `Dr. ${selectedDoc.name} is not available on ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}s. Available days: ${selectedDoc.availableDays.map(d => d.charAt(0).toUpperCase() + d.slice(1, 3)).join(', ')}.`
                 };
             }
         }
@@ -286,6 +287,28 @@ const BookAppointment = () => {
                         };
                     }
                 }
+            }
+        }
+
+        // 5. Doctor is LIVE on walk-in queue — block all dates in the live range
+        if (selectedDoc && selectedDoc.isAvailable === false) {
+            const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+            const checkDay = new Date(date); checkDay.setHours(0, 0, 0, 0);
+            const liveEnd = selectedDoc.liveUntilDate
+                ? (() => { const d = new Date(selectedDoc.liveUntilDate); d.setHours(23,59,59,999); return d; })()
+                : (() => { const d = new Date(todayMidnight); d.setHours(23,59,59,999); return d; })();
+            if (checkDay >= todayMidnight && checkDay <= liveEnd) {
+                const untilLabel = selectedDoc.liveUntilDate
+                    ? new Date(selectedDoc.liveUntilDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                    : null;
+                return {
+                    isAvailable: false,
+                    type: 'doctor_live',
+                    badgeText: untilLabel ? `Live→${untilLabel}` : 'Live',
+                    reason: untilLabel
+                        ? `Dr. ${selectedDoc.name} is on live walk-in queue until ${untilLabel}. Book after that date.`
+                        : `Dr. ${selectedDoc.name} is handling live walk-in patients today. Please book for a future date.`
+                };
             }
         }
 
@@ -630,29 +653,55 @@ const BookAppointment = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-8">
-                                {doctors.map(doctor => (
+                                {doctors.map(doctor => {
+                                    const onLeave = doctor.isOnLeaveToday;
+                                    const isLiveToday = !onLeave && doctor.isAvailable === false;
+                                    const liveUntilLabel = isLiveToday && doctor.liveUntilDate
+                                        ? new Date(doctor.liveUntilDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                                        : null;
+                                    const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat', sunday:'Sun' };
+                                    const availDays = Array.isArray(doctor.availableDays) && doctor.availableDays.length > 0 && doctor.availableDays.length < 7
+                                        ? doctor.availableDays.map(d => DAY_SHORT[d.toLowerCase()] || d)
+                                        : null;
+                                    return (
                                     <div
                                         key={doctor._id}
-                                        className="bg-white rounded-2xl md:rounded-[2.5rem] border border-slate-100 text-left hover:border-teal-400 hover:shadow-xl transition-all group flex flex-col"
+                                        className={`bg-white rounded-2xl md:rounded-[2.5rem] border text-left transition-all group flex flex-col ${onLeave ? 'border-orange-200 opacity-90' : isLiveToday ? 'border-red-200 opacity-90' : 'border-slate-100 hover:border-teal-400 hover:shadow-xl'}`}
                                     >
                                         {/* Mobile: compact row */}
                                         <div className="md:hidden flex items-center gap-3 p-4">
                                             <div className="relative shrink-0">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center text-slate-600 text-xl font-bold group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                                <div className={`w-12 h-12 bg-gradient-to-br rounded-2xl flex items-center justify-center text-xl font-bold transition-all duration-300 shadow-sm ${onLeave ? 'from-orange-100 to-amber-100 text-orange-400' : isLiveToday ? 'from-red-100 to-rose-100 text-red-500' : 'from-slate-100 to-slate-200 text-slate-600 group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white'}`}>
                                                     {doctor.name?.charAt(0)}
                                                 </div>
-                                                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
+                                                <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${onLeave ? 'bg-orange-400' : isLiveToday ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-semibold text-teal-600 uppercase tracking-wide truncate">{doctor.specialization || 'General'}</p>
                                                 <h3 className="text-sm font-bold text-slate-900 truncate">Dr. {doctor.name}</h3>
                                                 <p className="text-xs font-medium text-slate-400 mt-0.5">{doctor.experience || 0} yrs exp</p>
+                                                {availDays && (
+                                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                                        {availDays.map(d => <span key={d} className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[9px] font-semibold text-slate-500">{d}</span>)}
+                                                    </div>
+                                                )}
+                                                {onLeave && (
+                                                    <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full text-[10px] font-semibold border border-orange-200">
+                                                        <CalendarOff size={9} /> On Leave Today{doctor.leaveTodayTitle ? `: ${doctor.leaveTodayTitle}` : ''}
+                                                    </span>
+                                                )}
+                                                {isLiveToday && (
+                                                    <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-semibold border border-red-200">
+                                                        <Zap size={9} className="fill-current" />
+                                                        {liveUntilLabel ? `Live until ${liveUntilLabel}` : 'Live Today'}
+                                                    </span>
+                                                )}
                                             </div>
                                             <button
                                                 onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
-                                                className="px-3 py-2 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-xl font-semibold text-xs tracking-wide transition-all active:scale-95 shrink-0 flex items-center gap-1"
+                                                className={`px-3 py-2 rounded-xl font-semibold text-xs tracking-wide transition-all active:scale-95 shrink-0 flex items-center gap-1 ${onLeave ? 'bg-orange-50 text-orange-500 hover:bg-orange-100 border border-orange-200' : isLiveToday ? 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200' : 'bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white'}`}
                                             >
-                                                Pick <ArrowRight size={12} />
+                                                {onLeave ? 'Future >' : isLiveToday ? 'Future >' : <>Pick <ArrowRight size={12} /></>}
                                             </button>
                                         </div>
 
@@ -661,13 +710,31 @@ const BookAppointment = () => {
                                             <div>
                                                 <div className="flex items-start gap-6 mb-6">
                                                     <div className="relative shrink-0">
-                                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-[2rem] flex items-center justify-center text-slate-500 text-2xl font-bold group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                                                        <div className={`w-20 h-20 bg-gradient-to-br rounded-[2rem] flex items-center justify-center text-2xl font-bold transition-all duration-500 shadow-xl ${onLeave ? 'from-orange-100 to-amber-100 text-orange-400' : isLiveToday ? 'from-red-100 to-rose-100 text-red-500' : 'from-slate-100 to-slate-200 text-slate-500 group-hover:from-teal-500 group-hover:to-indigo-600 group-hover:text-white group-hover:rotate-6'}`}>
                                                             {doctor.name?.charAt(0)}
                                                         </div>
-                                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full animate-pulse" />
+                                                        <div className={`absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full ${onLeave ? 'bg-orange-400' : isLiveToday ? 'bg-red-500 animate-pulse' : 'bg-green-500 animate-pulse'}`} />
                                                     </div>
                                                     <div className="flex-grow min-w-0">
-                                                        <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider mb-1">{doctor.specialization || 'General Practitioner'}</p>
+                                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                            <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider">{doctor.specialization || 'General Practitioner'}</p>
+                                                            {onLeave && (
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold border border-orange-200 uppercase tracking-wide">
+                                                                    <CalendarOff size={9} /> On Leave Today
+                                                                </span>
+                                                            )}
+                                                            {isLiveToday && (
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold border border-red-200 uppercase tracking-wide">
+                                                                    <Zap size={9} className="fill-current" />
+                                                                    {liveUntilLabel ? `Live until ${liveUntilLabel}` : 'Live Today'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {availDays && (
+                                                            <div className="flex flex-wrap gap-1 mt-1.5">
+                                                                {availDays.map(d => <span key={d} className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md text-[10px] font-semibold text-slate-500">{d}</span>)}
+                                                            </div>
+                                                        )}
                                                         <h3 className="text-2xl font-bold text-slate-900 tracking-tight truncate">Dr. {doctor.name}</h3>
                                                         {doctor.education && (
                                                             <p className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-1.5">
@@ -676,6 +743,25 @@ const BookAppointment = () => {
                                                         )}
                                                     </div>
                                                 </div>
+
+                                                {onLeave && (
+                                                    <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3 mb-6 text-sm text-orange-700 font-medium">
+                                                        <CalendarOff size={15} className="shrink-0 text-orange-400" />
+                                                        <span>
+                                                            Not available today{doctor.leaveTodayTitle ? ` — ${doctor.leaveTodayTitle}` : ''}. You can still book for a future date.
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {isLiveToday && (
+                                                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 mb-6 text-sm text-red-700 font-medium">
+                                                        <Zap size={15} className="shrink-0 text-red-400 fill-current" />
+                                                        <span>
+                                                            {liveUntilLabel
+                                                                ? `On live walk-in queue until ${liveUntilLabel}. Appointments are blocked for this period — book after that date.`
+                                                                : `Currently seeing walk-in patients live today. Today's slots are unavailable — book for a future date.`}
+                                                        </span>
+                                                    </div>
+                                                )}
 
                                                 {doctor.bio && (
                                                     <p className="text-sm text-slate-600 italic line-clamp-2 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100/50 mb-6">
@@ -687,21 +773,23 @@ const BookAppointment = () => {
                                                     <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
                                                         <Briefcase size={13} className="text-teal-500" /> {doctor.experience || 0} Yrs Exp
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100/20">
-                                                        <Clock size={13} className="text-teal-500" /> Active
+                                                    <div className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border ${onLeave ? 'bg-orange-50/50 border-orange-100/20 text-orange-500' : isLiveToday ? 'bg-red-50/50 border-red-100/20 text-red-500' : 'bg-slate-50/50 border-slate-100/20'}`}>
+                                                        <Clock size={13} className={onLeave ? 'text-orange-400' : isLiveToday ? 'text-red-400' : 'text-teal-500'} />
+                                                        {onLeave ? 'On Leave' : isLiveToday ? 'Live Queue' : 'Active'}
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <button
                                                 onClick={() => { setFormData({ ...formData, doctorId: doctor._id }); setStep(3); }}
-                                                className="w-full py-4 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95"
+                                                className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 ${onLeave ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200' : isLiveToday ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' : 'bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white'}`}
                                             >
-                                                Select Doctor <ArrowRight size={16} />
+                                                {onLeave ? <><CalendarOff size={15} /> Book for Future Date</> : isLiveToday ? <><Zap size={15} className="fill-current" /> Book for Future Date</> : <>Select Doctor <ArrowRight size={16} /></>}
                                             </button>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -750,6 +838,39 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* ─── DOCTOR WEEKLY SCHEDULE BANNER ─── */}
+                            {(() => {
+                                const doc = getSelectedDoctor();
+                                if (!doc || !Array.isArray(doc.availableDays) || doc.availableDays.length === 0 || doc.availableDays.length >= 7) return null;
+                                const ALL_DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+                                const DAY_3 = d => d.charAt(0).toUpperCase() + d.slice(1, 3);
+                                return (
+                                    <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3 flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                                            <Calendar size={15} className="text-teal-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-teal-800 mb-1.5">Dr. {doc.name}'s Weekly Schedule</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {ALL_DAYS.map(d => {
+                                                    const avail = doc.availableDays.map(x => x.toLowerCase()).includes(d);
+                                                    return (
+                                                        <span key={d} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                                            avail
+                                                                ? 'bg-teal-600 text-white border-teal-600'
+                                                                : 'bg-white text-slate-400 border-slate-200 line-through'
+                                                        }`}>
+                                                            {DAY_3(d)}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-teal-600 font-semibold shrink-0 hidden sm:block">Only green days<br />are bookable</p>
+                                    </div>
+                                );
+                            })()}
 
                             {/* ─── DATE SELECTION ─── */}
                             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">

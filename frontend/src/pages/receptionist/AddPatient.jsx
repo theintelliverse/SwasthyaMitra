@@ -4,7 +4,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
   User, Phone, Search, AlertCircle, RefreshCw, Activity,
-  ArrowLeft, Stethoscope, Heart, ShieldCheck, HeartPulse, Sparkles
+  ArrowLeft, Stethoscope, Heart, ShieldCheck, HeartPulse, Sparkles,
+  CalendarOff, Zap
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -383,19 +384,72 @@ const AddPatient = () => {
                     {loadingDoctors ? (
                       <div className="py-2 text-center text-[14px] animate-pulse font-medium text-slate-400">Loading Doctors...</div>
                     ) : (
-                      doctors.map(doc => (
-                        <div 
-                          key={doc._id}
-                          onClick={() => setFormData({ ...formData, doctorId: doc._id })}
-                          className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${formData.doctorId === doc._id ? 'border-teal-600 bg-teal-50/20' : 'border-sandstone bg-parchment/10 hover:border-marigold'}`}
-                        >
-                          <div>
-                            <p className="text-[14px] font-black text-teak leading-tight">Dr. {doc.name}</p>
-                            <p className="text-[14px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
+                      doctors.map(doc => {
+                        const onLeave = doc.isOnLeaveToday;
+                        const isLive  = !onLeave && doc.isAvailable === false;
+                        const liveUntilLabel = isLive && doc.liveUntilDate
+                          ? new Date(doc.liveUntilDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                          : null;
+                        const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat', sunday:'Sun' };
+                        const availDays = Array.isArray(doc.availableDays) && doc.availableDays.length > 0 && doc.availableDays.length < 7
+                          ? doc.availableDays.map(d => DAY_SHORT[d.toLowerCase()] || d)
+                          : null;
+                        const isSelected = formData.doctorId === doc._id;
+                        return (
+                          <div
+                            key={doc._id}
+                            onClick={() => setFormData({ ...formData, doctorId: doc._id })}
+                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex flex-col gap-2 ${
+                              isSelected
+                                ? onLeave ? 'border-orange-400 bg-orange-50/30'
+                                  : isLive ? 'border-red-400 bg-red-50/30'
+                                  : 'border-teal-600 bg-teal-50/20'
+                                : onLeave ? 'border-orange-200 bg-orange-50/10 hover:border-orange-300'
+                                  : isLive ? 'border-red-200 bg-red-50/10 hover:border-red-300'
+                                  : 'border-sandstone bg-parchment/10 hover:border-marigold'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="text-[14px] font-black text-teak leading-tight">Dr. {doc.name}</p>
+                                <p className="text-[13px] font-bold text-khaki uppercase tracking-wider mt-0.5">{doc.specialization}</p>
+                                {availDays && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {availDays.map(d => <span key={d} className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold text-slate-500">{d}</span>)}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                                <div className={`w-2.5 h-2.5 rounded-full ${
+                                  onLeave ? 'bg-orange-400'
+                                  : isLive ? 'bg-red-500 animate-pulse'
+                                  : 'bg-green-500'
+                                }`} />
+                                {onLeave && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-[9px] font-bold border border-orange-200">
+                                    <CalendarOff size={8} /> Leave
+                                  </span>
+                                )}
+                                {isLive && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[9px] font-bold border border-red-200">
+                                    <Zap size={8} className="fill-current" /> Live
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {(onLeave || isLive) && isSelected && (
+                              <div className={`text-[11px] font-semibold rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 ${
+                                onLeave ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {onLeave
+                                  ? <><CalendarOff size={10} /> On leave today{doc.leaveTodayTitle ? ` — ${doc.leaveTodayTitle}` : ''}. Patient can be added but doctor may not be available.</>
+                                  : <><Zap size={10} className="fill-current" /> Currently on live walk-in queue{liveUntilLabel ? ` until ${liveUntilLabel}` : ' today'}. Appointment booking may be blocked.</>
+                                }
+                              </div>
+                            )}
                           </div>
-                          <div className={`w-2.5 h-2.5 rounded-full ${doc.isAvailable ? 'bg-green-500 shadow-sm' : 'bg-slate-200'}`} />
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

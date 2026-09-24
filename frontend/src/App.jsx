@@ -461,7 +461,7 @@ const App = () => {
               <Route
                 path="/receptionist/billing"
                 element={
-                  <ProtectedRoute allowedRoles={['receptionist', 'admin']}>
+                  <ProtectedRoute allowedRoles={['receptionist', 'admin', 'lab']}>
                     <ReceptionistBilling />
                   </ProtectedRoute>
                 }

@@ -75,7 +75,15 @@ const LabPublicProfile = () => {
     );
   }
 
-  const { lab, connectedClinics, jsonLd, meta } = data;
+  const { 
+    lab, 
+    connectedClinics = [], 
+    scheduleStatus, 
+    workingDays = [], 
+    holidays = [], 
+    jsonLd, 
+    meta 
+  } = data;
 
   const filteredTests = (lab.availableTests || []).filter(t => 
     t.testName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -146,6 +154,58 @@ const LabPublicProfile = () => {
                 </span>
               </div>
 
+              {/* Real-time Status Badge */}
+              {scheduleStatus && (
+                <div className="pt-1">
+                  {scheduleStatus.isOnHolidayToday ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold">
+                      <AlertCircle size={15} className="text-amber-600" />
+                      <span>Closed Today for Holiday: <strong>{scheduleStatus.todayHoliday?.title}</strong></span>
+                    </div>
+                  ) : scheduleStatus.isWeeklyOffToday ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold">
+                      <Clock size={15} className="text-slate-500" />
+                      <span>Closed Today (Weekly Off)</span>
+                    </div>
+                  ) : scheduleStatus.isLivePaused ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
+                      <AlertCircle size={15} className="text-rose-600" />
+                      <span>Temporarily Paused / Service Maintenance</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Open Today ({lab.openingTime || '08:00'} - {lab.closingTime || '20:00'})</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Working Days Chips */}
+              {workingDays && workingDays.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-stone-400 block">Weekly Working Days</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((dayAbbr, idx) => {
+                      const fullDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                      const isWorking = workingDays.map(d => d.toLowerCase()).includes(fullDays[idx]);
+                      return (
+                        <span
+                          key={dayAbbr}
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                            isWorking 
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                              : 'bg-stone-100 text-stone-400 border-stone-200 line-through'
+                          }`}
+                        >
+                          {dayAbbr}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {lab.bio && (
                 <p className="text-sm text-stone-700 leading-relaxed pt-2">
                   {lab.bio}
@@ -159,6 +219,33 @@ const LabPublicProfile = () => {
               <p className="text-xs text-emerald-700">Call {lab.phone}</p>
             </div>
           </div>
+
+          {/* Upcoming Holidays Banner */}
+          {holidays && holidays.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-stone-100 bg-amber-50/40 rounded-2xl p-4 border border-amber-100">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5 mb-2">
+                <AlertCircle size={14} className="text-amber-600" />
+                Upcoming Planned Holidays & Closures
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {holidays.map(h => {
+                  const s = new Date(h.startDate);
+                  const e = new Date(h.endDate);
+                  const isSingleDay = s.toDateString() === e.toDateString();
+                  return (
+                    <div key={h._id} className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-xs">
+                      <span className="font-bold text-slate-800 block truncate">{h.title}</span>
+                      <span className="text-[11px] text-amber-800 font-semibold block">
+                        📅 {s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        {!isSingleDay && ` - ${e.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
+                      </span>
+                      {h.reason && <span className="text-[10px] text-stone-500 block italic truncate">{h.reason}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* --- Test Catalog Section --- */}
@@ -210,6 +297,29 @@ const LabPublicProfile = () => {
             </div>
           )}
         </section>
+
+        {/* --- Connected Partner Clinics --- */}
+        {connectedClinics && connectedClinics.length > 0 && (
+          <section className="bg-white border border-stone-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+              <ShieldCheck className="text-emerald-600" size={18} />
+              Connected Partner Clinics & Doctors ({connectedClinics.length})
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {connectedClinics.map((c, i) => (
+                <div key={c._id || i} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-800 font-black flex items-center justify-center text-sm shrink-0">
+                    🏥
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 text-xs truncate">{c.name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{c.address || 'Clinic Partner'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

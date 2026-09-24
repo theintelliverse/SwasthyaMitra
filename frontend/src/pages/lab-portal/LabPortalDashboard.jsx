@@ -9,7 +9,7 @@ import {
   User, Phone, TestTube, ChevronDown, ChevronUp, AlertCircle,
   Building, Loader2, BadgeCheck, BarChart3, Plus, TestTubes,
   TrendingUp, X, Type, AlignLeft, Save, Beaker, FileCheck,
-  Smartphone, Hash, Filter, Search
+  Smartphone, Hash, Filter, Search, CalendarOff
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as ChartTooltip } from 'recharts';
 import { jsPDF } from 'jspdf';
@@ -23,6 +23,7 @@ import SampleCollectionModal from './components/SampleCollectionModal';
 import DigitalReportModal from './components/DigitalReportModal';
 import UploadReportModal from './components/UploadReportModal';
 import PdfPreviewModal from '../../components/lab/PdfPreviewModal';
+import LabScheduleModal from './components/LabScheduleModal';
 
 const socket = io(SOCKET_URL || API_URL || 'http://localhost:5000');
 
@@ -80,6 +81,7 @@ const LabPortalDashboard = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalPatient, setUploadModalPatient] = useState(null);
   const [selectedUploadFiles, setSelectedUploadFiles] = useState([]);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // New features states
   const [socketConnected, setSocketConnected] = useState(false);
@@ -702,6 +704,15 @@ const LabPortalDashboard = () => {
               </div>
 
               <button
+                onClick={() => setShowScheduleModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-slate-900/10 active:scale-95 shrink-0"
+                title="Manage Weekly Working Days, Holidays & Raja"
+              >
+                <CalendarOff size={16} className="text-teal-400" />
+                Schedule & Raja
+              </button>
+
+              <button
                 onClick={() => navigate('/lab/portal/reports')}
                 className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 active:scale-95 shrink-0"
               >
@@ -1095,6 +1106,11 @@ const LabPortalDashboard = () => {
         requests={requests}
       />
 
+      <LabScheduleModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+      />
+
       <SampleCollectionModal
         showSampleCollectionModal={showSampleCollectionModal}
         setShowSampleCollectionModal={setShowSampleCollectionModal}
@@ -1152,6 +1168,12 @@ const LabPortalDashboard = () => {
                 label="Settings" 
                 color="bg-teal-50 text-teal-700 hover:bg-teal-100/50" 
                 onClick={() => { setShowReportConfigModal(true); setShowQuickActions(false); }} 
+              />
+              <QuickActionTile 
+                icon={<CalendarOff size={14} className="text-rose-600" />} 
+                label="Holidays & Raja" 
+                color="bg-rose-50 text-rose-700 hover:bg-rose-100/50" 
+                onClick={() => { setShowScheduleModal(true); setShowQuickActions(false); }} 
               />
               <QuickActionTile 
                 icon={<TestTubes size={14} className="text-violet-600" />} 
