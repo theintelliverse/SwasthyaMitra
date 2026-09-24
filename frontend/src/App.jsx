@@ -466,6 +466,14 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/billing"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'receptionist', 'lab']}>
+                    <ReceptionistBilling />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Shared Profile Page */}
               <Route

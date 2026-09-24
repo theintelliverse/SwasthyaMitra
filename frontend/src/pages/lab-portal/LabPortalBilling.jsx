@@ -6,7 +6,7 @@ import {
   User, Phone, Search, RefreshCw, Receipt, Plus, Trash2, Printer, CheckCircle2,
   ShieldCheck, CreditCard, DollarSign, Sparkles, FileText, AlertTriangle,
   Beaker, Check, Clock, Eye, ChevronRight, X, TrendingUp, CalendarCheck, Settings,
-  FlaskConical, ArrowLeft, Share2, Tag, Percent
+  FlaskConical, ArrowLeft, Share2, Tag, Percent, ChevronLeft, Download, Calendar
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -49,6 +49,11 @@ const LabPortalBilling = () => {
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [historySearch, setHistorySearch] = useState('');
   const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
+  const [dateFilterPeriod, setDateFilterPeriod] = useState('all'); // 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Lab Catalog Tests & Incoming Requests
   const [availableTests, setAvailableTests] = useState(DEFAULT_PRESET_TESTS);
@@ -529,6 +534,125 @@ const LabPortalBilling = () => {
       `\nThank you for choosing ${labName}. Reports will be processed shortly.`;
 
     window.open(`https://wa.me/91${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  const isDateInFilter = (dateStr, period, start, end) => {
+    if (period === 'all') return true;
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+
+    const now = new Date();
+    const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    const endOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+
+    if (period === 'today') {
+      return d >= todayStart && d <= todayEnd;
+    }
+    if (period === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      return d >= startOfDay(yest) && d <= endOfDay(yest);
+    }
+    if (period === 'week') {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return d >= startOfDay(sevenDaysAgo) && d <= todayEnd;
+    }
+    if (period === 'month') {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return d >= monthStart && d <= todayEnd;
+    }
+    if (period === 'custom') {
+      if (start && d < startOfDay(new Date(start))) return false;
+      if (end && d > endOfDay(new Date(end))) return false;
+      return true;
+    }
+    return true;
+  };
+
+  const filteredInvoices = invoices.filter(inv => {
+    return isDateInFilter(inv.billingDate || inv.createdAt, dateFilterPeriod, customStartDate, customEndDate);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE));
+  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handleExportCSV = () => {
+    if (!filteredInvoices || filteredInvoices.length === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'No Invoices to Export',
+        text: 'No diagnostic billing records found for the selected time period.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return;
+    }
+
+    const headers = [
+      'Invoice #',
+      'Date',
+      'Patient Name',
+      'Patient Phone',
+      'Doctor / Referral',
+      'Tests / Investigations',
+      'Sample Type',
+      'Subtotal (INR)',
+      'Discount (INR)',
+      'Tax (INR)',
+      'Total Amount (INR)',
+      'Paid Amount (INR)',
+      'Remaining Due (INR)',
+      'Payment Mode',
+      'Payment Status'
+    ];
+
+    const escapeCsv = (val) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = filteredInvoices.map(inv => {
+      const itemsStr = (inv.items || [])
+        .map(it => `${it.description || 'Test'} (₹${it.amount || 0})`)
+        .join('; ');
+      const dateFormatted = inv.billingDate || inv.createdAt
+        ? new Date(inv.billingDate || inv.createdAt).toLocaleDateString('en-IN')
+        : '';
+
+      return [
+        escapeCsv(inv.invoiceNumber || ''),
+        escapeCsv(dateFormatted),
+        escapeCsv(inv.patientName || ''),
+        escapeCsv(inv.patientPhone || ''),
+        escapeCsv(inv.doctorName || 'Self / Direct Walk-in'),
+        escapeCsv(itemsStr),
+        escapeCsv(inv.sampleType || 'Blood'),
+        escapeCsv(inv.subtotal || 0),
+        escapeCsv(inv.discount || 0),
+        escapeCsv(inv.taxAmount || 0),
+        escapeCsv(inv.totalAmount || 0),
+        escapeCsv(inv.paidAmount || 0),
+        escapeCsv(inv.remainingDue || 0),
+        escapeCsv(inv.paymentMode || 'Cash'),
+        escapeCsv(inv.paymentStatus || 'Paid')
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    link.setAttribute('download', `Lab_Invoices_${historyStatusFilter}_${dateFilterPeriod}_${dateStamp}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -1055,38 +1179,88 @@ const LabPortalBilling = () => {
                   <p className="text-xs text-slate-500 mt-0.5">Search receipts and settle balance dues</p>
                 </div>
                 <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                  {invoices.length} Bills
+                  {filteredInvoices.length} Bills
                 </span>
               </div>
 
-              {/* Filters */}
+              {/* Filters & Export */}
               <div className="space-y-2">
-                <div className="relative">
-                  <Search size={15} className="absolute left-3 top-2.5 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by invoice #, patient name, phone..."
-                    value={historySearch}
-                    onChange={(e) => setHistorySearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-blue-600"
-                  />
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search size={15} className="absolute left-3 top-2.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search by invoice #, patient, phone..."
+                      value={historySearch}
+                      onChange={(e) => { setHistorySearch(e.target.value); setCurrentPage(1); }}
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm shrink-0 active:scale-95"
+                    title="Export Lab Invoices to CSV"
+                  >
+                    <Download size={13} />
+                    <span className="hidden sm:inline">Export CSV</span>
+                  </button>
                 </div>
 
-                <div className="flex gap-1 overflow-x-auto pb-1 hide-scrollbar">
-                  {['all', 'Paid', 'Partially Paid', 'Pending'].map(st => (
-                    <button
-                      key={st}
-                      onClick={() => setHistoryStatusFilter(st)}
-                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                        historyStatusFilter === st
-                          ? 'bg-slate-900 text-white shadow-sm'
-                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                      }`}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Period Filter Dropdown */}
+                  <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 flex-1 min-w-[130px]">
+                    <Calendar size={13} className="text-blue-600 shrink-0" />
+                    <select
+                      value={dateFilterPeriod}
+                      onChange={(e) => { setDateFilterPeriod(e.target.value); setCurrentPage(1); }}
+                      className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer w-full"
                     >
-                      {st}
-                    </button>
-                  ))}
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="week">Past 7 Days</option>
+                      <option value="month">This Month</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                  </div>
+
+                  {/* Status Pills */}
+                  <div className="flex gap-1 overflow-x-auto pb-0.5 hide-scrollbar">
+                    {['all', 'Paid', 'Partially Paid', 'Pending'].map(st => (
+                      <button
+                        key={st}
+                        onClick={() => { setHistoryStatusFilter(st); setCurrentPage(1); }}
+                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                          historyStatusFilter === st
+                            ? 'bg-slate-900 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {dateFilterPeriod === 'custom' && (
+                  <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2">
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => { setCustomStartDate(e.target.value); setCurrentPage(1); }}
+                      className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 outline-none flex-1"
+                    />
+                    <span className="text-xs text-slate-400 font-bold">to</span>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => { setCustomEndDate(e.target.value); setCurrentPage(1); }}
+                      className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 outline-none flex-1"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Invoices List */}
@@ -1096,12 +1270,12 @@ const LabPortalBilling = () => {
                     <RefreshCw size={24} className="animate-spin text-blue-600" />
                     Fetching lab invoices archive...
                   </div>
-                ) : invoices.length === 0 ? (
+                ) : filteredInvoices.length === 0 ? (
                   <div className="py-12 text-center text-xs font-bold text-slate-400 border border-dashed border-slate-200 rounded-2xl">
                     No diagnostic billing records match your search filter.
                   </div>
                 ) : (
-                  invoices.map(inv => (
+                  paginatedInvoices.map(inv => (
                     <div
                       key={inv._id}
                       className="p-4 bg-slate-50 hover:bg-slate-100/90 rounded-2xl border border-slate-200/80 transition-all space-y-2.5"
@@ -1177,6 +1351,57 @@ const LabPortalBilling = () => {
                       </div>
                     </div>
                   ))
+                )}
+              </div>
+
+              {/* 10-per-page Pagination Controls */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs">
+                <span className="text-slate-500 text-[11px] font-medium">
+                  Showing <strong className="text-slate-800">{filteredInvoices.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}</strong> to <strong className="text-slate-800">{Math.min(currentPage * ITEMS_PER_PAGE, filteredInvoices.length)}</strong> of <strong className="text-slate-800">{filteredInvoices.length}</strong>
+                </span>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 font-bold flex items-center gap-1 text-[11px]"
+                    >
+                      <ChevronLeft size={13} /> Prev
+                    </button>
+
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, idx) => {
+                      let pageNum = idx + 1;
+                      if (totalPages > 5 && currentPage > 3) {
+                        pageNum = currentPage - 3 + idx;
+                        if (pageNum > totalPages) pageNum = totalPages - (4 - idx);
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-7 h-7 rounded-lg font-black text-[11px] transition-all ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-slate-600 hover:bg-slate-100 border border-slate-200'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 font-bold flex items-center gap-1 text-[11px]"
+                    >
+                      Next <ChevronRight size={13} />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

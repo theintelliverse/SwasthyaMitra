@@ -6,7 +6,7 @@ import { SOCKET_URL, API_URL } from '../../config/runtime';
 import {
   FileText, Clock, ExternalLink, LogOut,
   ShieldCheck, Activity, Search, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle,
-  Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle
+  Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle, Receipt
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import SEO from '../../components/SEO';
@@ -203,6 +203,26 @@ const PatientDashboard = () => {
       });
     });
 
+    // 3. Billing Invoices & Receipts
+    (patientData?.invoices || []).forEach((inv, idx) => {
+      const isLab = inv.billingType === 'lab';
+      list.push({
+        id: inv._id || `inv-${idx}`,
+        type: 'invoice',
+        title: inv.clinicId?.name || inv.clinicName || (isLab ? 'Diagnostic Laboratory' : 'Clinic Facility'),
+        doctorName: inv.doctorName ? `Dr. ${inv.doctorName}` : (isLab ? 'Lab Diagnostic' : 'Consultation'),
+        subtitle: `Receipt #${inv.invoiceNumber} · ₹${(inv.totalAmount || 0).toLocaleString('en-IN')}`,
+        date: inv.billingDate || inv.createdAt,
+        badge: inv.paymentStatus || 'Paid',
+        badgeColor: inv.paymentStatus === 'Paid'
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : inv.paymentStatus === 'Partially Paid'
+          ? 'bg-amber-50 text-amber-700 border-amber-200'
+          : 'bg-rose-50 text-rose-700 border-rose-200',
+        raw: inv,
+      });
+    });
+
     // Sort descending by date (most recent first)
     return list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   }, [patientData, appointments]);
@@ -379,10 +399,10 @@ const PatientDashboard = () => {
             <div>
               <div className="flex justify-between items-center mb-3 px-1">
                 <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Actions</h4>
-                <span className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">4 Essential Tools</span>
+                <span className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">5 Essential Tools</span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
                 <button
                   onClick={() => navigate('/patient/book-appointment')}
                   className="p-4 bg-white border border-slate-200/80 hover:border-teal-500/50 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm"
@@ -426,6 +446,17 @@ const PatientDashboard = () => {
                   <span className="text-sm font-semibold text-slate-900 group-hover:text-teal-600 transition-colors">Health Vault</span>
                   <span className="text-xs text-slate-400 font-normal mt-0.5">Prescriptions &amp; History</span>
                 </button>
+
+                <button
+                  onClick={() => navigate('/patient/health-locker?tab=bills')}
+                  className="p-4 bg-white border border-slate-200/80 hover:border-teal-500/50 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm col-span-2 sm:col-span-1"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center mb-2.5 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                    <Receipt size={20} />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-900 group-hover:text-teal-600 transition-colors">Bills &amp; Receipts</span>
+                  <span className="text-xs text-slate-400 font-normal mt-0.5">Payment Invoices &amp; Dues</span>
+                </button>
               </div>
             </div>
 
@@ -463,6 +494,8 @@ const PatientDashboard = () => {
                       onClick={() => {
                         if (item.type === 'appointment') {
                           setSelectedAppointment(item.raw);
+                        } else if (item.type === 'invoice') {
+                          navigate('/patient/health-locker?tab=bills');
                         } else {
                           navigate('/patient/health-locker');
                         }
@@ -471,7 +504,7 @@ const PatientDashboard = () => {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center shrink-0 border border-teal-100 transition-all">
-                          {item.type === 'appointment' ? <Calendar size={18} /> : <Activity size={18} />}
+                          {item.type === 'appointment' ? <Calendar size={18} /> : item.type === 'invoice' ? <Receipt size={18} /> : <Activity size={18} />}
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">

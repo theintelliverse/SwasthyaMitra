@@ -10,7 +10,7 @@ import {
   BarChart3, Users, Settings, ClipboardList, UserPlus,
   ArrowUpRight, ShieldCheck, Activity, Tv, Share2, Copy, Check, RefreshCw, FileSpreadsheet,
   Clock, TrendingUp, Calendar, AlertCircle, Layout, MoreHorizontal,
-  X, Plus, Search, Trash2, Edit
+  X, Plus, Search, Trash2, Edit, Receipt
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -563,6 +563,15 @@ const AdminDashboard = () => {
                   <option value="year">Year</option>
                 </select>
               </div>
+
+              <button 
+                onClick={() => navigate('/admin/billing')}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl font-black text-[13px] uppercase tracking-wider transition-all active:scale-95 shadow-md shadow-teal-600/20 group"
+                title="Manage Clinic & Lab Billing Invoices, Dues & CSV Reports"
+              >
+                <Receipt size={17} />
+                <span>Billing Hub</span>
+              </button>
 
               <button 
                 onClick={handleShare}

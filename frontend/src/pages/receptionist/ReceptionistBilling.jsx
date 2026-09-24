@@ -7,7 +7,8 @@ import {
   Receipt, Plus, Trash2, Printer, CheckCircle2, ShieldCheck, 
   CreditCard, DollarSign, Sparkles, FileText, AlertTriangle, 
   Beaker, Check, Clock, Eye, Share2, ChevronRight, X, TrendingUp, CalendarCheck, Settings, QrCode,
-  Tag, Percent, MessageCircle, FileDown, FlaskConical, Download, Ticket
+  Tag, Percent, MessageCircle, FileDown, FlaskConical, Download, Ticket,
+  ChevronLeft, Calendar, Filter
 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -53,6 +54,11 @@ const ReceptionistBilling = () => {
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [historySearch, setHistorySearch] = useState('');
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all' | 'clinic' | 'lab' | 'due'
+  const [dateFilterPeriod, setDateFilterPeriod] = useState('all'); // 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [revenueStats, setRevenueStats] = useState({
     todayRevenue: 0,
     todayBillsCount: 0,
@@ -946,6 +952,44 @@ const ReceptionistBilling = () => {
   const labCount = invoices.filter(i => i.billingType === 'lab').length;
   const dueCount = invoices.filter(i => (i.remainingDue || 0) > 0).length;
 
+  const isDateInFilter = (dateStr, period, start, end) => {
+    if (period === 'all') return true;
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+
+    const now = new Date();
+    const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    const endOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+
+    if (period === 'today') {
+      return d >= todayStart && d <= todayEnd;
+    }
+    if (period === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      return d >= startOfDay(yest) && d <= endOfDay(yest);
+    }
+    if (period === 'week') {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return d >= startOfDay(sevenDaysAgo) && d <= todayEnd;
+    }
+    if (period === 'month') {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return d >= monthStart && d <= todayEnd;
+    }
+    if (period === 'custom') {
+      if (start && d < startOfDay(new Date(start))) return false;
+      if (end && d > endOfDay(new Date(end))) return false;
+      return true;
+    }
+    return true;
+  };
+
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = !historySearch || 
       inv.patientName?.toLowerCase().includes(historySearch.toLowerCase()) ||
@@ -954,11 +998,91 @@ const ReceptionistBilling = () => {
 
     if (!matchesSearch) return false;
 
-    if (historyFilter === 'clinic') return inv.billingType === 'clinic';
-    if (historyFilter === 'lab') return inv.billingType === 'lab';
-    if (historyFilter === 'due') return (inv.remainingDue || 0) > 0;
+    if (historyFilter === 'clinic' && inv.billingType !== 'clinic') return false;
+    if (historyFilter === 'lab' && inv.billingType !== 'lab') return false;
+    if (historyFilter === 'due' && (inv.remainingDue || 0) <= 0) return false;
+
+    if (!isDateInFilter(inv.billingDate || inv.createdAt, dateFilterPeriod, customStartDate, customEndDate)) {
+      return false;
+    }
+
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE));
+  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handleExportCSV = () => {
+    if (!filteredInvoices || filteredInvoices.length === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'No Invoices to Export',
+        text: 'No billing records found matching your selected date and filter criteria.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return;
+    }
+
+    const headers = [
+      'Invoice #',
+      'Date',
+      'Billing Type',
+      'Patient Name',
+      'Phone Number',
+      'Doctor Name',
+      'Items / Services',
+      'Subtotal (INR)',
+      'Discount (INR)',
+      'Tax (INR)',
+      'Total Amount (INR)',
+      'Paid Amount (INR)',
+      'Remaining Balance (INR)',
+      'Payment Mode',
+      'Payment Status'
+    ];
+
+    const escapeCsv = (val) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = filteredInvoices.map(inv => {
+      const itemsStr = (inv.items || [])
+        .map(it => `${it.description || 'Service'} (₹${it.amount || 0})`)
+        .join('; ');
+      const dateFormatted = inv.billingDate ? new Date(inv.billingDate).toLocaleDateString('en-IN') : '';
+
+      return [
+        escapeCsv(inv.invoiceNumber || ''),
+        escapeCsv(dateFormatted),
+        escapeCsv(inv.billingType === 'lab' ? 'Lab Diagnostic' : 'Clinic Consultation'),
+        escapeCsv(inv.patientName || ''),
+        escapeCsv(inv.patientPhone || ''),
+        escapeCsv(inv.doctorName || 'N/A'),
+        escapeCsv(itemsStr),
+        escapeCsv(inv.subtotal || 0),
+        escapeCsv(inv.discount || 0),
+        escapeCsv(inv.taxAmount || 0),
+        escapeCsv(inv.totalAmount || 0),
+        escapeCsv(inv.paidAmount || 0),
+        escapeCsv(inv.remainingDue || 0),
+        escapeCsv(inv.paymentMode || 'Cash'),
+        escapeCsv(inv.paymentStatus || 'Paid')
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    link.setAttribute('download', `SwasthyaMitra_Billing_${historyFilter}_${dateFilterPeriod}_${dateStamp}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-800 flex-col md:flex-row">
@@ -1587,13 +1711,13 @@ const ReceptionistBilling = () => {
                 <p className="text-xs text-slate-500">History of generated receipts for clinic consultations and diagnostic lab tests.</p>
               </div>
 
-              {/* Tabs & Search Filter */}
-              <div className="flex flex-wrap items-center gap-2">
+              {/* Tabs, Date Range, Search & Export Filter */}
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 w-full">
                 {/* Filter Tabs */}
-                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
                   <button
                     type="button"
-                    onClick={() => setHistoryFilter('all')}
+                    onClick={() => { setHistoryFilter('all'); setCurrentPage(1); }}
                     className={`px-3 py-1.5 rounded-lg transition-all ${
                       historyFilter === 'all'
                         ? 'bg-white text-slate-900 shadow-2xs font-black'
@@ -1604,7 +1728,7 @@ const ReceptionistBilling = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setHistoryFilter('clinic')}
+                    onClick={() => { setHistoryFilter('clinic'); setCurrentPage(1); }}
                     className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
                       historyFilter === 'clinic'
                         ? 'bg-teal-700 text-white shadow-2xs font-black'
@@ -1615,7 +1739,7 @@ const ReceptionistBilling = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setHistoryFilter('lab')}
+                    onClick={() => { setHistoryFilter('lab'); setCurrentPage(1); }}
                     className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
                       historyFilter === 'lab'
                         ? 'bg-indigo-600 text-white shadow-2xs font-black'
@@ -1626,7 +1750,7 @@ const ReceptionistBilling = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setHistoryFilter('due')}
+                    onClick={() => { setHistoryFilter('due'); setCurrentPage(1); }}
                     className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
                       historyFilter === 'due'
                         ? 'bg-rose-600 text-white shadow-2xs font-black'
@@ -1637,16 +1761,64 @@ const ReceptionistBilling = () => {
                   </button>
                 </div>
 
-                {/* Search History */}
-                <div className="relative w-full sm:w-56">
-                  <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
-                  <input
-                    type="text"
-                    placeholder="Search patient, phone, inv #"
-                    value={historySearch}
-                    onChange={(e) => setHistorySearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:bg-white"
-                  />
+                {/* Date Period, Range, Search & CSV Export */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5">
+                    <Calendar size={13} className="text-teal-700" />
+                    <select
+                      value={dateFilterPeriod}
+                      onChange={(e) => { setDateFilterPeriod(e.target.value); setCurrentPage(1); }}
+                      className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="week">Past 7 Days</option>
+                      <option value="month">This Month</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                  </div>
+
+                  {dateFilterPeriod === 'custom' && (
+                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1">
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        onChange={(e) => { setCustomStartDate(e.target.value); setCurrentPage(1); }}
+                        className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 outline-none"
+                      />
+                      <span className="text-xs text-slate-400 font-bold">to</span>
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        onChange={(e) => { setCustomEndDate(e.target.value); setCurrentPage(1); }}
+                        className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {/* Search History */}
+                  <div className="relative flex-grow sm:flex-initial sm:w-48">
+                    <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Search patient, phone, inv #"
+                      value={historySearch}
+                      onChange={(e) => { setHistorySearch(e.target.value); setCurrentPage(1); }}
+                      className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:bg-white"
+                    />
+                  </div>
+
+                  {/* Export CSV Button */}
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                    title="Export Filtered Invoices to CSV"
+                  >
+                    <Download size={13} />
+                    <span>Export CSV</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1660,7 +1832,8 @@ const ReceptionistBilling = () => {
                 No billing invoices found matching the selected filter.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                     <tr>
@@ -1677,7 +1850,7 @@ const ReceptionistBilling = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                    {filteredInvoices.slice(0, 20).map((inv) => (
+                    {paginatedInvoices.map((inv) => (
                       <tr key={inv._id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3 font-bold text-teal-700">{inv.invoiceNumber}</td>
                         <td className="p-3 text-slate-500">{new Date(inv.billingDate).toLocaleDateString()}</td>
@@ -1777,7 +1950,61 @@ const ReceptionistBilling = () => {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              {/* 10-per-page Pagination Controls */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
+                <div className="text-slate-500 font-medium">
+                  Showing <span className="font-bold text-slate-800">{filteredInvoices.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}</span> to <span className="font-bold text-slate-800">{Math.min(currentPage * ITEMS_PER_PAGE, filteredInvoices.length)}</span> of <span className="font-bold text-slate-800">{filteredInvoices.length}</span> bills
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent font-bold flex items-center gap-1 transition-all"
+                    >
+                      <ChevronLeft size={14} /> Prev
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, idx) => {
+                        let pageNum = idx + 1;
+                        if (totalPages > 5 && currentPage > 3) {
+                          pageNum = currentPage - 3 + idx;
+                          if (pageNum > totalPages) pageNum = totalPages - (4 - idx);
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-8 h-8 rounded-xl font-black text-xs transition-all ${
+                              currentPage === pageNum
+                                ? 'bg-teal-700 text-white shadow-sm'
+                                : 'text-slate-600 hover:bg-slate-100 border border-slate-200'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent font-bold flex items-center gap-1 transition-all"
+                    >
+                      Next <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
           </div>
         </main>
       </div>

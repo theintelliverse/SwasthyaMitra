@@ -132,6 +132,7 @@ const Sidebar = ({ role = 'lab' }) => {
         { name: 'Home', path: '/patient/dashboard', icon: <Home size={20} /> },
         { name: 'Appointments', path: '/patient/dashboard?tab=appointments', icon: <Calendar size={20} /> },
         { name: 'Records', path: '/patient/health-locker', icon: <FolderHeart size={20} /> },
+        { name: 'Bills & Receipts', path: '/patient/health-locker?tab=bills', icon: <Receipt size={20} /> },
         { name: 'Clinics', path: '/patient/book-appointment', icon: <Stethoscope size={20} /> },
         { name: 'Profile', path: '/patient/profile', icon: <UserCircle size={20} /> },
       ]
