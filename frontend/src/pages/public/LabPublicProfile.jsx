@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import SeoHead from '../../components/SeoHead';
 import { API_URL } from '../../config/runtime';
+import RatingModal from '../../components/patient/RatingModal';
+import ReviewList from '../../components/patient/ReviewList';
 import { 
   Microscope, MapPin, Phone, ShieldCheck, Search, Star, 
   Clock, Share2, AlertCircle, Building2, FileText
@@ -15,6 +17,7 @@ const LabPublicProfile = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     const fetchLab = async () => {
@@ -128,11 +131,17 @@ const LabPublicProfile = () => {
                 <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
                   <ShieldCheck size={14} /> Verified Independent Lab
                 </span>
-                <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
-                  <Star size={14} fill="currentColor" />
-                  <span>{lab.rating?.score || 4.9}</span>
-                  <span className="text-stone-400">({lab.rating?.count || 28} reviews)</span>
-                </div>
+                {lab.rating?.count > 0 ? (
+                  <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
+                    <Star size={14} fill="currentColor" />
+                    <span>{lab.rating.score}</span>
+                    <span className="text-stone-400">({lab.rating.count} reviews)</span>
+                  </div>
+                ) : (
+                  <span className="bg-slate-50 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-slate-200">
+                    Accredited Diagnostic Facility
+                  </span>
+                )}
               </div>
 
               <h1 className="text-3xl md:text-4xl font-heading font-black text-slate-900 tracking-tight">
@@ -213,10 +222,18 @@ const LabPublicProfile = () => {
               )}
             </div>
 
-            <div className="w-full md:w-auto bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center space-y-2">
+            <div className="w-full md:w-auto bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center space-y-3">
               <Microscope className="mx-auto text-emerald-600" size={32} />
               <span className="text-xs font-bold text-emerald-900 block">Home Sample Collection & Walk-ins</span>
               <p className="text-xs text-emerald-700">Call {lab.phone}</p>
+              <button
+                type="button"
+                onClick={() => setShowRatingModal(true)}
+                className="w-full bg-white hover:bg-amber-50/80 text-slate-800 border border-slate-200 hover:border-amber-300 font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <Star size={14} className="text-amber-500 fill-amber-500" />
+                Rate Diagnostic Lab
+              </button>
             </div>
           </div>
 
@@ -320,7 +337,34 @@ const LabPublicProfile = () => {
             </div>
           </section>
         )}
+
+        {/* --- Patient Ratings & Reviews Section --- */}
+        <ReviewList
+          targetType="lab"
+          targetId={lab._id}
+          targetName={lab.labName}
+          onOpenRating={() => setShowRatingModal(true)}
+        />
       </main>
+
+      {/* Patient Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          targetType="lab"
+          targetId={lab._id}
+          targetName={lab.labName}
+          onSuccess={(updatedRating) => {
+            if (updatedRating) {
+              setData(prev => prev ? {
+                ...prev,
+                lab: { ...prev.lab, rating: updatedRating }
+              } : prev);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

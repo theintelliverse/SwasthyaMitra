@@ -1,266 +1,350 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { ShieldCheck, Lock, FileText, UserCheck, AlertTriangle, HelpCircle, Eye, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 
 const Privacy = () => {
-    const lastUpdated = 'March 2026';
+    const lastUpdated = 'September 2026';
 
-    const privacyImages = useMemo(
-        () => [
-            {
-                title: 'Secure Digital Health',
-                caption: 'Secure care starts with secure data handling',
-                alt: 'Doctor reviewing digital healthcare information',
-                src: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80'
-            },
-            {
-                title: 'Protected Patient Data',
-                caption: 'Role-based access keeps records visible only to authorized teams',
-                alt: 'Healthcare professional using tablet with patient data',
-                src: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1600&q=80'
-            },
-            {
-                title: 'Reliable Infrastructure',
-                caption: 'Strong systems help maintain trust and continuity of care',
-                alt: 'Hospital corridor with modern digital systems',
-                src: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=80'
-            },
-            {
-                title: 'Compliance Focused',
-                caption: 'Compliance-first workflows reduce data exposure risks',
-                alt: 'Team reviewing compliance and privacy checklist',
-                src: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=80'
-            },
-            {
-                title: 'Patient Trust',
-                caption: 'Transparent privacy practices build long-term patient trust',
-                alt: 'Patient consulting with doctor in modern clinic',
-                src: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=1600&q=80'
-            }
-        ],
-        []
-    );
-    const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
-    const activeImage = privacyImages[activeImageIndex];
-
-    useEffect(() => {
-        if (isHovered) {
-            return undefined;
+    const dpdpPrinciples = [
+        {
+            title: 'Lawful & Transparent Processing',
+            desc: 'Personal and sensitive health data is processed solely with explicit consent or under lawful grounds defined by Section 6 & 7 of India’s DPDP Act, 2023.'
+        },
+        {
+            title: 'Strict Purpose Limitation',
+            desc: 'Data is collected only to facilitate outpatient clinic queues, digital prescriptions, lab report delivery, and patient health locker access.'
+        },
+        {
+            title: 'Data Minimization',
+            desc: 'We never collect unnecessary biometric, financial, or behavioral tracking information beyond what clinical care delivery strictly requires.'
+        },
+        {
+            title: 'Statutory Retention Integrity',
+            desc: 'Clinical OPD records and digital prescriptions are preserved for statutory minimum periods (e.g. 3 years under NMC regulations) before secure archival or purging.'
         }
-
-        const timer = setInterval(() => {
-            setActiveImageIndex((prev) => (prev + 1) % privacyImages.length);
-        }, 4500);
-
-        return () => clearInterval(timer);
-    }, [isHovered, privacyImages.length]);
-
-    const handleNextImage = () => {
-        setActiveImageIndex((prev) => (prev + 1) % privacyImages.length);
-    };
-
-    const handlePreviousImage = () => {
-        setActiveImageIndex((prev) => (prev - 1 + privacyImages.length) % privacyImages.length);
-    };
-
-    const highlights = [
-        'Role-based access for staff and patients',
-        'Data used only for required care workflows',
-        'Privacy support available via contact form'
     ];
 
     const sections = [
         {
-            id: 'collect',
-            title: 'Information We Collect',
-            content:
-                'Appointory collects information required to provide clinic operations, queue updates, and health-record access. This may include your name, contact details, appointment details, and medical records uploaded by authorized clinic staff.'
+            id: 'identity',
+            title: '1. Identity of the Data Fiduciary',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        This Privacy Policy is issued by <strong>The Intelliverse</strong> ("Appointory", "we", "us", or "our"), operating the Appointory digital clinical management system and patient health vault at <a href="https://appointory.in" className="text-[#1F7A56] underline font-bold">https://appointory.in</a>.
+                    </p>
+                    <p>
+                        Under the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act, 2023)</strong> and the <strong>Information Technology Act, 2000</strong> read with the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011 (SPDI Rules), The Intelliverse functions as a <strong>Data Fiduciary</strong> in respect of platform account records and as a technical service provider facilitating data processing between patients (Data Principals), healthcare providers (clinics, doctors, staff), and independent diagnostic laboratories.
+                    </p>
+                </div>
+            )
         },
         {
-            id: 'usage',
-            title: 'How We Use Information',
-            content:
-                'Data is used to manage patient flow, authenticate users, display health history securely, and communicate status updates via approved channels. We only process information that is necessary for care delivery and platform functionality.'
+            id: 'data-collected',
+            title: '2. Personal and Health Data We Collect',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        We strictly adhere to the principle of <strong>Data Minimization</strong>. We collect and process only the minimum information necessary to provide clinical management services:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-[#5C7C74]">
+                        <li>
+                            <strong className="text-[#1A3C34]">Patient Information:</strong> Full name, mobile phone number (for OTP authentication and real-time queue SMS telemetry), age, gender, optional blood group, and emergency contact details if voluntarily provided.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Clinical & Diagnostic Data:</strong> Outpatient consultation notes, chief complaints, digital prescriptions (Rx) created by treating physicians, vital signs recorded at reception, and diagnostic laboratory investigation requests/reports uploaded by accredited pathology centers.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Healthcare Practitioner & Facility Records:</strong> Doctor full name, qualifications, State Medical Council / National Medical Commission (NMC) registration license number, clinic operational address, staff login credentials, and clinic tax identification (GSTIN) for billing invoices.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Technical & Security Audit Logs:</strong> IP address, browser type, device information, timestamp of login/OTP requests, and audit trail of token progression to ensure forensic accountability and prevent unauthorized access.
+                        </li>
+                    </ul>
+                </div>
+            )
         },
         {
-            id: 'security',
-            title: 'Data Security',
-            content:
-                'We use role-based access controls and secured storage partners to protect sensitive information. Access is limited to authorized users such as patients and verified clinic staff based on account permissions.'
+            id: 'lawful-grounds',
+            title: '3. Lawful Basis for Processing (DPDP Act 2023)',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        Under the DPDP Act 2023, personal data is processed strictly on the following lawful grounds:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-[#5C7C74]">
+                        <li>
+                            <strong className="text-[#1A3C34]">Explicit Consent (Section 6):</strong> Freely given, specific, informed, unconditional, and unambiguous consent obtained prior to account creation, appointment check-in, or health locker access. You have the right to withdraw consent at any time.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Legitimate Uses (Section 7):</strong> Processing necessary for medical emergencies, disease outbreaks, responding to legal compliance mandates, or enforcing system security against data theft.
+                        </li>
+                    </ul>
+                </div>
+            )
+        },
+        {
+            id: 'purpose-limitation',
+            title: '4. Purpose Limitation & Strict Non-Monetization',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        Your health and personal data is used solely to power clinical operations, predict OPD waiting room times, coordinate connected diagnostic lab requests, and provide you with a lifetime digital health locker.
+                    </p>
+                    <div className="p-4 bg-emerald-50 border-l-4 border-[#2D9B6F] rounded-r-xl">
+                        <p className="font-bold text-[#1A3C34] text-sm">
+                            🛡️ Our Absolute Commitment: We Never Sell or Monetize Health Data
+                        </p>
+                        <p className="text-xs text-[#5C7C74] mt-1">
+                            Appointory has NEVER sold, rented, leased, or disclosed, and will NEVER sell, rent, lease, or disclose patient medical records, contact information, or diagnostic reports to insurance companies, pharmaceutical marketers, advertising networks, or data brokers.
+                        </p>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'data-principal-rights',
+            title: '5. Data Principal Rights under India’s DPDP Act',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        As a Data Principal, you enjoy statutory rights guaranteed under Chapter III of the DPDP Act 2023:
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3 pt-2">
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right to Access (Sec. 11)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Request a complete summary of your personal data processed by Appointory and the identities of all clinics or labs with whom it has been shared.</p>
+                        </div>
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right to Correction (Sec. 12)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Correct, complete, or update any inaccurate, outdated, or misleading demographic or contact information.</p>
+                        </div>
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right to Erasure (Sec. 12)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Request deletion of non-statutory personal data when purpose is fulfilled, subject to mandatory medical record retention laws.</p>
+                        </div>
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right of Grievance Redressal (Sec. 13)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Access an expedited grievance redressal mechanism with statutory resolution timelines.</p>
+                        </div>
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right to Nominate (Sec. 14)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Nominate any individual who shall, in the event of your death or incapacity, exercise your Data Principal rights.</p>
+                        </div>
+                        <div className="p-3 bg-[#F7FAF9] rounded-xl border border-[#D4E4DF]">
+                            <p className="font-bold text-[#1F7A56] text-sm">Right to Withdraw Consent (Sec. 6)</p>
+                            <p className="text-xs text-[#5C7C74] mt-1">Withdraw consent previously granted as easily as it was given, with immediate cessation of non-statutory data processing.</p>
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'retention',
+            title: '6. Retention of Clinical and Health Records',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        Under regulations issued by the <strong>National Medical Commission (NMC)</strong>, the <strong>Medical Council of India (MCI) Code of Medical Ethics</strong>, and the <strong>Clinical Establishments (Registration and Regulation) Act</strong>, medical practitioners and clinics are statutorily required to maintain patient medical consultation records and prescriptions for a minimum period of <strong>three (3) years</strong> from the date of consultation.
+                    </p>
+                    <p>
+                        Accordingly, while account credentials and marketing preferences can be deleted immediately upon request, clinical consultation records and digital prescriptions are archived in an encrypted, read-only audit vault until the statutory retention threshold expires, following which they are securely wiped.
+                    </p>
+                </div>
+            )
+        },
+        {
+            id: 'children',
+            title: '7. Processing Data of Children (Section 9 DPDP Act)',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        In strict compliance with <strong>Section 9 of the DPDP Act 2023</strong>:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-[#5C7C74]">
+                        <li>
+                            Any processing of personal data relating to a child (an individual below eighteen years of age) requires <strong>verifiable consent</strong> of the parent or lawful guardian.
+                        </li>
+                        <li>
+                            We never undertake tracking or behavioral monitoring of children, nor do we serve targeted advertisements directed at minors.
+                        </li>
+                        <li>
+                            Parents or legal guardians may access, verify, or request the correction/deletion of their child’s records by contacting our Grievance Officer.
+                        </li>
+                    </ul>
+                </div>
+            )
+        },
+        {
+            id: 'security-measures',
+            title: '8. Technical and Organizational Security Safeguards',
+            content: (
+                <div className="space-y-3">
+                    <p>
+                        Under <strong>Section 8(5) of the DPDP Act 2023</strong>, we implement reasonable security safeguards to prevent personal data breaches:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-[#5C7C74]">
+                        <li>
+                            <strong className="text-[#1A3C34]">Military-Grade Encryption:</strong> Patient health vault records and diagnostic attachments are protected using AES-256 GCM encryption at rest and TLS 1.3 encryption in transit.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Two-Factor OTP Security:</strong> Sensitive patient health records cannot be opened without dynamic one-time password (OTP) authorization dispatched to the registered mobile number.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Role-Based Access Control (RBAC):</strong> Clinic receptionists cannot view private doctor clinical consultation notes; doctors can only access records of patients registered under their consultation cabin; independent labs can only access test orders matched through secure 6-digit handshake codes.
+                        </li>
+                        <li>
+                            <strong className="text-[#1A3C34]">Data Breach Notification:</strong> In the event of an identified personal data breach, Appointory will promptly notify the <strong>Data Protection Board of India (DPBI)</strong> and all affected Data Principals in the prescribed manner and format.
+                        </li>
+                    </ul>
+                </div>
+            )
+        },
+        {
+            id: 'grievance',
+            title: '9. Grievance Redressal Mechanism & Officer',
+            content: (
+                <div className="space-y-4">
+                    <p>
+                        In accordance with <strong>Section 13 of the DPDP Act 2023</strong> and the <strong>Information Technology Rules</strong>, Appointory has appointed a designated Grievance Redressal Officer.
+                    </p>
+                    <div className="bg-[#F7FAF9] border border-[#D4E4DF] rounded-2xl p-5 space-y-3">
+                        <div className="grid sm:grid-cols-2 gap-4 text-xs font-semibold text-[#1A3C34]">
+                            <div>
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-[#5C7C74]">Designated Grievance Officer</p>
+                                <p className="text-sm font-bold text-[#1A3C34] mt-0.5">Grievance & Privacy Officer</p>
+                                <p className="text-[#5C7C74] font-normal mt-0.5">The Intelliverse (Appointory Healthcare OS)</p>
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-[#5C7C74]">Grievance Contact Email</p>
+                                <a href="mailto:grievance@appointory.in" className="text-sm font-bold text-[#1F7A56] hover:underline mt-0.5 block">
+                                    grievance@appointory.in
+                                </a>
+                                <p className="text-[#5C7C74] font-normal mt-0.5">Alternate: theintelliverse@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-[#D4E4DF] text-xs text-[#5C7C74] space-y-1">
+                            <p><strong>Statutory Timelines:</strong> Acknowledgment within <strong>48 hours</strong>; substantive resolution within <strong>30 calendar days</strong>.</p>
+                            <p><strong>Appeals & Escalation:</strong> If your grievance is not resolved to your satisfaction within 30 days, you have the statutory right to file a complaint before the <strong>Data Protection Board of India (DPBI)</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            )
         }
     ];
 
     return (
-        <div className="min-h-screen bg-parchment font-body text-teak flex flex-col">
+        <div className="min-h-screen bg-[#F7FAF9] font-body text-[#1A3C34] flex flex-col">
             <SEO
                 title="Privacy Policy"
-                description="Read the Privacy Policy of Appointory. Learn how we handle, secure, and protect your digital healthcare data and patient records."
+                description="Read the comprehensive Privacy Policy of Appointory. Fully compliant with India's Digital Personal Data Protection Act, 2023 (DPDP Act) and healthcare data security norms."
                 url="/privacy"
             />
-            <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full border-b border-sandstone/30">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-marigold/20 overflow-hidden">
-                        <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
-                    </div>
-                    <h1 className="font-heading text-2xl tracking-tight hidden sm:block">Appointory</h1>
-                </div>
-                <Link
-                    to="/"
-                    className="px-6 py-2.5 bg-teak text-parchment rounded-full text-[14px] font-black uppercase tracking-widest hover:bg-marigold transition-all"
-                >
-                    Back to Home
-                </Link>
-            </nav>
 
-            <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1">
-                <div className="bg-white border border-sandstone rounded-3xl p-8 md:p-10 shadow-sm space-y-8">
-                    <div className="rounded-2xl bg-parchment border border-sandstone/70 p-6 md:p-8">
-                        <p className="text-[14px] font-black uppercase tracking-widest text-khaki mb-2">Legal</p>
-                        <h2 className="font-heading text-4xl md:text-5xl leading-tight italic mb-3">
-                            Privacy <span className="text-marigold not-italic">Policy</span>
-                        </h2>
-                        <p className="text-sm md:text-base text-khaki font-medium leading-relaxed max-w-3xl">
-                            Your data is handled with care to support secure, fast, and reliable healthcare workflows.
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-2 mt-5">
-                            <span className="text-[14px] font-black uppercase tracking-widest text-teak bg-white border border-sandstone/70 rounded-full px-3 py-1">
-                                Last Updated: {lastUpdated}
-                            </span>
-                            {sections.map((section) => (
-                                <a
-                                    key={section.id}
-                                    href={`#privacy-${section.id}`}
-                                    className="text-[14px] font-black uppercase tracking-widest text-khaki hover:text-teak bg-white/80 border border-sandstone/70 rounded-full px-3 py-1 transition-colors"
-                                >
-                                    {section.title}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="grid sm:grid-cols-3 gap-3">
-                        {highlights.map((item) => (
-                            <div
-                                key={item}
-                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-4"
-                            >
-                                <p className="text-[14px] font-black uppercase tracking-widest text-teak">{item}</p>
+            {/* Navigation Bar */}
+            <header className="bg-white border-b border-[#D4E4DF]/60 sticky top-0 z-30 shadow-xs">
+                <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto w-full" aria-label="Main Navigation">
+                    <div className="flex items-center gap-3">
+                        <Link to="/" className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-[#1F7A56] rounded-xl p-1">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-[#2D9B6F]/10 overflow-hidden border border-[#D4E4DF]">
+                                <img src="/Appointory_logo.jpg" alt="Appointory Logo" className="w-full h-full object-cover" />
                             </div>
-                        ))}
-                    </div>
-
-                    <div
-                        className="relative overflow-hidden rounded-2xl border border-sandstone/70 h-56 md:h-72"
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                    >
-                        <img
-                            src={activeImage.src}
-                            alt={activeImage.alt}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-teak/80 via-teak/35 to-transparent"></div>
-                        <div className="absolute top-4 left-4">
-                            <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1 rounded-full text-[14px] font-black uppercase tracking-widest">
-                                Privacy First
-                            </span>
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
                             <div>
-                                <p className="text-white font-heading text-2xl md:text-3xl drop-shadow-lg">{activeImage.title}</p>
-                                <p className="text-white/90 text-[14px] md:text-sm font-semibold mt-1">Safe and responsible health data management</p>
+                                <span className="font-heading text-xl font-black tracking-tight text-[#1A3C34] block">
+                                    Appointory<span className="text-[#2D9B6F]">.</span>
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#5C7C74]">Healthcare OS</span>
                             </div>
-                        </div>
-                        <p className="absolute bottom-4 left-4 right-4 text-white text-[14px] md:text-sm font-black uppercase tracking-widest">
-                            {activeImage.caption}
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={handlePreviousImage}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-lg font-black"
-                            aria-label="Show previous image"
-                        >
-                            ‹
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleNextImage}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-lg font-black"
-                            aria-label="Show next image"
-                        >
-                            ›
-                        </button>
+                        </Link>
                     </div>
 
-                    <div className="flex items-center justify-center gap-2">
-                        {privacyImages.map((image, index) => (
-                            <button
-                                key={`${image.title}-dot`}
-                                type="button"
-                                onClick={() => setActiveImageIndex(index)}
-                                className={`h-2.5 rounded-full transition-all ${activeImageIndex === index ? 'w-8 bg-marigold' : 'w-2.5 bg-sandstone hover:bg-khaki'
-                                    }`}
-                                aria-label={`Go to ${image.title}`}
-                            ></button>
-                        ))}
+                    <Link
+                        to="/"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1A3C34] text-[#F7FAF9] rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#2D9B6F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1F7A56] transition-all"
+                    >
+                        <ArrowLeft size={16} />
+                        Back to Home
+                    </Link>
+                </nav>
+            </header>
+
+            <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1 space-y-10">
+                {/* Hero Header */}
+                <div className="bg-white border border-[#D4E4DF] rounded-3xl p-8 md:p-10 shadow-sm relative overflow-hidden">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-emerald-50 text-[#1F7A56] border border-emerald-200 mb-4">
+                        <ShieldCheck size={14} />
+                        DPDP Act 2023 Compliant
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        {privacyImages.map((image, index) => (
-                            <button
-                                key={image.title}
-                                type="button"
-                                onClick={() => setActiveImageIndex(index)}
-                                className={`text-left rounded-2xl border p-3 transition-all ${activeImageIndex === index
-                                    ? 'border-marigold bg-marigold/10'
-                                    : 'border-sandstone/70 bg-parchment/50 hover:border-marigold/60'
-                                    }`}
-                            >
-                                <img
-                                    src={image.src}
-                                    alt={image.alt}
-                                    className="w-full h-16 object-cover rounded-xl mb-2"
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer"
-                                />
-                                <p className="text-[14px] font-black uppercase tracking-widest text-teak">{image.title}</p>
-                            </button>
-                        ))}
-                    </div>
+                    <h1 className="font-heading text-3xl md:text-5xl font-black text-[#1A3C34] tracking-tight leading-tight mb-4">
+                        Privacy <span className="text-[#2D9B6F]">Policy</span>
+                    </h1>
 
-                    <div className="grid gap-4">
-                        {sections.map((section, index) => (
-                            <section
-                                key={section.title}
-                                id={`privacy-${section.id}`}
-                                className="rounded-2xl border border-sandstone/70 bg-parchment/50 p-5 md:p-6 hover:border-marigold/60 transition-colors"
-                            >
-                                <p className="text-[14px] font-black uppercase tracking-widest text-khaki mb-2">
-                                    Section {index + 1}
-                                </p>
-                                <h3 className="font-heading text-2xl text-teak mb-2">{section.title}</h3>
-                                <p className="text-sm md:text-base leading-relaxed text-khaki font-medium">{section.content}</p>
-                            </section>
-                        ))}
-                    </div>
+                    <p className="text-base text-[#5C7C74] font-medium leading-relaxed max-w-3xl">
+                        At Appointory, your health information is treated with the utmost dignity, confidentiality, and technical protection. This Privacy Policy details our practices under India’s Digital Personal Data Protection Act, 2023 (DPDP Act) and the Information Technology Act, 2000.
+                    </p>
 
-                    <section className="rounded-2xl border border-sandstone/70 bg-white p-5 md:p-6">
-                        <h3 className="font-heading text-2xl text-teak mb-2">Contact for Privacy Requests</h3>
-                        <p className="text-sm md:text-base leading-relaxed text-khaki font-medium">
-                            For data corrections, access requests, or privacy concerns, please use the
-                            <Link to="/contact" className="text-marigold font-bold hover:underline underline-offset-4 ml-1">
-                                Contact page
-                            </Link>
-                            .
-                        </p>
-                    </section>
+                    <div className="flex flex-wrap items-center gap-3 mt-6 pt-6 border-t border-[#D4E4DF]/60 text-xs font-bold uppercase tracking-wider text-[#5C7C74]">
+                        <span className="bg-[#F7FAF9] border border-[#D4E4DF] px-3 py-1.5 rounded-full">
+                            Last Updated: {lastUpdated}
+                        </span>
+                        <span className="bg-[#F7FAF9] border border-[#D4E4DF] px-3 py-1.5 rounded-full">
+                            Data Fiduciary: The Intelliverse
+                        </span>
+                        <span className="bg-[#F7FAF9] border border-[#D4E4DF] px-3 py-1.5 rounded-full">
+                            Jurisdiction: Republic of India
+                        </span>
+                    </div>
                 </div>
+
+                {/* Core Principles Grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {dpdpPrinciples.map((item) => (
+                        <div key={item.title} className="bg-white border border-[#D4E4DF] p-5 rounded-2xl shadow-xs">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#1F7A56] flex items-center justify-center mb-3">
+                                <CheckCircle2 size={18} />
+                            </div>
+                            <h2 className="text-sm font-bold text-[#1A3C34] mb-1">{item.title}</h2>
+                            <p className="text-xs text-[#5C7C74] leading-relaxed">{item.desc}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Policy Sections */}
+                <div className="space-y-6">
+                    {sections.map((section) => (
+                        <section
+                            key={section.id}
+                            id={`privacy-${section.id}`}
+                            className="bg-white border border-[#D4E4DF] rounded-3xl p-6 md:p-8 shadow-xs space-y-4 hover:border-[#2D9B6F]/50 transition-colors"
+                        >
+                            <h2 className="font-heading text-xl md:text-2xl font-bold text-[#1A3C34] pb-3 border-b border-[#D4E4DF]/60">
+                                {section.title}
+                            </h2>
+                            <div className="text-sm md:text-base leading-relaxed text-[#5C7C74]">
+                                {section.content}
+                            </div>
+                        </section>
+                    ))}
+                </div>
+
+                {/* Grievance Action Card */}
+                <section className="bg-white border border-[#D4E4DF] rounded-3xl p-6 md:p-8 shadow-xs space-y-3">
+                    <h2 className="font-heading text-2xl font-bold text-[#1A3C34]">Exercise Your Data Rights</h2>
+                    <p className="text-sm text-[#5C7C74] font-medium leading-relaxed">
+                        To submit a data access request, correct your records, withdraw consent, or file a privacy inquiry, please email our Grievance Officer at{' '}
+                        <a href="mailto:grievance@appointory.in" className="text-[#1F7A56] font-bold underline hover:text-[#2D9B6F]">
+                            grievance@appointory.in
+                        </a>{' '}
+                        or use our{' '}
+                        <Link to="/contact" className="text-[#1F7A56] font-bold underline hover:text-[#2D9B6F]">
+                            Direct Support Form
+                        </Link>.
+                    </p>
+                </section>
             </main>
 
             <Footer />

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock, Stethoscope, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Calendar, Clock, Stethoscope, AlertCircle, ArrowRight, Loader2, Star, Building2 } from 'lucide-react';
 import axios from 'axios';
 import { API_URL } from '../../config/runtime';
+import RatingModal from './RatingModal';
 
 const AppointmentDetailSheet = ({ appointment, onClose, onReschedule, onCancel }) => {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState('');
+  const [ratingConfig, setRatingConfig] = useState(null); // { targetType, targetId, targetName }
 
   if (!appointment) return null;
 
@@ -129,6 +131,56 @@ const AppointmentDetailSheet = ({ appointment, onClose, onReschedule, onCancel }
             </div>
           )}
 
+          {/* Rating Options for Patient (Doctor & Clinic) */}
+          {(appointment.doctorId || appointment.clinicId) && (
+            <div className="bg-gradient-to-br from-amber-50/80 to-teal-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Star size={16} className="text-amber-500 fill-amber-500" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                    Rate Your Experience
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-100 px-2.5 py-0.5 rounded-full border border-teal-200">
+                  Verified Patient
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Help other patients by leaving a verified 1 to 5 star rating for your doctor and clinic.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {(appointment.doctorId?._id || appointment.doctorId) && (
+                  <button
+                    type="button"
+                    onClick={() => setRatingConfig({
+                      targetType: 'doctor',
+                      targetId: appointment.doctorId?._id || appointment.doctorId,
+                      targetName: appointment.doctorId?.name || appointment.doctorName || 'Doctor'
+                    })}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-xl text-xs font-bold text-slate-800 shadow-2xs transition active:scale-95"
+                  >
+                    <Stethoscope size={14} className="text-teal-600 shrink-0" />
+                    <span className="truncate">Rate Dr. {appointment.doctorId?.name || appointment.doctorName || 'Doctor'}</span>
+                  </button>
+                )}
+                {(appointment.clinicId?._id || appointment.clinicId) && (
+                  <button
+                    type="button"
+                    onClick={() => setRatingConfig({
+                      targetType: 'clinic',
+                      targetId: appointment.clinicId?._id || appointment.clinicId,
+                      targetName: appointment.clinicId?.name || appointment.clinicName || 'Clinic'
+                    })}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl text-xs font-bold text-slate-800 shadow-2xs transition active:scale-95"
+                  >
+                    <Building2 size={14} className="text-teal-600 shrink-0" />
+                    <span className="truncate">Rate {appointment.clinicId?.name || appointment.clinicName || 'Clinic'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Error message */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
@@ -175,6 +227,20 @@ const AppointmentDetailSheet = ({ appointment, onClose, onReschedule, onCancel }
           )}
         </div>
       </div>
+
+      {/* Rating Modal for Doctor & Clinic */}
+      {ratingConfig && (
+        <RatingModal
+          isOpen={!!ratingConfig}
+          onClose={() => setRatingConfig(null)}
+          targetType={ratingConfig.targetType}
+          targetId={ratingConfig.targetId}
+          targetName={ratingConfig.targetName}
+          onSuccess={() => {
+            setRatingConfig(null);
+          }}
+        />
+      )}
     </div>
   );
 };

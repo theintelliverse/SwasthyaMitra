@@ -43,6 +43,10 @@ const MedicalHistory = lazy(() => import('./pages/shared/MedicalHistory'));
 const Privacy = lazy(() => import('./pages/shared/Privacy'));
 const Terms = lazy(() => import('./pages/shared/Terms'));
 const Contact = lazy(() => import('./pages/shared/Contact'));
+const CookiePolicy = lazy(() => import('./pages/shared/CookiePolicy'));
+const RefundPolicy = lazy(() => import('./pages/shared/RefundPolicy'));
+
+import CookieConsent from './components/CookieConsent';
 
 // Independent Lab Portal
 const LabLogin = lazy(() => import('./pages/auth/LabLogin'));
@@ -206,6 +210,8 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/maintenance" element={<MaintenanceMode />} />
               <Route path="/subscription-checkout" element={<SubscriptionCheckout />} />
@@ -578,6 +584,7 @@ const App = () => {
             </Routes>
           </Suspense>
         </PlatformGuard>
+        <CookieConsent />
       </div>
     </Router>
   );

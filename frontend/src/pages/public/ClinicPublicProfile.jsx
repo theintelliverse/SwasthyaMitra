@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import SeoHead from '../../components/SeoHead';
 import { API_URL } from '../../config/runtime';
+import RatingModal from '../../components/patient/RatingModal';
+import ReviewList from '../../components/patient/ReviewList';
 import { 
   Building2, MapPin, Phone, Clock, Star, ShieldCheck, 
   Stethoscope, Microscope, Calendar, ChevronRight, Share2, CheckCircle2, AlertCircle
@@ -14,6 +16,7 @@ const ClinicPublicProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     const fetchClinic = async () => {
@@ -122,11 +125,17 @@ const ClinicPublicProfile = () => {
                 <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200">
                   Verified Healthcare Provider
                 </span>
-                <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
-                  <Star size={14} fill="currentColor" />
-                  <span>{clinic.rating?.score || 4.8}</span>
-                  <span className="text-stone-400">({clinic.rating?.count || 15} reviews)</span>
-                </div>
+                {clinic.rating?.count > 0 ? (
+                  <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
+                    <Star size={14} fill="currentColor" />
+                    <span>{clinic.rating.score}</span>
+                    <span className="text-stone-400">({clinic.rating.count} reviews)</span>
+                  </div>
+                ) : (
+                  <span className="bg-slate-50 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-slate-200">
+                    Verified Facility
+                  </span>
+                )}
               </div>
               
               <h1 className="text-3xl md:text-4xl font-heading font-black text-slate-900 tracking-tight">
@@ -163,6 +172,14 @@ const ClinicPublicProfile = () => {
                 <Calendar size={18} />
                 Book Consultation (₹{clinic.feeConsult || 500})
               </Link>
+              <button
+                type="button"
+                onClick={() => setShowRatingModal(true)}
+                className="w-full sm:w-auto bg-white hover:bg-amber-50/70 text-slate-800 border border-slate-200 hover:border-amber-300 font-bold text-sm px-5 py-3.5 rounded-2xl transition flex items-center justify-center gap-2 shadow-2xs"
+              >
+                <Star size={16} className="text-amber-500 fill-amber-500" />
+                Rate Clinic
+              </button>
             </div>
           </div>
         </section>
@@ -238,7 +255,34 @@ const ClinicPublicProfile = () => {
             </div>
           </section>
         )}
+
+        {/* --- Patient Ratings & Reviews Section --- */}
+        <ReviewList
+          targetType="clinic"
+          targetId={clinic._id}
+          targetName={clinic.name}
+          onOpenRating={() => setShowRatingModal(true)}
+        />
       </main>
+
+      {/* Patient Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          targetType="clinic"
+          targetId={clinic._id}
+          targetName={clinic.name}
+          onSuccess={(updatedRating) => {
+            if (updatedRating) {
+              setData(prev => prev ? {
+                ...prev,
+                clinic: { ...prev.clinic, rating: updatedRating }
+              } : prev);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

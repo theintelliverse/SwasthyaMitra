@@ -15,6 +15,7 @@ const PatientRegister = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [consentAgreed, setConsentAgreed] = useState(false);
     const [formData, setFormData] = useState({
         phone: '',
         otp: '',
@@ -142,6 +143,15 @@ const PatientRegister = () => {
     // Step 5: Final Submit
     const handleFinalSubmit = async (e) => {
         e.preventDefault();
+        if (!consentAgreed) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Consent Required',
+                text: 'Please review and accept the Privacy Policy and Terms of Service to create your account.',
+                confirmButtonColor: '#0D9488'
+            });
+            return;
+        }
         setLoading(true);
         try {
             const res = await axios.post(`${API_URL}/api/auth/patient/register-with-otp-password`, {
@@ -387,9 +397,33 @@ const PatientRegister = () => {
                                 <ReviewRow label="Contact" value={formData.phone} />
                                 <ReviewRow label="Vitals" value={`${formData.age || '?'}y | ${formData.gender || '?'} | ${formData.bloodGroup || '?'}`} />
                             </div>
+                            {/* Explicit DPDP Act Consent Checkbox */}
+                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                                <label htmlFor="patient-consent" className="flex items-start gap-3 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        id="patient-consent"
+                                        checked={consentAgreed}
+                                        onChange={(e) => setConsentAgreed(e.target.checked)}
+                                        required
+                                        className="mt-1 w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-2 focus:ring-teal-500 accent-teal-600"
+                                    />
+                                    <span className="text-xs text-slate-600 leading-relaxed font-medium">
+                                        I consent to the collection and processing of my health records and personal information in accordance with Appointory's{' '}
+                                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-bold underline">
+                                            Privacy Policy
+                                        </a>{' '}
+                                        and agree to the{' '}
+                                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-bold underline">
+                                            Terms of Service
+                                        </a>.
+                                    </span>
+                                </label>
+                            </div>
+
                             <button
-                                type="submit" disabled={loading}
-                                className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[2rem] font-semibold text-sm shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                type="submit" disabled={loading || !consentAgreed}
+                                className="w-full py-6 bg-slate-900 hover:bg-black disabled:bg-slate-300 text-white rounded-[2rem] font-semibold text-sm shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <>Create Secure Account <CheckCircle size={18} /></>}
                             </button>

@@ -91,14 +91,28 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://appointory.in/privacy</loc>
-    <lastmod>2026-05-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
     <mobile:mobile/>
   </url>
   <url>
     <loc>https://appointory.in/terms</loc>
-    <lastmod>2026-05-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  <url>
+    <loc>https://appointory.in/cookie-policy</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  <url>
+    <loc>https://appointory.in/refund-policy</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
     <mobile:mobile/>

@@ -117,20 +117,22 @@ const Footer = () => {
         {/* Bottom Metadata Section */}
         <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col items-center md:items-start gap-1">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4E4DF]/50">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#D4E4DF]/80">
               © 2026 Appointory. All rights reserved.
             </p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#D4E4DF]/30 flex items-center gap-1">
-              Developed by <span className="text-[#2D9B6F] font-black">The Intelliverse</span>
+            <p className="text-xs font-medium text-[#D4E4DF]/70 flex items-center gap-1">
+              Operated by <span className="text-[#2D9B6F] font-bold">The Intelliverse</span> • Digital Health Intermediary
             </p>
           </div>
 
           {/* Legal Links */}
-          <div className="flex gap-8 text-xs font-black uppercase tracking-widest text-[#D4E4DF]/70">
-            <Link to="/privacy" className="hover:text-white transition-all hover:scale-105">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-all hover:scale-105">Terms of Use</Link>
-            <Link to="/contact" className="hover:text-white transition-all hover:scale-105">Support Hub</Link>
-          </div>
+          <nav aria-label="Legal and Policy Links" className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-wider text-[#D4E4DF]/90">
+            <Link to="/privacy" className="hover:text-white transition-colors underline-offset-4 hover:underline">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors underline-offset-4 hover:underline">Terms of Use</Link>
+            <Link to="/cookie-policy" className="hover:text-white transition-colors underline-offset-4 hover:underline">Cookie Policy</Link>
+            <Link to="/refund-policy" className="hover:text-white transition-colors underline-offset-4 hover:underline">Refund Policy</Link>
+            <Link to="/contact" className="hover:text-white transition-colors underline-offset-4 hover:underline">Support & Grievance</Link>
+          </nav>
         </div>
 
       </div>

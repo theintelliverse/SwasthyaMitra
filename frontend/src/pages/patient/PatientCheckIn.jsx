@@ -240,6 +240,13 @@ const PatientCheckIn = () => {
                             >
                                 {submitting ? <RefreshCw className="animate-spin" size={18} /> : <>Generate Secure OTP <ArrowRight size={18} /></>}
                             </button>
+
+                            <p className="text-[11px] text-slate-500 text-center leading-relaxed font-medium">
+                                By proceeding, you consent to Appointory and the clinic processing your mobile number to send queue tokens, wait-time updates, and consultation alerts under our{' '}
+                                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-teal-600 underline font-semibold">
+                                    Privacy Policy
+                                </a>.
+                            </p>
                         </form>
                     ) : (
                         <form onSubmit={handleVerifyAndCheckin} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">

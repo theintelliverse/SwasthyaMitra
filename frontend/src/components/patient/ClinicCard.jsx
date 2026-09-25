@@ -4,7 +4,9 @@ import { MapPin, Star, Clock, Stethoscope, ChevronRight } from 'lucide-react';
 const ClinicCard = ({ clinic, onBook }) => {
   const name = clinic.name || 'Swasthya Healthcare Clinic';
   const specialty = clinic.specialty || clinic.category || 'General Medicine & Care';
-  const rating = clinic.rating || '4.8';
+  const ratingScore = typeof clinic.rating === 'object' ? clinic.rating?.score : clinic.rating;
+  const ratingCount = typeof clinic.rating === 'object' ? clinic.rating?.count : (clinic.rating ? 1 : 0);
+  const hasRating = ratingCount > 0 && ratingScore > 0;
   const distance = clinic.distance || '1.2 km away';
   const openTime = clinic.openingTime || '09:00 AM - 08:00 PM';
 
@@ -24,10 +26,12 @@ const ClinicCard = ({ clinic, onBook }) => {
             <h4 className="font-semibold text-slate-900 text-base truncate group-hover:text-teal-700 transition-colors">
               {name}
             </h4>
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs font-semibold flex-shrink-0 border border-amber-200/60">
-              <Star size={12} className="fill-amber-400 text-amber-400" />
-              <span>{rating}</span>
-            </div>
+            {hasRating && (
+              <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs font-semibold flex-shrink-0 border border-amber-200/60">
+                <Star size={12} className="fill-amber-400 text-amber-400" />
+                <span>{ratingScore}</span>
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">{specialty}</p>

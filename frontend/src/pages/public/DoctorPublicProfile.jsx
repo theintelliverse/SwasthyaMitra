@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import SeoHead from '../../components/SeoHead';
 import { API_URL } from '../../config/runtime';
+import RatingModal from '../../components/patient/RatingModal';
+import ReviewList from '../../components/patient/ReviewList';
 import { 
   Stethoscope, MapPin, Phone, Award, Star, ShieldCheck, 
   Calendar, Clock, Share2, CheckCircle2, AlertCircle, Building2
@@ -14,6 +16,7 @@ const DoctorPublicProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -125,11 +128,17 @@ const DoctorPublicProfile = () => {
                     License: {doctor.medicalLicenseNumber}
                   </span>
                 )}
-                <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
-                  <Star size={14} fill="currentColor" />
-                  <span>{doctor.rating?.score || 4.9}</span>
-                  <span className="text-stone-400">({doctor.rating?.count || 22} ratings)</span>
-                </div>
+                {doctor.rating?.count > 0 ? (
+                  <div className="flex items-center text-amber-500 text-xs font-bold gap-1">
+                    <Star size={14} fill="currentColor" />
+                    <span>{doctor.rating.score}</span>
+                    <span className="text-stone-400">({doctor.rating.count} ratings)</span>
+                  </div>
+                ) : (
+                  <span className="bg-slate-50 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-slate-200">
+                    Licensed Clinician
+                  </span>
+                )}
               </div>
 
               <h1 className="text-3xl md:text-4xl font-heading font-black text-slate-900 tracking-tight">
@@ -172,6 +181,15 @@ const DoctorPublicProfile = () => {
               >
                 Book Appointment
               </Link>
+
+              <button
+                type="button"
+                onClick={() => setShowRatingModal(true)}
+                className="w-full bg-white hover:bg-amber-50/70 text-slate-800 border border-slate-200 hover:border-amber-300 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <Star size={14} className="text-amber-500 fill-amber-500" />
+                Rate Dr. {doctor.name}
+              </button>
             </div>
           </div>
         </section>
@@ -202,7 +220,34 @@ const DoctorPublicProfile = () => {
             </div>
           </section>
         )}
+
+        {/* --- Verified Patient Ratings & Reviews --- */}
+        <ReviewList
+          targetType="doctor"
+          targetId={doctor._id}
+          targetName={doctor.name}
+          onOpenRating={() => setShowRatingModal(true)}
+        />
       </main>
+
+      {/* Patient Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          targetType="doctor"
+          targetId={doctor._id}
+          targetName={doctor.name}
+          onSuccess={(updatedRating) => {
+            if (updatedRating) {
+              setData(prev => prev ? {
+                ...prev,
+                doctor: { ...prev.doctor, rating: updatedRating }
+              } : prev);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -7,12 +7,14 @@ import {
   FileText, Clock, ExternalLink, LogOut,
   ShieldCheck, Activity, Search, Pill, X, Eye, Share2, Copy, Check, ChevronRight, RefreshCcw, FolderHeart, Calendar, Plus, Stethoscope, CheckCircle,
   Home, Users, History, User, Bell, Heart, Zap, Thermometer, Weight, Droplets, ArrowUpRight, QrCode, Upload, ArrowRight, Sparkles, MapPin, AlertCircle, Receipt,
-  Sunrise, Sun, Moon, Utensils, Timer
+  Sunrise, Sun, Moon, Utensils, Timer, Star, Edit3
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import SEO from '../../components/SEO';
 import AppointmentCard from '../../components/patient/AppointmentCard';
 import AppointmentDetailSheet from '../../components/patient/AppointmentDetailSheet';
+import PatientRatingHubModal from '../../components/patient/PatientRatingHubModal';
+import RatingModal from '../../components/patient/RatingModal';
 import {
   categorizePrescriptions,
   getPrescriptionSchedule
@@ -90,6 +92,9 @@ const PatientDashboard = () => {
   const [showQrModal, setShowQrModal] = useState(false);
   const [appointmentSegment, setAppointmentSegment] = useState('upcoming'); // 'upcoming' | 'past'
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [showRatingHub, setShowRatingHub] = useState(false);
+  const [patientReviews, setPatientReviews] = useState([]);
+  const [editingReview, setEditingReview] = useState(null);
 
   const handleTabSwitch = (newTab) => {
     if (newTab === 'appointments') {
@@ -107,17 +112,23 @@ const PatientDashboard = () => {
     }
 
     try {
-      const [profileRes, appointmentsRes] = await Promise.all([
+      const rawPhone = localStorage.getItem('userPhone') || '';
+      const [profileRes, appointmentsRes, reviewsRes] = await Promise.all([
         axios.get(`${API_URL}/api/auth/patient/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         axios.get(`${API_URL}/api/auth/patient/appointments`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { success: true, data: [] } }))
+        }).catch(() => ({ data: { success: true, data: [] } })),
+        axios.get(`${API_URL}/api/ratings/my-reviews`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { phone: rawPhone }
+        }).catch(() => ({ data: { success: true, reviews: [] } }))
       ]);
 
       setPatientData(profileRes.data.data);
       setAppointments(appointmentsRes.data.data || []);
+      setPatientReviews(reviewsRes.data.reviews || []);
     } catch (err) {
       console.error("❌ Vault Access Error:", err.response?.data || err.message);
       if (err.response?.status === 401) navigate('/patient/login');
@@ -306,6 +317,13 @@ const PatientDashboard = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowRatingHub(true)}
+              className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200/90 font-semibold text-xs uppercase tracking-wider rounded-xl shadow-2xs transition-all flex items-center gap-1.5 active:scale-95"
+            >
+              <Star size={15} className="fill-amber-500 text-amber-500" />
+              <span>Rate Experience</span>
+            </button>
             <button
               onClick={() => navigate('/patient/book-appointment')}
               className="px-5 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-teal-600/20 transition-all flex items-center gap-2 active:scale-95"
@@ -557,10 +575,10 @@ const PatientDashboard = () => {
             <div>
               <div className="flex justify-between items-center mb-3 px-1">
                 <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Actions</h4>
-                <span className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">5 Essential Tools</span>
+                <span className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">6 Essential Tools</span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
                 <button
                   onClick={() => navigate('/patient/book-appointment')}
                   className="p-4 bg-white border border-slate-200/80 hover:border-teal-500/50 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm"
@@ -581,6 +599,17 @@ const PatientDashboard = () => {
                   </div>
                   <span className="text-sm font-semibold text-slate-900 group-hover:text-teal-600 transition-colors">Find Clinic</span>
                   <span className="text-xs text-slate-400 font-normal mt-0.5">Explore Nearby Doctors</span>
+                </button>
+
+                <button
+                  onClick={() => setShowRatingHub(true)}
+                  className="p-4 bg-white border border-slate-200/80 hover:border-amber-400 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center mb-2.5 group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                    <Star size={20} className="fill-amber-500 group-hover:fill-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-900 group-hover:text-amber-600 transition-colors">Rate Care</span>
+                  <span className="text-xs text-slate-400 font-normal mt-0.5">Doctor, Clinic &amp; Lab</span>
                 </button>
 
                 <button
@@ -607,7 +636,7 @@ const PatientDashboard = () => {
 
                 <button
                   onClick={() => navigate('/patient/health-locker?tab=bills')}
-                  className="p-4 bg-white border border-slate-200/80 hover:border-teal-500/50 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm col-span-2 sm:col-span-1"
+                  className="p-4 bg-white border border-slate-200/80 hover:border-teal-500/50 hover:shadow-lg rounded-2xl flex flex-col items-start transition-all group text-left shadow-sm"
                 >
                   <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center mb-2.5 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all">
                     <Receipt size={20} />
@@ -695,6 +724,74 @@ const PatientDashboard = () => {
                 )}
               </div>
             </div>
+
+            {/* MY SUBMITTED RATINGS & REVIEWS SECTION */}
+            {patientReviews.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <Star size={14} className="fill-amber-500 text-amber-500" />
+                    </div>
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      My Submitted Ratings &amp; Reviews ({patientReviews.length})
+                    </h4>
+                  </div>
+                  <button
+                    onClick={() => setShowRatingHub(true)}
+                    className="text-xs font-semibold text-teal-600 hover:underline flex items-center gap-1"
+                  >
+                    <span>Manage All</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {patientReviews.slice(0, 4).map(r => (
+                    <div key={r._id} className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2.5 hover:border-slate-300 transition">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h5 className="font-bold text-slate-900 text-sm truncate">{r.targetName}</h5>
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
+                              {r.targetType}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 truncate mt-0.5">{r.targetSubtitle}</p>
+                        </div>
+
+                        <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-lg shrink-0">
+                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          <span className="font-bold text-xs text-amber-800">{r.score}.0</span>
+                        </div>
+                      </div>
+
+                      {r.review ? (
+                        <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-2 italic">
+                          "{r.review}"
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-slate-400 italic">No comment provided.</p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+                        <span className="text-slate-400">
+                          {new Date(r.updatedAt || r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingReview(r)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold rounded-lg border border-teal-200 transition text-[11px]"
+                        >
+                          <Edit3 size={11} />
+                          <span>Edit Review</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -829,6 +926,35 @@ const PatientDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Patient Rating Hub Modal for Doctor, Clinic & Lab */}
+      {showRatingHub && (
+        <PatientRatingHubModal
+          isOpen={showRatingHub}
+          onClose={() => {
+            setShowRatingHub(false);
+            fetchProfile();
+          }}
+          appointments={appointments}
+          visitedClinics={patientData?.visitedClinics || []}
+        />
+      )}
+
+      {/* Direct Edit Review Modal from Dashboard Feed */}
+      {editingReview && (
+        <RatingModal
+          isOpen={!!editingReview}
+          onClose={() => setEditingReview(null)}
+          existingReview={editingReview}
+          targetType={editingReview.targetType}
+          targetId={editingReview.targetId}
+          targetName={editingReview.targetName}
+          onSuccess={() => {
+            setEditingReview(null);
+            fetchProfile();
+          }}
+        />
       )}
     </div>
   );

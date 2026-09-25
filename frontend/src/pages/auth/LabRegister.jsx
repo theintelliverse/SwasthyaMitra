@@ -247,6 +247,17 @@ const LabRegister = () => {
                   </div>
 
                   <div className="pt-4">
+                    <div className="p-3 bg-parchment rounded-xl border border-sandstone text-xs text-khaki leading-relaxed">
+                      By registering this diagnostic laboratory, you represent that you hold valid clinical establishment accreditation, agree to our{' '}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-bold underline">
+                        Terms of Service
+                      </a>{' '}
+                      and acknowledge our{' '}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-bold underline">
+                        Privacy Policy
+                      </a>.
+                    </div>
+
                     <button
                       type="submit"
                       disabled={loading}

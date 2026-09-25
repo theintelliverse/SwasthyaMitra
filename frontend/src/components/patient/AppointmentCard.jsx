@@ -32,7 +32,7 @@ const AppointmentCard = ({ appointment, onClick }) => {
               {appointment.clinicName || appointment.clinicId?.name || 'Clinic Consultation'}
             </h4>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Dr. {appointment.doctorName || appointment.doctorId?.name || 'Abhishek Rao'}
+              Dr. {appointment.doctorName || appointment.doctorId?.name || 'Consulting Specialist'}
             </p>
           </div>
         </div>
@@ -50,13 +50,20 @@ const AppointmentCard = ({ appointment, onClick }) => {
           </span>
           <span className="flex items-center gap-1.5">
             <Clock size={14} className="text-teal-600" />
-            {appointment.tokenNumber ? `Token ${appointment.tokenNumber}` : '10:30 AM'}
+            {appointment.tokenNumber ? `Token ${appointment.tokenNumber}` : 'Scheduled'}
           </span>
         </div>
 
-        <div className="flex items-center text-teal-700 font-semibold group-hover:translate-x-0.5 transition-transform">
-          <span>Details</span>
-          <ChevronRight size={14} />
+        <div className="flex items-center gap-2">
+          {status === 'Completed' && (
+            <span className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+              ★ Rate
+            </span>
+          )}
+          <div className="flex items-center text-teal-700 font-semibold group-hover:translate-x-0.5 transition-transform">
+            <span>Details</span>
+            <ChevronRight size={14} />
+          </div>
         </div>
       </div>
     </div>

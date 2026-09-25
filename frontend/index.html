@@ -48,23 +48,39 @@
   <meta name="yandex" content="index, follow, max-snippet:-1" />
   <meta name="baiduspider" content="index, follow" />
   <meta name="duckduckbot" content="index, follow" />
-  <meta name="theme-color" content="#2C6FB3" />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#1A3C34" />
+  <meta name="color-scheme" content="light" />
   <meta name="format-detection" content="telephone=no, email=no, address=no" />
   <meta name="referrer" content="origin-when-cross-origin" />
   <meta name="application-name" content="Appointory" />
   <meta name="apple-mobile-web-app-title" content="Appointory" />
   <meta name="google-site-verification" content="V9ShBblTx27Z4kLyDmhiU4PPANzjWD_j1O76UrDD40I" />
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3KZ0BWGB6R"></script>
+  <!-- Google tag (gtag.js) with Google Consent Mode v2 -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
 
+    // Read stored consent if previously granted
+    var storedConsent = null;
+    try {
+      var raw = localStorage.getItem('appointory_cookie_consent');
+      if (raw) storedConsent = JSON.parse(raw);
+    } catch (e) {}
+
+    // Default: Denied until explicit consent is given (DPDP Act & ePrivacy compliant)
+    gtag('consent', 'default', {
+      'analytics_storage': storedConsent && storedConsent.analytics ? 'granted' : 'denied',
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'wait_for_update': 500
+    });
+
+    gtag('js', new Date());
     gtag('config', 'G-3KZ0BWGB6R');
   </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3KZ0BWGB6R"></script>
 
 
   <!-- Open Graph Tags for Social Sharing & WhatsApp -->

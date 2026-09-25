@@ -9,7 +9,8 @@ Domain: appointory.in
 ## Support Channels
 - General Inquiries: theintelliverse@gmail.com
 - Technical Support: theintelliverse@gmail.com
-- Feedback & Suggestions: theintelliverse@gmail.com
+- DPDP Grievance Officer: grievance@appointory.in
+- Billing & Refunds: theintelliverse@gmail.com
 - Partnership Proposals: theintelliverse@gmail.com
 
 ## Social Media
@@ -18,10 +19,12 @@ Domain: appointory.in
 - LinkedIn: linkedin.com/company/appointory
 - Instagram: @appointory
 
-## Links
-- Privacy Policy: https://appointory.in/privacy
+## Legal & Compliance Links
+- Privacy Policy (DPDP Act 2023): https://appointory.in/privacy
 - Terms of Service: https://appointory.in/terms
-- Contact Form: https://appointory.in/contact
+- Cookie Policy: https://appointory.in/cookie-policy
+- Cancellation & Refund Policy: https://appointory.in/refund-policy
+- Contact & Grievance Hub: https://appointory.in/contact
 - Security Policy: https://appointory.in/.well-known/security.txt
 
 ## Response Time

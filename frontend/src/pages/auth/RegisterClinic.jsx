@@ -297,6 +297,17 @@ const RegisterClinic = () => {
                     </div>
                   </div>
 
+                  <div className="p-3 bg-parchment rounded-xl border border-sandstone text-xs text-khaki leading-relaxed">
+                    By submitting this registration, you confirm that you are an authorized representative of this clinical establishment, agree to our{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-marigold font-bold underline">
+                      Terms of Service
+                    </a>{' '}
+                    and acknowledge our{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-marigold font-bold underline">
+                      Privacy Policy
+                    </a>.
+                  </div>
+
                   <button
                     type="submit"
                     disabled={loading}

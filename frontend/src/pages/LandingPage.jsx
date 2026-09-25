@@ -549,7 +549,7 @@ Doctor: Dr. Anita Gupta (Reg: MCI-49210-A)`;
     ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+91-9876543210",
+      "email": "theintelliverse@gmail.com",
       "contactType": "Customer Support",
       "areaServed": "IN",
       "availableLanguage": ["English", "Hindi", "Gujarati"]
@@ -571,11 +571,6 @@ Doctor: Dr. Anita Gupta (Reg: MCI-49210-A)`;
       "priceCurrency": "INR",
       "price": "0",
       "pricingModel": "FreemiumPricing"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "680"
     },
     "featureList": [
       "AI-driven dynamic wait-time & queue velocity prediction algorithm",

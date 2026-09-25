@@ -835,7 +835,7 @@ const FacilityOverviewModal = ({
                     <div>
                       <span className="font-semibold text-slate-500">Public Rating:</span>
                       <div className="font-bold text-amber-600 mt-0.5 flex items-center gap-1">
-                        ★ {fac.rating?.score || 4.8} ({fac.rating?.count || 12} reviews)
+                        {fac.rating?.count > 0 ? `★ ${fac.rating.score} (${fac.rating.count} reviews)` : 'No public reviews submitted'}
                       </div>
                     </div>
 
