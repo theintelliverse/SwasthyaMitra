@@ -943,85 +943,105 @@ const RevenueModal = ({
   const emergencyPct = Math.round(((stats.emergencyFees || 0) / totalBreakdown) * 100);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[999] flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-fade-in"
+      onClick={onClose}
+    >
       <div 
-        className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[90vh] my-auto overflow-hidden flex flex-col transform scale-100 transition-all duration-300"
+        className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-              <TrendingUp className="text-emerald-500" size={24} />
-              Clinical Revenue Settings
-            </h2>
-            <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manage billing rates, rules & pharmacy inventory</p>
+        <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/60 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <TrendingUp size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight leading-tight">
+                Clinical Revenue Settings
+              </h2>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                Manage billing rates, rules & pharmacy inventory
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <button 
               onClick={() => setActiveTab('billing')}
-              className={`px-4 py-2 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all ${activeTab === 'billing' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+              className={`h-9 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'billing' 
+                  ? 'bg-teal-600 text-white shadow-sm' 
+                  : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/80 hover:text-slate-700'
+              }`}
             >
               Billing Config
             </button>
             <button 
               onClick={() => setActiveTab('inventory')}
-              className={`px-4 py-2 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all ${activeTab === 'inventory' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60'}`}
+              className={`h-9 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'inventory' 
+                  ? 'bg-teal-600 text-white shadow-sm' 
+                  : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/80 hover:text-slate-700'
+              }`}
             >
               Pharmacy Inventory
             </button>
             <button 
               onClick={onClose}
-              className="ml-2 p-2 bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
+              className="h-9 w-9 flex items-center justify-center bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl transition-all ml-1 cursor-pointer"
+              title="Close modal"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7 custom-scrollbar">
           {activeTab === 'billing' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
               {/* Left Form: Rates Configuration */}
               <div className="lg:col-span-3 space-y-6">
-                <h3 className="text-base font-black text-slate-800 uppercase tracking-wider border-b pb-2 border-slate-100 flex items-center gap-2">
-                  <Settings size={18} className="text-teal-600" />
-                  Define Base Rates
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ConfigField 
-                    label="Consultation Fee" 
-                    value={config.feeConsult} 
-                    onChange={(val) => handleConfigChange('feeConsult', val)} 
-                    icon="₹"
-                  />
-                  <ConfigField 
-                    label="Lab Test Fee" 
-                    value={config.feeLab} 
-                    onChange={(val) => handleConfigChange('feeLab', val)} 
-                    icon="₹"
-                  />
-                  <ConfigField 
-                    label="Emergency Surcharge" 
-                    value={config.feeEmergency} 
-                    onChange={(val) => handleConfigChange('feeEmergency', val)} 
-                    icon="₹"
-                  />
-                  <ConfigField 
-                    label="Medicine Unit Fee" 
-                    value={config.feeMedicine} 
-                    onChange={(val) => handleConfigChange('feeMedicine', val)} 
-                    icon="₹"
-                  />
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b pb-2.5 border-slate-100 flex items-center gap-2">
+                    <Settings size={16} className="text-teal-600" />
+                    Define Base Rates
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
+                    <ConfigField 
+                      label="Consultation Fee" 
+                      value={config.feeConsult} 
+                      onChange={(val) => handleConfigChange('feeConsult', val)} 
+                      icon="₹"
+                    />
+                    <ConfigField 
+                      label="Lab Test Fee" 
+                      value={config.feeLab} 
+                      onChange={(val) => handleConfigChange('feeLab', val)} 
+                      icon="₹"
+                    />
+                    <ConfigField 
+                      label="Emergency Surcharge" 
+                      value={config.feeEmergency} 
+                      onChange={(val) => handleConfigChange('feeEmergency', val)} 
+                      icon="₹"
+                    />
+                    <ConfigField 
+                      label="Medicine Unit Fee" 
+                      value={config.feeMedicine} 
+                      onChange={(val) => handleConfigChange('feeMedicine', val)} 
+                      icon="₹"
+                    />
+                  </div>
                 </div>
 
-                <div className="bg-teal-50/50 border border-teal-100/60 p-4 rounded-2xl">
-                  <h4 className="text-[14px] font-black text-teal-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                    <Clock size={14} />
+                <div className="bg-teal-50/50 border border-teal-100/70 p-4 rounded-2xl">
+                  <h4 className="text-xs font-black text-teal-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <Clock size={14} className="text-teal-600" />
                     Queue Management Wait Factor
                   </h4>
-                  <p className="text-[14px] text-teal-600 font-bold leading-normal mb-3">
+                  <p className="text-xs text-teal-600 font-semibold leading-relaxed mb-3">
                     Adjust how many minutes are allocated per patient in queue to calculate dynamic waiting times.
                   </p>
                   <div className="flex items-center gap-4">
@@ -1031,18 +1051,18 @@ const RevenueModal = ({
                       max="20" 
                       value={config.avgWaitFactor}
                       onChange={(e) => handleConfigChange('avgWaitFactor', Number(e.target.value))}
-                      className="flex-1 accent-teal-600"
+                      className="flex-1 accent-teal-600 cursor-pointer"
                     />
-                    <span className="px-3 py-1 bg-white border border-teal-200 text-teal-700 rounded-xl font-black text-[14px] shrink-0">
+                    <span className="px-3 py-1 bg-white border border-teal-200 text-teal-700 rounded-xl font-black text-xs shrink-0 shadow-xs">
                       {config.avgWaitFactor} mins/pat
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4">
+                <div className="pt-2">
                   <button 
                     onClick={saveConfig}
-                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-[14px] uppercase tracking-widest shadow-lg shadow-emerald-600/10 active:scale-95 transition-all"
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     Save Operational Rules
                   </button>
@@ -1050,18 +1070,20 @@ const RevenueModal = ({
               </div>
 
               {/* Right Sidebar: Stats Breakdown */}
-              <div className="lg:col-span-2 space-y-6 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+              <div className="lg:col-span-2 space-y-5 bg-slate-50/70 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-[14px] font-black text-slate-400 uppercase tracking-widest mb-1">Today's Total</h3>
-                  <div className="text-3xl font-black text-slate-900">₹{stats.revenue.toLocaleString('en-IN')}</div>
-                  <div className="flex items-center gap-1 mt-1 text-[14px] font-bold text-emerald-600">
-                    <span className="px-1.5 py-0.2 bg-emerald-50 rounded">{stats.revenueChange}</span>
-                    <span>Vs Yesterday</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Today's Total</h3>
+                    <span className="text-[11px] font-black uppercase px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100/60">
+                      {stats.revenueChange}
+                    </span>
                   </div>
+                  <div className="text-3xl font-black text-slate-900 tracking-tight">₹{stats.revenue.toLocaleString('en-IN')}</div>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">Vs Yesterday</p>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-slate-200/60">
-                  <h4 className="text-[14px] font-black text-slate-800 uppercase tracking-wider">Revenue Breakdown</h4>
+                <div className="space-y-3.5 pt-4 border-t border-slate-200/60">
+                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Revenue Breakdown</h4>
                   
                   <BreakdownBar 
                     label="Consultations" 
@@ -1087,16 +1109,16 @@ const RevenueModal = ({
                     percentage={emergencyPct} 
                     color="bg-rose-500" 
                   />
-                  
-                  <div className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between mt-6">
-                    <div>
-                      <h5 className="text-[14px] font-black text-slate-400 uppercase tracking-wider">Active Stream</h5>
-                      <p className="text-[14px] font-bold text-slate-800 mt-0.5">Real-time Connection</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[14px] font-black text-emerald-600 uppercase tracking-wider">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      Live Syncing
-                    </div>
+                </div>
+
+                <div className="bg-white border border-slate-100/80 p-3.5 rounded-2xl flex items-center justify-between shadow-xs">
+                  <div>
+                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Active Stream</h5>
+                    <p className="text-xs font-bold text-slate-800 mt-0.5">Real-time Connection</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-xl text-xs font-black text-emerald-600 uppercase tracking-wider">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    Live Syncing
                   </div>
                 </div>
               </div>
@@ -1104,28 +1126,28 @@ const RevenueModal = ({
           ) : (
             <div className="space-y-6">
               {/* Toolbar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                   <input 
                     type="text" 
                     placeholder="Search medicine..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-[14px] font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:border-teal-500 transition-all"
+                    className="w-full pl-9 pr-4 py-2 border border-slate-200/80 rounded-xl text-xs font-bold text-slate-800 bg-slate-50/60 focus:bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-[14px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-teal-600/10 active:scale-95"
+                    className="h-9 px-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer"
                   >
                     <Plus size={14} />
                     {showAddForm ? 'Cancel' : 'Add Item'}
                   </button>
                   <button 
                     onClick={resetInventory}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[14px] font-black uppercase tracking-wider transition-all"
+                    className="h-9 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
                   >
                     Reset Inventory
                   </button>
@@ -1134,44 +1156,44 @@ const RevenueModal = ({
 
               {/* Add New Medicine Form */}
               {showAddForm && (
-                <form onSubmit={handleAddMedicine} className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-4 items-end animate-in slide-in-from-top-3 duration-250">
-                  <div className="md:col-span-2">
-                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Medicine Name</label>
+                <form onSubmit={handleAddMedicine} className="bg-slate-50/70 border border-slate-200/80 p-5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end animate-fade-in">
+                  <div className="sm:col-span-2 md:col-span-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">Medicine Name</label>
                     <input 
                       type="text" 
                       required 
                       placeholder="e.g. Ibuprofen 400mg"
                       value={newMed.name}
                       onChange={(e) => setNewMed({...newMed, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200/80 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Initial Stock</label>
+                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">Initial Stock</label>
                     <input 
                       type="number" 
                       required
                       min="1" 
                       value={newMed.stock}
                       onChange={(e) => setNewMed({...newMed, stock: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200/80 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
                   <div>
-                    <label className="text-[14px] font-black uppercase text-slate-400 block mb-1">Unit Price (₹)</label>
+                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">Unit Price (₹)</label>
                     <input 
                       type="number" 
                       required
                       min="1" 
                       value={newMed.unitPrice}
                       onChange={(e) => setNewMed({...newMed, unitPrice: Number(e.target.value)})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-[14px] font-bold bg-white outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-slate-200/80 rounded-xl text-xs font-bold bg-white outline-none focus:border-teal-500"
                     />
                   </div>
-                  <div className="md:col-span-4 flex justify-end">
+                  <div className="sm:col-span-2 md:col-span-4 flex justify-end pt-1">
                     <button 
                       type="submit"
-                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[14px] font-black uppercase tracking-wider"
+                      className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs cursor-pointer active:scale-95 transition-all"
                     >
                       Save to Inventory
                     </button>
@@ -1260,17 +1282,17 @@ const RevenueModal = ({
               </div>
 
               {/* Desktop Table View */}
-              <div className="hidden md:block border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+              <div className="hidden md:block border border-slate-100 rounded-2xl overflow-hidden shadow-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-[14px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      <th className="p-4">Item Name</th>
-                      <th className="p-4">Stock Level</th>
-                      <th className="p-4">Unit Price</th>
-                      <th className="p-4 text-right">Actions</th>
+                    <tr className="bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                      <th className="py-3 px-4">Item Name</th>
+                      <th className="py-3 px-4">Stock Level</th>
+                      <th className="py-3 px-4">Unit Price</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 text-xs">
                     {filteredInventory.map((item, idx) => {
                       const isLowStock = item.stock <= item.minStock;
                       const stockPct = Math.min(100, Math.max(0, (item.stock / 150) * 100));
@@ -1278,61 +1300,63 @@ const RevenueModal = ({
 
                       return (
                         <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4">
-                            <span className="text-[14px] font-black text-slate-800 block">{item.name}</span>
+                          <td className="py-3.5 px-4">
+                            <span className="font-black text-slate-800 block text-xs">{item.name}</span>
                             {isLowStock && (
-                              <span className="inline-block mt-1 px-1.5 py-0.2 bg-rose-50 border border-rose-100 text-[14px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
+                              <span className="inline-block mt-1 px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-600 rounded uppercase tracking-wider animate-pulse">Low Stock</span>
                             )}
                           </td>
-                          <td className="p-4 w-1/3">
-                            <div className="flex items-center justify-between text-[14px] font-bold text-slate-500 mb-1.5">
+                          <td className="py-3.5 px-4 w-1/3">
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-1.5">
                               <span>{item.stock} Units</span>
-                              <span>Min: {item.minStock}</span>
+                              <span className="text-[11px] text-slate-400">Min: {item.minStock}</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                               <div className={`h-full ${stockColor} rounded-full transition-all`} style={{width: `${stockPct}%`}} />
                             </div>
                           </td>
-                          <td className="p-4">
+                          <td className="py-3.5 px-4">
                             {editingIndex === idx ? (
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[14px] font-bold text-slate-500">₹</span>
+                                <span className="text-xs font-bold text-slate-500">₹</span>
                                 <input 
                                   type="number"
-                                  className="w-16 px-1.5 py-0.8 border border-slate-300 rounded text-[14px] font-black outline-none focus:border-teal-500"
+                                  className="w-16 px-2 py-1 border border-slate-300 rounded-lg text-xs font-black outline-none focus:border-teal-500 bg-white"
                                   value={tempPrice}
                                   onChange={(e) => setTempPrice(e.target.value)}
                                 />
                                 <button 
                                   onClick={() => savePrice(idx)}
-                                  className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                                  className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors cursor-pointer"
                                 >
                                   <Check size={12} />
                                 </button>
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <span className="text-[14px] font-black text-slate-800">₹{item.unitPrice}</span>
+                                <span className="text-xs font-black text-slate-800">₹{item.unitPrice}</span>
                                 <button 
                                   onClick={() => startEditing(idx, item.unitPrice)}
-                                  className="p-1 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-all"
+                                  className="p-1 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-md transition-all cursor-pointer"
+                                  title="Edit price"
                                 >
-                                  <Edit size={12} className="text-slate-400 hover:text-teal-600" />
+                                  <Edit size={12} />
                                 </button>
                               </div>
                             )}
                           </td>
-                          <td className="p-4 text-right">
+                          <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button 
                                 onClick={() => restockMed(idx)}
-                                className="px-2.5 py-1 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[14px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-lg transition-all active:scale-95"
+                                className="px-2.5 py-1 bg-teal-50 hover:bg-teal-600 border border-teal-100 text-[11px] font-black text-teal-600 hover:text-white uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
                               >
                                 Restock (+50)
                               </button>
                               <button 
                                 onClick={() => deleteMedicine(idx)}
-                                className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                                title="Delete item"
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -1343,7 +1367,7 @@ const RevenueModal = ({
                     })}
                     {filteredInventory.length === 0 && (
                       <tr>
-                        <td colSpan="4" className="text-center py-8 text-slate-400 font-bold text-[14px]">
+                        <td colSpan="4" className="text-center py-8 text-slate-400 font-bold text-xs">
                           No matching medicines found in inventory.
                         </td>
                       </tr>
@@ -1359,16 +1383,18 @@ const RevenueModal = ({
   );
 };
 
-const ConfigField = ({ label, value, onChange, icon }) => (
-  <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors">
-    <label className="text-[14px] font-black uppercase text-slate-400 block mb-2">{label}</label>
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-black text-slate-400">{icon}</span>
+const ConfigField = ({ label, value, onChange, icon = '₹' }) => (
+  <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-100 hover:border-teal-200/70 transition-all flex flex-col justify-between">
+    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block mb-2">{label}</label>
+    <div className="relative flex items-center rounded-xl bg-white border border-slate-200/80 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all overflow-hidden">
+      <span className="px-3 py-2 bg-slate-50 text-slate-400 text-xs font-black border-r border-slate-100 select-none">
+        {icon}
+      </span>
       <input 
         type="number" 
         value={value}
         onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="w-full bg-white border border-slate-200/60 pl-8 pr-3 py-2 rounded-xl text-sm font-black text-slate-800 outline-none focus:border-teal-500 transition-colors"
+        className="w-full px-3 py-2 text-sm font-black text-slate-800 outline-none bg-transparent"
       />
     </div>
   </div>
@@ -1376,15 +1402,15 @@ const ConfigField = ({ label, value, onChange, icon }) => (
 
 const BreakdownBar = ({ label, amount, percentage, color }) => (
   <div className="space-y-1.5">
-    <div className="flex justify-between items-center text-[14px] font-bold text-slate-600">
+    <div className="flex justify-between items-center text-xs font-bold text-slate-600">
       <span>{label}</span>
       <div className="flex items-center gap-1.5">
         <span className="font-black text-slate-800">₹{amount.toLocaleString('en-IN')}</span>
-        <span className="text-[14px] text-slate-400">({percentage}%)</span>
+        <span className="text-[11px] text-slate-400">({percentage}%)</span>
       </div>
     </div>
     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-      <div className={`h-full ${color} rounded-full transition-all`} style={{width: `${percentage}%`}} />
+      <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{width: `${percentage}%`}} />
     </div>
   </div>
 );
