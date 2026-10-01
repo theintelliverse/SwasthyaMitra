@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -942,7 +943,7 @@ const RevenueModal = ({
   const medPct = Math.round(((stats.medicineFees || 0) / totalBreakdown) * 100);
   const emergencyPct = Math.round(((stats.emergencyFees || 0) / totalBreakdown) * 100);
 
-  return (
+  return ReactDOM.createPortal(
     <div 
       className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[999] flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-fade-in"
       onClick={onClose}
@@ -1380,7 +1381,7 @@ const RevenueModal = ({
         </div>
       </div>
     </div>
-  );
+  , document.body);
 };
 
 const ConfigField = ({ label, value, onChange, icon = '₹' }) => (
